@@ -1,0 +1,194 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body {
+    background: #0a0a0f;
+    color: #fafafa;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Refined ambient backdrop — never harsh, always feels lit from within */
+  body {
+    background:
+      radial-gradient(
+        ellipse 80% 50% at 50% -10%,
+        rgba(124, 58, 237, 0.12),
+        transparent
+      ),
+      radial-gradient(
+        ellipse 70% 40% at 90% 100%,
+        rgba(212, 175, 55, 0.06),
+        transparent
+      ),
+      #0a0a0f;
+    min-height: 100vh;
+  }
+
+  ::selection {
+    background: rgba(212, 175, 55, 0.25);
+    color: #fff;
+  }
+
+  /* Scrollbar — premium thin */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.12);
+    background-clip: padding-box;
+    border: 2px solid transparent;
+  }
+
+  /* Hide scrollbar arrows */
+  ::-webkit-scrollbar-button {
+    display: none;
+  }
+
+  /* Focus ring — always champagne */
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px #0a0a0f, 0 0 0 4px rgba(212, 175, 55, 0.6);
+    border-radius: 8px;
+  }
+}
+
+@layer components {
+  /* Glass surface — the EliteVault signature */
+  .glass {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.04) 0%,
+      rgba(255, 255, 255, 0.02) 100%
+    );
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .glass-strong {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      rgba(255, 255, 255, 0.02) 100%
+    );
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* The signature gold gradient text */
+  .text-gold-gradient {
+    background: linear-gradient(135deg, #fff8e1 0%, #d4af37 50%, #b89026 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  .text-ai-gradient {
+    background: linear-gradient(135deg, #c4b5fd 0%, #7c3aed 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  /* Subtle dotted grid background */
+  .bg-dot-grid {
+    background-image: radial-gradient(
+      rgba(255, 255, 255, 0.06) 1px,
+      transparent 1px
+    );
+    background-size: 24px 24px;
+  }
+
+  /* Animated border for AI-active surfaces */
+  .ai-border {
+    position: relative;
+    isolation: isolate;
+  }
+  .ai-border::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(
+      from var(--angle, 0deg),
+      transparent 30%,
+      #7c3aed 50%,
+      #d4af37 70%,
+      transparent 90%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: spin 4s linear infinite;
+    z-index: -1;
+  }
+  @keyframes spin {
+    to {
+      --angle: 360deg;
+    }
+  }
+  @property --angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  /* Shimmer for skeleton/loading */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.05),
+      transparent
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2.4s linear infinite;
+  }
+
+  /* Number-tabular for stats */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+}
+
+@layer utilities {
+  .mask-fade-b {
+    mask-image: linear-gradient(to bottom, #000 60%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, #000 60%, transparent);
+  }
+  .mask-radial {
+    mask-image: radial-gradient(circle at center, #000 40%, transparent 75%);
+    -webkit-mask-image: radial-gradient(
+      circle at center,
+      #000 40%,
+      transparent 75%
+    );
+  }
+}

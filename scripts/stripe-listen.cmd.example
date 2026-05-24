@@ -1,0 +1,11 @@
+@echo off
+REM Copy this to stripe-listen.cmd and paste your sk_test_... key.
+REM stripe-listen.cmd is gitignored so the secret never leaves your laptop.
+REM
+REM Path to Stripe CLI may differ depending on how you installed it:
+REM   • winget:  %LOCALAPPDATA%\Microsoft\WinGet\Packages\Stripe.StripeCli_*\stripe.exe
+REM   • scoop :  %USERPROFILE%\scoop\apps\stripe\current\stripe.exe
+REM   • manual:  wherever you unzipped the binary
+set "STRIPE_EXE=stripe.exe"
+set "SECRET=sk_test_REPLACE_ME"
+"%STRIPE_EXE%" listen --api-key %SECRET% --forward-to http://localhost:3000/api/stripe/webhook
