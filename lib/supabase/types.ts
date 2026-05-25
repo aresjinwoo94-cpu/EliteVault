@@ -221,8 +221,13 @@ export interface Database {
           url: string | null;
           screenshot_url: string | null;
           buyer_persona: BuyerPersona | null;
-          result: AnalysisResult | null;
-          rewrite: RewriteResult | null;
+          // JSONB columns — kept as `unknown` here so the Database type
+          // doesn't bloat the inferred response types (we cast where needed).
+          result: unknown;
+          rewrite: unknown;
+          meta_ads: unknown;
+          is_published: boolean;
+          published_at: string | null;
           error: string | null;
           credits_charged: number;
           inngest_run_id: string | null;

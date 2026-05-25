@@ -56,7 +56,9 @@ outcomes. You are auditing, not selling.`;
 
 export function buildAnalyzerUserMessage(opts: {
   url?: string;
-  persona?: Record<string, unknown> | null;
+  // Accept any object shape — the BuyerPersona type from supabase/types
+  // doesn't have an index signature so we widen here.
+  persona?: Record<string, unknown> | { [key: string]: unknown } | null;
   htmlExcerpt?: string;
   siteInfo?: {
     title: string | null;

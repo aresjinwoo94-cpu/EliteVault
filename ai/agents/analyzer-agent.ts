@@ -71,7 +71,7 @@ export async function runAnalyzerAgent(opts: {
   parts.push({
     text: buildAnalyzerUserMessage({
       url: opts.url,
-      persona: opts.persona ?? null,
+      persona: (opts.persona as Record<string, unknown> | null) ?? null,
       htmlExcerpt: opts.htmlExcerpt,
       siteInfo: opts.siteInfo ?? null,
       extraScreenshotUrls: extraUrls,

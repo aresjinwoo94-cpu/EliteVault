@@ -17,7 +17,7 @@ export default async function AnalysisPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/sign-in");
 
-  const [{ data: analysis }, { data: profile }] = await Promise.all([
+  const [{ data: analysisRaw }, { data: profile }] = await Promise.all([
     supabase.from("analyses").select("*").eq("id", id).eq("user_id", user.id).single(),
     supabase
       .from("profiles")
@@ -26,7 +26,16 @@ export default async function AnalysisPage({
       .single(),
   ]);
 
-  if (!analysis) notFound();
+  if (!analysisRaw) notFound();
+  // Cast to a fuller shape — TS can't infer JSONB unions through Promise.all
+  // and the result narrows to `never` in some pipelines. Safe cast: we
+  // validated the row exists right above.
+  const analysis = analysisRaw as typeof analysisRaw & {
+    is_published?: boolean;
+    meta_ads?: unknown;
+    rewrite?: unknown;
+    result?: unknown;
+  };
 
   // Fetch the published slug if this audit is on the community feed
   let publishedSlug: string | null = null;
