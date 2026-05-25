@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, Sparkles, AlertCircle } from "lucide-react";
+import { TrendingUp, Sparkles, AlertCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -94,15 +94,38 @@ export function SimulatorEmpty({
             an AI estimate, not a guarantee.
           </p>
 
-          {previousError && (
-            <div className="mt-4 flex items-start gap-2 rounded-xl border border-warning/20 bg-warning/[0.05] p-3">
-              <AlertCircle className="size-4 text-warning shrink-0 mt-0.5" />
-              <p className="text-xs text-white/70 leading-relaxed">
-                <span className="text-warning">Previous run failed: </span>
-                {previousError}
-              </p>
-            </div>
-          )}
+          {previousError && (() => {
+            // Detect quota errors and render a more actionable, less scary
+            // variant — the user just needs to wait, not "fix" anything.
+            const isQuota = /rate.?limit|quota|429|RESOURCE_EXHAUSTED/i.test(
+              previousError,
+            );
+            if (isQuota) {
+              return (
+                <div className="mt-4 flex items-start gap-2 rounded-xl border border-champagne-400/20 bg-champagne-400/[0.05] p-3">
+                  <Clock className="size-4 text-champagne-300 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs text-champagne-200 font-medium">
+                      Hit the AI provider's per-minute quota
+                    </p>
+                    <p className="text-xs text-white/60 leading-relaxed mt-0.5">
+                      Wait ~60 seconds and click submit again. The free-tier
+                      cap resets every minute — no charge for the failed run.
+                    </p>
+                  </div>
+                </div>
+              );
+            }
+            return (
+              <div className="mt-4 flex items-start gap-2 rounded-xl border border-warning/20 bg-warning/[0.05] p-3">
+                <AlertCircle className="size-4 text-warning shrink-0 mt-0.5" />
+                <p className="text-xs text-white/70 leading-relaxed">
+                  <span className="text-warning">Previous run failed: </span>
+                  {previousError.slice(0, 240)}
+                </p>
+              </div>
+            );
+          })()}
 
           <form onSubmit={onSubmit} className="mt-6 grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
