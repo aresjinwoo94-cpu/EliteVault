@@ -24,35 +24,60 @@ import type { SimulationScenario } from "@/lib/supabase/types";
  * > 8% under any niche — those are unrealistic ceilings.
  */
 
+/**
+ * IMPORTANT — Zod bounds are deliberately LOOSE here.
+ *
+ * Gemini Flash-Lite is inconsistent about CTR units: sometimes it returns
+ * decimals (0.025 for 2.5%) and sometimes percentages (2.5 for 2.5%).
+ * Rejecting one form would fail ~half of all runs. We accept both via
+ * loose bounds + a post-parse normalizer (`normalizeCtr` below).
+ *
+ * String length maxes are also generous — Flash-Lite occasionally writes
+ * longer summaries than asked. Truncating is fine; rejecting kills the
+ * whole scenario. We err on the side of accepting and shipping value.
+ */
 const DaySchema = z.object({
   day: z.number().min(1).max(7),
   spend: z.number().min(0),
   impressions: z.number().min(0),
   clicks: z.number().min(0),
-  ctr: z.number().min(0).max(0.15),
+  ctr: z.number().min(0).max(50), // accepts decimal (0..1) OR percentage (0..50); normalized post-parse
   cpc: z.number().min(0).max(50),
-  cpm: z.number().min(0).max(150),
+  cpm: z.number().min(0).max(200),
   purchases: z.number().min(0),
   revenue: z.number().min(0),
-  cpa: z.number().min(0).max(500),
-  roas: z.number().min(0).max(10),
+  cpa: z.number().min(0).max(1000),
+  roas: z.number().min(0).max(20),
 });
 
 const ScenarioSchema = z.object({
   variant: z.enum(["conservative", "balanced", "aggressive"]),
-  summary: z.string().min(10).max(300),
-  win_condition: z.string().min(10).max(200),
-  risks: z.array(z.string().max(200)).min(1).max(5),
+  summary: z.string().min(5).max(800),
+  win_condition: z.string().min(5).max(400),
+  risks: z.array(z.string().max(400)).min(1).max(6),
   days: z.array(DaySchema).length(7),
   totals: z.object({
     spend: z.number().min(0),
     revenue: z.number().min(0),
     purchases: z.number().min(0),
-    roas: z.number().min(0).max(10),
-    cpa: z.number().min(0).max(500),
+    roas: z.number().min(0).max(20),
+    cpa: z.number().min(0).max(1000),
   }),
-  recommendation: z.string().min(10).max(400),
+  recommendation: z.string().min(5).max(800),
 });
+
+/**
+ * Detect percentage-format CTR (e.g., 3.5 meaning 3.5%) and convert
+ * to decimal (0.035). CTR > 1 is mathematically impossible as a decimal
+ * (would mean > 100% click-through), so anything > 1 is percentage.
+ *
+ * Same defensive pattern we use elsewhere for annotation coordinates
+ * (pixels vs normalized 0..1).
+ */
+function normalizeCtr(ctr: number): number {
+  if (ctr > 1) return ctr / 100;
+  return ctr;
+}
 
 const SCHEMA = {
   type: "object",
@@ -130,19 +155,23 @@ You produce ONE scenario (conservative, balanced, or aggressive) for a
 # Hard rules
 - Output is an ESTIMATE, not a prediction. Your numbers should be plausible
   to a senior media buyer but never optimistic beyond niche benchmarks.
-- CTR: 0.5-3.5% typical for cold; 3-6% for warm retargeting; never above 8%.
-- CPC: $0.40-3.00 depending on niche and audience tightness.
-- CPM: $5-40 depending on niche and audience.
-- ROAS: 0.5-2x for low-score stores; 1.5-3.5x for balanced cases; up to 5x
-  only for high-score stores under the aggressive variant. NEVER above 6x.
+- **CTR MUST be a DECIMAL between 0 and 0.08, NOT a percentage.**
+  Examples: write 0.025 for 2.5% CTR. Write 0.04 for 4%. NEVER write 2.5 or 4.
+  Typical: 0.005-0.035 for cold; 0.03-0.06 for warm retargeting; cap 0.08.
+- CPC: $0.40-3.00 depending on niche and audience tightness (dollar amount).
+- CPM: $5-40 depending on niche and audience (dollar amount).
+- ROAS: 0.5-2 for low-score stores; 1.5-3.5 for balanced; up to 5 only for
+  high-score stores under aggressive. NEVER above 6. Write as a multiplier
+  (2.5 means 2.5x return), NOT as a percentage.
 - Days 1-2 are typically the "learning phase" — worse metrics. Day 7 should
   be at the campaign's stable rate, not euphoric.
 - "purchases" must equal floor(revenue / AOV). "cpa" must equal spend/purchases.
   Math must be internally consistent.
 - ALWAYS list 2-4 specific risks (creative fatigue, iOS attribution loss,
   algorithm rollover, narrow audience saturation, etc.).
-- "recommendation" is a concrete tactical instruction ("kill ads under $X
-  ROAS by day 3", "duplicate winning ads into Advantage+ at day 5", etc.).
+- "summary" must be ≤ 600 characters. "win_condition" ≤ 300. Each risk ≤ 300.
+  "recommendation" must be a concrete tactical instruction ("kill ads under $X
+  ROAS by day 3", "duplicate winning ads into Advantage+ at day 5", etc.) — ≤ 600 chars.
 
 You will receive the variant + audit context + AOV + budget. Call
 \`submit_scenario\` exactly once.`;
@@ -213,6 +242,17 @@ reflect Meta's learning phase. Internal math must be consistent.`,
     );
   }
 
-  // Force-correct the variant field in case the model echoed wrong value.
-  return { ...parsed.data, variant: opts.variant };
+  // Post-parse normalization. Flash-Lite occasionally returns CTR as a
+  // percentage (3.5) instead of a decimal (0.035) — the schema accepts
+  // both forms, this step makes the downstream UI math consistent.
+  const normalized = {
+    ...parsed.data,
+    variant: opts.variant, // force-correct in case the model echoed the wrong variant
+    days: parsed.data.days.map((d) => ({
+      ...d,
+      ctr: normalizeCtr(d.ctr),
+    })),
+  };
+
+  return normalized;
 }
