@@ -6,12 +6,93 @@ import type {
   StructuredCall,
 } from "../provider";
 
-const client = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY ?? "noop",
-});
-
 const MODEL = process.env.GEMINI_MODEL ?? "gemini-2.5-pro";
 const MODEL_FAST = process.env.GEMINI_MODEL_FAST ?? "gemini-2.5-flash";
+
+// ─── Multi-key rotation pool ────────────────────────────────────────────────
+//
+// Why: Gemini's free tier is 15 RPM + 1000 RPD PER API KEY. With one key
+// any moderately-active testing trips the cap fast. With N keys we get
+// effectively N × the quota at zero cost — keys are free to generate
+// in AI Studio (one per Google account, or per project).
+//
+// Setup: in Vercel env vars, set:
+//   GEMINI_API_KEY         (primary, required)
+//   GEMINI_API_KEY_2       (optional)
+//   GEMINI_API_KEY_3       (optional)
+//   ... up to GEMINI_API_KEY_10
+//
+// Behaviour:
+//   • Round-robin pick on every call (balances per-minute load)
+//   • On 429 from key K, mark K as cooled-down for 65s and immediately
+//     try the next available key (no user-visible delay)
+//   • If ALL keys are cooled-down simultaneously (e.g. daily quota
+//     exhausted across the board), the call surfaces a 429 to Inngest
+//     which refunds the credit and shows the user a clean error
+//
+// Cooldown state is per Vercel Lambda instance — not durable across
+// cold starts. That's fine: a cold start probably means the key had
+// time to recover anyway, and the worst case is we hit 429 once and
+// re-mark the cooldown.
+
+function loadKeys(): string[] {
+  const keys: string[] = [];
+  const primary = process.env.GEMINI_API_KEY;
+  if (primary) keys.push(primary);
+  for (let i = 2; i <= 10; i++) {
+    const k = process.env[`GEMINI_API_KEY_${i}`];
+    if (k && k.trim()) keys.push(k.trim());
+  }
+  return keys;
+}
+
+const KEYS = loadKeys();
+const CLIENTS = KEYS.map((apiKey) => new GoogleGenAI({ apiKey }));
+
+// cooldownUntil[i] = timestamp (ms) at which key i becomes usable again.
+// Indexed by position in CLIENTS array.
+const cooldownUntil: Map<number, number> = new Map();
+let rrCursor = 0;
+
+const COOLDOWN_MS = 65_000; // per-minute window + small buffer
+
+/**
+ * Pick the next non-cooled-down key in round-robin order.
+ * Returns the index into CLIENTS, or null if every key is on cooldown.
+ */
+function pickAvailableKey(): number | null {
+  if (CLIENTS.length === 0) return null;
+  const now = Date.now();
+  for (let i = 0; i < CLIENTS.length; i++) {
+    const idx = (rrCursor + i) % CLIENTS.length;
+    const cd = cooldownUntil.get(idx) ?? 0;
+    if (cd <= now) {
+      rrCursor = (idx + 1) % CLIENTS.length;
+      return idx;
+    }
+  }
+  return null;
+}
+
+/**
+ * Find the key whose cooldown ends soonest — used as a last-resort when
+ * everyone is rate-limited and we have to wait for at least one to recover.
+ */
+function shortestCooldownKey(): { idx: number; waitMs: number } | null {
+  if (CLIENTS.length === 0) return null;
+  let best: { idx: number; waitMs: number } | null = null;
+  const now = Date.now();
+  for (let i = 0; i < CLIENTS.length; i++) {
+    const cd = cooldownUntil.get(i) ?? 0;
+    const wait = Math.max(0, cd - now);
+    if (best === null || wait < best.waitMs) {
+      best = { idx: i, waitMs: wait };
+    }
+  }
+  return best;
+}
+
+// ─── Schema conversion ──────────────────────────────────────────────────────
 
 /**
  * Convert our JSON-Schema-ish object to Gemini's `Schema` type.
@@ -64,13 +145,15 @@ function toGeminiSchema(node: unknown): Schema {
   return out as Schema;
 }
 
+// ─── Main entry point ───────────────────────────────────────────────────────
+
 async function generateStructured<T>(
   tool: StructuredCall<T>,
   opts: GenerateOptions,
 ): Promise<T> {
-  if (!process.env.GEMINI_API_KEY) {
+  if (KEYS.length === 0) {
     throw new Error(
-      "GEMINI_API_KEY not set — get a free key at https://aistudio.google.com/apikey",
+      "No Gemini API keys configured. Set GEMINI_API_KEY (and optionally GEMINI_API_KEY_2..10) — get a free key at https://aistudio.google.com/apikey",
     );
   }
 
@@ -90,15 +173,8 @@ async function generateStructured<T>(
     },
   ];
 
-  // The full analyzer JSON (8 annotations + persona + scenarios + top fixes)
-  // routinely hits 5-7k characters. Defaulting to 4k tokens truncates it.
-  // Flash supports 8k output for free tier so we lean on the high end.
-  //
-  // Free-tier Gemini has tight per-minute rate limits. We auto-retry on 429
-  // using the retry_delay the API tells us — up to 3 attempts. Anything else
-  // bubbles up to Inngest's own retry/onFailure path.
-  const callOnce = () =>
-    client.models.generateContent({
+  const callWithKey = (keyIdx: number) =>
+    CLIENTS[keyIdx].models.generateContent({
       model: opts.fast ? MODEL_FAST : MODEL,
       contents,
       config: {
@@ -111,19 +187,91 @@ async function generateStructured<T>(
       } as never,
     });
 
-  const response = await withQuotaRetry(callOnce, 3);
+  // ── Try keys in rotation. On 429, cool down and try next. ──
+  let attemptedKeys = 0;
+  let last429: unknown = null;
 
-  const text =
-    response.text ??
-    response.candidates?.[0]?.content?.parts
-      ?.map((p) => ("text" in p ? p.text : ""))
-      .join("") ??
-    "";
+  while (attemptedKeys < KEYS.length) {
+    const idx = pickAvailableKey();
+    if (idx === null) break; // all keys on cooldown; fall through to the wait path
 
-  if (!text) {
-    throw new Error("Gemini: empty response");
+    attemptedKeys++;
+    try {
+      const response = await callWithKey(idx);
+      const text = extractText(response);
+      if (!text) throw new Error("Gemini: empty response");
+      return parseJsonText<T>(text);
+    } catch (err) {
+      const raw = errMsg(err);
+      if (is429(raw)) {
+        console.warn(
+          `[gemini] key #${idx + 1}/${KEYS.length} hit 429 — cooling down ${COOLDOWN_MS / 1000}s, trying next`,
+        );
+        cooldownUntil.set(idx, Date.now() + COOLDOWN_MS);
+        last429 = err;
+        continue;
+      }
+      // Non-429 errors (bad request, schema mismatch, etc.) — bubble up
+      // immediately. Rotating keys can't fix a malformed prompt.
+      throw err;
+    }
   }
 
+  // ── All keys are on cooldown. Wait for the soonest recovery + 1 retry. ──
+  const best = shortestCooldownKey();
+  if (best) {
+    const sleepMs = Math.min(best.waitMs + 2000, 70_000);
+    console.warn(
+      `[gemini] all ${KEYS.length} keys on cooldown — waiting ${(sleepMs / 1000).toFixed(1)}s for key #${best.idx + 1} to recover`,
+    );
+    await new Promise((r) => setTimeout(r, sleepMs));
+    try {
+      cooldownUntil.delete(best.idx);
+      const response = await callWithKey(best.idx);
+      const text = extractText(response);
+      if (!text) throw new Error("Gemini: empty response after cooldown wait");
+      return parseJsonText<T>(text);
+    } catch (err) {
+      if (is429(errMsg(err))) {
+        cooldownUntil.set(best.idx, Date.now() + COOLDOWN_MS);
+      }
+      throw err;
+    }
+  }
+
+  throw last429 ?? new Error("Gemini: all keys exhausted");
+}
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+function errMsg(err: unknown): string {
+  return err instanceof Error
+    ? err.message
+    : typeof err === "string"
+      ? err
+      : JSON.stringify(err);
+}
+
+function is429(raw: string): boolean {
+  return /RESOURCE_EXHAUSTED|"code"\s*:\s*429|status.*429|rate.?limit|quota/i.test(
+    raw,
+  );
+}
+
+function extractText(response: {
+  text?: string;
+  candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+}): string {
+  return (
+    response.text ??
+    response.candidates?.[0]?.content?.parts
+      ?.map((p) => p.text ?? "")
+      .join("") ??
+    ""
+  );
+}
+
+function parseJsonText<T>(text: string): T {
   try {
     return JSON.parse(text) as T;
   } catch (e) {
@@ -131,39 +279,6 @@ async function generateStructured<T>(
       `Gemini: response was not valid JSON — ${(e as Error).message}\n--- raw ---\n${text.slice(0, 500)}`,
     );
   }
-}
-
-/**
- * Retries a Gemini call on 429 (RESOURCE_EXHAUSTED), respecting the
- * server-suggested retry_delay. Caps wait at 30s per retry, total 3 tries.
- *
- * On Gemini free tier, per-minute rate limits trigger a 429 with a
- * retry_delay header — usually 10-50s. Sleeping that long inside an
- * Inngest step is fine: Inngest's overall step timeout is 5 min.
- */
-async function withQuotaRetry<T>(fn: () => Promise<T>, maxAttempts: number): Promise<T> {
-  let lastErr: unknown = null;
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      return await fn();
-    } catch (err) {
-      lastErr = err;
-      const raw =
-        err instanceof Error ? err.message : typeof err === "string" ? err : "";
-      const is429 = /RESOURCE_EXHAUSTED|"code"\s*:\s*429|status.*429/i.test(raw);
-      if (!is429 || attempt === maxAttempts) throw err;
-
-      // Try to honor retry_delay from the API; fall back to exponential.
-      const m = raw.match(/Please retry in ([\d.]+)s/);
-      const apiDelay = m ? Math.min(parseFloat(m[1]), 30) : null;
-      const backoff = apiDelay ?? Math.min(2 ** attempt * 4, 30);
-      console.warn(
-        `[gemini] 429 on attempt ${attempt}/${maxAttempts}, waiting ${backoff}s…`,
-      );
-      await new Promise((r) => setTimeout(r, backoff * 1000));
-    }
-  }
-  throw lastErr;
 }
 
 export const geminiProvider: AIProvider = {
