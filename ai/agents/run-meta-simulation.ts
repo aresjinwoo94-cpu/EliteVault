@@ -1,5 +1,10 @@
 import "server-only";
-import { runMetaCampaignScenarioAgent } from "./meta-campaign-scenario-agent";
+import {
+  runMetaCampaignScenarioAgent,
+  type SimulatorCountry,
+  type SimulatorProductType,
+  type SimulatorCompetitiveness,
+} from "./meta-campaign-scenario-agent";
 import type { SimulationScenario } from "@/lib/supabase/types";
 
 /**
@@ -28,6 +33,9 @@ export async function runMetaSimulation(opts: {
   aovUsd: number;
   dailyBudgetUsd: number;
   productMarginPct?: number | null;
+  country?: SimulatorCountry | null;
+  productType?: SimulatorProductType | null;
+  competitiveness?: SimulatorCompetitiveness | null;
   notes?: string | null;
   signal?: AbortSignal;
 }): Promise<{

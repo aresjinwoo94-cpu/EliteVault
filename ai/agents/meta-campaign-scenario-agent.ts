@@ -143,38 +143,136 @@ risks. Goal: scale-test, not cautious.`,
 };
 
 const SYSTEM = `You are EliteVault's Meta Campaign Scenario Modeler — a
-senior media buyer with 10 years scaling DTC ecommerce on Meta.
+senior DTC media buyer with 10 years scaling Shopify stores on Meta.
 
-You produce ONE scenario (conservative, balanced, or aggressive) for a
-7-day Meta Ads simulation, based on:
-  • An ecommerce store's audit score
-  • The user's stated AOV (average order value)
-  • The user's stated daily budget
-  • Niche benchmarks
+You produce ONE 7-day scenario (conservative, balanced, or aggressive)
+calibrated to ALL of these inputs:
+  • Store's audit score (drives a hard ROAS ceiling — see table below)
+  • User-stated AOV + daily budget
+  • Country/region (drives CPM multiplier — see table)
+  • Product type (physical / digital / subscription / service)
+  • Niche (drives CPM/CTR/ROAS bands — see benchmarks table)
+  • Operator's self-rated competitiveness (low / medium / high / extreme)
+  • Current month (drives seasonality multipliers)
 
-# Hard rules
-- Output is an ESTIMATE, not a prediction. Your numbers should be plausible
-  to a senior media buyer but never optimistic beyond niche benchmarks.
+# Niche benchmark table (2024-2025, cold traffic, Meta Ads)
+| Niche             | CPM        | CTR (cold)   | ROAS expected |
+|-------------------|-----------|--------------|---------------|
+| Fashion/apparel   | $12-22    | 1.0-3.0%     | 1.5-3.0x      |
+| Beauty/skincare   | $15-30    | 1.5-4.0%     | 1.8-3.5x      |
+| Health/supplements| $25-50    | 0.8-2.5%     | 1.2-2.5x (refund risk) |
+| Home/decor        | $10-20    | 1.0-2.5%     | 1.5-3.0x      |
+| Electronics/gadgets|$20-35    | 1.0-2.0%     | 1.2-2.5x (low margin) |
+| Fitness equipment | $15-30    | 1.0-2.5%     | 1.5-3.0x      |
+| Jewelry           | $20-40    | 1.0-2.0%     | 2.0-4.0x (high AOV) |
+| Food/snacks       | $15-25    | 1.0-3.0%     | 1.3-2.5x (low AOV) |
+| Pet products      | $15-25    | 1.5-3.0%     | 2.0-4.0x (LTV high) |
+| Toys/kids         | $12-22    | 1.0-3.0%     | 1.5-3.0x (seasonal) |
+| Tech accessories  | $15-25    | 1.5-3.0%     | 1.5-2.5x      |
+| Outdoor/camping   | $18-30    | 1.0-2.5%     | 1.5-3.0x      |
+If niche doesn't match, blend nearest two. State the niche you assumed.
+
+# Country/region CPM multipliers (applied AFTER niche band)
+| Region            | Multiplier |
+|-------------------|-----------|
+| US/UK/AU/CA       | 1.0x (baseline) |
+| Western EU (DE/FR/NL) | 0.80x |
+| Southern EU (ES/IT/PT)| 0.55x |
+| LATAM (MX/CO/AR/CL/PE) | 0.25-0.35x |
+| India/SEA         | 0.15-0.25x |
+| Worldwide         | 0.45-0.60x (mixed; expect noisy data) |
+
+# Audit-score → ROAS ceiling (HARD CAP — overrides niche optimism)
+| Score    | Max ROAS allowed | Why |
+|----------|------------------|-----|
+| < 40     | 1.2x             | Landing page is broken — traffic won't convert |
+| 40-54    | 1.8x             | Major friction; ads can't fix a bad funnel |
+| 55-69    | 2.8x             | Average store; normal niche ranges apply |
+| 70-84    | 4.0x             | Strong store; can scale efficiently |
+| 85+      | 5.5x             | World-class; allow aggressive |
+NEVER exceed 6.0x under any circumstance.
+
+# Competitiveness self-rating from operator
+- "low":      assume CPM at the LOW end of the niche band
+- "medium":   midpoint
+- "high":     upper end
+- "extreme":  upper end + 20-30% (saturated like fitness/supplements/Q4)
+
+# Seasonality (current month is passed; apply lift/drag)
+- Apparel:    peak Sep-Dec, Feb-May; quiet Jan, Jun-Aug
+- Fitness:    peak Dec-Feb (resolutions); quiet Apr-Aug
+- Pet/Food:   evergreen ±10%
+- Toys/kids:  peak Oct-Dec; very quiet Jan-Apr
+- Outdoor:    peak Mar-Jul (Northern Hemisphere)
+- Beauty:     peak Nov-Feb (holiday + Valentine's)
+Apply seasonality as ±15-25% on CPM and CTR.
+
+# iOS 14.5+ ATT attribution
+Meta Ads Manager UNDER-REPORTS conversions by 20-35% post-iOS ATT.
+Your reported "purchases" and "revenue" should reflect what shows up
+in Ads Manager (the under-reported view). Mention iOS attribution loss
+in risks if you've discounted it; this is what a real buyer assumes.
+
+# Product type effects
+- Physical:      base case. Standard refund/return risk.
+- Digital:       higher margin, higher CTR (1.3-1.8x), faster purchase decision
+- Subscription:  LTV-driven; allow higher CPA than AOV (cap at 1.5-2x AOV)
+- Service:       lead-gen vibe; lower CVR, slower attribution
+
+# Output rules
+- Output is an ESTIMATE, not a prediction. Plausible to a senior buyer.
 - **CTR MUST be a DECIMAL between 0 and 0.08, NOT a percentage.**
-  Examples: write 0.025 for 2.5% CTR. Write 0.04 for 4%. NEVER write 2.5 or 4.
-  Typical: 0.005-0.035 for cold; 0.03-0.06 for warm retargeting; cap 0.08.
-- CPC: $0.40-3.00 depending on niche and audience tightness (dollar amount).
-- CPM: $5-40 depending on niche and audience (dollar amount).
-- ROAS: 0.5-2 for low-score stores; 1.5-3.5 for balanced; up to 5 only for
-  high-score stores under aggressive. NEVER above 6. Write as a multiplier
-  (2.5 means 2.5x return), NOT as a percentage.
-- Days 1-2 are typically the "learning phase" — worse metrics. Day 7 should
-  be at the campaign's stable rate, not euphoric.
-- "purchases" must equal floor(revenue / AOV). "cpa" must equal spend/purchases.
-  Math must be internally consistent.
-- ALWAYS list 2-4 specific risks (creative fatigue, iOS attribution loss,
-  algorithm rollover, narrow audience saturation, etc.).
-- "summary" must be ≤ 600 characters. "win_condition" ≤ 300. Each risk ≤ 300.
-  "recommendation" must be a concrete tactical instruction ("kill ads under $X
-  ROAS by day 3", "duplicate winning ads into Advantage+ at day 5", etc.) — ≤ 600 chars.
+  Examples: write 0.025 for 2.5% CTR. NEVER write 2.5.
+- CPC and CPM are dollar amounts. ROAS is a multiplier (2.5 = 2.5x).
+- Days 1-2 = "learning phase" → worse metrics. Day 7 = stable rate, not euphoric.
+- "purchases" must equal floor(revenue / AOV). "cpa" = spend / purchases.
+  Math must be internally consistent across all 7 days.
+- ALWAYS list 2-4 specific risks. PREFER niche-relevant risks
+  (e.g. "supplements: refund/chargeback hit at day 5-7" beats generic).
+- "summary" ≤ 600 chars. "win_condition" ≤ 300. Each risk ≤ 300.
+  "recommendation" must be CONCRETE and tactical, ≤ 600 chars.
 
-You will receive the variant + audit context + AOV + budget. Call
-\`submit_scenario\` exactly once.`;
+Call \`submit_scenario\` exactly once.`;
+
+export type SimulatorCountry =
+  | "US"
+  | "CA"
+  | "UK"
+  | "AU"
+  | "EU-W"
+  | "EU-S"
+  | "LATAM"
+  | "INDIA-SEA"
+  | "WW";
+
+export type SimulatorProductType =
+  | "physical"
+  | "digital"
+  | "subscription"
+  | "service";
+
+export type SimulatorCompetitiveness =
+  | "low"
+  | "medium"
+  | "high"
+  | "extreme";
+
+const COUNTRY_LABEL: Record<SimulatorCountry, string> = {
+  US: "United States",
+  CA: "Canada",
+  UK: "United Kingdom",
+  AU: "Australia",
+  "EU-W": "Western Europe (DE/FR/NL/BE)",
+  "EU-S": "Southern Europe (ES/IT/PT/GR)",
+  LATAM: "Latin America (MX/CO/AR/CL/PE/BR)",
+  "INDIA-SEA": "India + Southeast Asia",
+  WW: "Worldwide (mixed)",
+};
+
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
 
 export async function runMetaCampaignScenarioAgent(opts: {
   variant: "conservative" | "balanced" | "aggressive";
@@ -185,32 +283,53 @@ export async function runMetaCampaignScenarioAgent(opts: {
   aovUsd: number;
   dailyBudgetUsd: number;
   productMarginPct?: number | null;
+  country?: SimulatorCountry | null;
+  productType?: SimulatorProductType | null;
+  competitiveness?: SimulatorCompetitiveness | null;
   notes?: string | null;
   signal?: AbortSignal;
 }): Promise<SimulationScenario> {
   const provider = await getProvider();
 
+  const now = new Date();
+  const currentMonth = MONTH_NAMES[now.getMonth()];
+  const currentYear = now.getFullYear();
+
+  const country = opts.country ?? "US";
+  const productType = opts.productType ?? "physical";
+  const competitiveness = opts.competitiveness ?? "medium";
+
   const text = [
     `Variant: ${opts.variant.toUpperCase()}`,
     VARIANT_BRIEF[opts.variant],
     "",
-    `Store URL: ${opts.url}`,
-    `Niche: ${opts.niche}`,
-    `Overall audit score: ${opts.score}/100`,
+    `Current date: ${currentMonth} ${currentYear} (apply seasonality)`,
     "",
-    "Audit summary (what the store looks like to the buyer):",
+    `Store URL: ${opts.url}`,
+    `Niche hint (from hostname): ${opts.niche}`,
+    `Overall audit score: ${opts.score}/100 → apply matching ROAS ceiling`,
+    "",
+    "Audit summary (what the store looks like to a senior buyer):",
     opts.summary.slice(0, 800),
     "",
-    "User-provided business inputs:",
+    "Business inputs:",
     `  • AOV (average order value): $${opts.aovUsd}`,
     `  • Daily budget intent: $${opts.dailyBudgetUsd}/day`,
+    `  • Country/region: ${COUNTRY_LABEL[country]} (${country})`,
+    `  • Product type: ${productType}`,
+    `  • Self-rated niche competitiveness: ${competitiveness}`,
     opts.productMarginPct != null
       ? `  • Gross margin: ${opts.productMarginPct}%`
       : "",
     opts.notes ? `  • Notes from operator: ${opts.notes}` : "",
     "",
-    `Produce the ${opts.variant} 7-day projection. Be honest. Days 1-2 should
-reflect Meta's learning phase. Internal math must be consistent.`,
+    `Produce the ${opts.variant} 7-day projection. Be brutally honest:`,
+    `  – Days 1-2 reflect Meta's learning phase (worse metrics)`,
+    `  – Apply the audit-score ROAS ceiling as a HARD cap`,
+    `  – Apply country CPM multiplier, then seasonality (±15-25%)`,
+    `  – Discount reported purchases for iOS 14.5+ attribution loss`,
+    `  – Math must be internally consistent across all 7 days`,
+    `  – Risks should be niche-specific (not generic boilerplate)`,
   ]
     .filter(Boolean)
     .join("\n");

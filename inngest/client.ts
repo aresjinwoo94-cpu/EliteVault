@@ -19,6 +19,12 @@ type Events = {
       aovUsd: number;
       dailyBudgetUsd: number;
       productMarginPct?: number | null;
+      // v3.2 — realism inputs. Strings (not unions) at the event boundary
+      // so older queued events don't fail strict typing. Validated by the
+      // server action before the event is sent.
+      country?: string | null;
+      productType?: string | null;
+      competitiveness?: string | null;
       notes?: string | null;
     };
   };

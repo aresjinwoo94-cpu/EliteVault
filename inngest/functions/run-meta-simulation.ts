@@ -51,6 +51,9 @@ export const runMetaSimulationFn = inngest.createFunction(
       aovUsd,
       dailyBudgetUsd,
       productMarginPct,
+      country,
+      productType,
+      competitiveness,
       notes,
     } = event.data;
 
@@ -99,7 +102,7 @@ export const runMetaSimulationFn = inngest.createFunction(
       };
     });
 
-    // Step 3: run the 3 scenarios in parallel (orchestrator internal)
+    // Step 3: run the 3 scenarios sequentially with stagger (orchestrator internal)
     const scenarios = await step.run("run-3-scenarios", async () => {
       return runMetaSimulation({
         url: ctx.url,
@@ -109,6 +112,12 @@ export const runMetaSimulationFn = inngest.createFunction(
         aovUsd,
         dailyBudgetUsd,
         productMarginPct,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        country: (country ?? null) as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        productType: (productType ?? null) as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        competitiveness: (competitiveness ?? null) as any,
         notes,
       });
     });

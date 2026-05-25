@@ -24,6 +24,16 @@ import { PLANS } from "@/lib/stripe/plans";
  * has the audit trail we need.)
  */
 
+const COUNTRY_VALUES = [
+  "US", "CA", "UK", "AU", "EU-W", "EU-S", "LATAM", "INDIA-SEA", "WW",
+] as const;
+const PRODUCT_TYPE_VALUES = [
+  "physical", "digital", "subscription", "service",
+] as const;
+const COMPETITIVENESS_VALUES = [
+  "low", "medium", "high", "extreme",
+] as const;
+
 const TriggerSimulationInput = z.object({
   analysisId: z.string().uuid(),
   aovUsd: z
@@ -40,6 +50,11 @@ const TriggerSimulationInput = z.object({
     .max(100)
     .optional()
     .nullable(),
+  // v3.2 — realism inputs, all optional with smart defaults applied
+  // downstream in the agent if omitted.
+  country: z.enum(COUNTRY_VALUES).optional().nullable(),
+  productType: z.enum(PRODUCT_TYPE_VALUES).optional().nullable(),
+  competitiveness: z.enum(COMPETITIVENESS_VALUES).optional().nullable(),
   notes: z.string().max(800).optional().nullable(),
 });
 
@@ -102,6 +117,24 @@ export async function triggerSimulation(
   // Insert simulation row (status=queued).
   // We DO NOT block re-running — the user can re-simulate at will.
   // We just create a new row each time; the latest one wins in the UI.
+  //
+  // Note: country/productType/competitiveness are NOT persisted as columns
+  // (no migration needed). They're stuffed into the `notes` field as a
+  // small JSON prefix so re-runs can recover them, and passed to the
+  // Inngest event for the agent to use directly.
+  const realismPrefix = JSON.stringify({
+    _v32: true,
+    country: parsed.data.country,
+    productType: parsed.data.productType,
+    competitiveness: parsed.data.competitiveness,
+  });
+  const persistedNotes = [
+    realismPrefix,
+    parsed.data.notes ?? "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
   const { data: row, error: insErr } = await supabase
     .from("meta_simulations")
     .insert({
@@ -110,7 +143,7 @@ export async function triggerSimulation(
       aov_usd: parsed.data.aovUsd,
       daily_budget_usd: parsed.data.dailyBudgetUsd,
       product_margin_pct: parsed.data.productMarginPct ?? null,
-      notes: parsed.data.notes ?? null,
+      notes: persistedNotes,
       status: "queued",
     })
     .select("id")
@@ -131,6 +164,10 @@ export async function triggerSimulation(
       aovUsd: parsed.data.aovUsd,
       dailyBudgetUsd: parsed.data.dailyBudgetUsd,
       productMarginPct: parsed.data.productMarginPct ?? null,
+      country: parsed.data.country ?? null,
+      productType: parsed.data.productType ?? null,
+      competitiveness: parsed.data.competitiveness ?? null,
+      // Send just the user's notes, not the JSON prefix
       notes: parsed.data.notes ?? null,
     },
   });
