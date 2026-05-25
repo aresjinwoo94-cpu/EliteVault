@@ -19,7 +19,7 @@ export interface Plan {
   monthlyCredits: number;
   /** Whether this plan unlocks the Analyzer at all */
   unlocksAnalyzer: boolean;
-  /** Whether this plan unlocks Auto-Rewrite + Meta Ads optimizer + REST API */
+  /** Whether this plan unlocks the Scale-tier extras: Meta Campaign Scenario Modeler + Meta Ads optimizer + REST API */
   unlocksScale: boolean;
   /** Whether the user can publish audits to Community */
   canPublish: boolean;
@@ -51,7 +51,7 @@ export const PLANS: Record<PlanTier, Plan> = {
       { text: "Save to private collections", included: false },
       { text: "Website Analyzer", included: false },
       { text: "Publish to Community", included: false },
-      { text: "Auto-Rewrite + Meta Ads optimizer + API", included: false },
+      { text: "Meta Campaign Scenario Modeler + Ads optimizer + API", included: false },
     ],
   },
   pro: {
@@ -84,7 +84,7 @@ export const PLANS: Record<PlanTier, Plan> = {
       { text: "Buyer-Persona simulations", included: true },
       { text: "40 analyses / month", included: true },
       { text: "Publish to Community + Compare Mode", included: true },
-      { text: "Auto-Rewrite + Meta Ads optimizer + API", included: false },
+      { text: "Meta Campaign Scenario Modeler + API", included: false },
     ],
   },
   scale: {
@@ -92,7 +92,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     name: "Scale",
     tagline: "For brands hunting outsized ROI",
     description:
-      "Diagnosis + cure. Auto-Rewrite drafts replacement sections. Meta Ads optimizer recommends CPC/CPM/CTR/ROAS targets backed by the audit. REST API for embedding into your stack.",
+      "Diagnosis + cure + crystal ball. Project a 7-day Meta Ads campaign across 3 scenarios before you spend a dollar. Plus Meta Ads optimizer targets and REST API.",
     price: { month: 49, year: 499 },
     stripePriceIds: {
       month: process.env.STRIPE_PRICE_SCALE_MONTHLY,
@@ -107,7 +107,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     features: [
       { text: "Everything in Pro", included: true },
       {
-        text: "Auto-Rewrite: replacement hero/PDP side-by-side",
+        text: "Meta Campaign Scenario Modeler: 7-day, 3-scenario AI projection",
         included: true,
         highlight: true,
       },

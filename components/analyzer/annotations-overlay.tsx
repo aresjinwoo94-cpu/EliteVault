@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { ImageOff } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -56,6 +57,10 @@ export function AnnotationsOverlay({
 }) {
   const annotations = normalizeCoords(raw);
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
+  // Track image loading state so we can show a clean unavailable card
+  // (vs. a broken-image icon) when the server returned no screenshot.
+  const [imgErrored, setImgErrored] = useState(false);
+  const hasImage = !!imageUrl && !imgErrored;
 
   return (
     <Card className="overflow-hidden p-0">
@@ -83,25 +88,45 @@ export function AnnotationsOverlay({
       </div>
 
       <div className="relative bg-obsidian-950">
-        {imageUrl ? (
+        {hasImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={imageUrl}
             alt="Audit screenshot"
             className="block w-full h-auto"
-            onError={(e) => {
-              // graceful fallback
-              (e.target as HTMLImageElement).style.opacity = "0.2";
-            }}
+            onError={() => setImgErrored(true)}
           />
         ) : (
-          <div className="aspect-video bg-gradient-to-br from-obsidian-800 to-obsidian-900" />
+          // Clean unavailable state. We deliberately do NOT fall back to
+          // any client-side screenshot service here — the server already
+          // tried everything (ScreenshotOne → Microlink → mshots with
+          // placeholder detection). If we got here without an image, the
+          // site is genuinely uncapturable (Cloudflare wall, JS-only, etc).
+          // The annotations from the AI are still meaningful for the user
+          // (it analyzed the captured shot during the audit), they just
+          // can't be rendered in this overlay.
+          <div className="aspect-video flex flex-col items-center justify-center bg-gradient-to-br from-obsidian-800/40 to-obsidian-900/60 border-b border-white/[0.04]">
+            <div className="flex size-12 items-center justify-center rounded-full bg-white/[0.04] ring-1 ring-white/10">
+              <ImageOff className="size-5 text-white/40" />
+            </div>
+            <p className="mt-4 text-sm font-medium text-white/70">
+              Screenshot couldn't be captured
+            </p>
+            <p className="mt-1.5 text-xs text-white/40 max-w-sm text-center leading-relaxed">
+              The site likely blocks automated capture (Cloudflare, anti-bot)
+              or renders too slowly. The audit findings below are still based
+              on what the AI saw at the time of the run.
+            </p>
+          </div>
         )}
 
         <svg
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
-          className="absolute inset-0 w-full h-full pointer-events-none"
+          className={cn(
+            "absolute inset-0 w-full h-full pointer-events-none",
+            !hasImage && "hidden",
+          )}
         >
           <defs>
             {(["high", "medium", "low"] as const).map((sev) => (
@@ -200,24 +225,25 @@ export function AnnotationsOverlay({
           })}
         </svg>
 
-        {/* clickable hotspots */}
-        {annotations.map((a, i) => (
-          <button
-            key={i}
-            onClick={() => setActiveIdx(activeIdx === i ? null : i)}
-            className={cn(
-              "absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center rounded-full ring-2 transition-all",
-              "size-6 text-[10px] font-medium bg-obsidian-900/90 backdrop-blur text-white",
-              RING_COLOR[a.severity],
-              activeIdx === i
-                ? "scale-125 shadow-[0_0_20px_-4px_rgba(255,255,255,0.4)]"
-                : "hover:scale-110",
-            )}
-            style={{ left: `${a.x * 100}%`, top: `${a.y * 100}%` }}
-          >
-            {i + 1}
-          </button>
-        ))}
+        {/* clickable hotspots — only when we have an image to anchor to */}
+        {hasImage &&
+          annotations.map((a, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveIdx(activeIdx === i ? null : i)}
+              className={cn(
+                "absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center rounded-full ring-2 transition-all",
+                "size-6 text-[10px] font-medium bg-obsidian-900/90 backdrop-blur text-white",
+                RING_COLOR[a.severity],
+                activeIdx === i
+                  ? "scale-125 shadow-[0_0_20px_-4px_rgba(255,255,255,0.4)]"
+                  : "hover:scale-110",
+              )}
+              style={{ left: `${a.x * 100}%`, top: `${a.y * 100}%` }}
+            >
+              {i + 1}
+            </button>
+          ))}
       </div>
 
       {/* annotations list */}

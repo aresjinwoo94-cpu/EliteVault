@@ -18,10 +18,29 @@ import { TopFixes } from "./top-fixes";
 import { AnalyzingState } from "./analyzing-state";
 import { PublishCallout } from "@/components/community/publish-callout";
 import { MetaAdsOptimizer } from "./meta-ads-optimizer";
+import { MetaCampaignSimulator } from "./meta-campaign-simulator";
 import type {
   AnalysisResult,
   RewriteResult,
+  SimulationScenario,
 } from "@/lib/supabase/types";
+
+type Simulation = {
+  id: string;
+  analysis_id: string;
+  aov_usd: number;
+  daily_budget_usd: number;
+  product_margin_pct: number | null;
+  notes: string | null;
+  conservative: SimulationScenario | null;
+  balanced: SimulationScenario | null;
+  aggressive: SimulationScenario | null;
+  status: "queued" | "running" | "succeeded" | "failed";
+  error: string | null;
+  started_at: string | null;
+  finished_at: string | null;
+  created_at: string;
+};
 
 type Analysis = {
   id: string;
@@ -48,9 +67,11 @@ interface ViewerCtx {
 export function AnalysisView({
   initial,
   viewer,
+  initialSimulation,
 }: {
   initial: Analysis;
   viewer: ViewerCtx;
+  initialSimulation?: Simulation | null;
 }) {
   const [data, setData] = useState<Analysis>(initial);
   const router = useRouter();
@@ -233,13 +254,18 @@ export function AnalysisView({
             */}
             <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
               <div className="space-y-6 min-w-0">
+                {/*
+                  NEVER fall back to mshots client-side here. The server-side
+                  capture already exhausted ScreenshotOne → Microlink → mshots
+                  with placeholder detection; if we got here without a stored
+                  screenshot_url it means none of them succeeded. Falling back
+                  to mshots in the browser just renders the "Generating
+                  Preview..." placeholder, which is what users were seeing
+                  before this fix. Passing an empty string makes the overlay
+                  show its clean "screenshot unavailable" state.
+                */}
                 <AnnotationsOverlay
-                  imageUrl={
-                    data.screenshot_url ??
-                    (data.url
-                      ? `https://s.wordpress.com/mshots/v1/${encodeURIComponent(data.url)}?w=1280&h=900`
-                      : "")
-                  }
+                  imageUrl={data.screenshot_url ?? ""}
                   annotations={data.result.annotations}
                 />
                 <PersonaResponse
@@ -258,6 +284,20 @@ export function AnalysisView({
                 <TopFixes fixes={data.result.top_fixes} />
               </div>
             </div>
+
+            {/*
+              v3.0 — Meta Campaign Scenario Modeler. Scale only, succeeded only.
+              Sits below the main audit body as its own dedicated section,
+              not in either column — the 3-card grid needs the full width.
+              The simulator manages its own state machine (empty → running
+              → results) internally; we just pass the initial DB row (or null).
+            */}
+            {viewer.isScale && (
+              <MetaCampaignSimulator
+                analysisId={data.id}
+                initial={initialSimulation ?? null}
+              />
+            )}
         </motion.div>
       )}
     </div>

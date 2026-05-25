@@ -11,6 +11,17 @@ type Events = {
       runRewrite?: boolean;
     };
   };
+  "meta-simulation/requested": {
+    data: {
+      simulationId: string;
+      analysisId: string;
+      userId: string;
+      aovUsd: number;
+      dailyBudgetUsd: number;
+      productMarginPct?: number | null;
+      notes?: string | null;
+    };
+  };
 };
 
 export const inngest = new Inngest({

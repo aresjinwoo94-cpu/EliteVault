@@ -74,6 +74,25 @@ export default async function AnalysisPage({
 
   const plan = PLANS[profile?.plan ?? "free"];
 
+  // v3.0 — Latest Meta Campaign Scenario Modeler run for this analysis.
+  // We fetch only for Scale users (no point loading + then ignoring on lower
+  // plans). The simulator UI manages its own polling on the returned ID.
+  let initialSimulation = null;
+  if (plan.unlocksScale) {
+    const { data: simRow } = await supabase
+      .from("meta_simulations")
+      .select(
+        "id, analysis_id, aov_usd, daily_budget_usd, product_margin_pct, notes, conservative, balanced, aggressive, status, error, started_at, finished_at, created_at",
+      )
+      .eq("analysis_id", id)
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    initialSimulation = (simRow as any) ?? null;
+  }
+
   return (
     <AnalysisView
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -84,6 +103,7 @@ export default async function AnalysisPage({
         fullName: profile?.full_name ?? null,
         isScale: plan.unlocksScale,
       }}
+      initialSimulation={initialSimulation}
     />
   );
 }

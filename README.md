@@ -9,9 +9,9 @@ A production-ready Next.js 15 SaaS built with Claude (Anthropic), Stripe, Supaba
 ## ✨ What's inside
 
 - **Analyzer** — paste a URL → annotated screenshot, 4-scenario conversion estimate, buyer-persona simulation, top-impact fixes.
-- **Auto-Rewrite** (Scale) — Claude drafts a redesigned hero/PDP next to yours.
+- **Meta Campaign Scenario Modeler** (Scale, v3.0) — feed AOV + daily budget; get a 7-day, 3-scenario (conservative / balanced / aggressive) projection with day-by-day spend, ROAS, CPA and risks. AI estimates, not predictions.
 - **Meta Ads Optimizer** (Scale) — CPC/CPM/CTR/ROAS targets + creative angles + sequential testing plan, calibrated to your audit.
-- **Library** — AI-curated winning ecommerce stores with Ad Activity proxy signals. Free tier sees 8 hand-picked previews.
+- **Library** — AI-curated winning ecommerce stores with Ad Activity proxy signals. Free tier sees 9 hand-picked previews.
 - **Intelligent Search** — text prompts + image-similarity search, AI re-ranked.
 - **Community feed** — publish audits, browse what other founders are tearing apart, **Compare Mode** for 2-3 side-by-side.
 - **REST API** (Scale) — bearer-token endpoints for embedding the Analyzer into your stack.
@@ -21,12 +21,12 @@ A production-ready Next.js 15 SaaS built with Claude (Anthropic), Stripe, Supaba
 
 | Layer | Tool |
 |---|---|
-| Framework | Next.js 15 (App Router, Server Components, Server Actions) |
+| Framework | Next.js 16 (App Router, Server Components, Server Actions) |
 | Styling | Tailwind CSS + custom design tokens + Framer Motion |
 | UI | shadcn/ui (custom-tuned) + Radix primitives |
-| Auth | Supabase Auth (magic link + Google OAuth) |
+| Auth | Supabase Auth (email + Google OAuth) |
 | Database | Supabase Postgres + pgvector + RLS |
-| AI | Claude (Anthropic) — vision, streaming, tool calling |
+| AI | Provider-agnostic — Gemini (default) or Claude. Vision, structured JSON, tool calling. |
 | Async jobs | Inngest (retries + automatic credit refunds) |
 | Payments | Stripe — Checkout, Webhooks, Customer Portal |
 | Deploy | Vercel |
@@ -106,7 +106,9 @@ elitevault/
 │   │   └── settings/
 │   ├── api/
 │   │   ├── stripe/              ← checkout, portal, webhook
-│   │   ├── analyses/[id]/       ← polling endpoint
+│   │   ├── analyses/[id]/       ← analyzer polling endpoint
+│   │   ├── meta-simulations/[id]/ ← scenario modeler polling endpoint
+│   │   ├── v1/                  ← Scale-plan REST API (bearer tokens)
 │   │   └── inngest/             ← Inngest function handler
 │   ├── actions/                 ← Server actions
 │   ├── pricing/                 ← Public pricing page
@@ -131,7 +133,9 @@ elitevault/
 │   └── brand/                   ← Logo
 ├── inngest/
 │   ├── client.ts
-│   └── functions/analyze-website.ts
+│   └── functions/
+│       ├── analyze-website.ts
+│       └── run-meta-simulation.ts
 ├── lib/
 │   ├── supabase/                ← server, client, middleware, types
 │   ├── stripe/                  ← client + plan catalog
@@ -139,7 +143,7 @@ elitevault/
 │   ├── fonts.ts
 │   └── utils.ts
 ├── supabase/
-│   ├── migrations/0001_init.sql
+│   ├── migrations/  ← 0001 init → 0005 meta_simulations
 │   └── seed.sql
 ├── scripts/seed-stripe.ts
 ├── middleware.ts
@@ -150,20 +154,21 @@ elitevault/
 
 ## 🔐 Security model
 
-- **RLS everywhere.** Profiles, subscriptions, analyses, search history — every row is gated by `auth.uid()`.
+- **RLS everywhere.** Profiles, subscriptions, analyses, meta_simulations, search history — every row is gated by `auth.uid()`.
 - **Webhook idempotency.** `stripe_events` table with `UNIQUE` on `event.id` makes double-deliveries no-ops.
-- **No untrusted HTML in DOM.** Auto-Rewrite HTML/CSS renders inside an `<iframe srcDoc>` sandbox.
+- **Ownership defense in depth.** Server actions validate analysis ownership before queueing Inngest events; the Inngest functions re-validate before persisting (events can be replayed).
 - **Service role is server-only.** `SUPABASE_SERVICE_ROLE_KEY` never reaches the browser.
 
-## 🧠 How Claude is integrated
+## 🧠 How the AI is integrated
 
 This isn't an "AI wrapper". The integration is structural:
 
-1. **Tool-forced JSON output.** Every agent uses `tool_choice: { type: "tool", name: "submit_xxx" }` with a strict JSON schema. The model can't ramble — it must call the tool. Zod validates as a final guardrail in [`ai/schemas.ts`](ai/schemas.ts).
-2. **Vision first.** The Analyzer receives the actual screenshot as a base64 image part. It scores against a real CRO rubric encoded in the [system prompt](ai/prompts.ts).
-3. **Normalized coordinates.** Claude returns `{x, y, width, height}` in 0..1 space — we render the SVG overlay deterministically with [`components/analyzer/annotations-overlay.tsx`](components/analyzer/annotations-overlay.tsx). Claude doesn't "draw"; we do, from its measurements.
-4. **Two-model split.** Heavy reasoning (Analyzer, Rewrite) → Opus. Re-ranking / search → Haiku. Defined in `ANTHROPIC_MODEL` and `ANTHROPIC_MODEL_FAST`.
-5. **Long jobs go to Inngest.** Vercel can timeout — Inngest runs the pipeline as durable steps. Failed analyses **refund the credit automatically** via `onFailure`.
+1. **Provider abstraction.** `ai/provider.ts` exposes a `generateStructured` interface implemented by both Gemini and Anthropic adapters. Switch with `AI_PROVIDER=gemini|anthropic`. Same agents, two backends.
+2. **Tool-forced JSON output.** Every agent calls a single function-declaration / tool with a strict JSON schema. The model can't ramble — it must produce the structured payload. Zod validates as a final guardrail.
+3. **Vision first.** The Analyzer receives 1–3 actual screenshots (homepage + discovered product pages) as base64 image parts. It scores against a real CRO rubric encoded in the system prompt.
+4. **Normalized coordinates.** Annotations come back as `{x, y, width, height}` in 0..1 space — we render the SVG overlay deterministically. The model doesn't "draw"; we do, from its measurements. A defensive `normalizeCoords()` rescales if the model ever returns pixels.
+5. **Two-model split.** Heavy reasoning (Analyzer, Meta Ads Optimizer) → main model. Re-ranking / niche detection / Scenario Modeler → Flash-Lite tier (`fast: true`).
+6. **Long jobs go to Inngest.** Vercel can timeout — Inngest runs the analyzer + the Scenario Modeler as durable steps. Failed analyses **refund the credit automatically** via `onFailure`.
 
 ## 💳 Stripe flow
 
@@ -211,7 +216,7 @@ For Inngest production, set the Inngest endpoint to `https://your-domain.com/api
 - Runs automatically as the third stage of the Inngest pipeline when the
   user is on Scale. Outputs CPC/CPM/CTR/ROAS targets, audience seed,
   3-5 creative angles, sequential testing plan, and honest caveats.
-- Stored in `analyses.meta_ads`, rendered below the Auto-Rewrite panel.
+- Stored in `analyses.meta_ads`, rendered in the analyzer left column.
 
 ### REST API (Scale plan)
 - Endpoints: `POST /api/v1/analyses` and `GET /api/v1/analyses/[id]`.
@@ -223,12 +228,51 @@ Run `npm run library:expand -- "<niche>" -n 10` to ask Claude/Gemini to
 discover candidate stores in a niche and upsert them into `winning_sites`
 with **estimated** Ad Activity signals (marked `estimated: true` in UI).
 
+## 🔮 v3.0 — Meta Campaign Scenario Modeler
+
+The headline feature for Scale plan. Given a completed audit + the
+user's AOV + daily budget, the modeler returns a **7-day, 3-scenario**
+Meta Ads projection — conservative, balanced, aggressive — with
+day-by-day spend, impressions, CTR, CPC, CPM, ROAS, CPA, sales, and
+risk callouts.
+
+### Why "Scenario Modeler" not "Simulator"
+We deliberately avoid the word *simulator* in user-facing copy. These
+are AI **estimates** calibrated on the audit score and niche benchmarks,
+not financial predictions. The agent enforces hard plausibility bounds
+(ROAS ≤ 6x, CTR ≤ 8%, math consistency between spend/purchases/revenue)
+and every output ships with a "not a prediction" disclaimer.
+
+### Architecture
+- **3 parallel Gemini Flash-Lite calls**, one per variant — keeps each
+  JSON output at ~3–5KB (Flash-Lite's structured-output sweet spot)
+  instead of the 12–15KB combined output that truncates ~30% of the time.
+- Partial-success orchestrator: if 1 of 3 scenarios fails schema
+  validation, the other 2 still ship with the error surfaced as a
+  soft warning. Only an all-3-failed run flips status to `failed`.
+- Durable Inngest function with stale-job timeout (5 min) and
+  ownership re-validation on event replay.
+- Hand-rolled SVG chart — no recharts (~25KB saved) and full control
+  over the brand-gold revenue / violet-dashed spend visualization.
+
+### Trying it
+1. As a Scale-plan user, run a normal analysis to completion.
+2. Scroll down past the audit body — the form sits at the bottom.
+3. Enter AOV ($45), daily budget ($50), optional margin & notes.
+4. The 3 scenario cards appear after ~10–20 seconds (one card may
+   land slightly later than the others — they're independent calls).
+5. Hit "Re-run" with new inputs anytime — each run creates a fresh
+   `meta_simulations` row.
+
+Tables: `meta_simulations` (migration `0005`). Polling: `GET /api/meta-simulations/[id]`. Server action: `triggerSimulation` in [`app/actions/meta-simulator.ts`](app/actions/meta-simulator.ts).
+
 ## 🛣 What's next
 
 - [ ] Real Meta Ad Library API integration (replace estimated signals)
-- [ ] Embeddings job for image-similarity search (pgvector index already exists)
-- [ ] Inngest cron for weekly Library refresh
-- [ ] Slack notifications when analysis completes
+- [ ] Inngest cron for weekly Library refresh + "Store of the Week" digest
+- [ ] Slack / email notifications when analysis completes
+- [ ] Calibrate the Scenario Modeler against real Meta campaign data once we have customer attribution exports
+- [ ] "Steal This Section" — paste a Library card → Gemini returns Tailwind/HTML you can ship
 
 ## 📝 License
 

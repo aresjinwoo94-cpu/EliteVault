@@ -242,9 +242,15 @@ function humanizeError(err: unknown): string {
     return "Claude is overloaded right now. Try again in a few minutes — your credit was refunded.";
   }
 
-  // Screenshot service
-  if (/screenshot.*fail|mshots/i.test(raw)) {
-    return "We couldn't capture a screenshot of that URL. Verify it loads in an incognito tab and try again.";
+  // Screenshot service — all providers exhausted
+  if (/All screenshot providers failed/i.test(raw)) {
+    return "We couldn't capture this site (it likely blocks automated screenshots, e.g. Cloudflare or anti-bot). Try uploading a screenshot manually, or pick a different URL. Your credit was refunded.";
+  }
+  if (/Cloudflare-protected|placeholder after/i.test(raw)) {
+    return "This site appears to block automated capture (Cloudflare or similar). Upload a manual screenshot instead — your credit was refunded.";
+  }
+  if (/screenshot.*fail|mshots|Microlink|ScreenshotOne/i.test(raw)) {
+    return "We couldn't capture a screenshot of that URL. Verify it loads in an incognito tab and try again — your credit was refunded.";
   }
 
   // Schema validation

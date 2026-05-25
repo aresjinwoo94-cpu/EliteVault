@@ -154,6 +154,65 @@ export interface ApiKey {
   created_at: string;
 }
 
+// v3.0 — Meta Campaign Scenario Modeler ───────────────────────────────────
+
+/** One day in the 7-day projection. */
+export interface SimulationDay {
+  day: number;                 // 1..7
+  spend: number;               // USD
+  impressions: number;
+  clicks: number;
+  ctr: number;                 // 0..1
+  cpc: number;
+  cpm: number;
+  purchases: number;
+  revenue: number;
+  cpa: number;                 // cost per acquisition
+  roas: number;
+}
+
+export interface SimulationScenario {
+  /** "conservative" | "balanced" | "aggressive" */
+  variant: "conservative" | "balanced" | "aggressive";
+  /** One-line strategic summary. */
+  summary: string;
+  /** Win condition for this scenario (e.g. "Hit 1.8x ROAS by day 7"). */
+  win_condition: string;
+  /** What's likely to go wrong. */
+  risks: string[];
+  /** 7-day projection. */
+  days: SimulationDay[];
+  /** Totals over the 7 days. */
+  totals: {
+    spend: number;
+    revenue: number;
+    purchases: number;
+    roas: number;               // weighted across all days
+    cpa: number;
+  };
+  /** Strategic recommendation: tactical adjustment to consider. */
+  recommendation: string;
+}
+
+export interface MetaSimulation {
+  id: string;
+  analysis_id: string;
+  user_id: string;
+  aov_usd: number;
+  daily_budget_usd: number;
+  product_margin_pct: number | null;
+  notes: string | null;
+  conservative: SimulationScenario | null;
+  balanced: SimulationScenario | null;
+  aggressive: SimulationScenario | null;
+  status: "queued" | "running" | "succeeded" | "failed";
+  error: string | null;
+  inngest_run_id: string | null;
+  started_at: string | null;
+  finished_at: string | null;
+  created_at: string;
+}
+
 export interface Database {
   public: {
     Tables: {

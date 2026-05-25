@@ -23,8 +23,8 @@ const STEPS = [
   },
   {
     icon: Target,
-    title: "Ships fixes, not just diagnostics",
-    body: "Auto-Rewrite drafts a redesigned hero or product page side-by-side — copy, layout, the lot. Approve, copy, paste.",
+    title: "Projects a 7-day campaign before you spend",
+    body: "Scale-plan add-on: feed in your AOV + daily budget and the modeler returns 3 honest 7-day scenarios — conservative, balanced, aggressive — with day-by-day spend, ROAS and risks.",
   },
 ];
 

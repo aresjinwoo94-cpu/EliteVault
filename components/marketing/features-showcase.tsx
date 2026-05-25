@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Compass, Image as ImageIcon, Library, Wand2 } from "lucide-react";
+import { Compass, Image as ImageIcon, Library, TrendingUp } from "lucide-react";
 
 const FEATURES = [
   {
@@ -21,9 +21,9 @@ const FEATURES = [
     body: "What works for skincare destroys conversion in supplements. The agent knows the difference.",
   },
   {
-    icon: Wand2,
-    title: "Auto-Rewrite (Scale plan)",
-    body: "After diagnosing, Claude drafts a replacement hero or PDP next to yours. Diagnosis + cure, never just diagnosis.",
+    icon: TrendingUp,
+    title: "Campaign Scenario Modeler (Scale)",
+    body: "Project a 7-day Meta Ads campaign across 3 honest scenarios — conservative, balanced, aggressive — calibrated to your audit, AOV and budget. Estimates, not guarantees.",
   },
 ];
 

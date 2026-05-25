@@ -54,7 +54,7 @@ export function Hero() {
           EliteVault hunts down stores that are <span className="text-white/85">already selling</span>,
           breaks down exactly why they convert, and gives your store the same
           brutal audit a senior media buyer would — annotated screenshots,
-          buyer-persona simulations and Auto-Rewrite included.
+          buyer-persona simulations and a 7-day Meta Ads scenario modeler.
         </motion.p>
 
         <motion.div
