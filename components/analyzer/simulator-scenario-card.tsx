@@ -92,13 +92,33 @@ export function SimulatorScenarioCard({
             <h4 className="font-medium text-white">{meta.label}</h4>
           </div>
 
-          {/* Headline ROAS */}
+          {/*
+            Headline ROAS. Color-coded by profitability tier — gold for
+            net-profit (>= 1.5x), white for break-even-ish (1.0-1.5x), red
+            for projected loss (< 1.0x). The simulator is now explicitly
+            allowed to project losses for weak stores, so the visual must
+            match — green/gold ROAS for a 0.8x projection would lie about
+            what the operator is reading.
+          */}
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="font-serif text-5xl tnum text-gold-gradient leading-none">
+            <span
+              className={`font-serif text-5xl tnum leading-none ${
+                t.roas >= 1.5
+                  ? "text-gold-gradient"
+                  : t.roas >= 1.0
+                    ? "text-white"
+                    : "text-destructive"
+              }`}
+            >
               {t.roas.toFixed(2)}x
             </span>
             <span className="text-xs text-white/45 uppercase tracking-widest">
               7-day ROAS
+              {t.roas < 1.0 && (
+                <span className="ml-2 text-destructive/80 normal-case">
+                  · projected loss
+                </span>
+              )}
             </span>
           </div>
 
@@ -115,29 +135,45 @@ export function SimulatorScenarioCard({
             </p>
           </div>
 
-          {/* Totals strip */}
-          <div className="mt-5 grid grid-cols-4 gap-2">
-            {(
-              [
-                ["Spend", fmtUsd(t.spend)],
-                ["Revenue", fmtUsd(t.revenue)],
-                ["Sales", `${Math.round(t.purchases)}`],
-                ["CPA", fmtUsd(t.cpa, 2)],
-              ] as const
-            ).map(([label, val]) => (
-              <div
-                key={label}
-                className="rounded-lg border border-white/[0.05] bg-white/[0.02] p-2 text-center"
-              >
-                <p className="text-[9px] uppercase tracking-widest text-white/40">
-                  {label}
-                </p>
-                <p className="mt-0.5 font-serif text-sm tnum text-white">
-                  {val}
-                </p>
+          {/*
+            Totals strip with explicit Net P&L. Net = revenue - spend
+            (rough gross — doesn't account for COGS, that's what `margin`
+            input is for). Color-coded: green if positive, red if negative.
+            The simulator is honest about losses now; the UI shows them.
+          */}
+          {(() => {
+            const net = t.revenue - t.spend;
+            const netLabel = net >= 0 ? `+${fmtUsd(net)}` : `−${fmtUsd(Math.abs(net))}`;
+            return (
+              <div className="mt-5 grid grid-cols-5 gap-2">
+                {(
+                  [
+                    ["Spend", fmtUsd(t.spend), "text-white"],
+                    ["Revenue", fmtUsd(t.revenue), "text-white"],
+                    [
+                      "Net",
+                      netLabel,
+                      net >= 0 ? "text-success" : "text-destructive",
+                    ],
+                    ["Sales", `${Math.round(t.purchases)}`, "text-white"],
+                    ["CPA", fmtUsd(t.cpa, 2), "text-white"],
+                  ] as const
+                ).map(([label, val, color]) => (
+                  <div
+                    key={label}
+                    className="rounded-lg border border-white/[0.05] bg-white/[0.02] p-2 text-center"
+                  >
+                    <p className="text-[9px] uppercase tracking-widest text-white/40">
+                      {label}
+                    </p>
+                    <p className={`mt-0.5 font-serif text-sm tnum ${color}`}>
+                      {val}
+                    </p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            );
+          })()}
 
           {/* Chart */}
           <div className="mt-5">
