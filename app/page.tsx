@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { MarketingNav } from "@/components/marketing/nav";
 import { Hero } from "@/components/marketing/hero";
 import { LogoStrip } from "@/components/marketing/logo-strip";
@@ -7,10 +6,113 @@ import { AnalyzerDemo } from "@/components/marketing/analyzer-demo";
 import { Pricing } from "@/components/marketing/pricing";
 import { FAQ } from "@/components/marketing/faq";
 import { Footer } from "@/components/marketing/footer";
+import { PLANS } from "@/lib/stripe/plans";
+
+/**
+ * Landing-page JSON-LD structured data.
+ *
+ * Two schemas worth advertising to Google here:
+ *   1. SoftwareApplication — tells search results this is a real product
+ *      with offers + pricing. Powers rich-result eligibility (price chip,
+ *      review snippets if we ever add them).
+ *   2. FAQPage (built dynamically below) — if Google picks it up, our
+ *      FAQ questions can render as expandable accordions DIRECTLY in
+ *      the search result page. Huge CTR boost when it works.
+ *
+ * We compute the SoftwareApplication offers from PLANS so changes to
+ * pricing stay in sync without manual edits here.
+ */
+function buildLandingJsonLd() {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevault.app";
+
+  const softwareApplication = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "EliteVault",
+    applicationCategory: "BusinessApplication",
+    applicationSubCategory: "Ecommerce Conversion Optimization",
+    operatingSystem: "Web",
+    url: baseUrl,
+    description:
+      "AI-powered ecommerce audit with annotated screenshots, buyer-persona simulations, and a 7-day Meta Ads campaign scenario modeler.",
+    offers: Object.values(PLANS).map((plan) => ({
+      "@type": "Offer",
+      name: `EliteVault ${plan.name}`,
+      price: plan.price.month,
+      priceCurrency: "USD",
+      priceSpecification: {
+        "@type": "UnitPriceSpecification",
+        price: plan.price.month,
+        priceCurrency: "USD",
+        billingDuration: "P1M",
+        unitText: "month",
+      },
+      description: plan.description,
+      url: `${baseUrl}/pricing`,
+    })),
+  };
+
+  // Pull FAQ items in-process from a small static list (faster than
+  // duplicating the FAQ component's data; if we ever externalize the
+  // FAQ data we'll import from there).
+  const faqItems: { question: string; answer: string }[] = [
+    {
+      question: "What does the EliteVault analyzer do?",
+      answer:
+        "Paste a URL and EliteVault returns a CRO audit: annotated screenshot, six category scores (color, layout, imagery, technical, niche fit, CRO principles), a buyer-persona simulation, conversion-rate scenarios, and a ranked punch-list of fixes.",
+    },
+    {
+      question: "How accurate is the 7-day campaign scenario modeler?",
+      answer:
+        "It's an honest estimate, not a prediction. The modeler uses real 2024-25 niche benchmarks, applies hard ROAS ceilings based on the audit score, factors in country CPM multipliers, iOS attribution loss, and seasonality. For stores with audit scores under 55, it will project losses — because that's what cold campaigns usually do in week 1.",
+    },
+    {
+      question: "Do I need a Meta Ads account to use EliteVault?",
+      answer:
+        "No. The analyzer works on any URL. The Meta Ads optimizer and scenario modeler are Scale-plan add-ons that recommend targets and project campaigns — you don't need an active Meta account.",
+    },
+    {
+      question: "Is there a free plan?",
+      answer:
+        "Yes. The Free plan gives you the curated library of 9 hand-picked winning stores with full metrics. The Analyzer requires Pro ($19/mo). The scenario modeler and REST API require Scale ($49/mo).",
+    },
+  ];
+
+  const faqPage = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems.map((q) => ({
+      "@type": "Question",
+      name: q.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: q.answer,
+      },
+    })),
+  };
+
+  return [softwareApplication, faqPage];
+}
 
 export default function HomePage() {
+  const jsonLd = buildLandingJsonLd();
   return (
     <>
+      {/*
+        Page-level structured data. SoftwareApplication helps Google
+        understand pricing tiers; FAQPage can become inline accordions
+        in the SERP. The Organization schema lives in app/layout.tsx
+        and applies to every route.
+      */}
+      {jsonLd.map((schema, i) => (
+        <script
+          key={i}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      ))}
+
       <MarketingNav />
       <main className="relative">
         <Hero />
