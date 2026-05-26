@@ -96,9 +96,9 @@ export function AnalyzerWalkthrough() {
 
 function Walkthrough({ skipAnimations }: { skipAnimations: boolean }) {
   return (
-    <div className="grid md:grid-cols-[1fr_280px] gap-0">
+    <div className="grid md:grid-cols-[1.3fr_1fr] gap-0">
       {/* LEFT: simulated analyzer canvas */}
-      <div className="relative aspect-[16/11] bg-gradient-to-br from-obsidian-800 to-obsidian-900 overflow-hidden border-r border-white/[0.04]">
+      <div className="relative aspect-[4/3] md:aspect-[16/12] bg-gradient-to-br from-obsidian-800 to-obsidian-900 overflow-hidden border-r border-white/[0.04]">
         {/* URL input + analyze button */}
         <div className="absolute inset-x-4 top-4 z-10 flex gap-2">
           <div className="flex-1 rounded-md bg-obsidian-950/80 border border-white/10 px-3 py-1.5 text-xs font-mono text-white/85 flex items-center">
@@ -167,31 +167,36 @@ function Walkthrough({ skipAnimations }: { skipAnimations: boolean }) {
               ))}
             </div>
 
-            {/* Annotations cascading in */}
+            {/* Annotations cascading in — positions spread diagonally across
+                the mock screenshot, labels kept short so they don't overflow
+                the narrow walkthrough canvas. */}
             <Annotation
               n={1}
-              x="20%"
-              y="22%"
+              x="22%"
+              y="25%"
+              labelSide="right"
               color="destructive"
-              label="Hero copy below the fold"
+              label="CTA below fold"
               delay={2.4}
               skip={skipAnimations}
             />
             <Annotation
               n={2}
-              x="50%"
-              y="48%"
+              x="68%"
+              y="52%"
+              labelSide="left"
               color="warning"
-              label="CTA too small"
+              label="Hero too quiet"
               delay={2.9}
               skip={skipAnimations}
             />
             <Annotation
               n={3}
-              x="78%"
-              y="78%"
+              x="32%"
+              y="82%"
+              labelSide="right"
               color="success"
-              label="Strong product imagery"
+              label="Solid imagery"
               delay={3.4}
               skip={skipAnimations}
             />
@@ -207,7 +212,7 @@ function Walkthrough({ skipAnimations }: { skipAnimations: boolean }) {
       </div>
 
       {/* RIGHT: live audit panel */}
-      <div className="bg-obsidian-900/40 p-5 space-y-4">
+      <div className="bg-obsidian-900/40 p-4 md:p-5 space-y-3.5 min-w-0">
         {/* Score */}
         <div>
           <p className="text-[10px] uppercase tracking-widest text-white/40">
@@ -430,6 +435,7 @@ function Annotation({
   y,
   color,
   label,
+  labelSide = "right",
   delay,
   skip,
 }: {
@@ -438,6 +444,8 @@ function Annotation({
   y: string;
   color: "destructive" | "warning" | "success";
   label: string;
+  /** Side of the dot to place the label on, so it doesn't overflow the canvas edge. */
+  labelSide?: "left" | "right";
   delay: number;
   skip: boolean;
 }) {
@@ -454,6 +462,21 @@ function Annotation({
         ? "bg-warning/15 text-warning border-warning/30"
         : "bg-success/15 text-success border-success/30";
 
+  // Position the label on the chosen side of the dot, with a translate so
+  // the label's edge anchors next to the dot — not the label's center.
+  const labelStyle =
+    labelSide === "right"
+      ? {
+          left: `calc(${x} + 16px)`,
+          top: y,
+          transform: "translateY(-50%)",
+        }
+      : {
+          right: `calc(100% - ${x} + 16px)`,
+          top: y,
+          transform: "translateY(-50%)",
+        };
+
   return (
     <AnimatePresence>
       <motion.div
@@ -465,22 +488,26 @@ function Annotation({
           duration: 0.45,
           ease: [0.22, 1, 0.36, 1],
         }}
-        className={`absolute -translate-x-1/2 -translate-y-1/2 size-6 rounded-full ring-2 backdrop-blur flex items-center justify-center text-[10px] font-bold text-white ${ring}`}
+        className={`absolute -translate-x-1/2 -translate-y-1/2 size-5 rounded-full ring-2 backdrop-blur flex items-center justify-center text-[9px] font-bold text-white ${ring}`}
         style={{ left: x, top: y }}
       >
         {n}
       </motion.div>
       <motion.div
         key={`${n}-label`}
-        initial={skip ? { opacity: 1, x: 0 } : { opacity: 0, x: -6 }}
+        initial={
+          skip
+            ? { opacity: 1, x: 0 }
+            : { opacity: 0, x: labelSide === "right" ? -4 : 4 }
+        }
         animate={{ opacity: 1, x: 0 }}
         transition={{
-          delay: skip ? 0 : delay + 0.25,
-          duration: 0.4,
+          delay: skip ? 0 : delay + 0.2,
+          duration: 0.35,
           ease: [0.22, 1, 0.36, 1],
         }}
-        className={`absolute translate-y-3 text-[10px] backdrop-blur px-1.5 py-0.5 rounded border whitespace-nowrap pointer-events-none ${labelBg}`}
-        style={{ left: `calc(${x} + 14px)`, top: y }}
+        className={`absolute text-[9px] backdrop-blur px-1.5 py-0.5 rounded border whitespace-nowrap pointer-events-none ${labelBg}`}
+        style={labelStyle}
       >
         {color === "success" ? "✓ " : ""}
         {label}

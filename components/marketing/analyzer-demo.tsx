@@ -33,7 +33,14 @@ export function AnalyzerDemo() {
   return (
     <section id="analyzer" className="py-24 md:py-36">
       <div className="container max-w-6xl">
-        <div className="grid md:grid-cols-2 gap-16 items-center">
+        {/*
+          v3.4.1 — Give the visual (walkthrough) more room than the text.
+          Was 50/50 which made the inner canvas only ~260px wide and
+          squashed the 3 annotations into a vertical stack. Now text gets
+          ~40%, visual gets ~60%, so the walkthrough canvas ends up ~380px
+          and annotations can actually spread across a fake screenshot.
+        */}
+        <div className="grid lg:grid-cols-[2fr_3fr] gap-12 lg:gap-16 items-center">
           <div>
             <motion.div
               initial={{ opacity: 0, y: 12 }}
