@@ -21,6 +21,8 @@ export async function POST() {
   const session = await stripe.billingPortal.sessions.create({
     customer: profile.stripe_customer_id,
     return_url: absoluteUrl("/app/billing"),
+    // Auto-detect language; falls back to English for unsupported locales.
+    locale: "auto",
   });
 
   return NextResponse.json({ url: session.url });
