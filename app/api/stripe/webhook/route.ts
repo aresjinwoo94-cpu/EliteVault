@@ -18,18 +18,46 @@ const RELEVANT_EVENTS = new Set([
 
 export async function POST(req: NextRequest) {
   const sig = req.headers.get("stripe-signature");
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!sig || !secret) {
+  if (!sig) {
     return NextResponse.json({ error: "missing_signature" }, { status: 400 });
   }
   const body = await req.text();
 
-  let event: Stripe.Event;
-  try {
-    event = stripe.webhooks.constructEvent(body, sig, secret);
-  } catch (err) {
+  // Stripe has DIFFERENT signing secrets for Test mode and Live mode.
+  // If we only configure one and a webhook arrives signed by the other,
+  // signature verification fails silently and the user's plan never
+  // updates (the issue the user just hit). We try ALL configured secrets
+  // and accept the first one that verifies — that way a single deploy
+  // handles both Test and Live without env-var juggling.
+  //
+  // Set both in Vercel:
+  //   STRIPE_WEBHOOK_SECRET        — your Live mode signing secret
+  //   STRIPE_WEBHOOK_SECRET_TEST   — your Test mode signing secret
+  // (You can set just one if you only operate in one mode.)
+  const candidateSecrets = [
+    process.env.STRIPE_WEBHOOK_SECRET,
+    process.env.STRIPE_WEBHOOK_SECRET_TEST,
+  ].filter((s): s is string => typeof s === "string" && s.length > 0);
+
+  if (candidateSecrets.length === 0) {
+    return NextResponse.json({ error: "no_webhook_secret" }, { status: 500 });
+  }
+
+  let event: Stripe.Event | null = null;
+  let lastErr: Error | null = null;
+  for (const secret of candidateSecrets) {
+    try {
+      event = stripe.webhooks.constructEvent(body, sig, secret);
+      break;
+    } catch (err) {
+      lastErr = err as Error;
+    }
+  }
+  if (!event) {
     return NextResponse.json(
-      { error: `signature_verification_failed: ${(err as Error).message}` },
+      {
+        error: `signature_verification_failed: ${lastErr?.message ?? "no matching secret"}`,
+      },
       { status: 400 },
     );
   }
