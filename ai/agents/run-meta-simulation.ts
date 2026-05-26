@@ -94,11 +94,21 @@ export async function runMetaSimulation(opts: {
 }
 
 function humanizeError(raw: string): string {
+  // Google's "model experiencing high demand" — server-side overload,
+  // unrelated to our quota. Common during peak hours.
+  if (/503|UNAVAILABLE|high demand|model is currently/i.test(raw)) {
+    return "Gemini was temporarily overloaded (Google-side spike). Re-run usually fixes this in a minute or two.";
+  }
   if (/schema mismatch/i.test(raw)) {
-    return "AI returned malformed output (retry usually fixes this)";
+    return "AI returned malformed output — retry usually fixes this";
   }
   if (/timeout|ETIMEDOUT|ECONNRESET/i.test(raw)) {
     return "AI provider timed out — retry usually fixes this";
+  }
+  // Strip noisy JSON dumps from upstream errors before we surface them
+  if (raw.includes('"error":')) {
+    const m = raw.match(/"message"\s*:\s*"([^"]+)"/);
+    if (m?.[1]) return m[1];
   }
   return raw;
 }

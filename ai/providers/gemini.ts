@@ -187,33 +187,51 @@ async function generateStructured<T>(
       } as never,
     });
 
-  // ── Try keys in rotation. On 429, cool down and try next. ──
+  // ── Try keys in rotation. On 429 cool down + try next; on 503 retry. ──
   let attemptedKeys = 0;
   let last429: unknown = null;
+  // Google 503 ("model experiencing high demand") is server-side, not
+  // key-side — rotating keys won't help because they all hit the same
+  // backend. We retry the SAME key with a short backoff before giving up.
+  const MAX_503_RETRIES = 2;
+  const RETRY_503_BACKOFF_MS = 8_000;
 
   while (attemptedKeys < KEYS.length) {
     const idx = pickAvailableKey();
     if (idx === null) break; // all keys on cooldown; fall through to the wait path
 
     attemptedKeys++;
-    try {
-      const response = await callWithKey(idx);
-      const text = extractText(response);
-      if (!text) throw new Error("Gemini: empty response");
-      return parseJsonText<T>(text);
-    } catch (err) {
-      const raw = errMsg(err);
-      if (is429(raw)) {
-        console.warn(
-          `[gemini] key #${idx + 1}/${KEYS.length} hit 429 — cooling down ${COOLDOWN_MS / 1000}s, trying next`,
-        );
-        cooldownUntil.set(idx, Date.now() + COOLDOWN_MS);
-        last429 = err;
-        continue;
+
+    let local503Attempts = 0;
+    // Inner loop just for 503 retries on this same key
+    while (true) {
+      try {
+        const response = await callWithKey(idx);
+        const text = extractText(response);
+        if (!text) throw new Error("Gemini: empty response");
+        return parseJsonText<T>(text);
+      } catch (err) {
+        const raw = errMsg(err);
+        if (is429(raw)) {
+          console.warn(
+            `[gemini] key #${idx + 1}/${KEYS.length} hit 429 — cooling down ${COOLDOWN_MS / 1000}s, trying next`,
+          );
+          cooldownUntil.set(idx, Date.now() + COOLDOWN_MS);
+          last429 = err;
+          break; // exit inner loop, try next key
+        }
+        if (is503(raw) && local503Attempts < MAX_503_RETRIES) {
+          local503Attempts++;
+          console.warn(
+            `[gemini] key #${idx + 1} got 503 (Google overload) — retry ${local503Attempts}/${MAX_503_RETRIES} in ${RETRY_503_BACKOFF_MS / 1000}s`,
+          );
+          await new Promise((r) => setTimeout(r, RETRY_503_BACKOFF_MS));
+          continue; // retry same key
+        }
+        // Anything else (bad request, schema mismatch, exhausted 503
+        // retries, etc.) — bubble up immediately.
+        throw err;
       }
-      // Non-429 errors (bad request, schema mismatch, etc.) — bubble up
-      // immediately. Rotating keys can't fix a malformed prompt.
-      throw err;
     }
   }
 
@@ -256,6 +274,15 @@ function is429(raw: string): boolean {
   return /RESOURCE_EXHAUSTED|"code"\s*:\s*429|status.*429|rate.?limit|quota/i.test(
     raw,
   );
+}
+
+/**
+ * Detect Google's "model overloaded" 503 — temporary, server-side, NOT a
+ * key issue. Best handled with a short backoff retry on the same key
+ * (rotating keys would just hit the same overloaded backend).
+ */
+function is503(raw: string): boolean {
+  return /"code"\s*:\s*503|UNAVAILABLE|high demand|model is currently/i.test(raw);
 }
 
 function extractText(response: {
