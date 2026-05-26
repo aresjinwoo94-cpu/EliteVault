@@ -65,9 +65,18 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // If a logged-in user lands on /sign-in or /sign-up, bounce them into
+  // the app. Default target is /app/analyzer (matches the post-auth
+  // default elsewhere in the codebase — see app/actions/auth.ts). If
+  // the URL carried an explicit ?next= (e.g. they clicked a deep link
+  // that hit auth first), honor that instead.
   if (isAuth && user) {
     const url = request.nextUrl.clone();
-    url.pathname = "/app";
+    const explicitNext = request.nextUrl.searchParams.get("next");
+    url.pathname = explicitNext && explicitNext.startsWith("/app")
+      ? explicitNext
+      : "/app/analyzer";
+    url.search = "";
     return NextResponse.redirect(url);
   }
 
