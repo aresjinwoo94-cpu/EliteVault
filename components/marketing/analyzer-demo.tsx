@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Brain, Eye, Scan, Sparkles, Target } from "lucide-react";
+import { AnalyzerWalkthrough } from "./analyzer-walkthrough";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -42,15 +43,17 @@ export function AnalyzerDemo() {
             >
               <div className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/30 bg-violet-600/10 px-3 py-1 text-[11px] uppercase tracking-wider text-violet-300">
                 <Sparkles className="size-3" />
-                The Analyzer
+                The Analyzer · live demo →
               </div>
               <h2 className="mt-5 font-serif text-4xl md:text-5xl tracking-tight leading-tight">
                 A senior media buyer in a tab.
               </h2>
               <p className="mt-4 text-white/55 leading-relaxed text-lg">
-                Paste a URL or drop a screenshot. In under a minute, EliteVault
-                returns the kind of audit you'd otherwise pay <span className="text-white/80">$1,500 for</span> —
-                with annotations dropped exactly where the problems live.
+                Paste a URL. In under a minute, EliteVault returns the kind of
+                audit you'd otherwise pay <span className="text-white/80">$1,500 for</span> —
+                annotated screenshot, conversion-rate scenarios, persona
+                reactions, and a brutal punch-list of fixes ranked by leverage.
+                Watch a full run on the right.
               </p>
             </motion.div>
 
@@ -78,73 +81,20 @@ export function AnalyzerDemo() {
             </div>
           </div>
 
+          {/*
+            v3.4 — Animated walkthrough replaces the static demo card.
+            Plays a full audit run on loop (URL typing → analyzing →
+            screenshot reveal → annotations cascade → score counter →
+            conversion bars → persona quote → niche position bar).
+            Cycle is ~12s. Respects prefers-reduced-motion.
+          */}
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease }}
-            className="relative"
           >
-            <div className="absolute -inset-4 rounded-3xl bg-gradient-to-tr from-violet-600/20 via-transparent to-champagne-400/20 blur-2xl" />
-            <div className="relative glass-strong rounded-2xl overflow-hidden">
-              <div className="aspect-[4/5] p-6 space-y-4">
-                <div className="flex items-center justify-between text-xs text-white/40">
-                  <span className="font-mono">store.example.com</span>
-                  <span>just now</span>
-                </div>
-                <div className="rounded-xl border border-white/5 aspect-video bg-gradient-to-br from-obsidian-800 to-obsidian-700 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-dot-grid opacity-40" />
-                  {/* arrow */}
-                  <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full">
-                    <defs>
-                      <marker
-                        id="arrow"
-                        markerWidth="6"
-                        markerHeight="6"
-                        refX="5"
-                        refY="3"
-                        orient="auto"
-                      >
-                        <path d="M0,0 L0,6 L6,3 z" fill="#EF4444" />
-                      </marker>
-                    </defs>
-                    <line
-                      x1="10"
-                      y1="80"
-                      x2="35"
-                      y2="50"
-                      stroke="#EF4444"
-                      strokeWidth="0.6"
-                      markerEnd="url(#arrow)"
-                    />
-                  </svg>
-                  <div className="absolute left-2 bottom-2 text-[10px] bg-destructive/15 backdrop-blur text-destructive border border-destructive/30 px-1.5 py-0.5 rounded">
-                    CTA invisible
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  {["Layout proportion", "Color integration", "CRO principles"].map(
-                    (label, i) => (
-                      <div key={label}>
-                        <div className="flex justify-between text-[11px] text-white/60">
-                          <span>{label}</span>
-                          <span className="tnum">{[58, 71, 42][i]}</span>
-                        </div>
-                        <div className="mt-1 h-1 rounded-full bg-white/5">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            whileInView={{ width: `${[58, 71, 42][i]}%` }}
-                            viewport={{ once: true }}
-                            transition={{ delay: 0.4 + i * 0.15, duration: 0.8, ease }}
-                            className="h-full bg-gradient-to-r from-champagne-500 to-champagne-300 rounded-full"
-                          />
-                        </div>
-                      </div>
-                    ),
-                  )}
-                </div>
-              </div>
-            </div>
+            <AnalyzerWalkthrough />
           </motion.div>
         </div>
       </div>
