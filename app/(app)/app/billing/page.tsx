@@ -39,12 +39,12 @@ export default async function BillingPage({
   const plan = PLANS[profile?.plan ?? "free"];
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-8">
+    <div className="p-6 md:p-10 lg:p-12 pt-10 md:pt-14 max-w-5xl mx-auto space-y-8 md:space-y-10">
       <header>
         <p className="text-xs uppercase tracking-widest text-white/40">
           Billing
         </p>
-        <h1 className="mt-1 font-serif text-4xl tracking-tight">
+        <h1 className="mt-2 font-serif text-4xl md:text-5xl tracking-tight leading-[1.05]">
           Plans & subscription
         </h1>
       </header>

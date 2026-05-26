@@ -3,6 +3,7 @@ import { ArrowUpRight, Sparkles } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AnalyzerLauncher } from "@/components/analyzer/analyzer-launcher";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { PLANS } from "@/lib/stripe/plans";
 
 export const metadata = { title: "Analyzer" };
@@ -35,9 +36,14 @@ export default async function AnalyzerPage({
   const plan = PLANS[profile?.plan ?? "free"];
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-8">
-      <header className="flex items-center justify-between">
-        <div>
+    <div className="p-6 md:p-10 lg:p-12 pt-10 md:pt-14 max-w-6xl mx-auto space-y-8 md:space-y-10">
+      {/*
+        Header — wraps to a column on mobile so the credits counter
+        doesn't get cramped next to a long h1. On md+ it sits to the
+        right of the title.
+      */}
+      <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-xs uppercase tracking-widest text-white/40">
               Analyzer
@@ -47,16 +53,16 @@ export default async function AnalyzerPage({
               Powered by Claude
             </Badge>
           </div>
-          <h1 className="mt-1 font-serif text-4xl tracking-tight">
+          <h1 className="mt-2 font-serif text-4xl md:text-5xl tracking-tight leading-[1.05]">
             What store do you want to{" "}
             <span className="italic text-gold-gradient">crack open?</span>
           </h1>
         </div>
-        <div className="text-right">
+        <div className="text-left sm:text-right shrink-0">
           <p className="text-xs uppercase tracking-widest text-white/40">
             Credits
           </p>
-          <p className="font-serif text-3xl tnum text-gold-gradient">
+          <p className="mt-1 font-serif text-3xl tnum text-gold-gradient leading-none">
             {profile?.credits ?? 0}
           </p>
         </div>
@@ -74,20 +80,24 @@ export default async function AnalyzerPage({
       />
 
       <section>
-        <h2 className="text-sm font-medium text-white/70 mb-3">
+        <h2 className="text-sm font-medium text-white/70 mb-4">
           Your analyses
         </h2>
         {!history || history.length === 0 ? (
-          <p className="text-sm text-white/40">No analyses yet.</p>
+          <Card className="p-8 md:p-10 text-center border-white/[0.04]">
+            <p className="text-sm text-white/40">
+              No analyses yet — run your first one above.
+            </p>
+          </Card>
         ) : (
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {history.map((h) => {
               const score = (h.result as { score?: number } | null)?.score;
               return (
                 <Link
                   key={h.id}
                   href={`/app/analyzer/${h.id}`}
-                  className="group flex items-center gap-4 rounded-xl border border-white/[0.04] bg-card/30 p-4 hover:border-white/[0.12] hover:bg-card/60 transition-all"
+                  className="group flex items-center gap-4 rounded-xl border border-white/[0.04] bg-card/30 px-4 py-3.5 hover:border-white/[0.12] hover:bg-card/60 transition-all"
                 >
                   <div className="font-serif text-2xl text-gold-gradient tnum w-14 text-center">
                     {score ?? "—"}
@@ -96,7 +106,7 @@ export default async function AnalyzerPage({
                     <p className="text-sm font-medium text-white/90 truncate">
                       {h.url ?? "Uploaded screenshot"}
                     </p>
-                    <p className="text-xs text-white/40">
+                    <p className="text-xs text-white/40 mt-0.5">
                       {new Date(h.created_at).toLocaleString()}
                     </p>
                   </div>

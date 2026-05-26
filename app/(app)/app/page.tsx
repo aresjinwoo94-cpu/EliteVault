@@ -37,21 +37,21 @@ export default async function OverviewPage() {
   const first = (profile?.full_name ?? "").split(" ")[0] ?? "";
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-10">
+    <div className="p-6 md:p-10 lg:p-12 pt-10 md:pt-14 max-w-6xl mx-auto space-y-10 md:space-y-12">
       <header>
         <p className="text-xs uppercase tracking-widest text-white/40">
           Welcome back{first ? `, ${first}` : ""}
         </p>
-        <h1 className="mt-1 font-serif text-4xl md:text-5xl tracking-tight">
+        <h1 className="mt-2 font-serif text-4xl md:text-5xl lg:text-6xl tracking-tight leading-[1.05]">
           What are we{" "}
           <span className="italic text-gold-gradient">analyzing</span> today?
         </h1>
       </header>
 
       {/* Primary CTAs */}
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-2 gap-4 md:gap-5">
         <Link href="/app/analyzer" className="group">
-          <Card className="relative overflow-hidden p-7 transition-all hover:border-champagne-400/30 hover:shadow-gold">
+          <Card className="relative overflow-hidden p-7 md:p-8 h-full transition-all hover:border-champagne-400/30 hover:shadow-gold">
             <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full bg-champagne-400/15 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="flex items-start justify-between">
               <div className="flex size-11 items-center justify-center rounded-xl bg-champagne-400/10 ring-1 ring-champagne-400/20">
@@ -77,7 +77,7 @@ export default async function OverviewPage() {
         </Link>
 
         <Link href="/app/library" className="group">
-          <Card className="relative overflow-hidden p-7 transition-all hover:border-violet-500/30">
+          <Card className="relative overflow-hidden p-7 md:p-8 h-full transition-all hover:border-violet-500/30">
             <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full bg-violet-600/15 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="flex items-start justify-between">
               <div className="flex size-11 items-center justify-center rounded-xl bg-violet-600/10 ring-1 ring-violet-500/20">
@@ -102,8 +102,8 @@ export default async function OverviewPage() {
         </Link>
       </div>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* Stats row — gap-4 matches the CTA grid above for visual consistency */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-5">
           <p className="text-xs uppercase tracking-widest text-white/40">
             Plan
@@ -146,24 +146,24 @@ export default async function OverviewPage() {
 
       {/* Recent analyses */}
       <section>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-medium tracking-tight">Recent audits</h2>
           {(recent?.length ?? 0) > 0 && (
             <Link
               href="/app/analyzer"
-              className="text-xs text-white/40 hover:text-white"
+              className="text-xs text-white/40 hover:text-white transition-colors"
             >
               See all →
             </Link>
           )}
         </div>
         {!recent || recent.length === 0 ? (
-          <Card className="p-10 text-center">
+          <Card className="p-10 md:p-14 text-center">
             <p className="text-white/55">
               No analyses yet. Your first audit is on us.
             </p>
             <Link href="/app/analyzer">
-              <Button className="mt-5">
+              <Button className="mt-6">
                 Run your first analysis
                 <ArrowRight className="size-4" />
               </Button>
@@ -177,7 +177,7 @@ export default async function OverviewPage() {
                 <Link
                   key={r.id}
                   href={`/app/analyzer/${r.id}`}
-                  className="flex items-center gap-4 rounded-xl border border-white/[0.06] bg-card/40 p-4 hover:border-white/[0.12] transition-colors"
+                  className="flex items-center gap-4 rounded-xl border border-white/[0.06] bg-card/40 px-4 py-3.5 hover:border-white/[0.12] hover:bg-card/60 transition-all"
                 >
                   <div className="font-serif text-2xl text-gold-gradient tnum w-16 text-center">
                     {score ?? "—"}
@@ -186,7 +186,7 @@ export default async function OverviewPage() {
                     <p className="text-sm font-medium truncate">
                       {r.url ?? "Uploaded screenshot"}
                     </p>
-                    <p className="text-xs text-white/40">
+                    <p className="text-xs text-white/40 mt-0.5">
                       {new Date(r.created_at).toLocaleString()}
                     </p>
                   </div>

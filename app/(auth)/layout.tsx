@@ -8,12 +8,12 @@ export default function AuthLayout({
 }) {
   return (
     <div className="relative min-h-screen overflow-hidden">
-      {/* ambient orbs */}
-      <div className="pointer-events-none absolute -top-32 left-1/2 -translate-x-1/2 size-[600px] rounded-full bg-violet-700/20 blur-[120px]" />
-      <div className="pointer-events-none absolute bottom-0 right-0 size-[500px] rounded-full bg-champagne-400/10 blur-[140px]" />
+      {/* Ambient orbs — softer, more spread for premium feel */}
+      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 size-[700px] rounded-full bg-violet-700/15 blur-[140px]" />
+      <div className="pointer-events-none absolute -bottom-32 -right-32 size-[600px] rounded-full bg-champagne-400/10 blur-[160px]" />
 
-      <header className="relative z-10 flex items-center justify-between px-6 py-5 md:px-10">
-        <Link href="/" aria-label="EliteVault home">
+      <header className="relative z-10 flex items-center justify-between px-6 py-6 md:px-10 md:py-7">
+        <Link href="/" aria-label="EliteVault home" className="transition-opacity hover:opacity-80">
           <Logo />
         </Link>
         <Link
@@ -24,7 +24,12 @@ export default function AuthLayout({
         </Link>
       </header>
 
-      <main className="relative z-10 flex min-h-[calc(100vh-80px)] items-center justify-center px-6 pb-12">
+      {/*
+        Auth form container — sits centered with generous vertical space.
+        max-w-md keeps form rows from stretching too wide on desktop.
+        pb-16 gives the form room to breathe above the bottom edge.
+      */}
+      <main className="relative z-10 flex min-h-[calc(100vh-88px)] items-center justify-center px-6 pb-16 pt-4">
         <div className="w-full max-w-md">{children}</div>
       </main>
     </div>
