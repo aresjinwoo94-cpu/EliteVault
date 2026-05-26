@@ -140,6 +140,10 @@ export interface CommunityAnalysis {
   report_count: number;
   is_removed: boolean;
   is_featured: boolean;
+  // v3.7 — leaderboard ranking columns. Computed at publish time
+  // (see app/actions/community.ts) and indexed for fast ORDER BY.
+  composite_score: number;          // 0..100, includes conversion bonus
+  rank_tier: string | null;         // one of the keys in lib/ranking/tiers.ts
   created_at: string;
 }
 

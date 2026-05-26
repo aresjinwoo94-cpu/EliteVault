@@ -8,6 +8,7 @@ import {
 } from "@/lib/supabase/server";
 import { PLANS } from "@/lib/stripe/plans";
 import { slugify } from "@/lib/utils";
+import { rankFromResult } from "@/lib/ranking/tiers";
 
 const PublishInput = z.object({
   analysisId: z.string().uuid(),
@@ -79,6 +80,20 @@ export async function publishAnalysis(
 
   const baseSlug = `${slugify(domain)}-${Math.random().toString(36).slice(2, 8)}`;
 
+  // v3.7 — compute leaderboard ranking at publish time and store the
+  // results denormalized on the row. composite_score = score + bonus from
+  // conversion potential (scenarios.meta_ads_good). rank_tier is the
+  // human-readable tier label ("sovereign" / "magnate" / ...).
+  //
+  // Why denormalize: the community page sorts by composite_score DESC on
+  // every load — computing this at read time would mean either a full
+  // table scan or a complex CTE on each request. One write here = millions
+  // of cheap reads.
+  const ranking = rankFromResult({
+    score: (result as { score?: number }).score,
+    scenarios: (result as { scenarios?: { meta_ads_good?: number } }).scenarios,
+  });
+
   const service = createSupabaseServiceClient();
   const { data: row, error: insErr } = await service
     .from("community_analyses")
@@ -102,6 +117,8 @@ export async function publishAnalysis(
       persona_response: (result as { buyer_persona_response: unknown })
         .buyer_persona_response,
       screenshot_url: analysis.screenshot_url,
+      composite_score: ranking.compositeScore,
+      rank_tier: ranking.rankTier,
     })
     .select("slug")
     .single();
