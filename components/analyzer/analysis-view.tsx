@@ -19,6 +19,9 @@ import { AnalyzingState } from "./analyzing-state";
 import { PublishCallout } from "@/components/community/publish-callout";
 import { MetaAdsOptimizer } from "./meta-ads-optimizer";
 import { MetaCampaignSimulator } from "./meta-campaign-simulator";
+import { ImpactEffortMatrix } from "./impact-effort-matrix";
+import { NichePositionBar } from "./niche-position-bar";
+import { StrengthsIssuesMap } from "./strengths-issues-map";
 import type {
   AnalysisResult,
   RewriteResult,
@@ -245,6 +248,22 @@ export function AnalysisView({
               <ScoreCard result={data.result} />
               <ConversionGauges scenarios={data.result.scenarios} />
             </div>
+
+            {/*
+              v3.3.1 — Executive deck section. Three consulting-style
+              visualizations that summarize the audit at a glance:
+                • Where you stand (niche position bar)
+                • Strengths vs issues (3-bucket category split)
+                • Impact / effort matrix (top fixes quadrant)
+              Sits between the score row and the detailed audit body, so
+              the operator gets the strategic view BEFORE diving into the
+              tactical findings.
+            */}
+            <div className="grid lg:grid-cols-2 gap-6">
+              <NichePositionBar score={data.result.score} />
+              <StrengthsIssuesMap scores={data.result.category_scores} />
+            </div>
+            <ImpactEffortMatrix fixes={data.result.top_fixes} />
 
             {/*
               Two-column body. LEFT column is the "primary content" stream —
