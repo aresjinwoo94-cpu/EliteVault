@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { MarketingNav } from "@/components/marketing/nav";
 import { Hero } from "@/components/marketing/hero";
 import { LogoStrip } from "@/components/marketing/logo-strip";
@@ -7,6 +8,7 @@ import { Pricing } from "@/components/marketing/pricing";
 import { FAQ } from "@/components/marketing/faq";
 import { Footer } from "@/components/marketing/footer";
 import { PLANS } from "@/lib/stripe/plans";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 /**
  * Landing-page JSON-LD structured data.
@@ -95,7 +97,19 @@ function buildLandingJsonLd() {
   return [softwareApplication, faqPage];
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  // v3.6.2 — if the visitor is already signed in, skip the marketing
+  // landing and drop them straight into the analyzer. They explicitly
+  // chose this product; making them re-scroll past the pitch every visit
+  // is friction. Logged-out visitors still see the full landing.
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) {
+    redirect("/app/analyzer");
+  }
+
   const jsonLd = buildLandingJsonLd();
   return (
     <>

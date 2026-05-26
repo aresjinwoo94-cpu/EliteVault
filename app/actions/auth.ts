@@ -3,6 +3,20 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+/**
+ * Default post-auth landing route.
+ *
+ * Was /app (dashboard) but the dashboard is mostly a summary view. New
+ * and returning users almost always want to run an analysis next — the
+ * dashboard added an unnecessary extra click. /app/analyzer drops them
+ * directly into the "paste a URL" form.
+ *
+ * Anywhere that previously read `next ?? "/app"` now uses this constant
+ * so the default is consistent across sign-in, sign-up, callback, and
+ * the landing-page auth-aware redirect.
+ */
+const DEFAULT_POST_AUTH_ROUTE = "/app/analyzer";
+
 export type AuthState = {
   status: "idle" | "success" | "error";
   message?: string;
@@ -23,7 +37,7 @@ export async function signUpWithPassword(
 ): Promise<AuthState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
-  const next = String(formData.get("next") ?? "/app");
+  const next = String(formData.get("next") ?? DEFAULT_POST_AUTH_ROUTE);
 
   if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     return { status: "error", message: "Please enter a valid email." };
@@ -48,7 +62,7 @@ export async function signInWithPassword(
 ): Promise<AuthState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
-  const next = String(formData.get("next") ?? "/app");
+  const next = String(formData.get("next") ?? DEFAULT_POST_AUTH_ROUTE);
 
   if (!email || !password) {
     return { status: "error", message: "Email and password are required." };
@@ -66,7 +80,7 @@ export async function signInWithPassword(
 
 /** Kept for compatibility — if Google OAuth gets enabled later. */
 export async function signInWithGoogle(formData: FormData) {
-  const next = String(formData.get("next") ?? "/app");
+  const next = String(formData.get("next") ?? DEFAULT_POST_AUTH_ROUTE);
   const supabase = await createSupabaseServerClient();
   const { headers } = await import("next/headers");
   const origin =

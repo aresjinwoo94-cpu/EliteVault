@@ -19,7 +19,9 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const errParam = searchParams.get("error");
   const errDesc = searchParams.get("error_description");
-  const next = searchParams.get("next") ?? "/app";
+  // v3.6.2 — default route after OAuth is the analyzer (matches the
+  // password sign-in default in app/actions/auth.ts).
+  const next = searchParams.get("next") ?? "/app/analyzer";
 
   // Google sent us an error directly (user denied, etc.)
   if (errParam) {
