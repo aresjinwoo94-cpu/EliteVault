@@ -14,6 +14,16 @@ export interface SiteInfo {
   prices: string[];
   platform: string | null;
   extraPages?: string[];
+  // v3.3 — full-page content for the analyzer's written audit. Screenshot
+  // is still the first-impression anchor; this gives the AI the rest.
+  headings?: string[];
+  bodyExcerpt?: string | null;
+  reviewSnippets?: string[];
+  ratingSignal?: string | null;
+  trustSignals?: string[];
+  faqQuestions?: string[];
+  ctaTexts?: string[];
+  imageAlts?: string[];
 }
 
 /**

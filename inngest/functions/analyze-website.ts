@@ -162,6 +162,17 @@ export const analyzeWebsite = inngest.createFunction(
               prices: discovery.prices,
               platform: discovery.platform,
               extraPages: discovery.pageUrls.slice(1, 3),
+              // v3.3 — full-page text content. The screenshot only shows
+              // the first viewport; these fields give the agent what's
+              // below the fold (reviews, trust, FAQ, body, CTAs, etc.)
+              headings: discovery.headings,
+              bodyExcerpt: discovery.bodyExcerpt,
+              reviewSnippets: discovery.reviewSnippets,
+              ratingSignal: discovery.ratingSignal,
+              trustSignals: discovery.trustSignals,
+              faqQuestions: discovery.faqQuestions,
+              ctaTexts: discovery.ctaTexts,
+              imageAlts: discovery.imageAlts,
             }
           : null,
       });
