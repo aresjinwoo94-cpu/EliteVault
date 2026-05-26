@@ -1,5 +1,16 @@
 import { redirect } from "next/navigation";
 import { MarketingNav } from "@/components/marketing/nav";
+
+/**
+ * Force dynamic rendering — Vercel was edge-caching the landing HTML for
+ * ~1 hour and serving the SAME pre-rendered "anonymous visitor" version
+ * to EVERY request, including authenticated users. That defeated the
+ * auth-check below (it ran once at build time / first request, cached
+ * the result, never re-checked). Marking the route dynamic disables
+ * the cache so the server-side auth check runs on every visit.
+ */
+export const dynamic = "force-dynamic";
+
 import { Hero } from "@/components/marketing/hero";
 import { LogoStrip } from "@/components/marketing/logo-strip";
 import { FeaturesShowcase } from "@/components/marketing/features-showcase";
