@@ -150,6 +150,16 @@ if (!WRITE) {
 // ── 3. Apply ──
 console.log("\nApplying…");
 
+// Stripe API v17+ moved current_period_start/end from the Subscription
+// root onto the SubscriptionItem. Fall back to root for older API versions.
+const item = active.items.data[0];
+const periodStartTs =
+  item?.current_period_start ?? active.current_period_start ?? null;
+const periodEndTs =
+  item?.current_period_end ?? active.current_period_end ?? null;
+const toIso = (ts) =>
+  typeof ts === "number" && ts > 0 ? new Date(ts * 1000).toISOString() : null;
+
 await svc.from("subscriptions").upsert(
   {
     id: active.id,
@@ -157,16 +167,10 @@ await svc.from("subscriptions").upsert(
     status: active.status,
     price_id: priceId,
     plan: planInfo.plan,
-    current_period_start: new Date(
-      active.current_period_start * 1000,
-    ).toISOString(),
-    current_period_end: new Date(
-      active.current_period_end * 1000,
-    ).toISOString(),
+    current_period_start: toIso(periodStartTs),
+    current_period_end: toIso(periodEndTs),
     cancel_at_period_end: active.cancel_at_period_end,
-    trial_end: active.trial_end
-      ? new Date(active.trial_end * 1000).toISOString()
-      : null,
+    trial_end: active.trial_end ? toIso(active.trial_end) : null,
   },
   { onConflict: "id" },
 );
