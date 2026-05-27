@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { fontsVariables } from "@/lib/fonts";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import { PostHogProvider } from "@/components/analytics/posthog-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -119,10 +122,22 @@ export default function RootLayout({
             __html: JSON.stringify(organizationJsonLd),
           }}
         />
-        <TooltipProvider delayDuration={150}>
-          {children}
-          <Toaster />
-        </TooltipProvider>
+        {/*
+          Analytics stack:
+          - <Analytics />        Vercel page-view + visitor + referrer tracking (Hobby tier)
+          - <SpeedInsights />    Real-user Core Web Vitals (FCP, LCP, CLS, INP)
+          - <PostHogProvider />  Product analytics, funnels, session replay,
+                                  conversion events. No-op when env key missing.
+          All three are SSR-safe and ship < 20kb gzip combined.
+        */}
+        <Analytics />
+        <SpeedInsights />
+        <PostHogProvider>
+          <TooltipProvider delayDuration={150}>
+            {children}
+            <Toaster />
+          </TooltipProvider>
+        </PostHogProvider>
       </body>
     </html>
   );

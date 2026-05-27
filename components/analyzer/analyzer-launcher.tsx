@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import posthog from "posthog-js";
 import { createAnalysis } from "@/app/actions/analyzer";
 import type { PlanTier } from "@/lib/supabase/types";
 
@@ -56,6 +57,17 @@ export function AnalyzerLauncher({
       if (!res.ok) {
         toast.error(res.error);
         return;
+      }
+      // PostHog: the activation event. Funnel = signup → analyzer_run →
+      // checkout_started → plan_upgraded. The first three answer the
+      // question "do users get value before being asked to pay?"
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (typeof window !== "undefined" && (posthog as any).__loaded) {
+        posthog.capture("analyzer_run", {
+          url: url.trim(),
+          persona_preset: preset.id,
+          plan,
+        });
       }
       router.push(`/app/analyzer/${res.id}`);
     });

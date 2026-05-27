@@ -9,6 +9,7 @@ import {
 } from "@stripe/react-stripe-js";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import posthog from "posthog-js";
 
 /**
  * Embedded Stripe Checkout (v3.8.3).
@@ -46,6 +47,13 @@ export function EmbeddedCheckoutForm({
 
   useEffect(() => {
     let cancelled = false;
+    // PostHog: fire the funnel-start event the moment the user lands
+    // on the checkout page — this becomes the "checkout started" step
+    // between "signup" and "plan_upgraded" in the conversion funnel.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (typeof window !== "undefined" && (posthog as any).__loaded) {
+      posthog.capture("checkout_started", { plan, interval });
+    }
     (async () => {
       try {
         const res = await fetch("/api/stripe/checkout", {

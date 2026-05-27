@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import posthog from "posthog-js";
 import {
   CheckCircle2,
   ArrowRight,
@@ -59,6 +60,21 @@ export function PlanConfirmation({
 
   const planMeta = PLANS[expectedPlan];
   const credits = planMeta.monthlyCredits;
+
+  // PostHog conversion event — fired exactly once, the first tick we
+  // see the plan upgrade reflected. This is THE event you build the
+  // signup→pro funnel on in the dashboard.
+  useEffect(() => {
+    if (!isUpgraded) return;
+    if (typeof window === "undefined") return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!(posthog as any).__loaded) return;
+    posthog.capture("plan_upgraded", {
+      plan: expectedPlan,
+      credits,
+      from_plan: initialPlan,
+    });
+  }, [isUpgraded, expectedPlan, credits, initialPlan]);
 
   // ─── Success ─────────────────────────────────────────────────────
   if (isUpgraded) {
