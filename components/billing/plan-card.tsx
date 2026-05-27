@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,42 +19,41 @@ export function PlanCard({
   /** True if the user already has *any* paid subscription. */
   hasExistingSub: boolean;
 }) {
+  const router = useRouter();
   const [interval, setInterval] = useState<Interval>("month");
   const [isPending, startTransition] = useTransition();
 
   /**
    * If the user already has an active subscription, we route them to the
    * Stripe Customer Portal which does a *real* plan swap (proration handled
-   * by Stripe). Otherwise we open a fresh Checkout Session.
+   * by Stripe). Otherwise we open our own Embedded Checkout page at
+   * /app/checkout?plan=...&interval=... which loads the Stripe iframe
+   * inside our dark-themed wrapper.
    *
    * This avoids the "dual subscription" footgun where Checkout creates a
    * parallel sub instead of upgrading.
    */
   function checkout() {
     if (plan.id === "free") return;
-    startTransition(async () => {
-      try {
-        const endpoint = hasExistingSub
-          ? "/api/stripe/portal"
-          : "/api/stripe/checkout";
-        const init: RequestInit = hasExistingSub
-          ? { method: "POST" }
-          : {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ plan: plan.id, interval }),
-            };
-        const res = await fetch(endpoint, init);
-        if (!res.ok) {
-          const j = (await res.json()) as { error?: string; detail?: string };
-          throw new Error(j.detail ?? j.error ?? "Checkout failed");
+    if (hasExistingSub) {
+      // Existing sub → portal flow is unchanged
+      startTransition(async () => {
+        try {
+          const res = await fetch("/api/stripe/portal", { method: "POST" });
+          if (!res.ok) {
+            const j = (await res.json()) as { error?: string; detail?: string };
+            throw new Error(j.detail ?? j.error ?? "Portal failed");
+          }
+          const { url } = (await res.json()) as { url: string };
+          window.location.href = url;
+        } catch (err) {
+          toast.error((err as Error).message);
         }
-        const { url } = (await res.json()) as { url: string };
-        window.location.href = url;
-      } catch (err) {
-        toast.error((err as Error).message);
-      }
-    });
+      });
+      return;
+    }
+    // Fresh signup → our embedded checkout page (handles its own loading state)
+    router.push(`/app/checkout?plan=${plan.id}&interval=${interval}`);
   }
 
   return (

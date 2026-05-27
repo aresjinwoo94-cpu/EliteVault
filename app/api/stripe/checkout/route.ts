@@ -61,45 +61,39 @@ export async function POST(req: NextRequest) {
       ? "Includes Meta Campaign Scenario Modeler + Meta Ads optimizer + REST API."
       : "Includes the full Analyzer + Library + Community publishing.";
 
+  // v3.8.3 — switched from Hosted Checkout (ui_mode default) to Embedded
+  // Checkout (ui_mode: "embedded"). The session now returns a
+  // `client_secret` that the client-side EmbeddedCheckout component
+  // mounts inside our dark-themed wrapper at /app/checkout. Stripe still
+  // owns PCI compliance + the actual payment form, but we own the
+  // surrounding page chrome.
+  //
+  // success_url/cancel_url are replaced by a single return_url that
+  // both successful and canceled checkouts hit. We disambiguate in
+  // /app/checkout/return based on the retrieved session's status.
   const session = await stripe.checkout.sessions.create({
+    ui_mode: "embedded",
     mode: "subscription",
     customer: customerId,
     line_items: [{ price, quantity: 1 }],
-    success_url: absoluteUrl(
-      "/app/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}",
+    return_url: absoluteUrl(
+      "/app/checkout/return?session_id={CHECKOUT_SESSION_ID}",
     ),
-    cancel_url: absoluteUrl("/pricing?checkout=canceled"),
     allow_promotion_codes: true,
     billing_address_collection: "auto",
 
-    // Auto-detect the user's browser locale (en/es/fr/etc.) instead of
-    // forcing English. Stripe falls back to "en" if the locale isn't
-    // supported. Massive UX win for Spanish-speaking users.
+    // Locale follows the user's browser language.
     locale: "auto",
 
-    // Custom text shown to the user on the checkout page. These are the
-    // ONLY copy slots Stripe gives us to brand the hosted page — we use
-    // them to make the page feel like a continuation of EliteVault.
+    // Embedded checkout still respects custom_text. Less critical now
+    // that the page is fully ours, but keeps the upgrade-context copy
+    // consistent if Stripe shows it.
     custom_text: {
       submit: {
         message: `You're upgrading to EliteVault ${planLabel}. ${trialLine}`,
       },
-      terms_of_service_acceptance: {
-        message:
-          "By subscribing you agree to EliteVault's [Terms](https://elitevault.app/terms) and [Privacy Policy](https://elitevault.app/privacy).",
-      },
     },
 
-    // Show the terms-of-service checkbox above the submit button so the
-    // user explicitly acknowledges the terms link. This is required for
-    // the terms_of_service_acceptance custom_text above to render.
-    consent_collection: {
-      terms_of_service: "required",
-    },
-
-    // Keep the Stripe customer's name/address in sync with what they
-    // enter at checkout — so the customer record stays clean for our
-    // billing emails + portal.
     customer_update: {
       name: "auto",
       address: "auto",
@@ -112,5 +106,5 @@ export async function POST(req: NextRequest) {
     metadata: { supabase_user_id: user.id, plan },
   });
 
-  return NextResponse.json({ url: session.url });
+  return NextResponse.json({ client_secret: session.client_secret });
 }
