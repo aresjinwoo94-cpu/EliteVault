@@ -82,6 +82,15 @@ export async function POST(req: NextRequest) {
     allow_promotion_codes: true,
     billing_address_collection: "auto",
 
+    // Explicit payment methods — Stripe SHOULD auto-detect from the
+    // dashboard config, but for Embedded Checkout sessions some accounts
+    // only show a subset (Amazon Pay + Link) unless we name the methods
+    // explicitly. Including "card" enables BOTH the regular card form
+    // AND Google Pay / Apple Pay wallets (Stripe surfaces them as express
+    // checkout buttons IF the user's browser supports the wallet AND the
+    // domain is registered in Stripe Dashboard for the wallet).
+    payment_method_types: ["card", "amazon_pay", "cashapp", "link"],
+
     // Locale follows the user's browser language.
     locale: "auto",
 
