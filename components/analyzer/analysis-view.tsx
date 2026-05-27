@@ -21,6 +21,10 @@ import { MetaAdsOptimizer } from "./meta-ads-optimizer";
 import { MetaCampaignSimulator } from "./meta-campaign-simulator";
 import { NichePositionBar } from "./niche-position-bar";
 import { StrengthsIssuesMap } from "./strengths-issues-map";
+import {
+  LockedMetaAdsPreview,
+  LockedSimulatorPreview,
+} from "./scale-locked-preview";
 import type {
   AnalysisResult,
   RewriteResult,
@@ -294,6 +298,13 @@ export function AnalysisView({
                 {viewer.isScale && data.meta_ads == null && (
                   <MetaAdsPending />
                 )}
+                {/*
+                  v3.9.2 — Pro users see a locked preview of the Meta Ads
+                  Optimizer with a Scale upgrade CTA. Drives the Pro→Scale
+                  upgrade by making the feature tangible instead of just
+                  a checkbox on the pricing page.
+                */}
+                {!viewer.isScale && <LockedMetaAdsPreview />}
               </div>
 
               <div className="space-y-6 min-w-0">
@@ -315,6 +326,11 @@ export function AnalysisView({
                 initial={initialSimulation ?? null}
               />
             )}
+            {/*
+              v3.9.2 — Pro users see a locked preview of the Campaign
+              Scenario Modeler. Same upsell pattern as Meta Ads above.
+            */}
+            {!viewer.isScale && <LockedSimulatorPreview />}
         </motion.div>
       )}
     </div>
