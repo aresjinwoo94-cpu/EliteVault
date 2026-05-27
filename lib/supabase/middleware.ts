@@ -42,9 +42,21 @@ export async function updateSession(request: NextRequest) {
             request.cookies.set(name, value),
           );
           response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options),
-          );
+          cookiesToSet.forEach(({ name, value, options }) => {
+            // Force long-lived session cookies — 30 days. Without this,
+            // users get bounced to /sign-in mid-flow (e.g. coming back
+            // from Stripe checkout after filling card details took 5+
+            // minutes). Supabase auth has refresh tokens that work for
+            // way longer than this client-side cookie was set to live,
+            // so this just keeps the cookie present long enough for the
+            // refresh to actually run.
+            const extendedOptions = {
+              ...options,
+              maxAge: options?.maxAge ?? 60 * 60 * 24 * 30, // 30 days
+              sameSite: options?.sameSite ?? ("lax" as const),
+            };
+            response.cookies.set(name, value, extendedOptions);
+          });
         },
       },
     },
