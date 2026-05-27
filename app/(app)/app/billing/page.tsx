@@ -1,24 +1,132 @@
 import Link from "next/link";
 import { CheckCircle2, ExternalLink, Sparkles } from "lucide-react";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  createSupabaseServerClient,
+  createSupabaseServiceClient,
+} from "@/lib/supabase/server";
+import { stripe } from "@/lib/stripe/server";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { PlanCard } from "@/components/billing/plan-card";
 import { PortalButton } from "@/components/billing/portal-button";
-import { PLANS } from "@/lib/stripe/plans";
+import { PLANS, planFromPriceId } from "@/lib/stripe/plans";
 
 export const metadata = { title: "Billing" };
+
+// Force-dynamic — this page reads search params + does post-checkout
+// sync, both of which need fresh per-request execution.
+export const dynamic = "force-dynamic";
+
+/**
+ * Eager post-checkout sync.
+ *
+ * When Stripe redirects the user back to ?checkout=success&session_id=...,
+ * we DON'T wait for the webhook. We pull the session straight from Stripe,
+ * resolve the plan, and update the profile right here. The user sees their
+ * new plan the instant the page renders, instead of seeing "free" for the
+ * 5-30 seconds it can take a webhook delivery + retry to land.
+ *
+ * The webhook still fires in parallel and is idempotent (UNIQUE constraint
+ * on stripe_events.id) — this just removes the latency window.
+ *
+ * Returns true if a sync was attempted (so the page can show a confetti/
+ * welcome banner appropriately).
+ */
+async function eagerSyncFromCheckout(
+  sessionId: string,
+  userId: string,
+): Promise<boolean> {
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ["subscription", "subscription.items"],
+    });
+    if (
+      session.payment_status !== "paid" &&
+      session.status !== "complete"
+    ) {
+      return false;
+    }
+    if (!session.subscription) return false;
+
+    // Subscription is expanded — use as-is
+    const subscription =
+      typeof session.subscription === "string"
+        ? await stripe.subscriptions.retrieve(session.subscription)
+        : session.subscription;
+
+    const priceId = subscription.items.data[0]?.price.id ?? "";
+    const plan = planFromPriceId(priceId);
+    if (plan === "free") return false; // unrecognized price, skip
+
+    const grant = PLANS[plan].monthlyCredits;
+    const service = createSupabaseServiceClient();
+
+    // Stripe API v17+ moved period dates onto subscription.items[i]
+    const item = subscription.items.data[0];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const subAny = subscription as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const itemAny = item as any;
+    const periodStart =
+      itemAny?.current_period_start ?? subAny?.current_period_start ?? null;
+    const periodEnd =
+      itemAny?.current_period_end ?? subAny?.current_period_end ?? null;
+    const toIso = (ts: number | null) =>
+      typeof ts === "number" && ts > 0
+        ? new Date(ts * 1000).toISOString()
+        : null;
+
+    await service.from("subscriptions").upsert(
+      {
+        id: subscription.id,
+        user_id: userId,
+        status: subscription.status,
+        price_id: priceId,
+        plan,
+        current_period_start: toIso(periodStart),
+        current_period_end: toIso(periodEnd),
+        cancel_at_period_end: subscription.cancel_at_period_end,
+        trial_end: subscription.trial_end
+          ? toIso(subscription.trial_end)
+          : null,
+      },
+      { onConflict: "id" },
+    );
+
+    // Set plan + grant fresh credits. The webhook does the same on
+    // invoice.payment_succeeded — racing them is fine because both
+    // hard-set the same value (no double-grant).
+    await service
+      .from("profiles")
+      .update({ plan, credits: grant })
+      .eq("id", userId);
+
+    return true;
+  } catch (err) {
+    console.warn("[billing] eager sync failed:", (err as Error).message);
+    return false;
+  }
+}
 
 export default async function BillingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ checkout?: string }>;
+  searchParams: Promise<{ checkout?: string; session_id?: string }>;
 }) {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  const sp = await searchParams;
+
+  // If we just came back from Stripe, sync the plan eagerly BEFORE
+  // reading the profile. That way the page renders with the new plan,
+  // not the stale free.
+  if (sp.checkout === "success" && sp.session_id && user) {
+    await eagerSyncFromCheckout(sp.session_id, user.id);
+  }
 
   const [{ data: profile }, { data: sub }] = await Promise.all([
     supabase
@@ -35,7 +143,6 @@ export default async function BillingPage({
       .maybeSingle(),
   ]);
 
-  const sp = await searchParams;
   const plan = PLANS[profile?.plan ?? "free"];
 
   return (
