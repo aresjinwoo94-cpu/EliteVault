@@ -27,6 +27,23 @@ export async function GET(request: NextRequest) {
   const errDesc = searchParams.get("error_description");
   const next = searchParams.get("next") ?? "/app/analyzer";
 
+  // Diagnostic logging — surfaces every hop in the auth flow so we can
+  // pinpoint where the session is getting dropped. Vercel logs surface
+  // these in the Functions tab.
+  console.log("[auth/callback] hit", {
+    url: request.url,
+    hasCode: !!code,
+    codePrefix: code?.slice(0, 8) ?? null,
+    errParam,
+    next,
+    referer: request.headers.get("referer"),
+    forwardedHost: request.headers.get("x-forwarded-host"),
+    incomingCookies: request.cookies
+      .getAll()
+      .map((c) => c.name)
+      .filter((n) => n.startsWith("sb-")),
+  });
+
   // Resolve the user-visible origin. On Vercel the request hits an internal
   // proxy, so request.url's origin can be a private hostname. The public
   // domain is in `x-forwarded-host` + `x-forwarded-proto`.
@@ -56,6 +73,9 @@ export async function GET(request: NextRequest) {
   // If the exchange fails we'll discard this and return an error redirect.
   const response = NextResponse.redirect(`${origin}${next}`);
 
+  let cookiesWritten = 0;
+  const cookieNamesWritten: string[] = [];
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -66,27 +86,47 @@ export async function GET(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
-            // 30-day cookie so the session survives long Stripe checkout
-            // flows and idle periods. Matches the lib/supabase/middleware.ts
-            // pattern.
             response.cookies.set(name, value, {
               ...options,
               maxAge: options?.maxAge ?? 60 * 60 * 24 * 30,
               sameSite: options?.sameSite ?? "lax",
             });
+            cookiesWritten++;
+            cookieNamesWritten.push(name);
           });
         },
       },
     },
   );
 
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+  console.log("[auth/callback] exchange result", {
+    ok: !error,
+    error: error?.message ?? null,
+    userId: data?.user?.id ?? null,
+    sessionExpiresAt: data?.session?.expires_at ?? null,
+    cookiesWritten,
+    cookieNamesWritten,
+    redirectTo: `${origin}${next}`,
+  });
 
   if (error) {
     console.error("[auth callback] exchange failed:", error);
     return NextResponse.redirect(
       `${origin}/sign-in?message=${encodeURIComponent(
         `Sign-in failed: ${error.message}`,
+      )}`,
+    );
+  }
+
+  // Sanity check — if cookies weren't actually written, the session won't
+  // survive the redirect. Bail out with a clear error so we don't loop.
+  if (cookiesWritten === 0) {
+    console.error("[auth/callback] exchange succeeded but 0 cookies written!");
+    return NextResponse.redirect(
+      `${origin}/sign-in?message=${encodeURIComponent(
+        "Session cookies failed to set. Try a different browser or disable extensions.",
       )}`,
     );
   }

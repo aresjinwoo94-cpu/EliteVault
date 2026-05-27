@@ -104,14 +104,31 @@ export async function sendMagicLink(
 
   const supabase = await createSupabaseServerClient();
   const h = await headers();
-  const origin = h.get("origin") ?? process.env.NEXT_PUBLIC_APP_URL ?? "";
+  // Prefer x-forwarded-host on Vercel — the bare "host" / "origin" header
+  // can be an internal proxy hostname. Fall back to the env-configured
+  // app URL if neither header is set (e.g. local dev).
+  const xfHost = h.get("x-forwarded-host");
+  const xfProto = h.get("x-forwarded-proto") ?? "https";
+  const headerOrigin = h.get("origin");
+  const origin = xfHost
+    ? `${xfProto}://${xfHost}`
+    : (headerOrigin ?? process.env.NEXT_PUBLIC_APP_URL ?? "");
+
+  const emailRedirectTo = `${origin}/auth/callback?next=${encodeURIComponent(next)}`;
+
+  console.log("[auth/sendMagicLink]", {
+    email: email.slice(0, 4) + "***",
+    origin,
+    emailRedirectTo,
+    next,
+  });
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
       // Where the magic link in the email points back to. The /auth/callback
       // route exchanges the code for a session and redirects to `next`.
-      emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
+      emailRedirectTo,
       // shouldCreateUser=true lets new users sign up via the same flow —
       // no separate "create account" path needed.
       shouldCreateUser: true,
@@ -119,6 +136,7 @@ export async function sendMagicLink(
   });
 
   if (error) {
+    console.warn("[auth/sendMagicLink] failed:", error.message);
     return { status: "error", message: error.message };
   }
 
