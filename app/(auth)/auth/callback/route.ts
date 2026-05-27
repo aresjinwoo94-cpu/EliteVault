@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+// v3.9.1 — edge runtime kills cold-start latency on the auth callback.
+// Node functions on Vercel can cold-start at 500-1000ms; edge starts
+// at ~50ms. The callback runs exactly once per sign-in, so even small
+// gains here are noticeable in the user-perceived "click link → logged
+// in" delay.
+export const runtime = "edge";
+
 /**
  * Supabase Auth callback — OAuth code exchange + magic-link OTP redirect.
  *
