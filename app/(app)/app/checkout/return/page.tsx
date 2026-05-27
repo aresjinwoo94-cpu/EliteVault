@@ -1,19 +1,14 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import {
-  CheckCircle2,
-  ArrowRight,
-  Sparkles,
-  AlertTriangle,
-} from "lucide-react";
+import { Sparkles, AlertTriangle } from "lucide-react";
 import {
   createSupabaseServerClient,
   createSupabaseServiceClient,
 } from "@/lib/supabase/server";
 import { stripe } from "@/lib/stripe/server";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { PLANS, planFromPriceId } from "@/lib/stripe/plans";
+import { PLANS, planFromPriceId, type PlanTier } from "@/lib/stripe/plans";
+import { PlanConfirmation } from "@/components/billing/plan-confirmation";
 
 export const metadata = { title: "Welcome" };
 export const dynamic = "force-dynamic";
@@ -48,7 +43,6 @@ export default async function CheckoutReturnPage({
   let plan = "free" as ReturnType<typeof planFromPriceId>;
   let paid = false;
   let canceled = false;
-  let credits = 0;
 
   try {
     const session = await stripe.checkout.sessions.retrieve(sp.session_id, {
@@ -69,7 +63,7 @@ export default async function CheckoutReturnPage({
       const priceId = subscription.items.data[0]?.price.id ?? "";
       plan = planFromPriceId(priceId);
       paid = plan !== "free";
-      credits = PLANS[plan].monthlyCredits;
+      const credits = PLANS[plan].monthlyCredits;
 
       if (paid) {
         const service = createSupabaseServiceClient();
@@ -117,60 +111,27 @@ export default async function CheckoutReturnPage({
     // a hard error. The webhook will still fire and complete the upgrade.
   }
 
-  // ─── Render success ─────────────────────────────────────────────
+  // ─── Render success (with client-side polling fallback) ──────────
+  // We delegate to PlanConfirmation which polls /api/me until it sees
+  // the upgraded plan in the DB. Belt-and-suspenders on top of the
+  // server-side eager sync above: even if the read of profile.plan
+  // here caught a stale value, the client will catch up within seconds.
   if (paid) {
-    const planMeta = PLANS[plan];
+    // Read current plan to give PlanConfirmation a starting point
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("plan")
+      .eq("id", user.id)
+      .single();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const currentPlan = ((profile as any)?.plan ?? "free") as PlanTier;
+
     return (
       <div className="min-h-screen bg-obsidian-950 flex items-center justify-center p-6">
-        <div className="max-w-md w-full text-center space-y-6">
-          {/* Success animation */}
-          <div className="relative mx-auto flex size-20 items-center justify-center rounded-full bg-success/15 ring-2 ring-success/30">
-            <CheckCircle2 className="size-10 text-success" />
-            <div className="absolute -inset-2 rounded-full bg-success/20 blur-xl animate-pulse" />
-          </div>
-
-          <div>
-            <Badge variant="gold" className="mx-auto">
-              <Sparkles className="size-3" />
-              Payment successful
-            </Badge>
-            <h1 className="mt-4 font-serif text-4xl md:text-5xl tracking-tight leading-[1.05]">
-              Welcome to{" "}
-              <span className="italic text-gold-gradient">
-                {planMeta.name}
-              </span>
-              .
-            </h1>
-            <p className="mt-3 text-sm md:text-base text-white/60 leading-relaxed">
-              Your subscription is active.{" "}
-              <span className="text-white">{credits} credits</span> just landed
-              in your account. Time to put them to work.
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-            <Link href="/app/analyzer">
-              <Button size="lg" className="w-full sm:w-auto">
-                Run your first analysis
-                <ArrowRight className="size-4" />
-              </Button>
-            </Link>
-            <Link href="/app/billing">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                View billing
-              </Button>
-            </Link>
-          </div>
-
-          <p className="text-[11px] text-white/35 pt-4">
-            A receipt is on its way to your email. Manage your subscription
-            anytime from{" "}
-            <Link href="/app/billing" className="text-champagne-400 hover:text-champagne-300">
-              billing
-            </Link>
-            .
-          </p>
-        </div>
+        <PlanConfirmation
+          expectedPlan={plan as PlanTier}
+          initialPlan={currentPlan}
+        />
       </div>
     );
   }
