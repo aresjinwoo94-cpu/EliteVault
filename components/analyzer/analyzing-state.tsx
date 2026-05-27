@@ -3,14 +3,21 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
+import { Layers } from "lucide-react";
 
+// v3.9.3 — phase list reflects the FULL audit pipeline so the user
+// understands the analyzer doesn't just look at the screenshot, it also
+// scrapes the full page text (reviews, trust badges, FAQ, body content,
+// pricing). This matches what the analyzer agent actually receives.
 const PHASES = [
-  "Capturing screenshot at retina resolution…",
+  "Capturing first-impression screenshot…",
+  "Scraping full page content (reviews, trust badges, FAQ)…",
   "Reading visual hierarchy & color system…",
-  "Scoring against the CRO rubric…",
+  "Cross-checking above-the-fold against below-the-fold…",
+  "Scoring against the CRO rubric (6 categories)…",
   "Simulating buyer-persona response…",
   "Placing annotations on the screenshot…",
-  "Drafting top-impact fixes…",
+  "Drafting top-impact fixes ranked by leverage…",
 ];
 
 export function AnalyzingState({
@@ -79,6 +86,20 @@ export function AnalyzingState({
           Typical analyses complete in 30-90 seconds. If anything fails, your
           credit is refunded automatically.
         </p>
+
+        {/*
+          v3.9.3 — explicit "full page is being analyzed" reassurance.
+          Users see the screenshot result and assume the AI only looked at
+          the visible viewport. Make it crystal clear here that the FULL
+          page is in scope, not just the screenshot.
+        */}
+        <div className="mt-6 mx-auto inline-flex items-center gap-2 rounded-full border border-champagne-400/20 bg-champagne-400/[0.04] px-3 py-1.5">
+          <Layers className="size-3 text-champagne-300" />
+          <span className="text-[11px] text-white/65">
+            Analyzing the <span className="text-white">entire page</span>, not
+            just the screenshot
+          </span>
+        </div>
       </div>
     </Card>
   );

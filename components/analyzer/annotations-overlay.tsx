@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ImageOff } from "lucide-react";
+import { ImageOff, Layers } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -85,6 +85,25 @@ export function AnnotationsOverlay({
             Low / good
           </span>
         </div>
+      </div>
+
+      {/*
+        v3.9.3 — explicit scope clarification so users don't think the
+        annotations on a single viewport screenshot are the whole audit.
+        The agent receives the screenshot AS WELL AS the full page text
+        (headings, reviews, trust badges, FAQ, CTAs, body excerpt) — see
+        lib/site-discovery.ts + ai/prompts.ts (FULL-PAGE CONTENT block).
+        The audit findings reference content from BOTH layers.
+      */}
+      <div className="px-5 py-2.5 border-b border-white/[0.04] bg-champagne-400/[0.025] flex items-center gap-2">
+        <Layers className="size-3 text-champagne-300" />
+        <p className="text-[11px] text-white/65 leading-tight">
+          <span className="text-white">First-impression view</span>
+          <span className="text-white/40"> · This screenshot shows the
+          above-the-fold capture. The audit findings below also analyzed
+          the full page text — reviews, trust badges, FAQ, descriptions
+          and CTAs from the entire URL.</span>
+        </p>
       </div>
 
       <div className="relative bg-obsidian-950">
