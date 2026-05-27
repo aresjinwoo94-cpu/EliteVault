@@ -11,6 +11,37 @@ const Body = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  try {
+    return await handleCheckout(req);
+  } catch (err) {
+    // v3.9.4 — catch-all so a Stripe SDK throw NEVER produces an empty
+    // response. Before this, `stripe.checkout.sessions.create` errors
+    // (most commonly "No such price" when Live keys are mixed with Test
+    // price IDs) bubbled up unhandled — Next.js returned a generic 500
+    // with HTML or empty body, and the client got
+    // "Failed to execute 'json' on 'Response': Unexpected end of JSON input"
+    // (which is what the user just hit).
+    const msg = err instanceof Error ? err.message : "checkout_failed";
+    const code =
+      err instanceof Error && "code" in err
+        ? (err as unknown as { code?: string }).code
+        : undefined;
+    const detail =
+      err instanceof Error && "raw" in err
+        ? (err as unknown as { raw?: { message?: string } }).raw?.message
+        : undefined;
+    console.error("[stripe/checkout] failed:", { msg, code, detail });
+    return NextResponse.json(
+      {
+        error: code ?? "checkout_failed",
+        detail: detail ?? msg,
+      },
+      { status: 500 },
+    );
+  }
+}
+
+async function handleCheckout(req: NextRequest) {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
