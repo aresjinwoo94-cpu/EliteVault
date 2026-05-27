@@ -1,0 +1,509 @@
+<!doctype html>
+<!--
+  EliteVault — Magic Link email template (v3.9)
+  ────────────────────────────────────────────────────────────────────
+  Paste this HTML into:
+    Supabase Dashboard → Authentication → Email Templates → Magic Link
+
+  Subject line suggestion:
+    Your EliteVault sign-in link
+
+  Variables Supabase substitutes at send time:
+    {{ .ConfirmationURL }}  — the magic-link URL the user clicks
+    {{ .Email }}             — recipient address (optional, we don't show it)
+
+  Email-client constraints we work around:
+    • Gmail strips <style> blocks → all critical styling is INLINE
+    • Outlook on Windows ignores CSS gradients → we use solid #D4AF37 gold
+    • Dark-mode clients sometimes invert backgrounds → we lock with
+      `background-color` + `color` together on every block
+    • Buttons get clipped if not in a <table> — the CTA is a 3-cell table
+    • Max width 600px (industry standard)
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="supported-color-schemes" content="dark" />
+    <title>Your EliteVault sign-in link</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      background-color: #050507;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+        Helvetica, Arial, sans-serif;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    "
+  >
+    <!-- Preheader (hidden preview text shown in inbox list) -->
+    <div
+      style="
+        display: none;
+        max-height: 0;
+        overflow: hidden;
+        font-size: 1px;
+        line-height: 1px;
+        color: #050507;
+      "
+    >
+      Tap the button to sign into EliteVault — your AI ecommerce auditor.
+    </div>
+
+    <table
+      role="presentation"
+      cellpadding="0"
+      cellspacing="0"
+      border="0"
+      width="100%"
+      style="background-color: #050507"
+    >
+      <tr>
+        <td align="center" style="padding: 32px 16px">
+          <!-- Card -->
+          <table
+            role="presentation"
+            cellpadding="0"
+            cellspacing="0"
+            border="0"
+            width="600"
+            style="
+              width: 100%;
+              max-width: 600px;
+              background-color: #0a0a0f;
+              border: 1px solid rgba(255, 255, 255, 0.05);
+              border-radius: 16px;
+              overflow: hidden;
+            "
+          >
+            <!-- Top gold accent bar -->
+            <tr>
+              <td
+                height="3"
+                style="
+                  height: 3px;
+                  background-color: #d4af37;
+                  line-height: 3px;
+                  font-size: 0;
+                "
+              >
+                &nbsp;
+              </td>
+            </tr>
+
+            <!-- Brand header -->
+            <tr>
+              <td style="padding: 32px 40px 0 40px" align="left">
+                <table
+                  role="presentation"
+                  cellpadding="0"
+                  cellspacing="0"
+                  border="0"
+                >
+                  <tr>
+                    <!-- Diamond mark in gold -->
+                    <td style="vertical-align: middle">
+                      <table
+                        role="presentation"
+                        cellpadding="0"
+                        cellspacing="0"
+                        border="0"
+                      >
+                        <tr>
+                          <td
+                            width="32"
+                            height="32"
+                            align="center"
+                            style="
+                              width: 32px;
+                              height: 32px;
+                              background-color: #d4af37;
+                              border-radius: 8px;
+                              color: #0a0a0f;
+                              font-family: 'Georgia', serif;
+                              font-size: 18px;
+                              font-weight: 700;
+                              line-height: 32px;
+                              text-align: center;
+                            "
+                          >
+                            ◆
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                    <td
+                      style="
+                        padding-left: 12px;
+                        vertical-align: middle;
+                        color: #ffffff;
+                        font-family: 'Georgia', serif;
+                        font-size: 20px;
+                        letter-spacing: -0.02em;
+                      "
+                    >
+                      EliteVault
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Hero copy -->
+            <tr>
+              <td style="padding: 28px 40px 0 40px" align="left">
+                <h1
+                  style="
+                    margin: 0 0 12px 0;
+                    color: #ffffff;
+                    font-family: 'Georgia', serif;
+                    font-size: 28px;
+                    line-height: 1.15;
+                    font-weight: 500;
+                    letter-spacing: -0.02em;
+                  "
+                >
+                  Your sign-in link is ready.
+                </h1>
+                <p
+                  style="
+                    margin: 0;
+                    color: rgba(255, 255, 255, 0.6);
+                    font-size: 15px;
+                    line-height: 1.55;
+                  "
+                >
+                  Tap the button below to sign into EliteVault — your AI
+                  ecommerce auditor. Link expires in 1 hour.
+                </p>
+              </td>
+            </tr>
+
+            <!-- CTA button -->
+            <tr>
+              <td style="padding: 28px 40px 0 40px" align="left">
+                <table
+                  role="presentation"
+                  cellpadding="0"
+                  cellspacing="0"
+                  border="0"
+                >
+                  <tr>
+                    <td
+                      align="center"
+                      bgcolor="#D4AF37"
+                      style="
+                        background-color: #d4af37;
+                        border-radius: 10px;
+                        padding: 0;
+                      "
+                    >
+                      <a
+                        href="{{ .ConfirmationURL }}"
+                        target="_blank"
+                        style="
+                          display: inline-block;
+                          padding: 14px 32px;
+                          color: #0a0a0f;
+                          font-family: -apple-system, BlinkMacSystemFont,
+                            'Segoe UI', Roboto, sans-serif;
+                          font-size: 15px;
+                          font-weight: 600;
+                          text-decoration: none;
+                          letter-spacing: 0.01em;
+                        "
+                        >Sign in to EliteVault &rarr;</a
+                      >
+                    </td>
+                  </tr>
+                </table>
+                <p
+                  style="
+                    margin: 12px 0 0 0;
+                    color: rgba(255, 255, 255, 0.3);
+                    font-size: 12px;
+                    line-height: 1.5;
+                  "
+                >
+                  Or paste this link into your browser:<br />
+                  <a
+                    href="{{ .ConfirmationURL }}"
+                    style="
+                      color: rgba(212, 175, 55, 0.7);
+                      word-break: break-all;
+                      text-decoration: underline;
+                    "
+                    >{{ .ConfirmationURL }}</a
+                  >
+                </p>
+              </td>
+            </tr>
+
+            <!-- Divider -->
+            <tr>
+              <td style="padding: 32px 40px 0 40px">
+                <div
+                  style="
+                    height: 1px;
+                    background-color: rgba(255, 255, 255, 0.06);
+                    line-height: 1px;
+                    font-size: 0;
+                  "
+                >
+                  &nbsp;
+                </div>
+              </td>
+            </tr>
+
+            <!-- What you'll find inside -->
+            <tr>
+              <td style="padding: 28px 40px 0 40px" align="left">
+                <p
+                  style="
+                    margin: 0 0 16px 0;
+                    color: rgba(212, 175, 55, 0.8);
+                    font-size: 11px;
+                    font-weight: 600;
+                    letter-spacing: 0.12em;
+                    text-transform: uppercase;
+                  "
+                >
+                  What's inside
+                </p>
+
+                <table
+                  role="presentation"
+                  cellpadding="0"
+                  cellspacing="0"
+                  border="0"
+                  width="100%"
+                >
+                  <!-- Feature 1 -->
+                  <tr>
+                    <td style="padding: 0 0 14px 0">
+                      <table
+                        role="presentation"
+                        cellpadding="0"
+                        cellspacing="0"
+                        border="0"
+                      >
+                        <tr>
+                          <td
+                            width="24"
+                            style="
+                              vertical-align: top;
+                              color: #d4af37;
+                              font-size: 16px;
+                              line-height: 22px;
+                            "
+                          >
+                            ◆
+                          </td>
+                          <td style="vertical-align: top; padding-left: 8px">
+                            <p
+                              style="
+                                margin: 0;
+                                color: #ffffff;
+                                font-size: 14px;
+                                font-weight: 600;
+                                line-height: 1.4;
+                              "
+                            >
+                              Brutal CRO audit on any store URL
+                            </p>
+                            <p
+                              style="
+                                margin: 2px 0 0 0;
+                                color: rgba(255, 255, 255, 0.55);
+                                font-size: 13px;
+                                line-height: 1.5;
+                              "
+                            >
+                              Annotated screenshot, six-category score,
+                              buyer-persona simulation, ranked punch-list of
+                              fixes.
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Feature 2 -->
+                  <tr>
+                    <td style="padding: 0 0 14px 0">
+                      <table
+                        role="presentation"
+                        cellpadding="0"
+                        cellspacing="0"
+                        border="0"
+                      >
+                        <tr>
+                          <td
+                            width="24"
+                            style="
+                              vertical-align: top;
+                              color: #d4af37;
+                              font-size: 16px;
+                              line-height: 22px;
+                            "
+                          >
+                            ◆
+                          </td>
+                          <td style="vertical-align: top; padding-left: 8px">
+                            <p
+                              style="
+                                margin: 0;
+                                color: #ffffff;
+                                font-size: 14px;
+                                font-weight: 600;
+                                line-height: 1.4;
+                              "
+                            >
+                              A live library of winning stores
+                            </p>
+                            <p
+                              style="
+                                margin: 2px 0 0 0;
+                                color: rgba(255, 255, 255, 0.55);
+                                font-size: 13px;
+                                line-height: 1.5;
+                              "
+                            >
+                              50+ DTC brands actually generating revenue right
+                              now. Search by prompt or screenshot.
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Feature 3 -->
+                  <tr>
+                    <td style="padding: 0 0 0 0">
+                      <table
+                        role="presentation"
+                        cellpadding="0"
+                        cellspacing="0"
+                        border="0"
+                      >
+                        <tr>
+                          <td
+                            width="24"
+                            style="
+                              vertical-align: top;
+                              color: #d4af37;
+                              font-size: 16px;
+                              line-height: 22px;
+                            "
+                          >
+                            ◆
+                          </td>
+                          <td style="vertical-align: top; padding-left: 8px">
+                            <p
+                              style="
+                                margin: 0;
+                                color: #ffffff;
+                                font-size: 14px;
+                                font-weight: 600;
+                                line-height: 1.4;
+                              "
+                            >
+                              7-day Meta Ads scenario modeler
+                            </p>
+                            <p
+                              style="
+                                margin: 2px 0 0 0;
+                                color: rgba(255, 255, 255, 0.55);
+                                font-size: 13px;
+                                line-height: 1.5;
+                              "
+                            >
+                              Project a campaign across 3 honest scenarios
+                              before you spend a dollar. Scale plan.
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Pricing pill -->
+            <tr>
+              <td style="padding: 28px 40px 0 40px" align="left">
+                <table
+                  role="presentation"
+                  cellpadding="0"
+                  cellspacing="0"
+                  border="0"
+                  width="100%"
+                  style="
+                    background-color: rgba(212, 175, 55, 0.04);
+                    border: 1px solid rgba(212, 175, 55, 0.18);
+                    border-radius: 10px;
+                  "
+                >
+                  <tr>
+                    <td style="padding: 14px 18px" align="left">
+                      <p
+                        style="
+                          margin: 0;
+                          color: rgba(255, 255, 255, 0.85);
+                          font-size: 13px;
+                          line-height: 1.5;
+                        "
+                      >
+                        Start free with 9 hand-picked winners. Pro
+                        <strong style="color: #d4af37">$19/mo</strong> unlocks
+                        the analyzer. Scale
+                        <strong style="color: #d4af37">$49/mo</strong> adds
+                        the scenario modeler &amp; API.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="padding: 32px 40px 32px 40px" align="left">
+                <p
+                  style="
+                    margin: 0 0 8px 0;
+                    color: rgba(255, 255, 255, 0.35);
+                    font-size: 12px;
+                    line-height: 1.6;
+                  "
+                >
+                  Didn&rsquo;t request this email? It&rsquo;s safe to ignore
+                  &mdash; the link will expire shortly and no account changes
+                  will be made.
+                </p>
+                <p
+                  style="
+                    margin: 0;
+                    color: rgba(255, 255, 255, 0.25);
+                    font-size: 11px;
+                    line-height: 1.5;
+                  "
+                >
+                  EliteVault &middot; AI ecommerce auditing for DTC operators
+                </p>
+              </td>
+            </tr>
+          </table>
+          <!-- /Card -->
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
