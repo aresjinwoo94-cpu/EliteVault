@@ -69,6 +69,31 @@ async function handleCheckout(req: NextRequest) {
     .single();
 
   let customerId = profile?.stripe_customer_id ?? null;
+
+  // v3.9.5 — auto-heal stale customer IDs. The profile may hold a
+  // stripe_customer_id created in TEST mode that doesn't exist now that
+  // we're using LIVE keys (or vice-versa). Probe the customer first; if
+  // Stripe says resource_missing, drop the stale ID and create a fresh
+  // customer below. Without this, the upgrade flow hard-fails for every
+  // user whose customer was provisioned in the previous mode.
+  if (customerId) {
+    try {
+      const existing = await stripe.customers.retrieve(customerId);
+      // Customers can be "deleted" without being missing; treat as stale too.
+      if ((existing as { deleted?: boolean }).deleted) {
+        customerId = null;
+      }
+    } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const code = (err as any)?.code as string | undefined;
+      if (code === "resource_missing") {
+        customerId = null;
+      } else {
+        throw err;
+      }
+    }
+  }
+
   if (!customerId) {
     const customer = await stripe.customers.create({
       email: profile?.email ?? user.email ?? undefined,
