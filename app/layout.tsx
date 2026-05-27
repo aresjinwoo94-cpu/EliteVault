@@ -1,10 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { fontsVariables } from "@/lib/fonts";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
-import { PostHogProvider } from "@/components/analytics/posthog-provider";
+import { AnalyticsGate } from "@/components/analytics/analytics-gate";
+import { isInternalRequest } from "@/lib/analytics/is-internal";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -107,11 +106,16 @@ const organizationJsonLd = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Server-side check: if the current request is from the developer
+  // (email in INTERNAL_EMAILS env), the gate suppresses ALL analytics
+  // and sets a localStorage flag that persists even after logout.
+  const isInternal = await isInternalRequest();
+
   return (
     <html lang="en" className={`${fontsVariables} dark`} suppressHydrationWarning>
       <body className="font-sans antialiased min-h-screen">
@@ -123,21 +127,17 @@ export default function RootLayout({
           }}
         />
         {/*
-          Analytics stack:
-          - <Analytics />        Vercel page-view + visitor + referrer tracking (Hobby tier)
-          - <SpeedInsights />    Real-user Core Web Vitals (FCP, LCP, CLS, INP)
-          - <PostHogProvider />  Product analytics, funnels, session replay,
-                                  conversion events. No-op when env key missing.
-          All three are SSR-safe and ship < 20kb gzip combined.
+          Analytics gate — wraps Vercel Analytics + Speed Insights +
+          PostHog. Honors INTERNAL_EMAILS (server) and the
+          `__ev_no_analytics` localStorage flag (client) so developer
+          activity never inflates the funnel.
         */}
-        <Analytics />
-        <SpeedInsights />
-        <PostHogProvider>
+        <AnalyticsGate isInternal={isInternal}>
           <TooltipProvider delayDuration={150}>
             {children}
             <Toaster />
           </TooltipProvider>
-        </PostHogProvider>
+        </AnalyticsGate>
       </body>
     </html>
   );

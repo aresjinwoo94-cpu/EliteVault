@@ -38,6 +38,15 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!key) return;
     if (typeof window === "undefined") return;
+    // Belt-and-suspenders: the AnalyticsGate already skips mounting
+    // PostHog for internal users, but if someone wires this provider
+    // directly (or the gate flag was set on a previous visit without a
+    // re-render) we honor the localStorage flag here too.
+    try {
+      if (window.localStorage.getItem("__ev_no_analytics") === "1") return;
+    } catch {
+      /* localStorage blocked — proceed with default behavior */
+    }
     // Re-init guard — posthog-js handles repeat init() calls but warns.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((posthog as any).__loaded) return;
