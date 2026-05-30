@@ -31,12 +31,15 @@ const PRESETS = [
 export function AnalyzerLauncher({
   canRun,
   plan,
+  initialUrl = "",
 }: {
   canRun: boolean;
   plan: PlanTier;
+  // P2.1 — prefilled from the landing-page URL box (carried through sign-up).
+  initialUrl?: string;
 }) {
   const router = useRouter();
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState(initialUrl);
   const [presetId, setPresetId] = useState("young-female");
   const [customNotes, setCustomNotes] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -78,12 +81,14 @@ export function AnalyzerLauncher({
       <div className="relative overflow-hidden rounded-2xl border border-champagne-400/20 bg-gradient-to-br from-champagne-400/[0.05] to-violet-600/[0.05] p-8 text-center">
         <Lock className="mx-auto size-7 text-champagne-300" />
         <h3 className="mt-4 font-serif text-2xl">
-          The Analyzer is a Pro feature
+          {plan === "free"
+            ? "You've used your free audit"
+            : "You're out of credits"}
         </h3>
         <p className="mt-2 text-sm text-white/55 max-w-md mx-auto">
           {plan === "free"
-            ? "Upgrade to Pro to unlock the brutal audit. The first month pays for itself in a single insight."
-            : "You're out of credits. Top up by switching billing periods, or wait until next renewal."}
+            ? "Upgrade to Pro to unlock your prioritized fixes, the buyer-persona simulation and unlimited audits. The first month usually pays for itself in a single insight."
+            : "Top up by switching billing periods, or wait until next renewal."}
         </p>
         <Button className="mt-5" onClick={() => router.push("/app/billing")}>
           Upgrade

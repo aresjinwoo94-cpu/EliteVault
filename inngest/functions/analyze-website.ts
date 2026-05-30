@@ -1,8 +1,13 @@
 import { inngest } from "../client";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { captureScreenshot } from "@/lib/screenshot";
+import {
+  readScreenshotCache,
+  writeScreenshotCache,
+} from "@/lib/screenshot-cache";
 import { discoverSite } from "@/lib/site-discovery";
 import { runAnalyzerAgent } from "@/ai/agents/analyzer-agent";
+import { runQuickScore } from "@/ai/agents/quick-score-agent";
 import { runMetaAdsOptimizerAgent } from "@/ai/agents/meta-ads-optimizer-agent";
 // Auto-Rewrite agent removed from the v2.1 Scale pipeline — kept in
 // /ai/agents for future on-demand routes ("regenerate hero") but not
@@ -58,7 +63,7 @@ export const analyzeWebsite = inngest.createFunction(
   },
   { event: "analysis/requested" },
   async ({ event, step }) => {
-    const { analysisId, userId, url, screenshotUrl, persona, runRewrite } =
+    const { analysisId, userId, url, screenshotUrl, persona, runRewrite, fast } =
       event.data;
     const service = createSupabaseServiceClient();
 
@@ -79,7 +84,57 @@ export const analyzeWebsite = inngest.createFunction(
         };
       }
       if (!url) throw new Error("Either url or screenshotUrl is required");
+
+      // P1.4 — URL-hash cache. If we've already captured this exact store,
+      // re-download the stored public image (fast) instead of re-running
+      // the slow capture providers. Self-healing: a 404 on the cached URL
+      // falls through to a fresh capture below.
+      const cached = await readScreenshotCache(service, url);
+      if (cached) {
+        try {
+          const res = await fetch(cached.screenshot_url);
+          if (res.ok) {
+            const buf = Buffer.from(await res.arrayBuffer());
+            if (buf.length > 1000) {
+              console.log("[analyzer] screenshot cache hit");
+              return {
+                base64: buf.toString("base64"),
+                mediaType: cached.media_type,
+              };
+            }
+          }
+        } catch (err) {
+          console.warn(
+            "[analyzer] cached screenshot fetch failed, recapturing:",
+            (err as Error).message,
+          );
+        }
+      }
       return captureScreenshot(url);
+    });
+
+    // P1.2 — instant teaser score. Runs as soon as we have the screenshot,
+    // well before the full audit (and the extra-page captures) finish, so
+    // the analyzing screen can show a real number in a few seconds. Pure
+    // best-effort: never throws, never blocks the audit.
+    await step.run("quick-score", async () => {
+      const preview = await runQuickScore({
+        screenshotBase64: screenshot.base64,
+        mediaType: screenshot.mediaType,
+        url,
+      });
+      if (preview) {
+        await (
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          service.from("analyses") as any
+        )
+          .update({
+            preview_score: preview.score,
+            preview_summary: preview.headline,
+          })
+          .eq("id", analysisId);
+      }
+      return preview;
     });
 
     const niche = await step.run("infer-niche", async () => {
@@ -142,6 +197,18 @@ export const analyzeWebsite = inngest.createFunction(
         .from("analyses")
         .update({ screenshot_url: pub.publicUrl })
         .eq("id", analysisId);
+
+      // P1.4 — populate the URL-hash cache with this public image so a
+      // future re-analysis of the same store skips the capture providers.
+      // Only for URL-based runs (uploaded screenshots aren't re-capturable).
+      if (url) {
+        await writeScreenshotCache(
+          service,
+          url,
+          pub.publicUrl,
+          screenshot.mediaType,
+        );
+      }
       return pub.publicUrl;
     });
 
@@ -151,6 +218,8 @@ export const analyzeWebsite = inngest.createFunction(
         mediaType: screenshot.mediaType,
         url,
         persona: persona as BuyerPersona | null,
+        // P1.1 — free audits run on the cheap/fast model tier.
+        fast,
         // v2.2: multi-image input — homepage + 1-2 product pages. The model
         // now reasons across multiple views of the store at once, with the
         // homepage as the *primary* one for annotation positioning.

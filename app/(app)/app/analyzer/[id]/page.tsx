@@ -102,6 +102,8 @@ export default async function AnalysisPage({
         publishedSlug,
         fullName: profile?.full_name ?? null,
         isScale: plan.unlocksScale,
+        // P0.2 — Pro/Scale see the full "cure"; Free sees it blurred.
+        isPaid: (profile?.plan ?? "free") !== "free",
       }}
       initialSimulation={initialSimulation}
     />

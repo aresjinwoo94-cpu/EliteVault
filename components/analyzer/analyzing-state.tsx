@@ -23,9 +23,15 @@ const PHASES = [
 export function AnalyzingState({
   status,
   startedAt,
+  previewScore,
+  previewSummary,
 }: {
   status: "queued" | "running";
   startedAt: string | null;
+  // P1.2 — instant teaser: a fast preliminary score shown while the full
+  // audit (20-60s) is still running, to cut abandonment on the wait.
+  previewScore?: number | null;
+  previewSummary?: string | null;
 }) {
   const [phaseIdx, setPhaseIdx] = useState(0);
   const [secs, setSecs] = useState(0);
@@ -80,6 +86,39 @@ export function AnalyzingState({
           <p className="mt-2 text-xs font-mono text-white/30 tnum">
             {secs}s elapsed
           </p>
+        )}
+
+        {/*
+          P1.2 — instant teaser. The moment the fast preliminary score
+          lands (a few seconds in), we surface it here so the user sees a
+          real number while the full audit keeps running. Clearly labelled
+          "preliminary" so it's never confused with the final score.
+        */}
+        {typeof previewScore === "number" && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-7 mx-auto max-w-sm rounded-2xl border border-champagne-400/20 bg-champagne-400/[0.04] px-5 py-4"
+          >
+            <p className="text-[10px] uppercase tracking-widest text-champagne-300/80">
+              Preliminary score
+            </p>
+            <div className="mt-1 flex items-baseline justify-center gap-1.5">
+              <span className="font-serif text-5xl tnum text-gold-gradient leading-none">
+                {previewScore}
+              </span>
+              <span className="text-sm text-white/40">/ 100</span>
+            </div>
+            {previewSummary && (
+              <p className="mt-2 text-xs text-white/60 leading-relaxed">
+                {previewSummary}
+              </p>
+            )}
+            <p className="mt-2 text-[10px] text-white/30">
+              Refining the full audit — annotations, persona &amp; fixes…
+            </p>
+          </motion.div>
         )}
 
         <p className="mt-8 text-xs text-white/30 max-w-md mx-auto">

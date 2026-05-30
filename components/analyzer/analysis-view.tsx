@@ -25,6 +25,8 @@ import {
   LockedMetaAdsPreview,
   LockedSimulatorPreview,
 } from "./scale-locked-preview";
+import { FreeLockedCure } from "./free-locked-cure";
+import { ShareButton } from "./share-button";
 import type {
   AnalysisResult,
   RewriteResult,
@@ -61,6 +63,9 @@ type Analysis = {
   finished_at: string | null;
   created_at: string;
   is_published?: boolean;
+  share_slug?: string | null;
+  preview_score?: number | null;
+  preview_summary?: string | null;
 };
 
 interface ViewerCtx {
@@ -68,6 +73,12 @@ interface ViewerCtx {
   publishedSlug: string | null;
   fullName: string | null;
   isScale: boolean;
+  /**
+   * P0.2 — true for Pro/Scale. Free users see the diagnosis (score +
+   * annotated screenshot) but the "cure" (prioritized fixes + persona
+   * simulation) is rendered blurred behind a Pro upgrade CTA.
+   */
+  isPaid: boolean;
 }
 
 export function AnalysisView({
@@ -148,16 +159,22 @@ export function AnalysisView({
             {new Date(data.created_at).toLocaleString()}
           </p>
         </div>
-        <Badge
-          variant={
-            isDone ? "success" : isFailed ? "danger" : "ai"
-          }
-          className="shrink-0"
-        >
-          {isWorking && <RefreshCw className="size-3 animate-spin" />}
-          {isDone && <Sparkles className="size-3" />}
-          {data.status}
-        </Badge>
+        <div className="flex items-center gap-2 shrink-0">
+          {/* P0.3 — share the public, read-only audit (any plan). */}
+          {isDone && (
+            <ShareButton
+              analysisId={data.id}
+              initialSlug={data.share_slug ?? null}
+            />
+          )}
+          <Badge
+            variant={isDone ? "success" : isFailed ? "danger" : "ai"}
+          >
+            {isWorking && <RefreshCw className="size-3 animate-spin" />}
+            {isDone && <Sparkles className="size-3" />}
+            {data.status}
+          </Badge>
+        </div>
       </header>
 
       {/* Prominent Publish-to-Community callout (Pro/Scale only, succeeded only) */}
@@ -179,7 +196,12 @@ export function AnalysisView({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
-          <AnalyzingState status={data.status} startedAt={data.started_at} />
+          <AnalyzingState
+            status={data.status}
+            startedAt={data.started_at}
+            previewScore={data.preview_score ?? null}
+            previewSummary={data.preview_summary ?? null}
+          />
         </motion.div>
       )}
 
@@ -289,9 +311,25 @@ export function AnalysisView({
                   imageUrl={data.screenshot_url ?? ""}
                   annotations={data.result.annotations}
                 />
-                <PersonaResponse
-                  response={data.result.buyer_persona_response}
-                />
+                {/*
+                  P0.2 — the buyer-persona simulation is part of the "cure".
+                  Paid users see it; Free users see it blurred behind a Pro
+                  upgrade CTA (their real, already-computed response).
+                */}
+                {viewer.isPaid ? (
+                  <PersonaResponse
+                    response={data.result.buyer_persona_response}
+                  />
+                ) : (
+                  <FreeLockedCure
+                    title="Buyer-persona simulation"
+                    tagline="Hear exactly how your target buyer reacts to your store — what makes them hesitate, and whether they'd buy."
+                  >
+                    <PersonaResponse
+                      response={data.result.buyer_persona_response}
+                    />
+                  </FreeLockedCure>
+                )}
                 {viewer.isScale && data.meta_ads != null && (
                   <MetaAdsOptimizer meta={data.meta_ads as never} />
                 )}
@@ -309,7 +347,27 @@ export function AnalysisView({
 
               <div className="space-y-6 min-w-0">
                 <CategoryRadar scores={data.result.category_scores} />
-                <TopFixes fixes={data.result.top_fixes} />
+                {/*
+                  P0.2 — the prioritized fix list is the core of the "cure".
+                  Paid users get it; Free users see it blurred (their real
+                  fixes, count visible) behind a Pro upgrade CTA at the peak
+                  of desire.
+                */}
+                {viewer.isPaid ? (
+                  <TopFixes fixes={data.result.top_fixes} />
+                ) : (
+                  <FreeLockedCure
+                    title="Top fixes — ranked by leverage"
+                    tagline="The exact changes to make first, ordered by impact-per-hour. This is your action plan."
+                    count={
+                      data.result.top_fixes?.length
+                        ? `${data.result.top_fixes.length} fixes`
+                        : undefined
+                    }
+                  >
+                    <TopFixes fixes={data.result.top_fixes} />
+                  </FreeLockedCure>
+                )}
               </div>
             </div>
 
