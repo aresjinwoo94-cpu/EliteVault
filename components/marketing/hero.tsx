@@ -1,8 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -11,63 +9,32 @@ import {
   AlertTriangle,
   Zap,
   TrendingUp,
-  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
 /**
- * P2.1 — above-the-fold URL box as the entry to the product.
- *
- * Pasting a URL here starts the audit flow instead of just linking to
- * sign-up. We carry the URL through sign-up (required for the verified-
- * email free audit / anti-abuse) via the `next` param so the analyzer
- * launcher prefills it post-auth — fewer steps to the "aha".
- *
- * Single encodeURIComponent on the URL survives every hop intact:
- * /sign-up?next → magic-link /auth/callback?next → /app/analyzer?url.
+ * Primary hero CTA. We intentionally DON'T show a URL input here: the
+ * audit requires a (verified-email) account first, so a paste-your-URL bar
+ * on the landing would promise an instant analysis it can't deliver and
+ * just adds friction before the same sign-up step. One clear button.
  */
-function HeroUrlBox() {
-  const router = useRouter();
-  const [url, setUrl] = useState("");
-
-  function start() {
-    const trimmed = url.trim();
-    const target = trimmed
-      ? `/app/analyzer?url=${encodeURIComponent(trimmed)}`
-      : "/app/analyzer";
-    router.push(`/sign-up?next=${encodeURIComponent(target)}`);
-  }
-
+function HeroCta() {
   return (
-    <div className="mx-auto max-w-xl">
-      <div className="flex flex-col sm:flex-row items-stretch gap-2.5">
-        <div className="relative flex-1">
-          <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-white/30 pointer-events-none" />
-          <Input
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && start()}
-            placeholder="https://yourstore.com"
-            aria-label="Your store URL"
-            className="pl-10 h-12 text-base"
-          />
-        </div>
-        <Button size="xl" onClick={start} className="shrink-0">
+    <div className="flex flex-col items-center gap-3">
+      <Link href="/sign-up?next=/app/analyzer">
+        <Button size="xl">
           Audit my store free
           <ArrowRight className="size-4" />
         </Button>
-      </div>
-      <div className="mt-3 flex items-center justify-center">
-        <Link href="#analyzer">
-          <Button variant="ghost" size="sm" className="text-white/55">
-            or see it in action first
-          </Button>
-        </Link>
-      </div>
+      </Link>
+      <Link href="#analyzer">
+        <Button variant="ghost" size="sm" className="text-white/55">
+          or see it in action first
+        </Button>
+      </Link>
     </div>
   );
 }
@@ -132,7 +99,7 @@ export function Hero() {
           transition={{ duration: 0.7, ease, delay: 0.25 }}
           className="mt-10"
         >
-          <HeroUrlBox />
+          <HeroCta />
         </motion.div>
 
         <motion.p
