@@ -151,11 +151,76 @@ export function AuthForm({
 
 // ─── Magic link sub-form ──────────────────────────────────────────────────
 
+/**
+ * Maps an email's domain to its webmail inbox so we can offer a one-tap
+ * "Open your inbox" button on the "check your email" screen. We link to the
+ * inbox ROOT (not a fragile sender-search deep link) so it always lands
+ * somewhere useful. Unknown/custom domains return null and we simply don't
+ * show the button — the on-screen instructions still cover them.
+ */
+const INBOX_PROVIDERS: { domains: string[]; url: string; label: string }[] = [
+  {
+    domains: ["gmail.com", "googlemail.com"],
+    url: "https://mail.google.com/mail/u/0/",
+    label: "Gmail",
+  },
+  {
+    domains: [
+      "outlook.com",
+      "outlook.es",
+      "hotmail.com",
+      "hotmail.es",
+      "hotmail.co.uk",
+      "live.com",
+      "live.com.mx",
+      "msn.com",
+    ],
+    url: "https://outlook.live.com/mail/0/",
+    label: "Outlook",
+  },
+  {
+    domains: ["yahoo.com", "yahoo.es", "ymail.com", "rocketmail.com"],
+    url: "https://mail.yahoo.com/",
+    label: "Yahoo Mail",
+  },
+  {
+    domains: ["icloud.com", "me.com", "mac.com"],
+    url: "https://www.icloud.com/mail",
+    label: "iCloud Mail",
+  },
+  {
+    domains: ["proton.me", "protonmail.com", "pm.me"],
+    url: "https://mail.proton.me/u/0/",
+    label: "Proton Mail",
+  },
+  { domains: ["aol.com"], url: "https://mail.aol.com/", label: "AOL Mail" },
+  { domains: ["zoho.com"], url: "https://mail.zoho.com/", label: "Zoho Mail" },
+  {
+    domains: ["gmx.com", "gmx.net", "gmx.es"],
+    url: "https://www.gmx.com/",
+    label: "GMX",
+  },
+];
+
+function inboxLinkFor(email: string): { url: string; label: string } | null {
+  const at = email.lastIndexOf("@");
+  if (at < 0) return null;
+  const domain = email.slice(at + 1).trim().toLowerCase();
+  if (!domain) return null;
+  for (const p of INBOX_PROVIDERS) {
+    if (p.domains.includes(domain)) return { url: p.url, label: p.label };
+  }
+  return null;
+}
+
 function MagicLinkForm({ nextUrl }: { nextUrl: string }) {
   const [state, formAction, isPending] = useActionState<AuthState, FormData>(
     sendMagicLink,
     { status: "idle" },
   );
+  // Controlled so we still have the address on the success screen (to build
+  // the "open your inbox" link).
+  const [email, setEmail] = useState("");
 
   // After success, show a friendly "check your email" state instead of
   // the form. The user shouldn't be able to keep submitting once a link
@@ -175,6 +240,21 @@ function MagicLinkForm({ nextUrl }: { nextUrl: string }) {
         <p className="mt-1 text-sm text-white/55 leading-relaxed">
           We sent you a one-tap sign-in link. Click it and you&apos;re in.
         </p>
+
+        {/* One-tap shortcut straight to the user's inbox (known providers). */}
+        {(() => {
+          const inbox = inboxLinkFor(email);
+          if (!inbox) return null;
+          return (
+            <Button asChild size="lg" className="mt-4 w-full">
+              <a href={inbox.url} target="_blank" rel="noopener noreferrer">
+                Open {inbox.label}
+                <ArrowRight className="size-4" />
+              </a>
+            </Button>
+          );
+        })()}
+
         <p className="mt-4 text-[11px] text-white/35">
           Didn&apos;t get it? Check spam, or wait 60 seconds and try again.
         </p>
@@ -207,6 +287,8 @@ function MagicLinkForm({ nextUrl }: { nextUrl: string }) {
             required
             className="pl-10"
             disabled={isPending}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
       </div>
