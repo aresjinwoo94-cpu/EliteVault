@@ -9,6 +9,10 @@ type Events = {
       screenshotUrl?: string;
       persona?: Record<string, unknown> | null;
       runRewrite?: boolean;
+      // P1.1 — when true, the analyzer agent uses the cheap/fast model
+      // tier (Gemini Flash-Lite). Optional so older queued events without
+      // the field still validate (treated as premium / not-fast).
+      fast?: boolean;
     };
   };
   "meta-simulation/requested": {

@@ -11,7 +11,7 @@ export const metadata = { title: "Analyzer" };
 export default async function AnalyzerPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; url?: string }>;
 }) {
   const supabase = await createSupabaseServerClient();
   const {
@@ -77,6 +77,7 @@ export default async function AnalyzerPage({
       <AnalyzerLauncher
         canRun={(profile?.credits ?? 0) > 0 && plan.unlocksAnalyzer}
         plan={plan.id}
+        initialUrl={sp.url ?? ""}
       />
 
       <section>

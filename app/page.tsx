@@ -15,6 +15,7 @@ import { Hero } from "@/components/marketing/hero";
 import { LogoStrip } from "@/components/marketing/logo-strip";
 import { FeaturesShowcase } from "@/components/marketing/features-showcase";
 import { AnalyzerDemo } from "@/components/marketing/analyzer-demo";
+import { SocialProof } from "@/components/marketing/social-proof";
 import { Pricing } from "@/components/marketing/pricing";
 import { FAQ } from "@/components/marketing/faq";
 import { Footer } from "@/components/marketing/footer";
@@ -144,6 +145,7 @@ export default async function HomePage() {
         <LogoStrip />
         <AnalyzerDemo />
         <FeaturesShowcase />
+        <SocialProof />
         <Pricing />
         <FAQ />
       </main>

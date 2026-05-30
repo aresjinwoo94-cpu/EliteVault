@@ -34,23 +34,30 @@ export const PLANS: Record<PlanTier, Plan> = {
   free: {
     id: "free",
     name: "Free",
-    tagline: "Taste the vault",
+    tagline: "Audit your store free",
     description:
-      "Browse 9 hand-picked winning stores with full metrics. Read the community feed. Upgrade to analyze your own store or use the AI image-similarity search.",
+      "Run one free audit of your own store — overall score + annotated screenshot, no credit card. Browse 9 hand-picked winning stores with full metrics and read the community feed. Upgrade to Pro to unlock your prioritized fixes, buyer-persona simulation and unlimited audits.",
     price: { month: 0, year: 0 },
     stripePriceIds: {},
+    // monthlyCredits stays 0: paid plans renew credits monthly via the
+    // Stripe webhook; Free's single welcome credit comes from the DB
+    // default (profiles.credits default 1), NOT a monthly renewal — so a
+    // Free user gets exactly ONE free audit per account, never a refill.
     monthlyCredits: 0,
-    unlocksAnalyzer: false,
+    // v4 conversion: Free now unlocks the Analyzer so a new user can feel
+    // the "wow" (see THEIR store audited) before the paywall. The real
+    // gate moved to credit balance (credits <= 0) in app/actions/analyzer.ts.
+    unlocksAnalyzer: true,
     unlocksScale: false,
     canPublish: false,
     libraryFullMetricsCap: 9,
     features: [
+      { text: "1 free audit: score + annotated screenshot", included: true, highlight: true },
+      { text: "9 hand-picked winners with full metrics", included: true },
       { text: "Browse the Community feed", included: true },
-      { text: "9 hand-picked winners with full metrics", included: true, highlight: true },
+      { text: "Prioritized fixes + buyer-persona simulation", included: false },
       { text: "AI image + text search across 45+ stores", included: false },
-      { text: "Save to private collections", included: false },
-      { text: "Website Analyzer", included: false },
-      { text: "Publish to Community", included: false },
+      { text: "Unlimited audits + publish to Community", included: false },
       { text: "Meta Campaign Scenario Modeler + Ads optimizer + API", included: false },
     ],
   },

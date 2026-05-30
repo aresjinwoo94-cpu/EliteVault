@@ -9,3 +9,15 @@ import { createHash } from "node:crypto";
 export function imageHash(base64: string): string {
   return createHash("sha256").update(base64).digest("hex").slice(0, 32);
 }
+
+/**
+ * Deterministic hash of a URL — cache key for the screenshot cache (P1.4),
+ * so re-analyzing the same store skips the slow capture providers. We
+ * lower-case + trim so trivial casing differences hit the same cache row.
+ */
+export function urlHash(url: string): string {
+  return createHash("sha256")
+    .update(url.trim().toLowerCase())
+    .digest("hex")
+    .slice(0, 32);
+}

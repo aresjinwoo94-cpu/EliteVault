@@ -46,18 +46,47 @@ export async function createAnalysis(
   if (!profile) return { ok: false, error: "Profile not found" };
 
   const plan = PLANS[profile.plan];
-  // v2: Free has zero analyses. Hard gate.
+  // Derive from the typed Plan (plan.id is PlanTier) rather than re-reading
+  // profile.plan — avoids an extra access on the `never`-typed Supabase row.
+  const isFree = plan.id === "free";
+
+  // v4 conversion: the gate is now CREDIT BALANCE, not the plan flag.
+  // A Free user with their welcome credit (profiles.credits default 1) can
+  // run one real audit of their own store and hit the "wow" before any
+  // paywall. The plan flag is only a defensive backstop now (all live
+  // plans set unlocksAnalyzer:true).
   if (!plan.unlocksAnalyzer) {
     return {
       ok: false,
       error:
-        "The Analyzer is a Pro feature. Upgrade to start auditing your own store.",
+        "The Analyzer isn't available on your plan. Upgrade to start auditing your store.",
     };
   }
+
+  // P0.4 — anti-abuse without buyer friction: the free audit requires a
+  // verified email. Supabase sets email_confirmed_at once the user clicks
+  // the confirmation/magic link (and for Google OAuth it's already set).
+  // Paid users (who passed Stripe Checkout) are never blocked here. Combined
+  // with the single welcome credit, this enforces "1 free audit per account"
+  // without asking for a card up front.
+  const emailVerified = Boolean(
+    (user as { email_confirmed_at?: string | null }).email_confirmed_at ??
+      (user as { confirmed_at?: string | null }).confirmed_at,
+  );
+  if (isFree && !emailVerified) {
+    return {
+      ok: false,
+      error:
+        "Verify your email to claim your free audit. Check your inbox for the confirmation link, then try again.",
+    };
+  }
+
   if (profile.credits <= 0) {
     return {
       ok: false,
-      error: "You're out of credits for this billing period.",
+      error: isFree
+        ? "You've used your free audit. Upgrade to Pro to keep auditing — your first paid insight usually pays for the month."
+        : "You're out of credits for this billing period.",
     };
   }
 
@@ -100,6 +129,11 @@ export async function createAnalysis(
       screenshotUrl: parsed.data.screenshotUrl,
       persona: parsed.data.persona ?? null,
       runRewrite: plan.unlocksScale,
+      // P1.1 — model tiering by cost. The free audit runs on the cheap/fast
+      // model (Gemini Flash-Lite tier) so its marginal cost stays in cents;
+      // paid audits use the premium model. `fast` maps to provider.fast in
+      // ai/provider.ts (GEMINI_MODEL_FAST). Defaults to premium for paid.
+      fast: isFree,
     },
   });
 

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ImageOff, Layers } from "lucide-react";
+import { ImageOff, Layers, Maximize2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -72,18 +72,31 @@ export function AnnotationsOverlay({
           </span>
         </div>
         <div className="flex items-center gap-3 text-[10px] text-white/40">
-          <span className="flex items-center gap-1">
+          <span className="hidden sm:flex items-center gap-1">
             <span className="size-1.5 rounded-full bg-destructive" />
             High
           </span>
-          <span className="flex items-center gap-1">
+          <span className="hidden sm:flex items-center gap-1">
             <span className="size-1.5 rounded-full bg-warning" />
             Medium
           </span>
-          <span className="flex items-center gap-1">
+          <span className="hidden sm:flex items-center gap-1">
             <span className="size-1.5 rounded-full bg-success" />
             Low / good
           </span>
+          {/* P2.3 — mobile zoom: open the raw screenshot full-screen so
+              TikTok/Reels traffic can pinch-zoom it natively. */}
+          {hasImage && (
+            <a
+              href={imageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 rounded-full border border-white/[0.08] px-2 py-1 text-white/55 hover:text-white hover:border-white/20 transition-colors"
+            >
+              <Maximize2 className="size-3" />
+              Full image
+            </a>
+          )}
         </div>
       </div>
 
@@ -113,6 +126,8 @@ export function AnnotationsOverlay({
             src={imageUrl}
             alt="Audit screenshot"
             className="block w-full h-auto"
+            // P2.3 — allow native pinch-zoom on touch devices.
+            style={{ touchAction: "pinch-zoom" }}
             onError={() => setImgErrored(true)}
           />
         ) : (

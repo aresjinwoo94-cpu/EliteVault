@@ -17,12 +17,27 @@ export function Pricing() {
       <div className="container max-w-6xl">
         <div className="text-center max-w-2xl mx-auto">
           <h2 className="font-serif text-4xl md:text-5xl tracking-tight leading-tight">
-            Simple pricing. Real leverage.
+            Free diagnosis. Pay for the cure.
           </h2>
           <p className="mt-4 text-white/55 leading-relaxed text-lg">
-            Start free. Upgrade when the audit pays for the year in a single
-            insight.
+            Audit your store free — score + annotated screenshot. Upgrade to
+            Pro for the prioritized fixes and unlimited audits, Scale for the
+            7-day campaign modeler and volume.
           </p>
+          {/* P2.5 — explicit value ladder so the jump between tiers reads at a glance. */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs text-white/45">
+            <span className="rounded-full border border-white/[0.08] bg-white/[0.02] px-3 py-1">
+              Free → <span className="text-white/70">Diagnose</span>
+            </span>
+            <span className="text-white/25">›</span>
+            <span className="rounded-full border border-champagne-400/25 bg-champagne-400/[0.05] px-3 py-1">
+              Pro → <span className="text-champagne-200">Cure</span>
+            </span>
+            <span className="text-white/25">›</span>
+            <span className="rounded-full border border-violet-500/25 bg-violet-600/[0.05] px-3 py-1">
+              Scale → <span className="text-violet-200">Volume</span>
+            </span>
+          </div>
         </div>
 
         <div className="mt-10 flex justify-center">

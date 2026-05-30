@@ -55,6 +55,12 @@ export async function runAnalyzerAgent(opts: {
     base64: string;
     mediaType: "image/png" | "image/jpeg";
   }[];
+  /**
+   * P1.1 — when true, prefer the cheaper/faster model variant (Gemini
+   * Flash-Lite tier). Used for the free audit so its marginal cost stays
+   * in cents. Paid audits leave this undefined/false → premium model.
+   */
+  fast?: boolean;
   signal?: AbortSignal;
 }): Promise<AnalysisResult> {
   const provider = await getProvider();
@@ -101,6 +107,8 @@ export async function runAnalyzerAgent(opts: {
       // Full audit JSON can be 5-8k chars — give the model headroom so it
       // doesn't truncate mid-string (which broke schema validation before).
       maxTokens: 8192,
+      // P1.1 — free audits run on the cheap/fast model tier.
+      fast: opts.fast,
       signal: opts.signal,
       parts,
     },

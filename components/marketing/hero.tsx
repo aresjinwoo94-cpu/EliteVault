@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -9,11 +11,66 @@ import {
   AlertTriangle,
   Zap,
   TrendingUp,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
 const ease = [0.22, 1, 0.36, 1] as const;
+
+/**
+ * P2.1 — above-the-fold URL box as the entry to the product.
+ *
+ * Pasting a URL here starts the audit flow instead of just linking to
+ * sign-up. We carry the URL through sign-up (required for the verified-
+ * email free audit / anti-abuse) via the `next` param so the analyzer
+ * launcher prefills it post-auth — fewer steps to the "aha".
+ *
+ * Single encodeURIComponent on the URL survives every hop intact:
+ * /sign-up?next → magic-link /auth/callback?next → /app/analyzer?url.
+ */
+function HeroUrlBox() {
+  const router = useRouter();
+  const [url, setUrl] = useState("");
+
+  function start() {
+    const trimmed = url.trim();
+    const target = trimmed
+      ? `/app/analyzer?url=${encodeURIComponent(trimmed)}`
+      : "/app/analyzer";
+    router.push(`/sign-up?next=${encodeURIComponent(target)}`);
+  }
+
+  return (
+    <div className="mx-auto max-w-xl">
+      <div className="flex flex-col sm:flex-row items-stretch gap-2.5">
+        <div className="relative flex-1">
+          <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-white/30 pointer-events-none" />
+          <Input
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && start()}
+            placeholder="https://yourstore.com"
+            aria-label="Your store URL"
+            className="pl-10 h-12 text-base"
+          />
+        </div>
+        <Button size="xl" onClick={start} className="shrink-0">
+          Audit my store free
+          <ArrowRight className="size-4" />
+        </Button>
+      </div>
+      <div className="mt-3 flex items-center justify-center">
+        <Link href="#analyzer">
+          <Button variant="ghost" size="sm" className="text-white/55">
+            or see it in action first
+          </Button>
+        </Link>
+      </div>
+    </div>
+  );
+}
 
 export function Hero() {
   return (
@@ -41,10 +98,15 @@ export function Hero() {
           </Badge>
         </motion.div>
 
+        {/*
+          P2.4 — LCP: the headline is the largest contentful paint element.
+          `initial={false}` renders it at its final (visible) state in the
+          SSR HTML instead of opacity:0-until-hydration, so it paints
+          immediately. Speed = conversion; the supporting copy below still
+          fades in.
+        */}
         <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease, delay: 0.05 }}
+          initial={false}
           className="mt-6 font-serif text-5xl md:text-7xl lg:text-8xl leading-[1.02] tracking-tight"
         >
           <span className="block">Copy what's</span>
@@ -68,19 +130,9 @@ export function Hero() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease, delay: 0.25 }}
-          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3"
+          className="mt-10"
         >
-          <Link href="/sign-up">
-            <Button size="xl">
-              Audit your store free
-              <ArrowRight className="size-4" />
-            </Button>
-          </Link>
-          <Link href="#analyzer">
-            <Button variant="outline" size="xl">
-              See it in action
-            </Button>
-          </Link>
+          <HeroUrlBox />
         </motion.div>
 
         <motion.p

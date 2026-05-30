@@ -35,7 +35,7 @@ export async function GET(
       // the AnalysisView for the Scale panel and Publish callout. We had
       // a bug where leaving meta_ads out of the polling SELECT made the
       // panel "disappear" after the first poll overwrote the SSR state.
-      "id, status, url, screenshot_url, result, rewrite, meta_ads, is_published, error, started_at, finished_at, created_at, credits_charged",
+      "id, status, url, screenshot_url, result, rewrite, meta_ads, is_published, share_slug, preview_score, preview_summary, error, started_at, finished_at, created_at, credits_charged",
     )
     .eq("id", id)
     .eq("user_id", user.id)
