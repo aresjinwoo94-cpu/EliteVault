@@ -125,7 +125,7 @@ export async function discoverSite(rootUrl: string): Promise<DiscoverySummary> {
     const res = await fetch(rootUrl, {
       headers: {
         "User-Agent":
-          "Mozilla/5.0 (compatible; EliteVaultAuditBot/1.0; +https://elitevault.app)",
+          "Mozilla/5.0 (compatible; EliteVaultAuditBot/1.0; +https://elitevault.com)",
         Accept: "text/html,application/xhtml+xml",
       },
       // Don't hang the pipeline if a site is slow — 10s max for full-page fetch.

@@ -183,7 +183,7 @@ export default async function Image() {
                 fontFamily: "monospace",
               }}
             >
-              elitevault.app
+              elitevault.com
             </span>
           </div>
         </div>

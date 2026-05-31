@@ -154,7 +154,7 @@ function HeroPreview() {
               <span className="size-2.5 rounded-full bg-white/10" />
             </div>
             <div className="ml-3 flex-1 rounded-md bg-white/[0.04] px-3 py-1 text-xs text-white/40 font-mono">
-              elitevault.app/app/analyzer
+              elitevault.com/app/analyzer
             </div>
             <div className="hidden sm:flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-success">
               <CheckCircle2 className="size-3" />
