@@ -177,7 +177,7 @@ export default async function Image({
               display: "flex",
             }}
           >
-            Audit your store free → elitevault.com
+            Audit your store free → elitevaultapp.com
           </span>
         </div>
 

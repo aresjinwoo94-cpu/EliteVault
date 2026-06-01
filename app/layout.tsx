@@ -96,8 +96,8 @@ const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "EliteVault",
-  url: process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevault.com",
-  logo: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevault.com"}/icon.svg`,
+  url: process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com",
+  logo: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com"}/icon.svg`,
   description:
     "AI-powered ecommerce audit, library of winning stores, and Meta Ads scenario modeler for DTC founders and media buyers.",
   sameAs: [

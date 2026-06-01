@@ -75,7 +75,7 @@ export function AnalyzerWalkthrough() {
             <span className="size-2.5 rounded-full bg-white/10" />
           </div>
           <div className="ml-3 flex-1 rounded-md bg-white/[0.04] px-3 py-1 text-xs text-white/40 font-mono">
-            elitevault.com/app/analyzer
+            elitevaultapp.com/app/analyzer
           </div>
           {!reducedMotion && (
             <div className="flex items-center gap-1.5 text-[10px] text-white/30 uppercase tracking-widest">

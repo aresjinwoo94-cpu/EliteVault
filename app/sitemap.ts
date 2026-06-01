@@ -17,7 +17,7 @@ export const revalidate = 3600; // refresh hourly
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevault.com";
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
   const now = new Date();
 

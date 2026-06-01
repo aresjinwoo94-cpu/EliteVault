@@ -38,7 +38,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
  */
 function buildLandingJsonLd() {
   const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevault.com";
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
   const softwareApplication = {
     "@context": "https://schema.org",
