@@ -106,12 +106,15 @@ export function EmbeddedCheckoutForm({
   }
 
   return (
-    <div className="rounded-2xl bg-white p-1 ring-1 ring-white/[0.08] overflow-hidden">
+    <div className="rounded-2xl bg-obsidian-950 ring-1 ring-white/[0.08] overflow-hidden">
       {/*
-        The Embedded Checkout iframe enforces a LIGHT background regardless
-        of our app theme — that's a Stripe design constraint, not ours.
-        We give it a tight white frame so the visual transition into the
-        iframe feels intentional rather than jarring.
+        Stripe's Embedded Checkout now honors our dark brand (set via
+        Dashboard → Branding), so the previous white frame around the
+        iframe read as a jarring border. We match the wrapper to the page's
+        obsidian background so the iframe blends in seamlessly. Any light
+        strip behind the wallet buttons (Link / Amazon Pay) lives INSIDE
+        Stripe's cross-origin iframe and is controlled by Stripe Dashboard
+        branding, not by our CSS.
       */}
       <EmbeddedCheckoutProvider
         stripe={stripePromise}
