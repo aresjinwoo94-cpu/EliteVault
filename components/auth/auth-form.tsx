@@ -238,7 +238,8 @@ function MagicLinkForm({ nextUrl }: { nextUrl: string }) {
         </div>
         <p className="mt-3 font-medium text-white">Check your email</p>
         <p className="mt-1 text-sm text-white/55 leading-relaxed">
-          We sent you a one-tap sign-in link. Click it and you&apos;re in.
+          We sent you a one-tap sign-in link. It can take a few seconds to
+          arrive — if your inbox looks empty, give it a moment and refresh.
         </p>
 
         {/* One-tap shortcut straight to the user's inbox (known providers). */}
