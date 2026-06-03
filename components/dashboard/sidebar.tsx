@@ -11,6 +11,7 @@ import {
   Scan,
   Settings,
   Sparkles,
+  TrendingUp,
 } from "lucide-react";
 import { PLANS } from "@/lib/stripe/plans";
 import { Logo } from "@/components/brand/logo";
@@ -29,6 +30,7 @@ const BASE_NAV: Array<{
 }> = [
   { label: "Overview", href: "/app", icon: Compass },
   { label: "Analyzer", href: "/app/analyzer", icon: Scan, highlight: true },
+  { label: "Trends", href: "/app/trends", icon: TrendingUp },
   { label: "Library", href: "/app/library", icon: Library },
   { label: "Community", href: "/app/community", icon: Globe },
   { label: "API keys", href: "/app/settings/api-keys", icon: KeyRound, scaleOnly: true },

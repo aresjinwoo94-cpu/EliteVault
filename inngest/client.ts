@@ -37,6 +37,15 @@ type Events = {
       notes?: string | null;
     };
   };
+  // Phase 2 — manual trigger to refresh the weekly Trends cache on demand
+  // (the same function also runs on a weekly cron). Optional fields let an
+  // operator target a single niche or force a re-run of the current week.
+  "trends/refresh.requested": {
+    data: {
+      nicheSlug?: string | null;
+      force?: boolean;
+    };
+  };
 };
 
 export const inngest = new Inngest({
