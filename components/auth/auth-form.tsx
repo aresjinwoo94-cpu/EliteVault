@@ -161,7 +161,12 @@ export function AuthForm({
 const INBOX_PROVIDERS: { domains: string[]; url: string; label: string }[] = [
   {
     domains: ["gmail.com", "googlemail.com"],
-    url: "https://mail.google.com/mail/u/0/",
+    // Deep-link to a sender/brand search scoped to the last hour, NOT the
+    // raw inbox. New-domain email can land a few seconds late; a filtered
+    // view surfaces the EliteVault link at the top the instant it arrives
+    // (and a refresh re-runs the search), instead of burying it in a busy
+    // inbox or showing an empty-looking mailbox.
+    url: "https://mail.google.com/mail/u/0/#search/EliteVault+newer_than%3A1h",
     label: "Gmail",
   },
   {
