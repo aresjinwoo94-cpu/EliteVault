@@ -5,6 +5,7 @@ import type {
   GenerateOptions,
   StructuredCall,
 } from "../provider";
+import { recordUsage } from "@/lib/usage/meter";
 
 const MODEL = process.env.GEMINI_MODEL ?? "gemini-2.5-pro";
 const MODEL_FAST = process.env.GEMINI_MODEL_FAST ?? "gemini-2.5-flash";
@@ -209,6 +210,7 @@ async function generateStructured<T>(
         const response = await callWithKey(idx);
         const text = extractText(response);
         if (!text) throw new Error("Gemini: empty response");
+        reportUsage(response, Boolean(opts.fast));
         return parseJsonText<T>(text);
       } catch (err) {
         const raw = errMsg(err);
@@ -248,6 +250,7 @@ async function generateStructured<T>(
       const response = await callWithKey(best.idx);
       const text = extractText(response);
       if (!text) throw new Error("Gemini: empty response after cooldown wait");
+      reportUsage(response, Boolean(opts.fast));
       return parseJsonText<T>(text);
     } catch (err) {
       if (is429(errMsg(err))) {
@@ -283,6 +286,30 @@ function is429(raw: string): boolean {
  */
 function is503(raw: string): boolean {
   return /"code"\s*:\s*503|UNAVAILABLE|high demand|model is currently/i.test(raw);
+}
+
+/**
+ * Best-effort metering: pull token counts off the Gemini response and log a
+ * usage_event (attributed to the active AsyncLocalStorage meter context).
+ * Never throws — recordUsage is fire-and-forget.
+ */
+function reportUsage(response: unknown, fast: boolean): void {
+  const u = (
+    response as {
+      usageMetadata?: {
+        promptTokenCount?: number;
+        candidatesTokenCount?: number;
+        totalTokenCount?: number;
+      };
+    }
+  ).usageMetadata;
+  recordUsage({
+    provider: "gemini",
+    model: fast ? MODEL_FAST : MODEL,
+    promptTokens: u?.promptTokenCount ?? 0,
+    outputTokens: u?.candidatesTokenCount ?? 0,
+    totalTokens: u?.totalTokenCount ?? 0,
+  });
 }
 
 function extractText(response: {

@@ -1,5 +1,7 @@
 import { inngest } from "../client";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { enterMeter } from "@/lib/usage/context";
+import type { PlanTier } from "@/lib/supabase/types";
 import { captureScreenshot } from "@/lib/screenshot";
 import {
   readScreenshotCache,
@@ -63,8 +65,17 @@ export const analyzeWebsite = inngest.createFunction(
   },
   { event: "analysis/requested" },
   async ({ event, step }) => {
-    const { analysisId, userId, url, screenshotUrl, persona, runRewrite, fast } =
+    const { analysisId, userId, url, screenshotUrl, persona, runRewrite, fast, plan } =
       event.data;
+    // Attribute every Gemini call in this pipeline to the user + 'analysis'
+    // feature for the usage_events cost ledger. enterWith persists through all
+    // the step.run async continuations below.
+    enterMeter({
+      userId,
+      plan: (plan as PlanTier | null | undefined) ?? null,
+      eventType: "analysis",
+      meta: { analysisId },
+    });
     const service = createSupabaseServiceClient();
 
     await step.run("mark-running", async () => {

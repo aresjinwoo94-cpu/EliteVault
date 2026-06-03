@@ -5,6 +5,7 @@ import type {
   GenerateOptions,
   StructuredCall,
 } from "../provider";
+import { recordUsage } from "@/lib/usage/meter";
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY ?? "noop",
@@ -63,6 +64,13 @@ async function generateStructured<T>(
   if (!toolUse) {
     throw new Error(`Anthropic: model did not call ${tool.name}`);
   }
+  // Best-effort metering (fire-and-forget).
+  recordUsage({
+    provider: "anthropic",
+    model: opts.fast ? MODEL_FAST : MODEL,
+    promptTokens: response.usage?.input_tokens ?? 0,
+    outputTokens: response.usage?.output_tokens ?? 0,
+  });
   return toolUse.input as T;
 }
 
