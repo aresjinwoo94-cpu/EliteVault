@@ -32,7 +32,18 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const errParam = searchParams.get("error");
   const errDesc = searchParams.get("error_description");
-  const next = searchParams.get("next") ?? "/app/analyzer";
+  // Only accept SAME-ORIGIN relative paths for `next`. Without this guard,
+  // `${origin}${next}` (used below for the post-auth redirect) is an open
+  // redirect: e.g. next=".evil.com" would build
+  // "https://elitevaultapp.com.evil.com" — a phishing host. Require a single
+  // leading slash and reject protocol-relative ("//host") or backslash tricks.
+  const rawNext = searchParams.get("next") ?? "/app/analyzer";
+  const next =
+    rawNext.startsWith("/") &&
+    !rawNext.startsWith("//") &&
+    !rawNext.startsWith("/\\")
+      ? rawNext
+      : "/app/analyzer";
 
   // Diagnostic logging — surfaces every hop in the auth flow so we can
   // pinpoint where the session is getting dropped. Vercel logs surface

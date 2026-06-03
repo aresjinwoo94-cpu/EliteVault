@@ -61,6 +61,18 @@ export default async function CheckoutPage({
 
   return (
     <div className="min-h-screen bg-obsidian-950">
+      {/*
+        Warm up the TCP/TLS connections to Stripe BEFORE the embedded iframe
+        starts loading. The form does an API round-trip then mounts an iframe
+        from js.stripe.com → this shaves the DNS+TLS handshake off the
+        critical path so the payment form paints sooner. (React 19 hoists
+        these to <head>.)
+      */}
+      <link rel="preconnect" href="https://js.stripe.com" crossOrigin="" />
+      <link rel="preconnect" href="https://api.stripe.com" crossOrigin="" />
+      <link rel="preconnect" href="https://checkout.stripe.com" crossOrigin="" />
+      <link rel="preconnect" href="https://m.stripe.network" crossOrigin="" />
+
       {/* Top bar — back link + brand */}
       <header className="border-b border-white/[0.04] bg-obsidian-900/40">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
