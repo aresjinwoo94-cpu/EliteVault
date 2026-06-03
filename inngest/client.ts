@@ -46,6 +46,14 @@ type Events = {
       force?: boolean;
     };
   };
+  // Phase 3 — manual trigger for the weekly monitoring re-audit + digest
+  // (also runs on a weekly cron). `userId` targets a single user (e.g. the
+  // operator testing their own digest); omitted = all users.
+  "monitoring/reaudit.requested": {
+    data: {
+      userId?: string | null;
+    };
+  };
 };
 
 export const inngest = new Inngest({
