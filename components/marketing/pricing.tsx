@@ -10,7 +10,8 @@ import { PLANS, type Interval } from "@/lib/stripe/plans";
 import { cn, formatCurrency } from "@/lib/utils";
 
 export function Pricing() {
-  const [interval, setInterval] = useState<Interval>("month");
+  // ARPU: default to annual billing (charged upfront). Toggle still switches.
+  const [interval, setInterval] = useState<Interval>("year");
 
   return (
     <section id="pricing" className="py-24 md:py-32 border-t border-white/[0.04]">
@@ -103,6 +104,13 @@ export function Pricing() {
                   </span>
                 )}
               </div>
+              {interval === "year" && plan.price.year > 0 && (
+                <p className="mt-1.5 text-xs text-success">
+                  {formatCurrency(Math.round(plan.price.year / 12))}/mo billed
+                  yearly · save{" "}
+                  {formatCurrency(plan.price.month * 12 - plan.price.year)}/yr
+                </p>
+              )}
 
               <p className="mt-3 text-sm text-white/55 leading-relaxed min-h-[44px]">
                 {plan.description}
