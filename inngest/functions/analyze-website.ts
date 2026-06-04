@@ -304,6 +304,39 @@ export const analyzeWebsite = inngest.createFunction(
         .eq("id", analysisId);
     });
 
+    // Activation (Phase 5): stamp time-to-first-value the first time a user
+    // reaches a successful audit, and kick off the delayed follow-up email.
+    // Additive — never affects the audit result itself.
+    const firstValue = await step.run("mark-first-value", async () => {
+      const { data: prof } = await service
+        .from("profiles")
+        .select("first_value_at")
+        .eq("id", userId)
+        .single();
+      const already = (prof as { first_value_at?: string | null } | null)
+        ?.first_value_at;
+      if (prof && !already) {
+        await service
+          .from("profiles")
+          .update({ first_value_at: new Date().toISOString() })
+          .eq("id", userId);
+        return true;
+      }
+      return false;
+    });
+
+    if (firstValue) {
+      await step.sendEvent("activation-first-value", {
+        name: "activation/first-value",
+        data: {
+          userId,
+          analysisId,
+          score: result.score,
+          plan: plan ?? null,
+        },
+      });
+    }
+
     return { analysisId, score: result.score };
   },
 );
