@@ -70,7 +70,7 @@ const SAMPLE_AUDITS: {
 const TRUST_BADGES: { icon: typeof ShieldCheck; label: string }[] = [
   { icon: CreditCard, label: "No credit card for your free audit" },
   { icon: Lock, label: "Payments secured by Stripe" },
-  { icon: ShieldCheck, label: "Cancel anytime · prorated" },
+  { icon: ShieldCheck, label: "Cancel anytime · no lock-in" },
   { icon: Sparkles, label: "Estimates, not predictions" },
 ];
 
