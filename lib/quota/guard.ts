@@ -55,10 +55,27 @@ export async function assertQuota(
       return { ok: true, remaining: credits };
     }
 
-    // Enforcement wired in later phases (tables don't exist yet). We return
-    // the plan limit so callers and the UI can already reason about it.
-    case "monitoredCompetitor":
-      return { ok: true, remaining: quotas.monitoredCompetitors };
+    case "monitoredCompetitor": {
+      const limit = quotas.monitoredCompetitors;
+      const { count } = await service
+        .from("monitored_stores")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("kind", "competitor");
+      const used = count ?? 0;
+      if (used >= limit) {
+        return {
+          ok: false,
+          reason:
+            limit === 0
+              ? "Competitor monitoring is a Pro feature. Upgrade to track competitors."
+              : `Your plan allows ${limit} monitored competitors. Upgrade for more.`,
+          limit,
+        };
+      }
+      return { ok: true, remaining: limit - used };
+    }
+    // Enforcement wired in a later phase (table not created yet).
     case "trackedNiche":
       return { ok: true, remaining: quotas.trackedNiches };
   }

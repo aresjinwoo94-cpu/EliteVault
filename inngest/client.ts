@@ -37,6 +37,23 @@ type Events = {
       notes?: string | null;
     };
   };
+  // Phase 2 — manual trigger to refresh the weekly Trends cache on demand
+  // (the same function also runs on a weekly cron). Optional fields let an
+  // operator target a single niche or force a re-run of the current week.
+  "trends/refresh.requested": {
+    data: {
+      nicheSlug?: string | null;
+      force?: boolean;
+    };
+  };
+  // Phase 3 — manual trigger for the weekly monitoring re-audit + digest
+  // (also runs on a weekly cron). `userId` targets a single user (e.g. the
+  // operator testing their own digest); omitted = all users.
+  "monitoring/reaudit.requested": {
+    data: {
+      userId?: string | null;
+    };
+  };
 };
 
 export const inngest = new Inngest({
