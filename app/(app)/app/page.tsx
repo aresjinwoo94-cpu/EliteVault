@@ -19,7 +19,7 @@ export default async function OverviewPage() {
     await Promise.all([
       supabase
         .from("profiles")
-        .select("plan, credits, full_name")
+        .select("plan, credits, full_name, first_value_at")
         .eq("id", user!.id)
         .single(),
       supabase
@@ -33,7 +33,7 @@ export default async function OverviewPage() {
         .select("*", { count: "exact", head: true }),
     ]);
 
-  const plan = PLANS[profile?.plan ?? "free"];
+  const plan = PLANS[(profile?.plan ?? "free") as keyof typeof PLANS];
   const first = (profile?.full_name ?? "").split(" ")[0] ?? "";
 
   return (
@@ -47,6 +47,30 @@ export default async function OverviewPage() {
           <span className="italic text-gold-gradient">analyzing</span> today?
         </h1>
       </header>
+
+      {/* Activation nudge (Phase 5): until a user gets their first audit, push
+          them to the <60s "wow". Disappears the moment first_value_at is set. */}
+      {!(profile as { first_value_at?: string | null } | null)?.first_value_at && (
+        <Link href="/app/analyzer" className="group block">
+          <div className="flex items-center justify-between gap-4 rounded-2xl border border-champagne-400/30 bg-gradient-to-r from-champagne-400/[0.08] to-violet-600/[0.06] p-5 md:p-6 transition-all hover:border-champagne-400/50">
+            <div className="flex items-start gap-3">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-champagne-400/15 ring-1 ring-champagne-400/25">
+                <Sparkles className="size-5 text-champagne-300" />
+              </div>
+              <div>
+                <p className="font-medium text-white">
+                  Run your first audit — see your score in under 60 seconds
+                </p>
+                <p className="mt-0.5 text-sm text-white/55">
+                  Paste your store URL and get a real conversion score + your #1
+                  fix. It&apos;s free.
+                </p>
+              </div>
+            </div>
+            <ArrowRight className="size-5 shrink-0 text-champagne-300 transition-transform group-hover:translate-x-1" />
+          </div>
+        </Link>
+      )}
 
       {/* Primary CTAs */}
       <div className="grid md:grid-cols-2 gap-4 md:gap-5">

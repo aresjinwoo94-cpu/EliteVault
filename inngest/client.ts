@@ -54,6 +54,16 @@ type Events = {
       userId?: string | null;
     };
   };
+  // Phase 5 — fired the first time a user gets a successful audit. Kicks off
+  // the delayed activation follow-up email.
+  "activation/first-value": {
+    data: {
+      userId: string;
+      analysisId: string;
+      score: number;
+      plan?: string | null;
+    };
+  };
 };
 
 export const inngest = new Inngest({
