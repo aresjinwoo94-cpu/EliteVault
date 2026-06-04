@@ -20,7 +20,9 @@ export function PlanCard({
   hasExistingSub: boolean;
 }) {
   const router = useRouter();
-  const [interval, setInterval] = useState<Interval>("month");
+  // ARPU: default to annual (charged upfront) — the toggle still lets users
+  // switch to monthly.
+  const [interval, setInterval] = useState<Interval>("year");
   const [isPending, startTransition] = useTransition();
 
   /**
@@ -109,6 +111,13 @@ export function PlanCard({
               / {interval === "month" ? "mo" : "yr"}
             </span>
           </div>
+          {interval === "year" && plan.price.year > 0 && (
+            <p className="mt-1 text-[11px] text-success">
+              {formatCurrency(Math.round(plan.price.year / 12))}/mo billed yearly
+              {" · save "}
+              {formatCurrency(plan.price.month * 12 - plan.price.year)}/yr
+            </p>
+          )}
         </>
       ) : (
         <div className="mt-3">
