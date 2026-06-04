@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireApiKey } from "@/lib/api-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { assertQuota } from "@/lib/quota/guard";
 import { inngest } from "@/inngest/client";
 import { normalizeUrl } from "@/lib/utils";
 import { BuyerPersonaSchema } from "@/ai/schemas";
@@ -38,16 +39,17 @@ export async function POST(req: NextRequest) {
 
   const service = createSupabaseServiceClient();
 
-  // credit check
+  // Unified server-side quota gate (backed by profiles.credits).
   const { data: profile } = await service
     .from("profiles")
-    .select("credits")
+    .select("credits, plan")
     .eq("id", auth.userId)
     .single();
   if (!profile) return NextResponse.json({ error: "profile_missing" }, { status: 500 });
-  if (profile.credits <= 0) {
+  const quota = await assertQuota(auth.userId, "analysis");
+  if (!quota.ok) {
     return NextResponse.json(
-      { error: "out_of_credits", detail: "Your plan's credit allowance is exhausted." },
+      { error: "out_of_credits", detail: quota.reason },
       { status: 402 },
     );
   }
@@ -84,6 +86,7 @@ export async function POST(req: NextRequest) {
     data: {
       analysisId: row.id,
       userId: auth.userId,
+      plan: (profile as { plan?: string }).plan ?? null,
       url,
       persona: parsed.data.persona ?? null,
       runRewrite: parsed.data.run_rewrite,

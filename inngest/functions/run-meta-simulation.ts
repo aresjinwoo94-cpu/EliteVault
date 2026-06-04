@@ -1,7 +1,8 @@
 import { inngest } from "../client";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { runMetaSimulation } from "@/ai/agents/run-meta-simulation";
-import type { AnalysisResult } from "@/lib/supabase/types";
+import { enterMeter } from "@/lib/usage/context";
+import type { AnalysisResult, PlanTier } from "@/lib/supabase/types";
 
 /**
  * Meta Campaign Scenario Modeler — durable Inngest function.
@@ -55,7 +56,16 @@ export const runMetaSimulationFn = inngest.createFunction(
       productType,
       competitiveness,
       notes,
+      plan,
     } = event.data;
+
+    // Attribute the 3 Gemini scenario calls to this user for the cost ledger.
+    enterMeter({
+      userId,
+      plan: (plan as PlanTier | null | undefined) ?? null,
+      eventType: "meta_simulation",
+      meta: { simulationId, analysisId },
+    });
 
     const service = createSupabaseServiceClient();
 

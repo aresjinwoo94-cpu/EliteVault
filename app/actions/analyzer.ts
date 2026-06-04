@@ -8,6 +8,7 @@ import { inngest } from "@/inngest/client";
 import { normalizeUrl } from "@/lib/utils";
 import { BuyerPersonaSchema } from "@/ai/schemas";
 import { PLANS } from "@/lib/stripe/plans";
+import { assertQuota } from "@/lib/quota/guard";
 
 const CreateAnalysisInput = z.object({
   url: z.string().min(3).optional(),
@@ -81,13 +82,12 @@ export async function createAnalysis(
     };
   }
 
-  if (profile.credits <= 0) {
-    return {
-      ok: false,
-      error: isFree
-        ? "You've used your free audit. Upgrade to Pro to keep auditing — your first paid insight usually pays for the month."
-        : "You're out of credits for this billing period.",
-    };
+  // Unified server-side quota gate. Backed by profiles.credits, so the
+  // Analyzer's effective limit and behaviour are unchanged — this just routes
+  // the check through the single quota guard the new features also use.
+  const quota = await assertQuota(user.id, "analysis");
+  if (!quota.ok) {
+    return { ok: false, error: quota.reason };
   }
 
   // Deduct credit BEFORE queueing; refunded by Inngest on failure.
@@ -125,6 +125,7 @@ export async function createAnalysis(
     data: {
       analysisId: row.id,
       userId: user.id,
+      plan: profile.plan,
       url: url ?? undefined,
       screenshotUrl: parsed.data.screenshotUrl,
       persona: parsed.data.persona ?? null,

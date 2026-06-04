@@ -25,6 +25,21 @@ export interface Plan {
   canPublish: boolean;
   /** Cap on Library entries the user sees FULL metrics for (null = unlimited) */
   libraryFullMetricsCap: number | null;
+  /**
+   * Server-enforced usage quotas (see lib/quota/guard.ts). The unified quota
+   * guard reads these; cost must scale with price (Free is intentionally tiny
+   * so it can never run up meaningful Gemini COGS).
+   */
+  quotas: {
+    /** Store audits per billing period. Backed by profiles.credits so the
+     *  Analyzer keeps its existing behaviour — this number must equal the
+     *  effective credit grant (Free = 1 lifetime welcome credit). */
+    analysesPerMonth: number;
+    /** Competitor stores the user can monitor for weekly re-audits (Phase 3). */
+    monitoredCompetitors: number;
+    /** Niches the user can track for weekly Trend alerts (Phase 2/3). */
+    trackedNiches: number;
+  };
   features: PlanFeature[];
   badge?: string;
   highlight?: boolean;
@@ -51,6 +66,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     unlocksScale: false,
     canPublish: false,
     libraryFullMetricsCap: 9,
+    quotas: { analysesPerMonth: 1, monitoredCompetitors: 0, trackedNiches: 1 },
     features: [
       { text: "1 free audit: score + annotated screenshot", included: true, highlight: true },
       { text: "9 hand-picked winners with full metrics", included: true },
@@ -77,6 +93,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     unlocksScale: false,
     canPublish: true,
     libraryFullMetricsCap: null,
+    quotas: { analysesPerMonth: 40, monitoredCompetitors: 3, trackedNiches: 5 },
     badge: "Most popular",
     highlight: true,
     features: [
@@ -110,6 +127,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     unlocksScale: true,
     canPublish: true,
     libraryFullMetricsCap: null,
+    quotas: { analysesPerMonth: 200, monitoredCompetitors: 10, trackedNiches: 20 },
     badge: "For teams",
     features: [
       { text: "Everything in Pro", included: true },

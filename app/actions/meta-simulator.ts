@@ -161,6 +161,7 @@ export async function triggerSimulation(
       simulationId: row.id,
       analysisId: parsed.data.analysisId,
       userId: user.id,
+      plan: profile.plan,
       aovUsd: parsed.data.aovUsd,
       dailyBudgetUsd: parsed.data.dailyBudgetUsd,
       productMarginPct: parsed.data.productMarginPct ?? null,
