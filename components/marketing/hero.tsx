@@ -61,7 +61,7 @@ export function Hero() {
         >
           <Badge variant="gold" className="mx-auto">
             <Sparkles className="size-3" />
-            Powered by Claude — built for ecommerce founders
+            Powered by Google Gemini — built for ecommerce founders
           </Badge>
         </motion.div>
 

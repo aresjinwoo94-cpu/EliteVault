@@ -10,7 +10,7 @@ const STEPS = [
   {
     icon: Eye,
     title: "Reads your store like a human",
-    body: "Claude vision parses your hero, product grid, copy, color system, and motion — exactly what a senior CRO consultant would clock in the first 5 seconds.",
+    body: "Gemini vision parses your hero, product grid, copy, color system, and motion — exactly what a senior CRO consultant would clock in the first 5 seconds.",
   },
   {
     icon: Scan,
