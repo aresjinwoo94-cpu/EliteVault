@@ -88,8 +88,8 @@ function buildLandingJsonLd() {
     },
     {
       question: "Is there a free plan?",
-      answer:
-        "Yes. The Free plan gives you the curated library of 9 hand-picked winning stores with full metrics. The Analyzer requires Pro ($19/mo). The scenario modeler and REST API require Scale ($49/mo).",
+      // Prices derive from PLANS (single source of truth) — never hardcode.
+      answer: `Yes. The Free plan gives you the curated library of 9 hand-picked winning stores with full metrics. The Analyzer requires Pro ($${PLANS.pro.price.month}/mo). The scenario modeler and REST API require Scale ($${PLANS.scale.price.month}/mo).`,
     },
   ];
 

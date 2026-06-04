@@ -35,6 +35,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.9,
     },
+    ...["/legal/privacy", "/legal/terms", "/legal/refunds"].map(
+      (path): MetadataRoute.Sitemap[number] => ({
+        url: `${baseUrl}${path}`,
+        lastModified: now,
+        changeFrequency: "yearly",
+        priority: 0.3,
+      }),
+    ),
   ];
 
   // Dynamic community audits — they're public, indexable, and each has

@@ -2,6 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Readable prose for the public legal / policy pages (no typography plugin). */
+@layer components {
+  .legal-prose {
+    color: rgba(250, 250, 250, 0.72);
+    font-size: 0.95rem;
+  }
+  .legal-prose h2 {
+    color: #fff;
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  .legal-prose h3 {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 1.25rem;
+    margin-bottom: 0.35rem;
+  }
+  .legal-prose p {
+    margin: 0.75rem 0;
+    line-height: 1.7;
+  }
+  .legal-prose ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+    margin: 0.75rem 0;
+  }
+  .legal-prose li {
+    margin: 0.35rem 0;
+    line-height: 1.6;
+  }
+  .legal-prose a {
+    color: #d4af37;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .legal-prose a:hover {
+    color: #e7c75e;
+  }
+  .legal-prose strong {
+    color: #fff;
+    font-weight: 600;
+  }
+}
+
 @layer base {
   :root {
     color-scheme: dark;
