@@ -21,7 +21,7 @@ export default function PrivacyPage() {
 
       <div className="legal-prose mt-8">
         <p>
-          This Privacy Policy explains how <strong>[ENTIDAD LEGAL]</strong> (
+          This Privacy Policy explains how <strong>Vital Living LLC</strong> (
           &ldquo;EliteVault&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;) collects,
           uses, and protects your information when you use EliteVault. If you have
           any questions, contact us at{" "}
@@ -31,8 +31,9 @@ export default function PrivacyPage() {
         <h2>1. Who we are</h2>
         <p>
           EliteVault is an AI-powered ecommerce conversion-audit service operated
-          by <strong>[ENTIDAD LEGAL]</strong>, established in{" "}
-          <strong>[JURISDICCIÓN]</strong>. We are the data controller for the
+          by <strong>Vital Living LLC</strong>, established in{" "}
+          <strong>New Mexico, United States</strong>. We are the data
+          controller for the
           personal data described below.
         </p>
 

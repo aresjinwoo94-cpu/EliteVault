@@ -22,7 +22,7 @@ export default function TermsPage() {
       <div className="legal-prose mt-8">
         <p>
           These Terms of Service (&ldquo;Terms&rdquo;) govern your use of
-          EliteVault, operated by <strong>[ENTIDAD LEGAL]</strong> (&ldquo;we&rdquo;,
+          EliteVault, operated by <strong>Vital Living LLC</strong> (&ldquo;we&rdquo;,
           &ldquo;us&rdquo;). By creating an account or using the service, you agree
           to these Terms. If you do not agree, do not use the service.
         </p>
@@ -102,7 +102,7 @@ export default function TermsPage() {
         <h2>9. Limitation of liability</h2>
         <p>
           To the maximum extent permitted by law, EliteVault and{" "}
-          <strong>[ENTIDAD LEGAL]</strong> will not be liable for any indirect,
+          <strong>Vital Living LLC</strong> will not be liable for any indirect,
           incidental, or consequential damages, or for lost profits or revenue,
           arising from your use of the service. Our total liability for any claim
           is limited to the amount you paid us in the 12 months before the claim.{" "}
@@ -118,9 +118,10 @@ export default function TermsPage() {
 
         <h2>11. Governing law</h2>
         <p>
-          These Terms are governed by the laws of{" "}
-          <strong>[JURISDICCIÓN]</strong>, without regard to conflict-of-law
-          rules. <strong>[Confirmar fuero y ley aplicable con asesoría.]</strong>
+          These Terms are governed by the laws of the State of{" "}
+          <strong>New Mexico, United States</strong>, without regard to
+          conflict-of-law rules.{" "}
+          <strong>[Confirmar fuero y ley aplicable con asesoría.]</strong>
         </p>
 
         <h2>12. Changes</h2>

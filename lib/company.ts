@@ -2,35 +2,36 @@
  * Single source of truth for company + founder identity.
  *
  * Resolves gap #9 (identity inconsistency): every public surface — the About
- * page, the Organization JSON-LD, the landing founder note, and (later)
- * emails/terms — reads from HERE, so the name is identical everywhere and
+ * page, the Organization JSON-LD, the landing founder note, the legal pages,
+ * and emails — reads from HERE, so the identity is identical everywhere and
  * changes in one place.
  *
- * TODO(founder): decide the public identity ONCE and set it below.
- *   - Real name (most verifiable) or the "Marco A." pen name — but be
- *     consistent. We keep "Marco A." as the current public placeholder; the
- *     real founder is Ariel. Confirm before launch.
- *   - Fill `socials` with real profile URLs to power JSON-LD `sameAs` + the
- *     About page. Empty strings are filtered out so nothing fake is shown.
- *   - Replace [ENTIDAD LEGAL] / [JURISDICCIÓN] placeholders.
+ * Values below are the REAL operating entity (Vital Living LLC, New Mexico)
+ * and the real founder (Ariel Jiménez), provided by the owner. The brand
+ * shown to users is "EliteVault".
+ *
+ * NOTE(verify): the X/Twitter handle was transcribed from a screenshot —
+ * double-check it resolves to the real profile; fix here if not.
  */
 export const COMPANY = {
   name: "EliteVault",
   tagline: "AI conversion audits for ecommerce founders",
-  legalEntity: "[ENTIDAD LEGAL]",
-  country: "[JURISDICCIÓN]",
+  legalEntity: "Vital Living LLC",
+  country: "New Mexico, United States",
+  address: "8206 Louisiana Blvd NE, Ste A #7947, Albuquerque, NM 87113",
   contactEmail: "support@elitevaultapp.com",
 
   founder: {
-    name: "Marco A.", // TODO(founder): real name vs pen name — keep consistent
+    name: "Ariel Jiménez",
     role: "Founder, EliteVault",
-    initials: "MA",
+    initials: "AJ",
   },
 
-  // Verifiable profiles. Fill with real URLs; empty values are ignored.
+  // Verifiable profiles. Empty values are ignored (filtered out).
   socials: {
-    linkedin: "", // e.g. https://www.linkedin.com/in/your-handle
-    x: "", // e.g. https://x.com/your-handle
+    tiktok: "https://www.tiktok.com/@elitevaultoff",
+    instagram: "https://www.instagram.com/elite_vault_team",
+    x: "https://x.com/ArielJimen27396", // verify exact handle
   },
 };
 

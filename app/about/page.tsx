@@ -101,6 +101,10 @@ export default function AboutPage() {
                 <span className="text-white/40">Based in:</span>{" "}
                 {COMPANY.country}
               </p>
+              <p>
+                <span className="text-white/40">Address:</span>{" "}
+                {COMPANY.address}
+              </p>
               <p className="flex items-center gap-2">
                 <Mail className="size-4 text-white/40" />
                 <a
