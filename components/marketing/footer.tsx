@@ -26,6 +26,9 @@ export function Footer() {
             <Link href="/support" className="hover:text-white">
               Support
             </Link>
+            <Link href="/docs/api" className="hover:text-white">
+              API
+            </Link>
             <Link href="/sign-in" className="hover:text-white">
               Sign in
             </Link>
