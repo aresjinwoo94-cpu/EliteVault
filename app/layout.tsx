@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { AnalyticsGate } from "@/components/analytics/analytics-gate";
 import { isInternalRequest } from "@/lib/analytics/is-internal";
+import { SupportChat } from "@/components/support/support-chat";
 import { socialUrls } from "@/lib/company";
 import "./globals.css";
 
@@ -138,6 +139,9 @@ export default async function RootLayout({
             <Toaster />
           </TooltipProvider>
         </AnalyticsGate>
+        {/* Floating support chatbot — grounded strictly in lib/support/kb.ts;
+            always offers "talk to a human" → /support/contact. */}
+        <SupportChat />
       </body>
     </html>
   );
