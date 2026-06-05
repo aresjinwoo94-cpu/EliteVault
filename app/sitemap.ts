@@ -35,6 +35,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.9,
     },
+    {
+      url: `${baseUrl}/about`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
     ...["/legal/privacy", "/legal/terms", "/legal/refunds"].map(
       (path): MetadataRoute.Sitemap[number] => ({
         url: `${baseUrl}${path}`,
