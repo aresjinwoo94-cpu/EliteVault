@@ -12,6 +12,7 @@ const NAV = [
   { label: "Library", href: "/#library" },
   { label: "Pricing", href: "/#pricing" },
   { label: "FAQ", href: "/#faq" },
+  { label: "About", href: "/about" },
 ];
 
 export function MarketingNav() {

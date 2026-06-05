@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { COMPANY } from "@/lib/company";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -29,15 +30,12 @@ const ease = [0.22, 1, 0.36, 1] as const;
  * "estimates, not predictions" stance; it would be self-defeating to fake
  * numbers on the page that sells honest numbers.
  *
- * The founder name/photo are placeholders — replace `FOUNDER` below with
- * the real founder before launch.
+ * The founder identity is the SINGLE source of truth in lib/company.ts
+ * (gap #9) — update it there and every surface (here, About, JSON-LD)
+ * stays consistent.
  */
 
-const FOUNDER = {
-  name: "Marco A.",
-  role: "Founder, EliteVault",
-  initials: "MA",
-};
+const FOUNDER = COMPANY.founder;
 
 // Illustrative example audits on recognizable DTC stores. Scores are
 // demonstrative bands, not real audit results — see HONESTY NOTE above.
@@ -70,7 +68,7 @@ const SAMPLE_AUDITS: {
 const TRUST_BADGES: { icon: typeof ShieldCheck; label: string }[] = [
   { icon: CreditCard, label: "No credit card for your free audit" },
   { icon: Lock, label: "Payments secured by Stripe" },
-  { icon: ShieldCheck, label: "Cancel anytime · prorated" },
+  { icon: ShieldCheck, label: "Cancel anytime · no lock-in" },
   { icon: Sparkles, label: "Estimates, not predictions" },
 ];
 

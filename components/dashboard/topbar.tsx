@@ -62,6 +62,9 @@ export function AppTopbar({ profile }: { profile: Profile }) {
           <DropdownMenuItem asChild>
             <Link href="/app/billing">Billing</Link>
           </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/support">Help &amp; support</Link>
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <form action={signOut}>
             <button type="submit" className="w-full">

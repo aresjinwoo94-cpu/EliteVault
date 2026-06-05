@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { AnalyticsGate } from "@/components/analytics/analytics-gate";
 import { isInternalRequest } from "@/lib/analytics/is-internal";
+import { SupportChat } from "@/components/support/support-chat";
+import { socialUrls } from "@/lib/company";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -100,10 +102,9 @@ const organizationJsonLd = {
   logo: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com"}/icon.svg`,
   description:
     "AI-powered ecommerce audit, library of winning stores, and Meta Ads scenario modeler for DTC founders and media buyers.",
-  sameAs: [
-    // Add social profiles here when they exist. Empty array = Google
-    // ignores; doesn't hurt SEO either way.
-  ],
+  // Social profiles come from the single identity source (lib/company.ts).
+  // Empty until real URLs are set there — Google ignores an empty array.
+  sameAs: socialUrls(),
 };
 
 export default async function RootLayout({
@@ -138,6 +139,9 @@ export default async function RootLayout({
             <Toaster />
           </TooltipProvider>
         </AnalyticsGate>
+        {/* Floating support chatbot — grounded strictly in lib/support/kb.ts;
+            always offers "talk to a human" → /support/contact. */}
+        <SupportChat />
       </body>
     </html>
   );
