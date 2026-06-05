@@ -143,7 +143,7 @@ export const PLANS: Record<PlanTier, Plan> = {
       },
       { text: "REST API access (bearer tokens)", included: true, highlight: true },
       { text: "200 analyses / month", included: true },
-      { text: "Priority queue + Slack support", included: true },
+      { text: "Priority queue + priority support", included: true },
     ],
   },
 };

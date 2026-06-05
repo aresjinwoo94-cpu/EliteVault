@@ -23,6 +23,9 @@ export function Footer() {
             <Link href="/about" className="hover:text-white">
               About
             </Link>
+            <Link href="/support" className="hover:text-white">
+              Support
+            </Link>
             <Link href="/sign-in" className="hover:text-white">
               Sign in
             </Link>
