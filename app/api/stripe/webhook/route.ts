@@ -4,8 +4,15 @@ import { stripe } from "@/lib/stripe/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { planFromPriceId, PLANS } from "@/lib/stripe/plans";
 import type { PlanTier, SubscriptionStatus } from "@/lib/supabase/types";
+import { sendEmail } from "@/lib/email/resend";
+import { buildReceipt } from "@/lib/email/receipt";
+import { buildPaymentFailed } from "@/lib/email/payment-failed";
+import { buildCancellation } from "@/lib/email/cancellation";
 
 export const runtime = "nodejs";
+
+// Base URL for links inside transactional emails.
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
 const RELEVANT_EVENTS = new Set([
   "checkout.session.completed",
@@ -179,6 +186,39 @@ async function syncSubscription(
     .from("profiles")
     .update({ plan: effectivePlan })
     .eq("id", userId);
+
+  // Best-effort cancellation email — wrapped so a failure NEVER affects the
+  // webhook's response, signature handling, idempotency, or control flow.
+  if (event.type === "customer.subscription.deleted") {
+    try {
+      const { data: prof } = await service
+        .from("profiles")
+        .select("email")
+        .eq("id", userId)
+        .single();
+      const email = (prof as { email?: string } | null)?.email;
+      if (email) {
+        const periodEnd = (
+          subscription as unknown as { current_period_end?: number }
+        ).current_period_end;
+        const accessUntil = periodEnd
+          ? new Date(periodEnd * 1000).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
+          : null;
+        const { subject, html } = buildCancellation({
+          planName: PLANS[plan].name,
+          accessUntil,
+          appUrl: APP_URL,
+        });
+        await sendEmail({ to: email, subject, html });
+      }
+    } catch (err) {
+      console.warn("[webhook] cancellation email skipped:", (err as Error).message);
+    }
+  }
 }
 
 async function onInvoicePaid(
@@ -204,7 +244,7 @@ async function onInvoicePaid(
 
   const { data: profile } = await service
     .from("profiles")
-    .select("id, plan, credits")
+    .select("id, plan, credits, email")
     .eq("stripe_customer_id", customerId)
     .single();
   if (!profile) {
@@ -226,6 +266,42 @@ async function onInvoicePaid(
       `[webhook] granted ${grant} credits to ${profile.id} (plan=${plan})`,
     );
   }
+
+  // Best-effort receipt email — wrapped so a failure NEVER affects the
+  // webhook's response, signature handling, idempotency, or control flow.
+  try {
+    const email = (profile as { email?: string }).email;
+    if (email) {
+      const currency = (invoice.currency ?? "usd").toUpperCase();
+      const amountCents = invoice.amount_paid ?? invoice.total ?? 0;
+      const amount = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency,
+      }).format(amountCents / 100);
+      const interval = (
+        invoice as unknown as {
+          lines?: {
+            data?: Array<{ price?: { recurring?: { interval?: string } } }>;
+          };
+        }
+      ).lines?.data?.[0]?.price?.recurring?.interval;
+      const { subject, html } = buildReceipt({
+        planName: PLANS[plan].name,
+        amount,
+        interval: interval === "year" ? "year" : interval === "month" ? "month" : null,
+        date: new Date((invoice.created ?? 0) * 1000).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }),
+        invoiceUrl: invoice.hosted_invoice_url ?? null,
+        appUrl: APP_URL,
+      });
+      await sendEmail({ to: email, subject, html });
+    }
+  } catch (err) {
+    console.warn("[webhook] receipt email skipped:", (err as Error).message);
+  }
 }
 
 async function onInvoiceFailed(
@@ -242,4 +318,26 @@ async function onInvoiceFailed(
   // Soft-degrade: keep plan but log. Stripe will retry; if it eventually
   // moves the subscription to past_due / unpaid, syncSubscription handles it.
   console.warn("[stripe] invoice payment failed for customer", customerId);
+
+  // Best-effort dunning email — wrapped so a failure NEVER affects the
+  // webhook's response, signature handling, idempotency, or control flow.
+  try {
+    const { data: profile } = await service
+      .from("profiles")
+      .select("email, plan")
+      .eq("stripe_customer_id", customerId)
+      .single();
+    const email = (profile as { email?: string } | null)?.email;
+    const plan = ((profile as { plan?: PlanTier } | null)?.plan ??
+      "pro") as PlanTier;
+    if (email) {
+      const { subject, html } = buildPaymentFailed({
+        planName: PLANS[plan].name,
+        appUrl: APP_URL,
+      });
+      await sendEmail({ to: email, subject, html });
+    }
+  } catch (err) {
+    console.warn("[webhook] dunning email skipped:", (err as Error).message);
+  }
 }
