@@ -17,6 +17,19 @@ import { runMetaAdsOptimizerAgent } from "@/ai/agents/meta-ads-optimizer-agent";
 import type { BuyerPersona } from "@/lib/supabase/types";
 
 /**
+ * Fetch an image URL and return its raw base64. Used to pull screenshot bytes
+ * INSIDE the steps that need them, so the large base64 is a local variable and
+ * never a persisted step output (Inngest rejects step outputs over its size
+ * limit — "step output size is greater than the limit").
+ */
+async function urlToBase64(imageUrl: string): Promise<string> {
+  const res = await fetch(imageUrl);
+  if (!res.ok) throw new Error(`fetch image ${res.status}`);
+  const buf = Buffer.from(await res.arrayBuffer());
+  return buf.toString("base64");
+}
+
+/**
  * Long-running website analysis pipeline.
  *
  * Each `step.run` is independently durable — Inngest persists results
@@ -85,21 +98,49 @@ export const analyzeWebsite = inngest.createFunction(
         .eq("id", analysisId);
     });
 
+    // Returns a SMALL reference { publicUrl, mediaType } — never the raw
+    // base64. The screenshot is uploaded to storage here (merging the old
+    // save-screenshot step); steps that need the bytes fetch them via
+    // urlToBase64() so nothing large is ever a persisted step output.
     const screenshot = await step.run("capture-screenshot", async () => {
+      const extOf = (m: "image/png" | "image/jpeg") =>
+        m === "image/png" ? "png" : "jpg";
+
+      const uploadAndUrl = async (
+        base64: string,
+        mediaType: "image/png" | "image/jpeg",
+      ) => {
+        const path = `${analysisId}.${extOf(mediaType)}`;
+        const { error: upErr } = await service.storage
+          .from("screenshots")
+          .upload(path, Buffer.from(base64, "base64"), {
+            contentType: mediaType,
+            upsert: true,
+          });
+        if (upErr) throw new Error(`screenshot upload failed: ${upErr.message}`);
+        const { data: pub } = service.storage
+          .from("screenshots")
+          .getPublicUrl(path);
+        await service
+          .from("analyses")
+          .update({ screenshot_url: pub.publicUrl })
+          .eq("id", analysisId);
+        // P1.4 — populate the URL-hash cache for fast re-analysis.
+        if (url) {
+          await writeScreenshotCache(service, url, pub.publicUrl, mediaType);
+        }
+        return { publicUrl: pub.publicUrl, mediaType };
+      };
+
       if (screenshotUrl) {
         const res = await fetch(screenshotUrl);
         const buf = Buffer.from(await res.arrayBuffer());
-        return {
-          base64: buf.toString("base64"),
-          mediaType: "image/jpeg" as const,
-        };
+        return uploadAndUrl(buf.toString("base64"), "image/jpeg");
       }
       if (!url) throw new Error("Either url or screenshotUrl is required");
 
-      // P1.4 — URL-hash cache. If we've already captured this exact store,
-      // re-download the stored public image (fast) instead of re-running
-      // the slow capture providers. Self-healing: a 404 on the cached URL
-      // falls through to a fresh capture below.
+      // P1.4 — URL-hash cache: reuse the stored public image (no re-upload).
+      // Self-healing: a 404 on the cached URL falls through to a fresh capture.
       const cached = await readScreenshotCache(service, url);
       if (cached) {
         try {
@@ -108,8 +149,12 @@ export const analyzeWebsite = inngest.createFunction(
             const buf = Buffer.from(await res.arrayBuffer());
             if (buf.length > 1000) {
               console.log("[analyzer] screenshot cache hit");
+              await service
+                .from("analyses")
+                .update({ screenshot_url: cached.screenshot_url })
+                .eq("id", analysisId);
               return {
-                base64: buf.toString("base64"),
+                publicUrl: cached.screenshot_url,
                 mediaType: cached.media_type,
               };
             }
@@ -121,7 +166,8 @@ export const analyzeWebsite = inngest.createFunction(
           );
         }
       }
-      return captureScreenshot(url);
+      const shot = await captureScreenshot(url);
+      return uploadAndUrl(shot.base64, shot.mediaType);
     });
 
     // P1.2 — instant teaser score. Runs as soon as we have the screenshot,
@@ -129,11 +175,17 @@ export const analyzeWebsite = inngest.createFunction(
     // the analyzing screen can show a real number in a few seconds. Pure
     // best-effort: never throws, never blocks the audit.
     await step.run("quick-score", async () => {
-      const preview = await runQuickScore({
-        screenshotBase64: screenshot.base64,
-        mediaType: screenshot.mediaType,
-        url,
-      });
+      let preview = null;
+      try {
+        const base64 = await urlToBase64(screenshot.publicUrl);
+        preview = await runQuickScore({
+          screenshotBase64: base64,
+          mediaType: screenshot.mediaType,
+          url,
+        });
+      } catch (err) {
+        console.warn("[analyzer] quick-score skipped:", (err as Error).message);
+      }
       if (preview) {
         await (
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -173,11 +225,33 @@ export const analyzeWebsite = inngest.createFunction(
         .filter((u) => u !== url)
         .slice(0, 2);
       if (extraUrls.length === 0) return [];
-      const out: { url: string; base64: string; mediaType: "image/png" | "image/jpeg" }[] = [];
+      const out: {
+        url: string;
+        publicUrl: string;
+        mediaType: "image/png" | "image/jpeg";
+      }[] = [];
       for (const u of extraUrls) {
         try {
           const shot = await captureScreenshot(u);
-          out.push({ url: u, ...shot });
+          const ext = shot.mediaType === "image/png" ? "png" : "jpg";
+          const path = `${analysisId}-extra-${out.length}.${ext}`;
+          const { error: upErr } = await service.storage
+            .from("screenshots")
+            .upload(path, Buffer.from(shot.base64, "base64"), {
+              contentType: shot.mediaType,
+              upsert: true,
+            });
+          if (upErr) {
+            console.warn(
+              `[analyzer] extra shot upload failed for ${u}:`,
+              upErr.message,
+            );
+            continue;
+          }
+          const { data: pub } = service.storage
+            .from("screenshots")
+            .getPublicUrl(path);
+          out.push({ url: u, publicUrl: pub.publicUrl, mediaType: shot.mediaType });
         } catch (err) {
           console.warn(`[analyzer] extra shot failed for ${u}:`, (err as Error).message);
         }
@@ -186,46 +260,34 @@ export const analyzeWebsite = inngest.createFunction(
       return out;
     });
 
-    // Save the primary screenshot so the UI overlay aligns 1:1 with the
-    // annotations Gemini returns on the homepage.
-    const screenshotPublicUrl = await step.run("save-screenshot", async () => {
-      const ext = screenshot.mediaType === "image/png" ? "png" : "jpg";
-      const path = `${analysisId}.${ext}`;
-      const { error: upErr } = await service.storage
-        .from("screenshots")
-        .upload(path, Buffer.from(screenshot.base64, "base64"), {
-          contentType: screenshot.mediaType,
-          upsert: true,
-        });
-      if (upErr) {
-        console.warn("[analyzer] screenshot upload failed:", upErr.message);
-        return null;
-      }
-      const { data: pub } = service.storage
-        .from("screenshots")
-        .getPublicUrl(path);
-      await service
-        .from("analyses")
-        .update({ screenshot_url: pub.publicUrl })
-        .eq("id", analysisId);
-
-      // P1.4 — populate the URL-hash cache with this public image so a
-      // future re-analysis of the same store skips the capture providers.
-      // Only for URL-based runs (uploaded screenshots aren't re-capturable).
-      if (url) {
-        await writeScreenshotCache(
-          service,
-          url,
-          pub.publicUrl,
-          screenshot.mediaType,
-        );
-      }
-      return pub.publicUrl;
-    });
+    // (The primary screenshot was already uploaded + screenshot_url set in
+    // capture-screenshot, so the old separate save-screenshot step is gone.)
 
     const result = await step.run("run-analyzer-agent", async () => {
+      // Pull the image bytes HERE as local vars — never returned/persisted —
+      // so a large screenshot can't blow Inngest's step-output size limit.
+      const primaryBase64 = await urlToBase64(screenshot.publicUrl);
+      const extraScreenshots: {
+        url: string;
+        base64: string;
+        mediaType: "image/png" | "image/jpeg";
+      }[] = [];
+      for (const e of extraShots) {
+        try {
+          extraScreenshots.push({
+            url: e.url,
+            base64: await urlToBase64(e.publicUrl),
+            mediaType: e.mediaType,
+          });
+        } catch (err) {
+          console.warn(
+            "[analyzer] extra shot refetch failed:",
+            (err as Error).message,
+          );
+        }
+      }
       return runAnalyzerAgent({
-        screenshotBase64: screenshot.base64,
+        screenshotBase64: primaryBase64,
         mediaType: screenshot.mediaType,
         url,
         persona: persona as BuyerPersona | null,
@@ -234,7 +296,7 @@ export const analyzeWebsite = inngest.createFunction(
         // v2.2: multi-image input — homepage + 1-2 product pages. The model
         // now reasons across multiple views of the store at once, with the
         // homepage as the *primary* one for annotation positioning.
-        extraScreenshots: extraShots,
+        extraScreenshots,
         siteInfo: discovery
           ? {
               title: discovery.title,
