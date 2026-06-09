@@ -104,5 +104,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Soft-fail: ship a sitemap with just static routes rather than a 500
   }
 
-  return [...staticEntries, ...communityEntries];
+  // Public shareable audits (/s/<slug>) — the real logged-out-friendly,
+  // indexable content (each is a unique store diagnosis). Stored as
+  // analyses.share_slug; served by the public get_shared_audit RPC.
+  let sharedEntries: MetadataRoute.Sitemap = [];
+  try {
+    const service = createSupabaseServiceClient();
+    const { data } = await service
+      .from("analyses")
+      .select("share_slug, finished_at")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .not("share_slug", "is", null as any)
+      .eq("status", "succeeded")
+      .order("finished_at", { ascending: false })
+      .limit(1000);
+    if (Array.isArray(data)) {
+      sharedEntries = data
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .filter((row: any) => row?.share_slug)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((row: any) => ({
+          url: `${baseUrl}/s/${row.share_slug}`,
+          lastModified: row.finished_at ? new Date(row.finished_at) : now,
+          changeFrequency: "monthly" as const,
+          priority: 0.6,
+        }));
+    }
+  } catch (err) {
+    console.warn("[sitemap] shared audits fetch failed:", (err as Error).message);
+  }
+
+  return [...staticEntries, ...sharedEntries, ...communityEntries];
 }
