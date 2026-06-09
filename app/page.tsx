@@ -106,7 +106,16 @@ function buildLandingJsonLd() {
     })),
   };
 
-  return [softwareApplication, faqPage];
+  const website = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "EliteVault",
+    url: baseUrl,
+    description:
+      "AI conversion audits for ecommerce — a CRO score, annotated screenshot, and ranked fixes in under a minute.",
+  };
+
+  return [softwareApplication, faqPage, website];
 }
 
 export default async function HomePage() {
