@@ -131,7 +131,7 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
                 </p>
                 <Badge variant="default">{FORMAT_LABEL[c.format] ?? c.format}</Badge>
               </div>
-              <p className="mt-2 text-xs italic text-white/65 leading-relaxed">
+              <p className="mt-2 text-xs text-white/65 leading-relaxed">
                 "{c.hook}"
               </p>
               <p className="mt-2 text-[11px] text-champagne-300">

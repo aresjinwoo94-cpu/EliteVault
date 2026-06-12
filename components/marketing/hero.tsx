@@ -79,7 +79,7 @@ export function Hero() {
           className="mt-6 font-serif text-5xl md:text-7xl lg:text-8xl leading-[1.02] tracking-tight"
         >
           <span className="block">Copy what's</span>
-          <span className="block text-gold-gradient italic">actually</span>
+          <span className="block text-gold-gradient">actually</span>
           <span className="block">converting.</span>
         </motion.h1>
 
@@ -230,7 +230,7 @@ function HeroPreview() {
             <div className="bg-obsidian-900/40 p-5 space-y-4">
               {/* Score + verdict */}
               <div>
-                <p className="text-[10px] uppercase tracking-widest text-white/40">
+                <p className="text-[10px] font-mono uppercase tracking-widest text-white/40">
                   Overall score
                 </p>
                 <div className="mt-1 flex items-baseline gap-2">
@@ -251,7 +251,7 @@ function HeroPreview() {
 
               {/* Strengths / Issues split */}
               <div>
-                <p className="text-[10px] uppercase tracking-widest text-white/40 mb-2">
+                <p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-2">
                   Strengths vs. issues
                 </p>
                 <div className="grid grid-cols-2 gap-2">
@@ -282,7 +282,7 @@ function HeroPreview() {
 
               {/* Niche position bar */}
               <div>
-                <p className="text-[10px] uppercase tracking-widest text-white/40 mb-2">
+                <p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-2">
                   Where you stand
                 </p>
                 <div className="relative h-1.5 rounded-full bg-gradient-to-r from-destructive/40 via-warning/40 to-success/50">
@@ -309,7 +309,7 @@ function HeroPreview() {
 
               {/* Persona quote */}
               <div className="rounded-lg bg-white/[0.02] border border-white/[0.06] p-3">
-                <p className="text-[11px] text-white/65 leading-relaxed italic">
+                <p className="text-[11px] text-white/65 leading-relaxed">
                   "I'd bounce — the offer isn't obvious in the first 2 seconds."
                 </p>
                 <p className="mt-1.5 text-[10px] text-white/30">
@@ -323,7 +323,7 @@ function HeroPreview() {
           <div className="border-t border-white/[0.04] bg-obsidian-900/30 px-5 py-3">
             <div className="flex items-center gap-2 mb-2">
               <Zap className="size-3 text-champagne-400" />
-              <p className="text-[10px] uppercase tracking-widest text-white/40">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-white/40">
                 Top fixes — ranked by leverage
               </p>
             </div>

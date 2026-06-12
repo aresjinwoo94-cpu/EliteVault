@@ -39,7 +39,7 @@ export function PersonaResponse({ response }: { response: PersonaResponse }) {
         </span>
       </div>
 
-      <p className="mt-4 font-serif italic text-xl leading-snug text-white">
+      <p className="mt-4 font-serif text-xl leading-snug text-white">
         "{response.headline}"
       </p>
 

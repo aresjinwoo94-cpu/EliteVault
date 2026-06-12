@@ -44,7 +44,7 @@ export default async function OverviewPage() {
         </p>
         <h1 className="mt-2 font-serif text-4xl md:text-5xl lg:text-6xl tracking-tight leading-[1.05]">
           What are we{" "}
-          <span className="italic text-gold-gradient">analyzing</span> today?
+          <span className="text-gold-gradient">analyzing</span> today?
         </h1>
       </header>
 

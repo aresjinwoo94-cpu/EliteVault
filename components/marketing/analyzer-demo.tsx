@@ -1,8 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Brain, Eye, Scan, Sparkles, Target } from "lucide-react";
+import { Brain, Eye, Scan, Target } from "lucide-react";
 import { AnalyzerWalkthrough } from "./analyzer-walkthrough";
+import { DataPill } from "@/components/ui/data-pill";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -48,10 +49,7 @@ export function AnalyzerDemo() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, ease }}
             >
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-signal-500/30 bg-signal-600/10 px-3 py-1 text-[11px] uppercase tracking-wider text-signal-300">
-                <Sparkles className="size-3" />
-                The Analyzer · live demo →
-              </div>
+              <DataPill items={["THE ANALYZER", "LIVE DEMO"]} />
               <h2 className="mt-5 font-serif text-4xl md:text-5xl tracking-tight leading-tight">
                 A senior media buyer in a tab.
               </h2>

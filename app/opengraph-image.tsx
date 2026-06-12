@@ -135,7 +135,6 @@ export default async function Image() {
                   "linear-gradient(135deg, #FFF8E1 0%, #D4AF37 50%, #8A6A1A 100%)",
                 backgroundClip: "text",
                 color: "transparent",
-                fontStyle: "italic",
               }}
             >
               actually

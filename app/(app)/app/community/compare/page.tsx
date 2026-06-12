@@ -202,7 +202,7 @@ export default async function ComparePage({
                   <Badge variant={r.would_buy ? "success" : "danger"}>
                     {r.would_buy ? "Would buy" : "Would bounce"}
                   </Badge>
-                  <p className="font-serif italic text-base leading-snug text-white/85">
+                  <p className="font-serif text-base leading-snug text-white/85">
                     "{r.headline}"
                   </p>
                 </>

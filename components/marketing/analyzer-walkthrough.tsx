@@ -278,7 +278,7 @@ function Walkthrough({ skipAnimations }: { skipAnimations: boolean }) {
           transition={{ delay: skipAnimations ? 0 : 5.3, duration: 0.5 }}
           className="rounded-lg bg-white/[0.02] border border-white/[0.06] p-3"
         >
-          <p className="text-[11px] text-white/65 leading-relaxed italic">
+          <p className="text-[11px] text-white/65 leading-relaxed">
             "
             <TypewriterText
               text={PERSONA_QUOTE}

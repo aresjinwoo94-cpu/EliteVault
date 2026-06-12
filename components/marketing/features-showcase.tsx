@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Compass, Image as ImageIcon, Library, TrendingUp } from "lucide-react";
+import { DataPill } from "@/components/ui/data-pill";
 
 const FEATURES = [
   {
@@ -32,7 +33,8 @@ export function FeaturesShowcase() {
     <section id="library" className="py-24 md:py-32">
       <div className="container max-w-6xl">
         <div className="max-w-2xl">
-          <h2 className="font-serif text-4xl md:text-5xl tracking-tight leading-tight">
+          <DataPill items={["THE ENGINE", "NOT A CHECKLIST"]} />
+          <h2 className="mt-5 font-serif text-4xl md:text-5xl tracking-tight leading-tight">
             More than a checklist tool.
           </h2>
           <p className="mt-4 text-white/55 leading-relaxed text-lg">
@@ -49,11 +51,11 @@ export function FeaturesShowcase() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-80px" }}
               transition={{ duration: 0.5, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
-              className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-card/40 p-6 hover:border-white/[0.12] transition-colors"
+              className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-card/40 p-6 hover:border-signal-500/25 transition-colors"
             >
-              <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full bg-champagne-400/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="flex size-10 items-center justify-center rounded-lg bg-white/[0.04] ring-1 ring-white/10">
-                <f.icon className="size-4 text-champagne-300" />
+              <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full bg-signal-400/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="flex size-10 items-center justify-center rounded-lg bg-signal-600/10 ring-1 ring-signal-500/20">
+                <f.icon className="size-4 text-signal-300" />
               </div>
               <h3 className="mt-5 text-lg font-medium tracking-tight text-white">
                 {f.title}

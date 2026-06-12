@@ -200,7 +200,7 @@ export function MetaCampaignSimulator({
         ))}
       </div>
 
-      <p className="text-[11px] text-white/40 italic max-w-3xl">
+      <p className="text-[11px] text-white/40 max-w-3xl">
         These are AI estimates calibrated on your audit score, niche, AOV and budget —
         not predictions. Real campaigns swing on creative, attribution and platform
         variance. Use the recommendations as starting points for your own testing.

@@ -97,7 +97,7 @@ export function PlanConfirmation({
           </Badge>
           <h1 className="mt-4 font-serif text-4xl md:text-5xl tracking-tight leading-[1.05]">
             Welcome to{" "}
-            <span className="italic text-gold-gradient">{planMeta.name}</span>.
+            <span className="text-gold-gradient">{planMeta.name}</span>.
           </h1>
           <p className="mt-3 text-sm md:text-base text-white/60 leading-relaxed">
             Your subscription is active.{" "}

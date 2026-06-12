@@ -131,7 +131,7 @@ export function LibraryView({
         </div>
         <h1 className="mt-1 font-serif text-4xl tracking-tight">
           Stores that are{" "}
-          <span className="italic text-gold-gradient">actually selling.</span>
+          <span className="text-gold-gradient">actually selling.</span>
         </h1>
         <p className="mt-2 text-sm text-white/55 max-w-2xl">
           {isPaid

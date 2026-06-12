@@ -6,18 +6,21 @@ import { motion } from "framer-motion";
 import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DataPill } from "@/components/ui/data-pill";
 import { PLANS, type Interval } from "@/lib/stripe/plans";
 import { cn, formatCurrency } from "@/lib/utils";
 
 export function Pricing() {
-  // ARPU: default to annual billing (charged upfront). Toggle still switches.
-  const [interval, setInterval] = useState<Interval>("year");
+  // Show monthly pricing first — it's the lower sticker number and the
+  // honest default. The toggle still switches to yearly (with the 20% save).
+  const [interval, setInterval] = useState<Interval>("month");
 
   return (
     <section id="pricing" className="py-24 md:py-32 border-t border-white/[0.04]">
       <div className="container max-w-6xl">
-        <div className="text-center max-w-2xl mx-auto">
-          <h2 className="font-serif text-4xl md:text-5xl tracking-tight leading-tight">
+        <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
+          <DataPill items={["PRICING", "FREE DIAGNOSIS"]} />
+          <h2 className="mt-5 font-serif text-4xl md:text-5xl tracking-tight leading-tight">
             Free diagnosis. Pay for the cure.
           </h2>
           <p className="mt-4 text-white/55 leading-relaxed text-lg">
@@ -93,13 +96,13 @@ export function Pricing() {
               </div>
 
               <div className="mt-6 flex items-baseline gap-1">
-                <span className="font-mono tabular-nums text-5xl tracking-tight">
+                <span className="font-mono tabular-nums text-5xl tracking-tight text-signal-300">
                   {plan.price[interval] === 0
                     ? "Free"
                     : formatCurrency(plan.price[interval])}
                 </span>
                 {plan.price[interval] > 0 && (
-                  <span className="text-sm text-white/40">
+                  <span className="font-mono text-sm text-white/40">
                     / {interval === "month" ? "mo" : "yr"}
                   </span>
                 )}
