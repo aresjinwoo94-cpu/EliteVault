@@ -67,15 +67,15 @@ export default function ApiDocsPage() {
             </p>
             <ul>
               <li>
-                <code>url</code> <em>(string, required)</em> — the store URL to
+                <code>url</code> <span className="text-white/50">(string, required)</span> — the store URL to
                 audit.
               </li>
               <li>
-                <code>persona</code> <em>(object, optional)</em> — a buyer
+                <code>persona</code> <span className="text-white/50">(object, optional)</span> — a buyer
                 persona to simulate against.
               </li>
               <li>
-                <code>run_rewrite</code> <em>(boolean, optional, default true)</em>{" "}
+                <code>run_rewrite</code> <span className="text-white/50">(boolean, optional, default true)</span>{" "}
                 — also generate a rewrite of the hero section.
               </li>
             </ul>

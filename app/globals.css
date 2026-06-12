@@ -86,6 +86,17 @@
     color: #fff;
   }
 
+  /* Brand rule: never render italics. The Obsidian Quant identity uses
+     weight/color/mono for emphasis, not slanted type. Neutralizes the
+     browser-default italics on <em>/<i>/<cite>/<blockquote>. */
+  em,
+  i,
+  cite,
+  blockquote,
+  address {
+    font-style: normal;
+  }
+
   /* Scrollbar — premium thin */
   ::-webkit-scrollbar {
     width: 10px;
