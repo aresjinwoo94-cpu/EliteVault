@@ -14,7 +14,7 @@ interface PersonaResponse {
 export function PersonaResponse({ response }: { response: PersonaResponse }) {
   return (
     <Card className="p-6 relative overflow-hidden">
-      <div className="pointer-events-none absolute -right-12 -top-12 size-48 rounded-full bg-violet-600/10 blur-3xl" />
+      <div className="pointer-events-none absolute -right-12 -top-12 size-48 rounded-full bg-signal-600/10 blur-3xl" />
 
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium">Buyer-persona response</h3>
@@ -39,7 +39,7 @@ export function PersonaResponse({ response }: { response: PersonaResponse }) {
         </span>
       </div>
 
-      <p className="mt-4 font-serif italic text-xl leading-snug text-white">
+      <p className="mt-4 font-serif text-xl leading-snug text-white">
         "{response.headline}"
       </p>
 
@@ -52,7 +52,7 @@ export function PersonaResponse({ response }: { response: PersonaResponse }) {
             transition={{ delay: 0.2 + i * 0.1 }}
             className="flex gap-2.5"
           >
-            <Quote className="size-3 mt-1 shrink-0 text-violet-400" />
+            <Quote className="size-3 mt-1 shrink-0 text-signal-400" />
             <p className="text-sm text-white/70 leading-relaxed">{q}</p>
           </motion.div>
         ))}

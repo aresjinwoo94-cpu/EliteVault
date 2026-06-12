@@ -253,7 +253,7 @@ and every output ships with a "not a prediction" disclaimer.
 - Durable Inngest function with stale-job timeout (5 min) and
   ownership re-validation on event replay.
 - Hand-rolled SVG chart — no recharts (~25KB saved) and full control
-  over the brand-gold revenue / violet-dashed spend visualization.
+  over the brand-gold revenue / teal-dashed spend visualization.
 
 ### Trying it
 1. As a Scale-plan user, run a normal analysis to completion.

@@ -17,7 +17,7 @@ const buttonVariants = cva(
         ghost: "text-white/80 hover:bg-white/[0.06] hover:text-white",
         outline:
           "border border-white/15 bg-transparent text-white hover:bg-white/[0.04] hover:border-white/25",
-        ai: "bg-gradient-to-br from-violet-600 to-violet-700 text-white shadow-violet hover:from-violet-500 hover:to-violet-600",
+        ai: "bg-gradient-to-br from-signal-500 to-signal-600 text-obsidian-950 shadow-signal hover:from-signal-400 hover:to-signal-500",
         destructive:
           "bg-destructive/90 text-white hover:bg-destructive shadow-[0_0_24px_-8px_rgba(239,68,68,0.5)]",
         link: "text-champagne-400 underline-offset-4 hover:underline",

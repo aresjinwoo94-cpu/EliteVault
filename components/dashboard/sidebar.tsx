@@ -89,14 +89,14 @@ export function AppSidebar({ profile }: { profile: Profile }) {
               />
               {item.label}
               {item.highlight && (
-                <Sparkles className="ml-auto size-3 text-violet-400" />
+                <Sparkles className="ml-auto size-3 text-signal-400" />
               )}
             </Link>
           );
         })}
       </nav>
 
-      <div className="mx-3 mt-2 rounded-xl border border-white/[0.06] p-4 bg-gradient-to-br from-violet-600/[0.08] to-champagne-400/[0.05]">
+      <div className="mx-3 mt-2 rounded-xl border border-white/[0.06] p-4 bg-gradient-to-br from-signal-600/[0.08] to-champagne-400/[0.05]">
         <div className="flex items-center justify-between">
           <span className="text-[10px] uppercase tracking-widest text-white/40">
             Plan
@@ -106,7 +106,7 @@ export function AppSidebar({ profile }: { profile: Profile }) {
           </Badge>
         </div>
         <div className="mt-3 flex items-baseline gap-1.5">
-          <span className="font-serif text-3xl text-gold-gradient tnum">
+          <span className="font-mono tabular-nums text-3xl text-gold-gradient tnum">
             {profile?.credits ?? 0}
           </span>
           <span className="text-xs text-white/40">credits left</span>

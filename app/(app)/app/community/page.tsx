@@ -135,7 +135,7 @@ export default async function CommunityPage({
         </div>
         <h1 className="mt-2 font-serif text-4xl md:text-5xl lg:text-6xl tracking-tight leading-[1.05]">
           Where stores get{" "}
-          <span className="italic text-gold-gradient">ranked</span>.
+          <span className="text-gold-gradient">ranked</span>.
         </h1>
         <p className="mt-3 text-sm md:text-base text-white/55 max-w-2xl leading-relaxed">
           Every published audit gets a composite score (design quality +

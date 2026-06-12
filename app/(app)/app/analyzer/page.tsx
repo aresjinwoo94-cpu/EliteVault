@@ -55,7 +55,7 @@ export default async function AnalyzerPage({
           </div>
           <h1 className="mt-2 font-serif text-4xl md:text-5xl tracking-tight leading-[1.05]">
             What store do you want to{" "}
-            <span className="italic text-gold-gradient">crack open?</span>
+            <span className="text-gold-gradient">crack open?</span>
           </h1>
         </div>
         <div className="text-left sm:text-right shrink-0">

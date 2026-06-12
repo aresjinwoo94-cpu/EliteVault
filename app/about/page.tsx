@@ -24,7 +24,7 @@ export default function AboutPage() {
           </p>
           <h1 className="mt-2 font-serif text-4xl md:text-5xl tracking-tight leading-[1.05]">
             A senior CRO audit — without the{" "}
-            <span className="italic text-gold-gradient">$2,000 invoice</span>.
+            <span className="text-gold-gradient">$2,000 invoice</span>.
           </h1>
 
           <div className="mt-8 space-y-5 text-white/65 leading-relaxed">

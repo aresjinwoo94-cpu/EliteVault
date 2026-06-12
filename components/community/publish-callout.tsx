@@ -127,10 +127,10 @@ export function PublishCallout({
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="relative overflow-hidden rounded-2xl border border-champagne-400/25 bg-gradient-to-br from-champagne-400/[0.07] via-champagne-400/[0.02] to-violet-600/[0.05] p-5 md:p-6"
+        className="relative overflow-hidden rounded-2xl border border-champagne-400/25 bg-gradient-to-br from-champagne-400/[0.07] via-champagne-400/[0.02] to-signal-600/[0.05] p-5 md:p-6"
       >
         <div className="pointer-events-none absolute -right-10 -top-10 size-44 rounded-full bg-champagne-400/15 blur-3xl" />
-        <div className="pointer-events-none absolute -left-12 -bottom-12 size-40 rounded-full bg-violet-600/10 blur-3xl" />
+        <div className="pointer-events-none absolute -left-12 -bottom-12 size-40 rounded-full bg-signal-600/10 blur-3xl" />
 
         <div className="relative flex flex-col md:flex-row md:items-center gap-4">
           <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-champagne-400/15 ring-1 ring-champagne-400/30">

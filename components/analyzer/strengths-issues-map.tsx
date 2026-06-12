@@ -189,7 +189,7 @@ function Bucket({
         <span className={`font-serif text-lg tnum ${tone.text}`}>{count}</span>
       </div>
       {items.length === 0 ? (
-        <p className="mt-3 text-[11px] text-white/30 italic">None</p>
+        <p className="mt-3 text-[11px] text-white/30">None</p>
       ) : (
         <ul className="mt-2 space-y-1">
           {items.map((it) => {

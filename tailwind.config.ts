@@ -16,7 +16,7 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // EliteVault palette — obsidian + champagne + AI violet
+        // EliteVault palette — obsidian + champagne + teal signal
         obsidian: {
           950: "#06060A",
           900: "#0A0A0F",
@@ -34,12 +34,14 @@ const config: Config = {
           500: "#B89026",
           600: "#8A6A1A",
         },
-        violet: {
-          // AI accent
-          400: "#A78BFA",
-          500: "#8B5CF6",
-          600: "#7C3AED",
-          700: "#6D28D9",
+        signal: {
+          // live data / score / proof / signal — teal-green
+          200: "#99F6E4",
+          300: "#5EEAD4",
+          400: "#2DD4BF", // primary data/signal
+          500: "#14B8A6",
+          600: "#0D9488",
+          700: "#0F766E",
         },
         border: "rgb(255 255 255 / 0.06)",
         input: "rgb(255 255 255 / 0.08)",
@@ -71,8 +73,8 @@ const config: Config = {
           foreground: "#FAFAFA",
         },
         accent: {
-          DEFAULT: "#7C3AED",
-          foreground: "#FAFAFA",
+          DEFAULT: "#2DD4BF",
+          foreground: "#06060A",
         },
         success: "#10B981",
         warning: "#F59E0B",
@@ -130,13 +132,16 @@ const config: Config = {
       backgroundImage: {
         "grid-fade":
           "radial-gradient(circle at center, rgba(212,175,55,0.06) 0, transparent 60%)",
+        "signal-fade":
+          "radial-gradient(circle at center, rgba(45,212,191,0.07) 0, transparent 60%)",
         "gold-shine":
           "linear-gradient(90deg, transparent, rgba(212,175,55,0.5), transparent)",
       },
       boxShadow: {
         gold: "0 0 32px -8px rgba(212, 175, 55, 0.35)",
         "gold-lg": "0 0 80px -12px rgba(212, 175, 55, 0.45)",
-        violet: "0 0 32px -8px rgba(124, 58, 237, 0.45)",
+        signal: "0 0 32px -8px rgba(45, 212, 191, 0.40)",
+        "signal-lg": "0 0 80px -12px rgba(45, 212, 191, 0.45)",
         card: "0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px -12px rgba(0,0,0,0.6)",
       },
     },

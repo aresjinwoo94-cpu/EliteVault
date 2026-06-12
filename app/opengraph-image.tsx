@@ -4,7 +4,7 @@ import { ImageResponse } from "next/og";
  * Dynamic OG image at /opengraph-image
  *
  * Generated server-side via @vercel/og. Shows the brand mark, the headline
- * tagline, and a subtle gold + violet gradient on obsidian. 1200x630 is
+ * tagline, and a subtle gold + teal gradient on obsidian. 1200x630 is
  * the canonical OG dimension respected by Facebook / WhatsApp / Twitter /
  * LinkedIn / Slack / iMessage previews.
  *
@@ -49,7 +49,7 @@ export default async function Image() {
             display: "flex",
           }}
         />
-        {/* Violet ambient glow (bottom-right) */}
+        {/* Teal ambient glow (bottom-right) */}
         <div
           style={{
             position: "absolute",
@@ -58,7 +58,7 @@ export default async function Image() {
             width: "600px",
             height: "600px",
             background:
-              "radial-gradient(circle, rgba(124,58,237,0.20) 0%, rgba(124,58,237,0) 65%)",
+              "radial-gradient(circle, rgba(45,212,191,0.20) 0%, rgba(45,212,191,0) 65%)",
             display: "flex",
           }}
         />
@@ -80,9 +80,9 @@ export default async function Image() {
                 <stop offset="0.5" stopColor="#D4AF37" />
                 <stop offset="1" stopColor="#8A6A1A" />
               </linearGradient>
-              <linearGradient id="og-violet" x1="0" x2="1" y1="1" y2="0">
-                <stop offset="0" stopColor="#7C3AED" />
-                <stop offset="1" stopColor="#A78BFA" />
+              <linearGradient id="og-signal" x1="0" x2="1" y1="1" y2="0">
+                <stop offset="0" stopColor="#14B8A6" />
+                <stop offset="1" stopColor="#5EEAD4" />
               </linearGradient>
             </defs>
             <path
@@ -92,8 +92,8 @@ export default async function Image() {
               strokeLinejoin="round"
               fill="rgba(212,175,55,0.06)"
             />
-            <circle cx="16" cy="14" r="3.2" fill="url(#og-violet)" />
-            <rect x="14.4" y="14" width="3.2" height="6.4" fill="url(#og-violet)" />
+            <circle cx="16" cy="14" r="3.2" fill="url(#og-signal)" />
+            <rect x="14.4" y="14" width="3.2" height="6.4" fill="url(#og-signal)" />
           </svg>
           <span
             style={{
@@ -135,7 +135,6 @@ export default async function Image() {
                   "linear-gradient(135deg, #FFF8E1 0%, #D4AF37 50%, #8A6A1A 100%)",
                 backgroundClip: "text",
                 color: "transparent",
-                fontStyle: "italic",
               }}
             >
               actually

@@ -58,7 +58,7 @@ export function LockedMetaAdsPreview() {
             <p className="text-[10px] uppercase tracking-widest text-white/40">
               {label}
             </p>
-            <p className="mt-1 font-serif text-xl tnum text-white">{val}</p>
+            <p className="mt-1 font-mono tabular-nums text-xl tnum text-white">{val}</p>
             <p className="mt-0.5 text-[10px] text-white/40">{sub}</p>
           </div>
         ))}
@@ -115,7 +115,7 @@ export function LockedSimulatorPreview() {
               {s.variant}
             </p>
             <p
-              className={`mt-1 font-serif text-2xl tnum leading-none ${
+              className={`mt-1 font-mono tabular-nums text-2xl tnum leading-none ${
                 s.primary ? "text-gold-gradient" : "text-white"
               }`}
             >
@@ -124,11 +124,11 @@ export function LockedSimulatorPreview() {
             <p className="text-[10px] text-white/40 mt-0.5">7-day ROAS</p>
             <div className="mt-3 flex justify-between text-[10px]">
               <span className="text-white/45">Spend</span>
-              <span className="tnum text-white/75">{s.spend}</span>
+              <span className="font-mono tabular-nums tnum text-white/75">{s.spend}</span>
             </div>
             <div className="flex justify-between text-[10px]">
               <span className="text-white/45">Net</span>
-              <span className="tnum text-success">{s.net}</span>
+              <span className="font-mono tabular-nums tnum text-success">{s.net}</span>
             </div>
           </div>
         ))}
@@ -160,9 +160,9 @@ function LockWrapper({
       viewport={{ once: true }}
       transition={{ duration: 0.4 }}
     >
-      <Card className="relative overflow-hidden p-6 md:p-7 border-champagne-400/15 bg-gradient-to-br from-champagne-400/[0.04] to-violet-600/[0.04]">
+      <Card className="relative overflow-hidden p-6 md:p-7 border-champagne-400/15 bg-gradient-to-br from-champagne-400/[0.04] to-signal-600/[0.04]">
         <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-champagne-400/12 blur-3xl" />
-        <div className="pointer-events-none absolute -left-12 -bottom-12 size-56 rounded-full bg-violet-600/12 blur-3xl" />
+        <div className="pointer-events-none absolute -left-12 -bottom-12 size-56 rounded-full bg-signal-600/12 blur-3xl" />
 
         <div className="relative">
           {/* Header */}

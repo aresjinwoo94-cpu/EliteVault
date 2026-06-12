@@ -52,7 +52,7 @@ export default async function ApiKeysPage() {
       </header>
 
       {!isScale ? (
-        <Card className="p-8 text-center border-champagne-400/20 bg-gradient-to-br from-champagne-400/[0.04] to-violet-600/[0.04]">
+        <Card className="p-8 text-center border-champagne-400/20 bg-gradient-to-br from-champagne-400/[0.04] to-signal-600/[0.04]">
           <KeyRound className="mx-auto size-6 text-champagne-300" />
           <h2 className="mt-4 font-serif text-2xl tracking-tight">
             REST API is a Scale-plan feature

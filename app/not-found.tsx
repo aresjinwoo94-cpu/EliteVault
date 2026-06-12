@@ -10,7 +10,7 @@ export default function NotFound() {
         Error 404
       </p>
       <h1 className="mt-3 font-serif text-6xl md:text-7xl tracking-tight">
-        <span className="text-gold-gradient italic">Misplaced</span>.
+        <span className="text-gold-gradient">Misplaced</span>.
       </h1>
       <p className="mt-4 max-w-md text-sm text-white/55">
         The page you're looking for has been moved, deleted, or never existed.
