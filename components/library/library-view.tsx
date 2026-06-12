@@ -154,7 +154,7 @@ export function LibraryView({
               : "border-white/[0.08] text-white/55 hover:text-white hover:border-white/20",
           )}
         >
-          All <span className="ml-1 text-white/40">{stats.total}</span>
+          All <span className="ml-1 text-white/40 font-mono tabular-nums">{stats.total}</span>
         </button>
         {topNiches.map(([n, count]) => (
           <button
@@ -170,7 +170,7 @@ export function LibraryView({
                 : "border-white/[0.08] text-white/55 hover:text-white hover:border-white/20",
             )}
           >
-            {n} <span className="ml-1 text-white/40">{count}</span>
+            {n} <span className="ml-1 text-white/40 font-mono tabular-nums">{count}</span>
           </button>
         ))}
       </div>
@@ -243,7 +243,7 @@ export function LibraryView({
                 "inline-flex items-center gap-2 rounded-lg border border-dashed px-3 py-2 text-xs cursor-pointer transition-colors",
                 !isPaid
                   ? "border-white/10 text-white/40 cursor-not-allowed"
-                  : "border-white/15 text-white/70 hover:border-violet-500/40 hover:text-white",
+                  : "border-white/15 text-white/70 hover:border-signal-500/40 hover:text-white",
               )}
             >
               {!isPaid ? (
@@ -316,7 +316,7 @@ export function LibraryView({
       </motion.div>
 
       {plan === "free" && (
-        <div className="rounded-2xl border border-champagne-400/20 bg-gradient-to-br from-champagne-400/[0.05] to-violet-600/[0.05] p-6 text-center">
+        <div className="rounded-2xl border border-champagne-400/20 bg-gradient-to-br from-champagne-400/[0.05] to-signal-600/[0.05] p-6 text-center">
           <Lock className="mx-auto size-5 text-champagne-300" />
           <h3 className="mt-3 font-serif text-xl">
             9 winners on Free — {stats.total - 9}+ more on Pro

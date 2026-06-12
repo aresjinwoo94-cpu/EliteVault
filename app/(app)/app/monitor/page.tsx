@@ -24,7 +24,7 @@ function ScoreBadge({ score }: { score: number | null }) {
   if (score === null)
     return <span className="text-sm text-white/30">not yet checked</span>;
   return (
-    <span className="font-serif text-2xl text-gold-gradient tnum">
+    <span className="font-mono tabular-nums text-2xl text-gold-gradient tnum">
       {score}
       <span className="ml-0.5 text-xs text-white/40">/100</span>
     </span>
@@ -111,7 +111,7 @@ export default async function MonitorPage() {
           <form action={runMyCheckNow}>
             <button
               type="submit"
-              className="inline-flex items-center gap-1.5 rounded-md border border-violet-500/30 bg-violet-500/10 px-3 py-1.5 text-xs text-violet-300 hover:bg-violet-500/20 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-md border border-signal-500/30 bg-signal-500/10 px-3 py-1.5 text-xs text-signal-300 hover:bg-signal-500/20 transition-colors"
             >
               <RefreshCw className="size-3.5" />
               Run my check now
@@ -145,7 +145,10 @@ export default async function MonitorPage() {
               Competitors
             </span>
             <span className="text-white/30">
-              {competitors.length}/{competitorLimit} used
+              <span className="font-mono tabular-nums">
+                {competitors.length}/{competitorLimit}
+              </span>{" "}
+              used
             </span>
           </h2>
 

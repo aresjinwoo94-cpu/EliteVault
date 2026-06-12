@@ -212,7 +212,7 @@ export function MetaCampaignSimulator({
 /** Running state — shown while Inngest is fanning out the 3 parallel calls. */
 function SimulatorRunning() {
   return (
-    <Card className="relative overflow-hidden p-6 md:p-7 border-champagne-400/15 bg-gradient-to-br from-champagne-400/[0.04] to-violet-600/[0.04]">
+    <Card className="relative overflow-hidden p-6 md:p-7 border-champagne-400/15 bg-gradient-to-br from-champagne-400/[0.04] to-signal-600/[0.04]">
       <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-champagne-400/12 blur-3xl animate-pulse" />
       <div className="relative">
         <div className="flex items-center gap-2">

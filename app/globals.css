@@ -68,13 +68,13 @@
   body {
     background:
       radial-gradient(
-        ellipse 80% 50% at 50% -10%,
-        rgba(124, 58, 237, 0.12),
+        ellipse 70% 40% at 50% -10%,
+        rgba(212, 175, 55, 0.10),
         transparent
       ),
       radial-gradient(
         ellipse 70% 40% at 90% 100%,
-        rgba(212, 175, 55, 0.06),
+        rgba(45, 212, 191, 0.10),
         transparent
       ),
       #0a0a0f;
@@ -153,7 +153,7 @@
   }
 
   .text-ai-gradient {
-    background: linear-gradient(135deg, #c4b5fd 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, #5eead4 0%, #14b8a6 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -183,7 +183,7 @@
     background: conic-gradient(
       from var(--angle, 0deg),
       transparent 30%,
-      #7c3aed 50%,
+      #2dd4bf 50%,
       #d4af37 70%,
       transparent 90%
     );
@@ -222,6 +222,13 @@
   .tnum {
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
+  }
+
+  /* Monospace tabular numerics — the voice of data */
+  .num {
+    font-family: var(--font-mono), monospace;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
   }
 }
 

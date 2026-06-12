@@ -52,7 +52,7 @@ export default async function OverviewPage() {
           them to the <60s "wow". Disappears the moment first_value_at is set. */}
       {!(profile as { first_value_at?: string | null } | null)?.first_value_at && (
         <Link href="/app/analyzer" className="group block">
-          <div className="flex items-center justify-between gap-4 rounded-2xl border border-champagne-400/30 bg-gradient-to-r from-champagne-400/[0.08] to-violet-600/[0.06] p-5 md:p-6 transition-all hover:border-champagne-400/50">
+          <div className="flex items-center justify-between gap-4 rounded-2xl border border-champagne-400/30 bg-gradient-to-r from-champagne-400/[0.08] to-signal-600/[0.06] p-5 md:p-6 transition-all hover:border-champagne-400/50">
             <div className="flex items-start gap-3">
               <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-champagne-400/15 ring-1 ring-champagne-400/25">
                 <Sparkles className="size-5 text-champagne-300" />
@@ -101,11 +101,11 @@ export default async function OverviewPage() {
         </Link>
 
         <Link href="/app/library" className="group">
-          <Card className="relative overflow-hidden p-7 md:p-8 h-full transition-all hover:border-violet-500/30">
-            <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full bg-violet-600/15 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Card className="relative overflow-hidden p-7 md:p-8 h-full transition-all hover:border-signal-500/30">
+            <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full bg-signal-600/15 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="flex items-start justify-between">
-              <div className="flex size-11 items-center justify-center rounded-xl bg-violet-600/10 ring-1 ring-violet-500/20">
-                <Library className="size-5 text-violet-300" />
+              <div className="flex size-11 items-center justify-center rounded-xl bg-signal-600/10 ring-1 ring-signal-500/20">
+                <Library className="size-5 text-signal-300" />
               </div>
               <span className="text-xs text-white/40">
                 {formatCompact(totalSites ?? 0)} stores indexed
@@ -118,7 +118,7 @@ export default async function OverviewPage() {
               The live portfolio of stores actually generating revenue right
               now. Search by prompt or by uploading a screenshot.
             </p>
-            <div className="mt-6 inline-flex items-center text-sm text-violet-300 group-hover:text-violet-200">
+            <div className="mt-6 inline-flex items-center text-sm text-signal-300 group-hover:text-signal-200">
               Explore library
               <ArrowRight className="ml-1 size-4 transition-transform group-hover:translate-x-1" />
             </div>
@@ -138,7 +138,7 @@ export default async function OverviewPage() {
           <p className="text-xs uppercase tracking-widest text-white/40">
             Credits
           </p>
-          <p className="mt-2 font-serif text-3xl tnum text-gold-gradient">
+          <p className="mt-2 font-mono tabular-nums text-3xl tnum text-gold-gradient">
             {profile?.credits ?? 0}
           </p>
         </Card>
@@ -146,7 +146,7 @@ export default async function OverviewPage() {
           <p className="text-xs uppercase tracking-widest text-white/40">
             Analyses run
           </p>
-          <p className="mt-2 text-xl font-medium tnum">
+          <p className="mt-2 text-xl font-medium tnum font-mono tabular-nums">
             {recent?.length ?? 0}
           </p>
         </Card>
@@ -154,7 +154,7 @@ export default async function OverviewPage() {
           <p className="text-xs uppercase tracking-widest text-white/40">
             Avg. score
           </p>
-          <p className="mt-2 text-xl font-medium tnum">
+          <p className="mt-2 text-xl font-medium tnum font-mono tabular-nums">
             {recent && recent.length > 0
               ? Math.round(
                   recent.reduce((acc, r) => {
@@ -203,7 +203,7 @@ export default async function OverviewPage() {
                   href={`/app/analyzer/${r.id}`}
                   className="flex items-center gap-4 rounded-xl border border-white/[0.06] bg-card/40 px-4 py-3.5 hover:border-white/[0.12] hover:bg-card/60 transition-all"
                 >
-                  <div className="font-serif text-2xl text-gold-gradient tnum w-16 text-center">
+                  <div className="font-mono tabular-nums text-2xl text-gold-gradient tnum w-16 text-center">
                     {score ?? "—"}
                   </div>
                   <div className="min-w-0 flex-1">

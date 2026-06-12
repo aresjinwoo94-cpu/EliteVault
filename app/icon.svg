@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <!--
-    EliteVault favicon — gold diamond outline + violet vault keyhole
+    EliteVault favicon — gold diamond outline + teal signal vault keyhole
     on obsidian background. Matches the brand logo (components/brand/logo.tsx)
     but with bolder strokes so it stays readable at 16x16 (the browser tab size).
 
@@ -16,9 +16,9 @@
       <stop offset="0.5" stop-color="#D4AF37"/>
       <stop offset="1" stop-color="#8A6A1A"/>
     </linearGradient>
-    <linearGradient id="violet" x1="0" x2="1" y1="1" y2="0">
-      <stop offset="0" stop-color="#7C3AED"/>
-      <stop offset="1" stop-color="#A78BFA"/>
+    <linearGradient id="signal" x1="0" x2="1" y1="1" y2="0">
+      <stop offset="0" stop-color="#5EEAD4"/>
+      <stop offset="1" stop-color="#14B8A6"/>
     </linearGradient>
     <radialGradient id="glow" cx="0.5" cy="0.5" r="0.6">
       <stop offset="0" stop-color="rgba(212,175,55,0.18)"/>
@@ -40,7 +40,7 @@
     fill="rgba(212,175,55,0.08)"
   />
 
-  <!-- Violet vault keyhole: circle + rect = a stylized keyhole shape -->
-  <circle cx="16" cy="14" r="3.2" fill="url(#violet)"/>
-  <rect x="14.4" y="14" width="3.2" height="6.4" fill="url(#violet)"/>
+  <!-- Teal signal vault keyhole: circle + rect = a stylized keyhole shape -->
+  <circle cx="16" cy="14" r="3.2" fill="url(#signal)"/>
+  <rect x="14.4" y="14" width="3.2" height="6.4" fill="url(#signal)"/>
 </svg>

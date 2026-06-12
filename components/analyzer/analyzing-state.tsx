@@ -58,8 +58,8 @@ export function AnalyzingState({
 
       <div className="relative text-center">
         <div className="mx-auto relative size-16">
-          <div className="absolute inset-0 rounded-full bg-violet-600/20 blur-xl animate-pulse" />
-          <div className="relative size-16 rounded-full bg-gradient-to-br from-violet-600 to-champagne-400 ring-1 ring-white/10 flex items-center justify-center">
+          <div className="absolute inset-0 rounded-full bg-signal-600/20 blur-xl animate-pulse" />
+          <div className="relative size-16 rounded-full bg-gradient-to-br from-signal-600 to-champagne-400 ring-1 ring-white/10 flex items-center justify-center">
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 6, ease: "linear", repeat: Infinity }}
@@ -83,7 +83,7 @@ export function AnalyzingState({
         </motion.p>
 
         {startedAt && (
-          <p className="mt-2 text-xs font-mono text-white/30 tnum">
+          <p className="mt-2 text-xs font-mono tabular-nums text-white/30 tnum">
             {secs}s elapsed
           </p>
         )}
@@ -105,7 +105,7 @@ export function AnalyzingState({
               Preliminary score
             </p>
             <div className="mt-1 flex items-baseline justify-center gap-1.5">
-              <span className="font-serif text-5xl tnum text-gold-gradient leading-none">
+              <span className="font-mono tabular-nums text-5xl tnum text-gold-gradient leading-none">
                 {previewScore}
               </span>
               <span className="text-sm text-white/40">/ 100</span>
@@ -150,7 +150,7 @@ function BackgroundOrbs() {
       <motion.div
         animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-1/4 left-1/4 size-64 rounded-full bg-violet-600/15 blur-3xl"
+        className="absolute top-1/4 left-1/4 size-64 rounded-full bg-signal-600/15 blur-3xl"
       />
       <motion.div
         animate={{ x: [0, -25, 0], y: [0, 15, 0] }}

@@ -60,7 +60,7 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
             <p className="text-[10px] uppercase tracking-widest text-white/40">
               {label}
             </p>
-            <p className="mt-1 font-serif text-xl tnum text-white">{val}</p>
+            <p className="mt-1 font-mono tabular-nums text-xl tnum text-white">{val}</p>
             <p className="mt-0.5 text-[10px] text-white/40">{sub}</p>
           </motion.div>
         ))}
@@ -70,7 +70,7 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
       <div className="mt-6 grid md:grid-cols-2 gap-4">
         <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Users className="size-3.5 text-violet-300" />
+            <Users className="size-3.5 text-signal-300" />
             <p className="text-[10px] uppercase tracking-widest text-white/40">
               Audience seed
             </p>
@@ -81,7 +81,7 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
         </div>
         <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Target className="size-3.5 text-violet-300" />
+            <Target className="size-3.5 text-signal-300" />
             <p className="text-[10px] uppercase tracking-widest text-white/40">
               Targeting suggestions
             </p>
@@ -151,7 +151,7 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
               key={i}
               className="flex items-start gap-3 rounded-xl border border-white/[0.04] bg-white/[0.02] p-3"
             >
-              <span className="font-serif text-2xl text-gold-gradient tnum w-7 text-center shrink-0">
+              <span className="font-mono tabular-nums text-2xl text-gold-gradient tnum w-7 text-center shrink-0">
                 {i + 1}
               </span>
               <div className="min-w-0 flex-1">

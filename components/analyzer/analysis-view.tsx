@@ -402,7 +402,7 @@ export function AnalysisView({
  */
 function MetaAdsPending() {
   return (
-    <Card className="relative overflow-hidden p-6 border-champagne-400/15 bg-gradient-to-br from-champagne-400/[0.03] to-violet-600/[0.03]">
+    <Card className="relative overflow-hidden p-6 border-champagne-400/15 bg-gradient-to-br from-champagne-400/[0.03] to-signal-600/[0.03]">
       <div className="pointer-events-none absolute -right-10 -top-10 size-40 rounded-full bg-champagne-400/10 blur-3xl" />
       <div className="relative flex items-start gap-4">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-champagne-400/10 ring-1 ring-champagne-400/20">
@@ -446,7 +446,7 @@ function ScoreCard({ result }: { result: AnalysisResult }) {
             Overall score
           </p>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="font-serif text-7xl tnum text-gold-gradient leading-none">
+            <span className="font-mono tabular-nums text-7xl tnum text-gold-gradient leading-none">
               {score}
             </span>
             <span className="text-xl text-white/40">/ 100</span>

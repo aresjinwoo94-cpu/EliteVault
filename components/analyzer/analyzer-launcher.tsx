@@ -78,7 +78,7 @@ export function AnalyzerLauncher({
 
   if (!canRun) {
     return (
-      <div className="relative overflow-hidden rounded-2xl border border-champagne-400/20 bg-gradient-to-br from-champagne-400/[0.05] to-violet-600/[0.05] p-8 text-center">
+      <div className="relative overflow-hidden rounded-2xl border border-champagne-400/20 bg-gradient-to-br from-champagne-400/[0.05] to-signal-600/[0.05] p-8 text-center">
         <Lock className="mx-auto size-7 text-champagne-300" />
         <h3 className="mt-4 font-serif text-2xl">
           {plan === "free"
@@ -107,8 +107,8 @@ export function AnalyzerLauncher({
     >
       <div className="rounded-2xl bg-obsidian-900/80 backdrop-blur-xl p-6 md:p-8 space-y-6">
         <div className="flex items-start gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-violet-600/15 ring-1 ring-violet-500/30">
-            <Sparkles className="size-4 text-violet-300" />
+          <div className="flex size-10 items-center justify-center rounded-xl bg-signal-600/15 ring-1 ring-signal-500/30">
+            <Sparkles className="size-4 text-signal-300" />
           </div>
           <div>
             <h2 className="text-lg font-medium tracking-tight">

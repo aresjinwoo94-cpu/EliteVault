@@ -9,7 +9,7 @@ import type { SimulationDay } from "@/lib/supabase/types";
  * Why hand-rolled instead of recharts:
  *   • We already render >40 components on the analyzer page — adding a chart
  *     library (~25KB) for one 7-day chart isn't worth it.
- *   • Full control over the gold/violet brand gradients.
+ *   • Full control over the gold/teal brand gradients.
  *   • Zero hydration cost.
  *
  * Renders 2 lines (spend + revenue) on a single y-axis, with day labels
@@ -127,11 +127,11 @@ export function SimulatorChart({ days }: { days: SimulationDay[] }) {
           strokeLinecap="round"
         />
 
-        {/* spend line (violet, dashed) */}
+        {/* spend line (teal, dashed) */}
         <path
           d={spendPath}
           fill="none"
-          stroke="rgb(167 139 250)"
+          stroke="rgb(45 212 191)"
           strokeWidth="1.5"
           strokeDasharray="3 3"
           strokeLinejoin="round"
@@ -181,7 +181,7 @@ export function SimulatorChart({ days }: { days: SimulationDay[] }) {
             className="inline-block h-[1.5px] w-4"
             style={{
               backgroundImage:
-                "linear-gradient(to right, rgb(167 139 250) 50%, transparent 50%)",
+                "linear-gradient(to right, rgb(45 212 191) 50%, transparent 50%)",
               backgroundSize: "6px 1.5px",
             }}
           />

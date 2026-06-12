@@ -35,8 +35,8 @@ export function Pricing() {
               Pro → <span className="text-champagne-200">Cure</span>
             </span>
             <span className="text-white/25">›</span>
-            <span className="rounded-full border border-violet-500/25 bg-violet-600/[0.05] px-3 py-1">
-              Scale → <span className="text-violet-200">Volume</span>
+            <span className="rounded-full border border-signal-500/25 bg-signal-600/[0.05] px-3 py-1">
+              Scale → <span className="text-signal-200">Volume</span>
             </span>
           </div>
         </div>
@@ -93,7 +93,7 @@ export function Pricing() {
               </div>
 
               <div className="mt-6 flex items-baseline gap-1">
-                <span className="font-serif text-5xl tracking-tight">
+                <span className="font-mono tabular-nums text-5xl tracking-tight">
                   {plan.price[interval] === 0
                     ? "Free"
                     : formatCurrency(plan.price[interval])}

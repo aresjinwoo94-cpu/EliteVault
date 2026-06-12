@@ -64,7 +64,7 @@ export function AnalyzerWalkthrough() {
   return (
     <div className="relative">
       {/* Ambient glow */}
-      <div className="absolute -inset-4 rounded-3xl bg-gradient-to-tr from-violet-600/20 via-transparent to-champagne-400/20 blur-2xl pointer-events-none" />
+      <div className="absolute -inset-4 rounded-3xl bg-gradient-to-tr from-signal-600/20 via-transparent to-champagne-400/20 blur-2xl pointer-events-none" />
 
       <div className="relative glass-strong rounded-2xl overflow-hidden shadow-2xl">
         {/* Browser chrome */}
@@ -135,9 +135,9 @@ function Walkthrough({ skipAnimations }: { skipAnimations: boolean }) {
           }}
           className="absolute inset-x-4 top-14 z-10"
         >
-          <div className="rounded-md bg-violet-600/10 border border-violet-500/30 px-3 py-1.5 flex items-center gap-2">
-            <span className="size-1.5 rounded-full bg-violet-400 animate-pulse" />
-            <span className="text-[11px] text-violet-200">
+          <div className="rounded-md bg-signal-600/10 border border-signal-500/30 px-3 py-1.5 flex items-center gap-2">
+            <span className="size-1.5 rounded-full bg-signal-400 animate-pulse" />
+            <span className="text-[11px] text-signal-200">
               Analyzing screenshot · scoring CRO · simulating persona…
             </span>
           </div>
@@ -241,7 +241,7 @@ function Walkthrough({ skipAnimations }: { skipAnimations: boolean }) {
             <div key={label}>
               <div className="flex justify-between text-[11px]">
                 <span className="text-white/50">{label}</span>
-                <span className="tnum text-white/80">{val}%</span>
+                <span className="font-mono tabular-nums tnum text-white/80">{val}%</span>
               </div>
               <div className="mt-1 h-1 rounded-full bg-white/5 overflow-hidden">
                 <motion.div
@@ -419,7 +419,7 @@ function ScoreCounter({
   }, [target, delaySec, durationSec, v]);
 
   return (
-    <motion.span className="font-serif text-5xl tnum text-gold-gradient">
+    <motion.span className="font-mono tabular-nums text-5xl tnum text-gold-gradient">
       {display}
     </motion.span>
   );

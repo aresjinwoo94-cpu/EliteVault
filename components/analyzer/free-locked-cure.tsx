@@ -50,9 +50,9 @@ export function FreeLockedCure({
       viewport={{ once: true }}
       transition={{ duration: 0.4 }}
     >
-      <Card className="relative overflow-hidden p-6 md:p-7 border-champagne-400/15 bg-gradient-to-br from-champagne-400/[0.04] to-violet-600/[0.04]">
+      <Card className="relative overflow-hidden p-6 md:p-7 border-champagne-400/15 bg-gradient-to-br from-champagne-400/[0.04] to-signal-600/[0.04]">
         <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-champagne-400/12 blur-3xl" />
-        <div className="pointer-events-none absolute -left-12 -bottom-12 size-56 rounded-full bg-violet-600/12 blur-3xl" />
+        <div className="pointer-events-none absolute -left-12 -bottom-12 size-56 rounded-full bg-signal-600/12 blur-3xl" />
 
         <div className="relative">
           {/* Header */}

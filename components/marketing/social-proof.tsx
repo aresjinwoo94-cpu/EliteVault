@@ -109,7 +109,7 @@ export function SocialProof() {
                     <p className="text-xs text-white/40">{a.niche}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <span className="font-serif text-4xl tnum text-gold-gradient leading-none">
+                    <span className="font-mono tabular-nums text-4xl tnum text-gold-gradient leading-none">
                       {a.score}
                     </span>
                     <span className="block text-[10px] text-white/35">
@@ -137,11 +137,11 @@ export function SocialProof() {
           transition={{ duration: 0.6, ease }}
           className="mt-14"
         >
-          <Card className="relative overflow-hidden p-7 md:p-9 border-violet-500/15 bg-gradient-to-br from-violet-600/[0.04] to-champagne-400/[0.03]">
-            <div className="pointer-events-none absolute -left-12 -bottom-12 size-56 rounded-full bg-violet-600/10 blur-3xl" />
+          <Card className="relative overflow-hidden p-7 md:p-9 border-signal-500/15 bg-gradient-to-br from-signal-600/[0.04] to-champagne-400/[0.03]">
+            <div className="pointer-events-none absolute -left-12 -bottom-12 size-56 rounded-full bg-signal-600/10 blur-3xl" />
             <div className="relative flex flex-col md:flex-row gap-6 md:items-start">
               <div className="flex items-center gap-4 md:flex-col md:items-center md:text-center shrink-0">
-                <div className="flex size-14 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-champagne-400 ring-1 ring-white/10 font-serif text-lg text-white">
+                <div className="flex size-14 items-center justify-center rounded-full bg-gradient-to-br from-signal-600 to-champagne-400 ring-1 ring-white/10 font-serif text-lg text-white">
                   {FOUNDER.initials}
                 </div>
                 <div className="md:mt-2">

@@ -149,7 +149,7 @@ export default async function SharedAuditPage({
             <span className="text-white/70">{domain}</span> scored
           </h1>
           <div className="mt-3 flex items-baseline justify-center gap-2">
-            <span className="font-serif text-7xl md:text-8xl tnum text-gold-gradient leading-none">
+            <span className="font-mono tabular-nums text-7xl md:text-8xl tnum text-gold-gradient leading-none">
               {score}
             </span>
             <span className="text-2xl text-white/40">/ 100</span>
@@ -180,11 +180,11 @@ export default async function SharedAuditPage({
                     </span>
                     <div className="relative h-1.5 flex-1 rounded-full bg-white/[0.06]">
                       <div
-                        className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-violet-500 to-champagne-400"
+                        className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-signal-500 to-champagne-400"
                         style={{ width: `${Math.min(100, Math.max(4, pct))}%` }}
                       />
                     </div>
-                    <span className="w-8 shrink-0 text-right text-xs tnum text-white/70">
+                    <span className="w-8 shrink-0 text-right text-xs font-mono tabular-nums tnum text-white/70">
                       {pct}
                     </span>
                   </div>
@@ -204,7 +204,7 @@ export default async function SharedAuditPage({
         )}
 
         {/* Conversion CTA */}
-        <Card className="relative overflow-hidden p-8 md:p-10 text-center border-champagne-400/20 bg-gradient-to-br from-champagne-400/[0.05] to-violet-600/[0.05]">
+        <Card className="relative overflow-hidden p-8 md:p-10 text-center border-champagne-400/20 bg-gradient-to-br from-champagne-400/[0.05] to-signal-600/[0.05]">
           <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-champagne-400/12 blur-3xl" />
           <div className="relative">
             <h2 className="font-serif text-2xl md:text-3xl tracking-tight">

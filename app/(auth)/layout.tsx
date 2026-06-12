@@ -9,7 +9,7 @@ export default function AuthLayout({
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Ambient orbs — softer, more spread for premium feel */}
-      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 size-[700px] rounded-full bg-violet-700/15 blur-[140px]" />
+      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 size-[700px] rounded-full bg-signal-700/15 blur-[140px]" />
       <div className="pointer-events-none absolute -bottom-32 -right-32 size-[600px] rounded-full bg-champagne-400/10 blur-[160px]" />
 
       <header className="relative z-10 flex items-center justify-between px-6 py-6 md:px-10 md:py-7">

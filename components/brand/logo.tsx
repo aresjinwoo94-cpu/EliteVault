@@ -24,9 +24,9 @@ export function Logo({
             <stop offset="0.5" stopColor="#D4AF37" />
             <stop offset="1" stopColor="#8A6A1A" />
           </linearGradient>
-          <linearGradient id="ev-violet" x1="0" x2="1" y1="1" y2="0">
-            <stop offset="0" stopColor="#7C3AED" />
-            <stop offset="1" stopColor="#A78BFA" />
+          <linearGradient id="ev-signal" x1="0" x2="1" y1="1" y2="0">
+            <stop offset="0" stopColor="#5EEAD4" />
+            <stop offset="1" stopColor="#14B8A6" />
           </linearGradient>
         </defs>
         {/* outer diamond */}
@@ -36,9 +36,9 @@ export function Logo({
           strokeWidth="1.4"
           fill="rgba(212,175,55,0.04)"
         />
-        {/* inner vault keyhole */}
-        <circle cx="16" cy="14" r="3" fill="url(#ev-violet)" />
-        <rect x="14.5" y="14" width="3" height="6" fill="url(#ev-violet)" />
+        {/* inner vault keyhole — teal signal */}
+        <circle cx="16" cy="14" r="3" fill="url(#ev-signal)" />
+        <rect x="14.5" y="14" width="3" height="6" fill="url(#ev-signal)" />
       </svg>
       {wordmark && (
         <span className="font-serif text-[19px] tracking-tight text-white">

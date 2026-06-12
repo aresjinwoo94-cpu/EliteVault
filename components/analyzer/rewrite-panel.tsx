@@ -28,12 +28,12 @@ export function RewritePanel({ rewrite }: { rewrite: RewriteResult }) {
 
   return (
     <Card className="p-6 relative overflow-hidden">
-      <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-violet-600/15 blur-3xl" />
+      <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-signal-600/15 blur-3xl" />
 
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <Wand2 className="size-4 text-violet-300" />
+            <Wand2 className="size-4 text-signal-300" />
             <h3 className="font-medium">Auto-Rewrite</h3>
             <Badge variant="ai">
               <Sparkles className="size-3" />

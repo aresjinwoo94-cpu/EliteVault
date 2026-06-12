@@ -4,14 +4,13 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
-  Sparkles,
   CheckCircle2,
   AlertTriangle,
   Zap,
   TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { DataPill } from "@/components/ui/data-pill";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -48,7 +47,7 @@ export function Hero() {
           className="absolute left-1/2 top-0 -translate-x-1/2 size-[1200px] rounded-full opacity-[0.6]"
           style={{
             background:
-              "radial-gradient(circle, rgba(212,175,55,0.18) 0%, rgba(124,58,237,0.08) 35%, transparent 70%)",
+              "radial-gradient(circle, rgba(212,175,55,0.18) 0%, rgba(45,212,191,0.08) 35%, transparent 70%)",
           }}
         />
       </div>
@@ -59,10 +58,13 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease }}
         >
-          <Badge variant="gold" className="mx-auto">
-            <Sparkles className="size-3" />
-            Powered by Google Gemini — built for ecommerce founders
-          </Badge>
+          <DataPill
+            className="mx-auto"
+            items={[
+              "POWERED BY GOOGLE GEMINI",
+              "BUILT FOR ECOMMERCE FOUNDERS",
+            ]}
+          />
         </motion.div>
 
         {/*
@@ -143,7 +145,7 @@ export function Hero() {
 function HeroPreview() {
   return (
     <div className="relative mx-auto max-w-5xl">
-      <div className="absolute -inset-px rounded-3xl bg-gradient-to-b from-champagne-400/30 via-transparent to-violet-600/20 blur-xl" />
+      <div className="absolute -inset-px rounded-3xl bg-gradient-to-b from-champagne-400/30 via-transparent to-signal-600/20 blur-xl" />
       <div className="relative glass-strong rounded-3xl p-2 shadow-2xl">
         <div className="rounded-2xl overflow-hidden bg-obsidian-950 border border-white/5">
           {/* Browser chrome */}
@@ -232,10 +234,12 @@ function HeroPreview() {
                   Overall score
                 </p>
                 <div className="mt-1 flex items-baseline gap-2">
-                  <span className="font-serif text-5xl tnum text-gold-gradient leading-none">
+                  <span className="font-mono text-5xl tabular-nums text-signal-300 leading-none">
                     62
                   </span>
-                  <span className="text-white/40 text-sm">/ 100</span>
+                  <span className="font-mono text-white/40 text-sm tabular-nums">
+                    / 100
+                  </span>
                 </div>
                 <div className="mt-1.5 flex items-center gap-1.5">
                   <TrendingUp className="size-3 text-champagne-300" />
@@ -258,7 +262,7 @@ function HeroPreview() {
                         Strengths
                       </span>
                     </div>
-                    <p className="mt-1 font-serif text-lg tnum text-success">
+                    <p className="mt-1 font-mono text-lg tabular-nums text-success">
                       4
                     </p>
                   </div>
@@ -269,7 +273,7 @@ function HeroPreview() {
                         Issues
                       </span>
                     </div>
-                    <p className="mt-1 font-serif text-lg tnum text-destructive">
+                    <p className="mt-1 font-mono text-lg tabular-nums text-destructive">
                       2
                     </p>
                   </div>
@@ -295,7 +299,7 @@ function HeroPreview() {
                     style={{ left: "62%", transform: "translateX(-50%)" }}
                   />
                 </div>
-                <div className="mt-1 flex justify-between text-[9px] text-white/30">
+                <div className="mt-1 flex justify-between font-mono text-[9px] tabular-nums text-white/30">
                   <span>0</span>
                   <span>Niche · 58</span>
                   <span>Top · 82</span>

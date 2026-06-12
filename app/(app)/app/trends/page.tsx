@@ -27,7 +27,7 @@ function DirPill({ direction, score }: { direction: Direction; score: number }) 
       }
     >
       {up ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
-      {score}
+      <span className="font-mono tabular-nums">{score}</span>
     </span>
   );
 }
@@ -101,7 +101,7 @@ export default async function TrendsPage({
             {slug && <input type="hidden" name="niche" value={slug} />}
             <button
               type="submit"
-              className="rounded-md border border-violet-500/30 bg-violet-500/10 px-3 py-1.5 text-xs text-violet-300 hover:bg-violet-500/20 transition-colors"
+              className="rounded-md border border-signal-500/30 bg-signal-500/10 px-3 py-1.5 text-xs text-signal-300 hover:bg-signal-500/20 transition-colors"
             >
               ↻ Refresh {slug ? "this niche" : "all niches"} now (internal)
             </button>

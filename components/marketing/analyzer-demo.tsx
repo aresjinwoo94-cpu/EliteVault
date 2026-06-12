@@ -48,7 +48,7 @@ export function AnalyzerDemo() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, ease }}
             >
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/30 bg-violet-600/10 px-3 py-1 text-[11px] uppercase tracking-wider text-violet-300">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-signal-500/30 bg-signal-600/10 px-3 py-1 text-[11px] uppercase tracking-wider text-signal-300">
                 <Sparkles className="size-3" />
                 The Analyzer · live demo →
               </div>
@@ -74,8 +74,8 @@ export function AnalyzerDemo() {
                   transition={{ delay: i * 0.1, duration: 0.5, ease }}
                   className="flex gap-4"
                 >
-                  <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-violet-600/10 ring-1 ring-violet-500/20">
-                    <s.icon className="size-4 text-violet-300" />
+                  <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-signal-600/10 ring-1 ring-signal-500/20">
+                    <s.icon className="size-4 text-signal-300" />
                   </div>
                   <div>
                     <h3 className="font-medium text-white">{s.title}</h3>
