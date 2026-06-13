@@ -135,7 +135,7 @@ export function LibraryView({
         </h1>
         <p className="mt-2 text-sm text-white/55 max-w-2xl">
           {isPaid
-            ? "Drop a screenshot of your own store and Gemini finds its closest converting siblings. Or search by prompt across all niches."
+            ? "Drop a screenshot of your own store and our AI finds its closest converting siblings. Or search by prompt across all niches."
             : "Browse 9 hand-picked winners with full metrics. Upgrade to unlock 40+ more + AI image search + saved collections."}
         </p>
       </header>
@@ -251,7 +251,7 @@ export function LibraryView({
               ) : (
                 <Upload className="size-3" />
               )}
-              Drop a screenshot — Gemini finds visual matches
+              Drop a screenshot — AI finds visual matches
               {!isPaid && (
                 <Badge variant="gold" className="ml-1">
                   Pro
@@ -272,7 +272,7 @@ export function LibraryView({
           {aiUsed && (
             <Badge variant="ai" className="shrink-0">
               <Sparkles className="size-3" />
-              Gemini re-ranked
+              AI re-ranked
             </Badge>
           )}
         </div>

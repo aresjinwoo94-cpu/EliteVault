@@ -50,7 +50,7 @@ export default async function AnalyzerPage({
             </span>
             <Badge variant="ai">
               <Sparkles className="size-3" />
-              Powered by Google Gemini
+              AI conversion audit
             </Badge>
           </div>
           <h1 className="mt-2 font-serif text-4xl md:text-5xl tracking-tight leading-[1.05]">

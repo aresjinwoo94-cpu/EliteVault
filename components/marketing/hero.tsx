@@ -60,10 +60,7 @@ export function Hero() {
         >
           <DataPill
             className="mx-auto"
-            items={[
-              "POWERED BY GOOGLE GEMINI",
-              "BUILT FOR ECOMMERCE FOUNDERS",
-            ]}
+            items={["AI CONVERSION AUDIT", "BUILT FOR ECOMMERCE FOUNDERS"]}
           />
         </motion.div>
 
