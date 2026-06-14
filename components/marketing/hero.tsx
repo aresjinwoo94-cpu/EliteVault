@@ -23,7 +23,7 @@ const ease = [0.22, 1, 0.36, 1] as const;
  */
 function HeroCta() {
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-start gap-3">
       <Link href="/sign-up?next=/app/analyzer">
         <Button size="xl">
           Audit my store free
@@ -45,7 +45,7 @@ export function Hero() {
       {/* radial backdrop */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div
-          className="absolute left-1/2 top-0 -translate-x-1/2 size-[1200px] rounded-full opacity-[0.6]"
+          className="absolute left-[30%] top-0 -translate-x-1/2 size-[1200px] rounded-full opacity-[0.6]"
           style={{
             background:
               "radial-gradient(circle, rgba(212,175,55,0.18) 0%, rgba(45,212,191,0.08) 35%, transparent 70%)",
@@ -53,14 +53,13 @@ export function Hero() {
         />
       </div>
 
-      <div className="container max-w-5xl text-center">
+      <div className="container max-w-5xl">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease }}
         >
           <DataPill
-            className="mx-auto"
             items={["AI CONVERSION AUDIT", "BUILT FOR ECOMMERCE FOUNDERS"]}
           />
         </motion.div>
@@ -85,7 +84,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease, delay: 0.15 }}
-          className="mx-auto mt-7 max-w-2xl text-lg md:text-xl text-white/55 leading-relaxed"
+          className="mt-7 max-w-2xl text-lg md:text-xl text-white/55 leading-relaxed"
         >
           EliteVault hunts down stores that are <span className="text-white/85">already selling</span>,
           breaks down exactly why they convert, and gives your store the same
@@ -117,7 +116,7 @@ export function Hero() {
         initial={{ opacity: 0, y: 40, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 1, ease, delay: 0.4 }}
-        className="container mt-20"
+        className="container mt-14"
       >
         <HeroPreview />
       </motion.div>
