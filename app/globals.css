@@ -64,17 +64,19 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Refined ambient backdrop — never harsh, always feels lit from within */
+  /* Refined ambient backdrop — single-toned and quiet. One soft gold wash
+     from the top so the page feels "lit from within" without being washed
+     in two competing colors. Teal stays a DATA accent, not ambient light. */
   body {
     background:
       radial-gradient(
-        ellipse 70% 40% at 50% -10%,
-        rgba(212, 175, 55, 0.10),
+        ellipse 75% 45% at 50% -12%,
+        rgba(212, 175, 55, 0.06),
         transparent
       ),
       radial-gradient(
-        ellipse 70% 40% at 90% 100%,
-        rgba(45, 212, 191, 0.10),
+        ellipse 70% 40% at 88% 102%,
+        rgba(45, 212, 191, 0.04),
         transparent
       ),
       #0a0a0f;
@@ -240,6 +242,47 @@
     font-family: var(--font-mono), monospace;
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.02em;
+  }
+}
+
+/* ── Type scale (Obsidian Quant v2) ────────────────────────────────────
+   The single source of truth for display/heading sizing. Kept as plain CSS
+   (outside @layer) so it is ALWAYS emitted — not tree-shaken before the
+   surfaces that use it land in later phases. One coherent, fluid scale on
+   the serif display face with tight optical tracking. */
+.text-display {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(2.75rem, 1.6rem + 4.2vw, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+}
+.text-h1 {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(2rem, 1.3rem + 2.4vw, 3.25rem);
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+}
+.text-h2 {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.25rem);
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+}
+.text-h3 {
+  font-size: clamp(1.125rem, 1rem + 0.5vw, 1.375rem);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+/* Consistent vertical section rhythm (≈80px → 112px). */
+.section-y {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+@media (min-width: 768px) {
+  .section-y {
+    padding-top: 7rem;
+    padding-bottom: 7rem;
   }
 }
 
