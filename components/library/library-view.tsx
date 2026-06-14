@@ -154,7 +154,7 @@ export function LibraryView({
               : "border-white/[0.08] text-white/55 hover:text-white hover:border-white/20",
           )}
         >
-          All <span className="ml-1 text-white/40 font-mono tabular-nums">{stats.total}</span>
+          All <span className="ml-1 text-white/40 num">{stats.total}</span>
         </button>
         {topNiches.map(([n, count]) => (
           <button
@@ -170,7 +170,7 @@ export function LibraryView({
                 : "border-white/[0.08] text-white/55 hover:text-white hover:border-white/20",
             )}
           >
-            {n} <span className="ml-1 text-white/40 font-mono tabular-nums">{count}</span>
+            {n} <span className="ml-1 text-white/40 num">{count}</span>
           </button>
         ))}
       </div>

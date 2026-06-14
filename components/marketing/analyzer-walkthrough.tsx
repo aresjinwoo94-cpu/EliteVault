@@ -63,8 +63,8 @@ export function AnalyzerWalkthrough() {
 
   return (
     <div className="relative">
-      {/* Ambient glow */}
-      <div className="absolute -inset-4 rounded-3xl bg-gradient-to-tr from-signal-600/20 via-transparent to-champagne-400/20 blur-2xl pointer-events-none" />
+      {/* Ambient glow — teal (signal) is the AI/data accent for this surface */}
+      <div className="absolute -inset-4 rounded-3xl bg-gradient-to-tr from-signal-600/20 via-transparent to-signal-400/15 blur-2xl pointer-events-none" />
 
       <div className="relative glass-strong rounded-2xl overflow-hidden shadow-2xl">
         {/* Browser chrome */}
@@ -326,7 +326,7 @@ function Walkthrough({ skipAnimations }: { skipAnimations: boolean }) {
             }}
             className="relative -top-2.5 -translate-x-1/2 inline-block"
           >
-            <span className="size-2.5 rounded-full bg-champagne-400 ring-2 ring-champagne-400/30 inline-block" />
+            <span className="size-2.5 rounded-full bg-signal-400 ring-2 ring-signal-400/30 inline-block" />
           </motion.div>
           <div className="flex justify-between text-[9px] text-white/25 mt-0.5">
             <span>0</span>

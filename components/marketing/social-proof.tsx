@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { DataPill } from "@/components/ui/data-pill";
+import { ScoreBadge } from "@/components/ui/score-badge";
 import { COMPANY } from "@/lib/company";
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -98,20 +99,14 @@ export function SocialProof() {
               viewport={{ once: true, margin: "-80px" }}
               transition={{ duration: 0.5, ease, delay: i * 0.08 }}
             >
-              <Card className="h-full p-6 relative overflow-hidden">
-                <div className="pointer-events-none absolute -right-10 -top-10 size-32 rounded-full bg-signal-400/10 blur-3xl" />
-                <div className="relative flex items-start justify-between gap-3">
+              <Card className="h-full p-6">
+                <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-medium text-white truncate">{a.store}</p>
                     <p className="font-mono text-xs uppercase tracking-wider text-white/40">{a.niche}</p>
                   </div>
-                  <div className="text-right shrink-0">
-                    <span className="font-mono tabular-nums text-4xl text-signal-300 leading-none">
-                      {a.score}
-                    </span>
-                    <span className="block font-mono text-[10px] tabular-nums text-white/35">
-                      / 100
-                    </span>
+                  <div className="shrink-0">
+                    <ScoreBadge score={a.score} size="lg" />
                   </div>
                 </div>
                 <p className="mt-4 text-sm text-white/60 leading-relaxed">
@@ -134,11 +129,10 @@ export function SocialProof() {
           transition={{ duration: 0.6, ease }}
           className="mt-14"
         >
-          <Card className="relative overflow-hidden p-7 md:p-9 border-signal-500/15 bg-gradient-to-br from-signal-600/[0.04] to-champagne-400/[0.03]">
-            <div className="pointer-events-none absolute -left-12 -bottom-12 size-56 rounded-full bg-signal-600/10 blur-3xl" />
-            <div className="relative flex flex-col md:flex-row gap-6 md:items-start">
+          <Card className="p-7 md:p-9">
+            <div className="flex flex-col md:flex-row gap-6 md:items-start">
               <div className="flex items-center gap-4 md:flex-col md:items-center md:text-center shrink-0">
-                <div className="flex size-14 items-center justify-center rounded-full bg-gradient-to-br from-signal-600 to-champagne-400 ring-1 ring-white/10 font-serif text-lg text-white">
+                <div className="flex size-14 items-center justify-center rounded-full bg-signal-600/10 ring-1 ring-signal-500/20 font-serif text-lg text-signal-200">
                   {FOUNDER.initials}
                 </div>
                 <div className="md:mt-2">

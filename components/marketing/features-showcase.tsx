@@ -51,9 +51,8 @@ export function FeaturesShowcase() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-80px" }}
               transition={{ duration: 0.5, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
-              className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-card/40 p-6 hover:border-signal-500/25 transition-colors"
+              className="group rounded-2xl border border-white/[0.06] bg-card shadow-card p-6 hover:border-signal-500/25 transition-colors"
             >
-              <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full bg-signal-400/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="flex size-10 items-center justify-center rounded-lg bg-signal-600/10 ring-1 ring-signal-500/20">
                 <f.icon className="size-4 text-signal-300" />
               </div>

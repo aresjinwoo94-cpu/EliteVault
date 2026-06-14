@@ -75,9 +75,9 @@ export function Pricing() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
               className={cn(
-                "relative rounded-2xl border bg-card/40 p-7 flex flex-col",
+                "relative rounded-2xl border bg-card shadow-card p-7 flex flex-col",
                 plan.highlight
-                  ? "border-champagne-400/30 shadow-gold"
+                  ? "border-champagne-400/30"
                   : "border-white/[0.06]",
               )}
             >
