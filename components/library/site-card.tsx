@@ -71,7 +71,14 @@ export function SiteCard({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-obsidian-950/80 via-obsidian-950/20 to-transparent" />
         <div className="absolute bottom-3 left-3 flex gap-1.5">
-          {site.is_featured && <Badge variant="gold">Featured</Badge>}
+          {site.is_featured && (
+            <Badge
+              variant="gold"
+              className="border-champagne-400/40 bg-obsidian-950/70 shadow-card"
+            >
+              Featured
+            </Badge>
+          )}
           {ad?.estimated && ad.activity_score !== undefined && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -128,13 +135,13 @@ export function SiteCard({
             <div
               key={label}
               className={cn(
-                "rounded-md border border-white/[0.04] bg-white/[0.02] py-1.5 px-2 text-center transition-all",
+                "rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-1.5 text-center",
                 locked && "select-none",
               )}
             >
               <p
                 className={cn(
-                  "text-[10px] uppercase tracking-widest text-white/40",
+                  "font-mono text-[10px] uppercase tracking-widest text-white/40",
                   locked && "blur-[3px]",
                 )}
               >
@@ -142,7 +149,7 @@ export function SiteCard({
               </p>
               <p
                 className={cn(
-                  "mt-0.5 text-xs font-medium tnum text-white",
+                  "mt-0.5 text-xs font-medium text-white num",
                   locked && "blur-[3px]",
                 )}
               >

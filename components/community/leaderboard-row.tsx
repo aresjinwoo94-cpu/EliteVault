@@ -117,7 +117,7 @@ export function LeaderboardRow({
         <p className="text-[10px] uppercase tracking-widest text-white/35">
           Composite
         </p>
-        <p className="font-serif text-xl tnum text-white leading-tight">
+        <p className="num text-xl text-signal-300 leading-tight">
           {item.composite_score.toFixed(1)}
         </p>
       </div>
@@ -131,11 +131,11 @@ export function LeaderboardRow({
       <div className="shrink-0 hidden lg:flex items-center gap-3 text-[11px] text-white/40 w-20">
         <span className="inline-flex items-center gap-1">
           <Eye className="size-3" />
-          {item.view_count}
+          <span className="num">{item.view_count}</span>
         </span>
         <span className="inline-flex items-center gap-1">
           <Heart className="size-3" />
-          {item.helpful_count}
+          <span className="num">{item.helpful_count}</span>
         </span>
       </div>
     </>

@@ -106,7 +106,7 @@ export function AppSidebar({ profile }: { profile: Profile }) {
           </Badge>
         </div>
         <div className="mt-3 flex items-baseline gap-1.5">
-          <span className="font-mono tabular-nums text-3xl text-gold-gradient tnum">
+          <span className="num text-3xl text-gold-gradient">
             {profile?.credits ?? 0}
           </span>
           <span className="text-xs text-white/40">credits left</span>

@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AnalyzerLauncher } from "@/components/analyzer/analyzer-launcher";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { ScoreBadge } from "@/components/ui/score-badge";
 import { PLANS } from "@/lib/stripe/plans";
 
 export const metadata = { title: "Analyzer" };
@@ -62,7 +63,7 @@ export default async function AnalyzerPage({
           <p className="text-xs uppercase tracking-widest text-white/40">
             Credits
           </p>
-          <p className="mt-1 font-serif text-3xl tnum text-gold-gradient leading-none">
+          <p className="mt-1 font-mono text-3xl tabular-nums text-gold-gradient leading-none">
             {profile?.credits ?? 0}
           </p>
         </div>
@@ -100,8 +101,12 @@ export default async function AnalyzerPage({
                   href={`/app/analyzer/${h.id}`}
                   className="group flex items-center gap-4 rounded-xl border border-white/[0.04] bg-card/30 px-4 py-3.5 hover:border-white/[0.12] hover:bg-card/60 transition-all"
                 >
-                  <div className="font-serif text-2xl text-gold-gradient tnum w-14 text-center">
-                    {score ?? "—"}
+                  <div className="w-14 flex justify-center shrink-0">
+                    {typeof score === "number" ? (
+                      <ScoreBadge score={score} total={null} size="md" />
+                    ) : (
+                      <span className="font-mono text-white/30">—</span>
+                    )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-white/90 truncate">
