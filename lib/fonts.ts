@@ -1,18 +1,46 @@
+import localFont from "next/font/local";
+
 /**
- * Fonts are exposed as CSS variables so Tailwind can pick them up via
- * `font-sans` / `font-serif` / `font-mono`.
+ * Self-hosted, bundled fonts — the real "Obsidian Quant" type opinion.
  *
- * We deliberately avoid `next/font/google` because:
- *   1. It blocks the build when offline / when sandboxed networks can't
- *      reach fonts.googleapis.com.
- *   2. System UI fonts on modern macOS / Windows are already excellent
- *      for "premium" feel (SF Pro / Segoe UI Variable).
+ * Files live in `public/fonts/*.woff2` and are loaded via `next/font/local`,
+ * so the build needs NO network (downloaded once at dev time) and renders
+ * identically on every machine — fixing the system-font-fallback look.
  *
- * To restore the Geist + Instrument Serif look, install
- * `geist` and use `GeistSans` from "geist/font/sans" — that ships
- * the fonts bundled in node_modules so no network is needed.
+ * Variable names are kept EXACTLY as before (`--font-serif`, `--font-geist`,
+ * `--font-mono`) so `tailwind.config.ts` (font-serif/sans/mono) and every
+ * existing className keep working untouched.
+ *
+ *   --font-serif → Fraunces   — editorial display serif: wordmark + headlines
+ *   --font-geist → Geist Sans — UI + body
+ *   --font-mono  → Geist Mono — all numbers / metrics / labels
  */
-export const fontsVariables =
-  "[--font-geist:'Inter','Segoe_UI_Variable','SF_Pro_Text',ui-sans-serif,system-ui,sans-serif] " +
-  "[--font-serif:'Iowan_Old_Style','Apple_Garamond','Baskerville','Times_New_Roman',serif] " +
-  "[--font-mono:ui-monospace,'JetBrains_Mono','SF_Mono','Cascadia_Code',Menlo,monospace]";
+const fontSerif = localFont({
+  src: "../public/fonts/fraunces.woff2",
+  variable: "--font-serif",
+  display: "swap",
+  weight: "100 900",
+  fallback: ["Iowan Old Style", "Georgia", "Times New Roman", "serif"],
+});
+
+const fontSans = localFont({
+  src: "../public/fonts/geist-sans.woff2",
+  variable: "--font-geist",
+  display: "swap",
+  weight: "100 900",
+  fallback: ["Inter", "Segoe UI Variable", "system-ui", "sans-serif"],
+});
+
+const fontMono = localFont({
+  src: "../public/fonts/geist-mono.woff2",
+  variable: "--font-mono",
+  display: "swap",
+  weight: "100 900",
+  fallback: ["ui-monospace", "JetBrains Mono", "SF Mono", "monospace"],
+});
+
+/**
+ * Space-joined `.variable` classes — apply on <html> so the CSS vars are
+ * available everywhere. Replaces the old system-font arbitrary-value string.
+ */
+export const fontsVariables = `${fontSerif.variable} ${fontSans.variable} ${fontMono.variable}`;
