@@ -196,6 +196,11 @@ async function generateStructured<T>(
   // backend. We retry the SAME key with a short backoff before giving up.
   const MAX_503_RETRIES = 2;
   const RETRY_503_BACKOFF_MS = 8_000;
+  // Flash models occasionally return an empty candidate — transient, or a
+  // blank/placeholder screenshot that briefly gave the model nothing to read
+  // (e.g. a site whose capture was still warming). Retry before failing.
+  const MAX_EMPTY_RETRIES = 2;
+  const RETRY_EMPTY_BACKOFF_MS = 1_500;
 
   while (attemptedKeys < KEYS.length) {
     const idx = pickAvailableKey();
@@ -204,12 +209,23 @@ async function generateStructured<T>(
     attemptedKeys++;
 
     let local503Attempts = 0;
-    // Inner loop just for 503 retries on this same key
+    let localEmptyAttempts = 0;
+    // Inner loop just for 503 / empty-response retries on this same key
     while (true) {
       try {
         const response = await callWithKey(idx);
         const text = extractText(response);
-        if (!text) throw new Error("Gemini: empty response");
+        if (!text) {
+          if (localEmptyAttempts < MAX_EMPTY_RETRIES) {
+            localEmptyAttempts++;
+            console.warn(
+              `[gemini] key #${idx + 1} returned empty — retry ${localEmptyAttempts}/${MAX_EMPTY_RETRIES} in ${RETRY_EMPTY_BACKOFF_MS / 1000}s`,
+            );
+            await new Promise((r) => setTimeout(r, RETRY_EMPTY_BACKOFF_MS));
+            continue; // retry same key
+          }
+          throw new Error("Gemini: empty response");
+        }
         reportUsage(response, Boolean(opts.fast));
         return parseJsonText<T>(text);
       } catch (err) {
