@@ -174,9 +174,9 @@ async function generateStructured<T>(
     },
   ];
 
-  const callWithKey = (keyIdx: number) =>
+  const callWithKey = (keyIdx: number, model: string) =>
     CLIENTS[keyIdx].models.generateContent({
-      model: opts.fast ? MODEL_FAST : MODEL,
+      model,
       contents,
       config: {
         systemInstruction: opts.system,
@@ -188,9 +188,6 @@ async function generateStructured<T>(
       } as never,
     });
 
-  // ── Try keys in rotation. On 429 cool down + try next; on 503 retry. ──
-  let attemptedKeys = 0;
-  let last429: unknown = null;
   // Google 503 ("model experiencing high demand") is server-side, not
   // key-side — rotating keys won't help because they all hit the same
   // backend. We retry the SAME key with a short backoff before giving up.
@@ -202,81 +199,125 @@ async function generateStructured<T>(
   const MAX_EMPTY_RETRIES = 2;
   const RETRY_EMPTY_BACKOFF_MS = 1_500;
 
-  while (attemptedKeys < KEYS.length) {
-    const idx = pickAvailableKey();
-    if (idx === null) break; // all keys on cooldown; fall through to the wait path
+  // Run the full key-rotation + retry pipeline against ONE model.
+  const runWithModel = async (model: string): Promise<T> => {
+    // ── Try keys in rotation. On 429 cool down + try next; on 503 retry. ──
+    let attemptedKeys = 0;
+    let last429: unknown = null;
 
-    attemptedKeys++;
+    while (attemptedKeys < KEYS.length) {
+      const idx = pickAvailableKey();
+      if (idx === null) break; // all keys on cooldown; fall through to wait path
 
-    let local503Attempts = 0;
-    let localEmptyAttempts = 0;
-    // Inner loop just for 503 / empty-response retries on this same key
-    while (true) {
-      try {
-        const response = await callWithKey(idx);
-        const text = extractText(response);
-        if (!text) {
-          if (localEmptyAttempts < MAX_EMPTY_RETRIES) {
-            localEmptyAttempts++;
+      attemptedKeys++;
+
+      let local503Attempts = 0;
+      let localEmptyAttempts = 0;
+      // Inner loop just for 503 / empty-response retries on this same key
+      while (true) {
+        try {
+          const response = await callWithKey(idx, model);
+          const text = extractText(response);
+          if (!text) {
+            if (localEmptyAttempts < MAX_EMPTY_RETRIES) {
+              localEmptyAttempts++;
+              console.warn(
+                `[gemini] ${model} key #${idx + 1} returned empty — retry ${localEmptyAttempts}/${MAX_EMPTY_RETRIES} in ${RETRY_EMPTY_BACKOFF_MS / 1000}s`,
+              );
+              await new Promise((r) => setTimeout(r, RETRY_EMPTY_BACKOFF_MS));
+              continue; // retry same key
+            }
+            throw new Error("Gemini: empty response");
+          }
+          reportUsage(response, Boolean(opts.fast));
+          return parseJsonText<T>(text);
+        } catch (err) {
+          const raw = errMsg(err);
+          if (is429(raw)) {
             console.warn(
-              `[gemini] key #${idx + 1} returned empty — retry ${localEmptyAttempts}/${MAX_EMPTY_RETRIES} in ${RETRY_EMPTY_BACKOFF_MS / 1000}s`,
+              `[gemini] ${model} key #${idx + 1}/${KEYS.length} hit 429 — cooling down ${COOLDOWN_MS / 1000}s, trying next`,
             );
-            await new Promise((r) => setTimeout(r, RETRY_EMPTY_BACKOFF_MS));
+            cooldownUntil.set(idx, Date.now() + COOLDOWN_MS);
+            last429 = err;
+            break; // exit inner loop, try next key
+          }
+          if (is503(raw) && local503Attempts < MAX_503_RETRIES) {
+            local503Attempts++;
+            console.warn(
+              `[gemini] ${model} key #${idx + 1} got 503 (Google overload) — retry ${local503Attempts}/${MAX_503_RETRIES} in ${RETRY_503_BACKOFF_MS / 1000}s`,
+            );
+            await new Promise((r) => setTimeout(r, RETRY_503_BACKOFF_MS));
             continue; // retry same key
           }
-          throw new Error("Gemini: empty response");
+          // Anything else (bad request, schema mismatch, exhausted 503
+          // retries, etc.) — bubble up immediately.
+          throw err;
         }
+      }
+    }
+
+    // ── All keys are on cooldown. Wait for soonest recovery + 1 retry. ──
+    const best = shortestCooldownKey();
+    if (best) {
+      const sleepMs = Math.min(best.waitMs + 2000, 70_000);
+      console.warn(
+        `[gemini] all ${KEYS.length} keys on cooldown — waiting ${(sleepMs / 1000).toFixed(1)}s for key #${best.idx + 1} to recover`,
+      );
+      await new Promise((r) => setTimeout(r, sleepMs));
+      try {
+        cooldownUntil.delete(best.idx);
+        const response = await callWithKey(best.idx, model);
+        const text = extractText(response);
+        if (!text) throw new Error("Gemini: empty response after cooldown wait");
         reportUsage(response, Boolean(opts.fast));
         return parseJsonText<T>(text);
       } catch (err) {
-        const raw = errMsg(err);
-        if (is429(raw)) {
-          console.warn(
-            `[gemini] key #${idx + 1}/${KEYS.length} hit 429 — cooling down ${COOLDOWN_MS / 1000}s, trying next`,
-          );
-          cooldownUntil.set(idx, Date.now() + COOLDOWN_MS);
-          last429 = err;
-          break; // exit inner loop, try next key
+        if (is429(errMsg(err))) {
+          cooldownUntil.set(best.idx, Date.now() + COOLDOWN_MS);
         }
-        if (is503(raw) && local503Attempts < MAX_503_RETRIES) {
-          local503Attempts++;
-          console.warn(
-            `[gemini] key #${idx + 1} got 503 (Google overload) — retry ${local503Attempts}/${MAX_503_RETRIES} in ${RETRY_503_BACKOFF_MS / 1000}s`,
-          );
-          await new Promise((r) => setTimeout(r, RETRY_503_BACKOFF_MS));
-          continue; // retry same key
-        }
-        // Anything else (bad request, schema mismatch, exhausted 503
-        // retries, etc.) — bubble up immediately.
         throw err;
       }
     }
-  }
 
-  // ── All keys are on cooldown. Wait for the soonest recovery + 1 retry. ──
-  const best = shortestCooldownKey();
-  if (best) {
-    const sleepMs = Math.min(best.waitMs + 2000, 70_000);
-    console.warn(
-      `[gemini] all ${KEYS.length} keys on cooldown — waiting ${(sleepMs / 1000).toFixed(1)}s for key #${best.idx + 1} to recover`,
-    );
-    await new Promise((r) => setTimeout(r, sleepMs));
+    throw last429 ?? new Error("Gemini: all keys exhausted");
+  };
+
+  // The premium model (e.g. gemini-2.5-pro) often isn't usable on the
+  // free-tier keys this app runs on — it 429s on quota or needs billing,
+  // which surfaced as "empty response" / refunded audits for PAID users.
+  // Try the configured model, then fall back to the fast model so the audit
+  // still completes. Free audits already run on MODEL_FAST (nothing to add).
+  const primaryModel = opts.fast ? MODEL_FAST : MODEL;
+  const modelChain =
+    primaryModel === MODEL_FAST ? [primaryModel] : [primaryModel, MODEL_FAST];
+
+  let lastErr: unknown = null;
+  for (let mi = 0; mi < modelChain.length; mi++) {
+    const model = modelChain[mi];
+    const isLast = mi === modelChain.length - 1;
     try {
-      cooldownUntil.delete(best.idx);
-      const response = await callWithKey(best.idx);
-      const text = extractText(response);
-      if (!text) throw new Error("Gemini: empty response after cooldown wait");
-      reportUsage(response, Boolean(opts.fast));
-      return parseJsonText<T>(text);
+      return await runWithModel(model);
     } catch (err) {
-      if (is429(errMsg(err))) {
-        cooldownUntil.set(best.idx, Date.now() + COOLDOWN_MS);
+      lastErr = err;
+      const raw = errMsg(err);
+      const recoverable =
+        is429(raw) ||
+        /empty response|all keys exhausted|not found|not available|unsupported|billing|permission|INVALID_ARGUMENT|FAILED_PRECONDITION/i.test(
+          raw,
+        );
+      if (!isLast && recoverable) {
+        console.warn(
+          `[gemini] model "${model}" unavailable (${raw.slice(0, 100)}) — falling back to "${modelChain[mi + 1]}"`,
+        );
+        // The 429 cooldowns we just set were specific to the premium model's
+        // quota; clear them so the fallback model starts with fresh keys.
+        cooldownUntil.clear();
+        continue;
       }
       throw err;
     }
   }
-
-  throw last429 ?? new Error("Gemini: all keys exhausted");
+  throw lastErr ?? new Error("Gemini: all models exhausted");
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
