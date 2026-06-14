@@ -106,7 +106,7 @@ export function SocialProof() {
                     <p className="font-mono text-xs uppercase tracking-wider text-white/40">{a.niche}</p>
                   </div>
                   <div className="shrink-0">
-                    <ScoreBadge score={a.score} size="lg" />
+                    <ScoreBadge score={a.score} size="lg" animate />
                   </div>
                 </div>
                 <p className="mt-4 text-sm text-white/60 leading-relaxed">

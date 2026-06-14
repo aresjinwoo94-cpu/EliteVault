@@ -1,4 +1,7 @@
+"use client";
+
 import { cn } from "@/lib/utils";
+import { CountUp } from "./count-up";
 
 /**
  * ScoreBadge — the ONE coherent treatment for inline / list / dashboard
@@ -15,12 +18,15 @@ export function ScoreBadge({
   score,
   total = 100,
   size = "md",
+  animate = false,
   className,
 }: {
   score: number;
   /** Denominator shown muted after the score. Pass `null` to hide it. */
   total?: number | null;
   size?: "sm" | "md" | "lg";
+  /** Count the numeral up from 0 the first time it scrolls into view. */
+  animate?: boolean;
   className?: string;
 }) {
   const value = Math.round(score);
@@ -48,7 +54,9 @@ export function ScoreBadge({
         className,
       )}
     >
-      <span className="font-medium">{value}</span>
+      <span className="font-medium">
+        {animate ? <CountUp value={value} /> : value}
+      </span>
       {total != null && (
         <span className="ml-px text-[0.78em] opacity-50">/{total}</span>
       )}

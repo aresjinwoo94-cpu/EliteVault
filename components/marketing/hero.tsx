@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataPill } from "@/components/ui/data-pill";
+import { CountUp } from "@/components/ui/count-up";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -231,9 +232,10 @@ function HeroPreview() {
                   Overall score
                 </p>
                 <div className="mt-1 flex items-baseline gap-2">
-                  <span className="font-mono text-5xl tabular-nums text-signal-300 leading-none">
-                    62
-                  </span>
+                  <CountUp
+                    value={62}
+                    className="font-mono text-5xl tabular-nums text-signal-300 leading-none"
+                  />
                   <span className="font-mono text-white/40 text-sm tabular-nums">
                     / 100
                   </span>
