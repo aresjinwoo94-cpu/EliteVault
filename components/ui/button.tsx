@@ -17,7 +17,10 @@ const buttonVariants = cva(
         ghost: "text-white/80 hover:bg-white/[0.06] hover:text-white",
         outline:
           "border border-white/15 bg-transparent text-white hover:bg-white/[0.04] hover:border-white/25",
-        ai: "bg-gradient-to-br from-signal-500 to-signal-600 text-obsidian-950 shadow-signal hover:from-signal-400 hover:to-signal-500",
+        // Secondary teal action — deliberately quieter than `primary` (gold
+        // + glow) so the two never compete as equal CTAs in one view. Tinted
+        // fill + hairline, no glow; glow is rationed to the primary action.
+        ai: "bg-signal-500/[0.12] text-signal-300 border border-signal-400/25 hover:bg-signal-500/[0.18] hover:border-signal-400/40",
         destructive:
           "bg-destructive/90 text-white hover:bg-destructive shadow-[0_0_24px_-8px_rgba(239,68,68,0.5)]",
         link: "text-champagne-400 underline-offset-4 hover:underline",

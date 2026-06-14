@@ -3,12 +3,20 @@ import { cn } from "@/lib/utils";
 
 export const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & {
+    /** Subtle hover affordance for clickable cards (border brightens). */
+    interactive?: boolean;
+  }
+>(({ className, interactive, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
-      "rounded-2xl border border-white/[0.06] bg-card/60 backdrop-blur-xl shadow-card",
+      // Hairline elevation recipe (Obsidian Quant v2): opaque obsidian
+      // surface + 1px hairline + subtle inset shadow. No glass/blur on
+      // plain cards — `.glass` is reserved for nav / overlays / mockups.
+      "rounded-2xl border border-white/[0.06] bg-card shadow-card",
+      interactive &&
+        "transition-colors hover:border-white/[0.10]",
       className,
     )}
     {...props}
