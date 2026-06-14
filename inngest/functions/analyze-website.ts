@@ -439,6 +439,13 @@ function humanizeError(err: unknown): string {
     return "We couldn't capture a screenshot of that URL. Verify it loads in an incognito tab and try again — your credit was refunded.";
   }
 
+  // Empty AI response — usually a blank/placeholder screenshot (a site whose
+  // capture was still warming or briefly returned the "generating preview"
+  // placeholder). A re-run almost always succeeds once the capture is ready.
+  if (/empty response/i.test(raw)) {
+    return "We couldn't read this page on the first pass — the screenshot may have still been generating. Click Try again; it usually works on the second run. Your credit was refunded.";
+  }
+
   // Schema validation
   if (/schema mismatch|failed validation/i.test(raw)) {
     return "The AI returned malformed output. This is on us — please try again.";
