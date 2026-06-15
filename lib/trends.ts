@@ -119,3 +119,182 @@ export async function getNicheTrends(slug: string): Promise<NicheTrends | null> 
     products: (products as ProductRow[] | null) ?? [],
   };
 }
+
+/* ─── Momentum (Phase T1) ──────────────────────────────────────────────────
+ * Derived purely from the weekly history ALREADY cached in `trend_signals` /
+ * `products_trending` (the `week` column). No new data, no model calls, no
+ * schema. Compares the latest cached week to the prior one to surface what's
+ * moving — the "reason to log in this week".
+ */
+
+export type TrendStatus = "new" | "accelerating" | "cooling" | "sustained";
+
+/** One item (sub-niche or product) enriched with its week-over-week story. */
+export type TrendItemHistory = {
+  item: string;
+  kind: "subniche" | "product";
+  direction: Direction;
+  score: number;
+  rationale: string | null;
+  provenance: Provenance;
+  source: string | null;
+  week: string;
+  /** Score per week, ascending — drives the sparkline. */
+  series: { week: string; score: number }[];
+  /** Score in the immediately-prior cached week, or null if the item is new. */
+  prevScore: number | null;
+  /** current − prior (null when new). */
+  delta: number | null;
+  status: TrendStatus;
+};
+
+export type NicheTrendHistory = {
+  niche: NicheRow;
+  week: string | null;
+  /** The cached weeks in the window, ascending. */
+  weeks: string[];
+  subniches: TrendItemHistory[];
+  products: TrendItemHistory[];
+};
+
+type FlatRow = {
+  item: string;
+  kind: "subniche" | "product";
+  direction: Direction;
+  score: number;
+  rationale: string | null;
+  provenance: Provenance;
+  source: string | null;
+  week: string;
+};
+
+function buildHistory(rows: FlatRow[], weeksAsc: string[]): TrendItemHistory[] {
+  const currentWeek = weeksAsc[weeksAsc.length - 1];
+  const priorWeek = weeksAsc.length >= 2 ? weeksAsc[weeksAsc.length - 2] : null;
+
+  const byItem = new Map<string, FlatRow[]>();
+  for (const r of rows) {
+    const arr = byItem.get(r.item) ?? [];
+    arr.push(r);
+    byItem.set(r.item, arr);
+  }
+
+  const out: TrendItemHistory[] = [];
+  for (const [item, itemRows] of byItem) {
+    const cur = itemRows.find((r) => r.week === currentWeek);
+    if (!cur) continue; // only surface items present in the latest cached week
+    const scoreByWeek = new Map(itemRows.map((r) => [r.week, r.score]));
+    const series = weeksAsc
+      .filter((w) => scoreByWeek.has(w))
+      .map((w) => ({ week: w, score: scoreByWeek.get(w) as number }));
+    const prevScore =
+      priorWeek != null && scoreByWeek.has(priorWeek)
+        ? (scoreByWeek.get(priorWeek) as number)
+        : null;
+    const delta = prevScore != null ? cur.score - prevScore : null;
+    let status: TrendStatus;
+    if (prevScore == null) status = "new";
+    else if (cur.score > prevScore) status = "accelerating";
+    else if (cur.score < prevScore) status = "cooling";
+    else status = "sustained";
+    out.push({
+      item,
+      kind: cur.kind,
+      direction: cur.direction,
+      score: cur.score,
+      rationale: cur.rationale,
+      provenance: cur.provenance,
+      source: cur.source,
+      week: cur.week,
+      series,
+      prevScore,
+      delta,
+      status,
+    });
+  }
+  out.sort((a, b) => b.score - a.score);
+  return out;
+}
+
+/**
+ * Latest cached trends for a niche PLUS the last `weeks` of history, enriched
+ * with per-item momentum (status + week-over-week delta + score series).
+ * Read-only over the existing cache.
+ */
+export async function getNicheTrendHistory(
+  slug: string,
+  weeks = 8,
+): Promise<NicheTrendHistory | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data: niche } = await supabase
+    .from("niches")
+    .select("id, slug, name, description")
+    .eq("slug", slug)
+    .single();
+  if (!niche) return null;
+  const n = niche as NicheRow;
+
+  const [{ data: signals }, { data: products }] = await Promise.all([
+    supabase
+      .from("trend_signals")
+      .select("item, kind, direction, score, rationale, provenance, source, week")
+      .eq("niche_id", n.id)
+      .order("week", { ascending: false }),
+    supabase
+      .from("products_trending")
+      .select("product, direction, score, rationale, provenance, source, week")
+      .eq("niche_id", n.id)
+      .order("week", { ascending: false }),
+  ]);
+
+  const sigRows: FlatRow[] = ((signals as SignalRow[] | null) ?? []).map((r) => ({
+    item: r.item,
+    kind: r.kind,
+    direction: r.direction,
+    score: r.score,
+    rationale: r.rationale,
+    provenance: r.provenance,
+    source: r.source,
+    week: r.week,
+  }));
+  const prodRows: FlatRow[] = ((products as ProductRow[] | null) ?? []).map(
+    (p) => ({
+      item: p.product,
+      kind: "product" as const,
+      direction: p.direction,
+      score: p.score,
+      rationale: p.rationale,
+      provenance: p.provenance,
+      source: p.source,
+      week: p.week,
+    }),
+  );
+
+  // Latest N distinct weeks across both tables, ascending.
+  const allWeeks = Array.from(
+    new Set([...sigRows.map((r) => r.week), ...prodRows.map((r) => r.week)]),
+  ).sort();
+  const weeksAsc = allWeeks.slice(Math.max(0, allWeeks.length - weeks));
+  const weekSet = new Set(weeksAsc);
+  const currentWeek = weeksAsc.length
+    ? weeksAsc[weeksAsc.length - 1]
+    : null;
+
+  if (!currentWeek) {
+    return { niche: n, week: null, weeks: [], subniches: [], products: [] };
+  }
+
+  return {
+    niche: n,
+    week: currentWeek,
+    weeks: weeksAsc,
+    subniches: buildHistory(
+      sigRows.filter((r) => weekSet.has(r.week)),
+      weeksAsc,
+    ),
+    products: buildHistory(
+      prodRows.filter((r) => weekSet.has(r.week)),
+      weeksAsc,
+    ),
+  };
+}

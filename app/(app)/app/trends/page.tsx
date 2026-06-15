@@ -1,9 +1,18 @@
 import Link from "next/link";
 import { TrendingUp, TrendingDown, Sparkles, Info, ArrowRight } from "lucide-react";
-import { listNiches, getNicheTrends, type Direction, type Provenance } from "@/lib/trends";
+import {
+  listNiches,
+  getNicheTrendHistory,
+  type Direction,
+  type Provenance,
+  type TrendStatus,
+  type TrendItemHistory,
+} from "@/lib/trends";
 import { NicheSearch } from "@/components/trends/niche-search";
+import { Sparkline } from "@/components/ui/sparkline";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { refreshTrendsNow } from "@/app/actions/trends";
+import { cn } from "@/lib/utils";
 
 export const metadata = { title: "Trends" };
 export const dynamic = "force-dynamic";
@@ -50,6 +59,94 @@ function ProvenanceTag({
   );
 }
 
+/** Momentum status — teal for new/rising, destructive for cooling, muted otherwise. */
+function StatusTag({ status }: { status: TrendStatus }) {
+  const map = {
+    new: { c: "text-signal-300 ring-signal-400/30 bg-signal-600/10", label: "New" },
+    accelerating: {
+      c: "text-signal-300 ring-signal-400/30 bg-signal-600/10",
+      label: "Rising",
+    },
+    cooling: {
+      c: "text-destructive ring-destructive/30 bg-destructive/10",
+      label: "Cooling",
+    },
+    sustained: { c: "text-white/45 ring-white/10 bg-white/[0.03]", label: "Steady" },
+  } as const;
+  const s = map[status];
+  return (
+    <span
+      className={cn(
+        "inline-flex shrink-0 items-center rounded-full px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ring-1",
+        s.c,
+      )}
+    >
+      {s.label}
+    </span>
+  );
+}
+
+/** Week-over-week delta, MetricChip convention (▲ success / ▼ destructive). */
+function WowDelta({ delta }: { delta: number | null }) {
+  if (delta == null) {
+    return <span className="num text-[11px] text-white/30">first week</span>;
+  }
+  if (delta === 0) {
+    return <span className="num text-[11px] text-white/40">±0</span>;
+  }
+  const up = delta > 0;
+  return (
+    <span className={cn("num text-[11px]", up ? "text-success" : "text-destructive")}>
+      {up ? "▲" : "▼"}
+      {Math.abs(delta)}
+    </span>
+  );
+}
+
+/** One enriched trend card — name + status + score, momentum sparkline + Δ. */
+function TrendItemCard({ item }: { item: TrendItemHistory }) {
+  const cooling = item.status === "cooling";
+  return (
+    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="truncate text-sm font-medium text-white/90">
+            {item.item}
+          </span>
+          <StatusTag status={item.status} />
+        </div>
+        <DirPill direction={item.direction} score={item.score} />
+      </div>
+
+      {/* Momentum row — sparkline + week-over-week delta from cached history */}
+      <div className="mt-2.5 flex items-center gap-3">
+        <Sparkline
+          data={item.series.map((p) => p.score)}
+          className={cooling ? "text-destructive" : "text-signal-400"}
+          ariaLabel={`${item.item} score trend`}
+        />
+        <WowDelta delta={item.delta} />
+        <span className="text-[10px] uppercase tracking-wider text-white/30">
+          wk / wk
+        </span>
+      </div>
+
+      {item.rationale && (
+        <p className="mt-2 text-xs text-white/50 leading-relaxed">
+          {item.rationale}
+        </p>
+      )}
+      <div className="mt-2">
+        <ProvenanceTag
+          provenance={item.provenance}
+          source={item.source}
+          week={item.week}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default async function TrendsPage({
   searchParams,
 }: {
@@ -58,7 +155,7 @@ export default async function TrendsPage({
   const sp = await searchParams;
   const slug = sp.niche ?? null;
   const niches = await listNiches();
-  const trends = slug ? await getNicheTrends(slug) : null;
+  const trends = slug ? await getNicheTrendHistory(slug) : null;
 
   // Internal-only "refresh now" control (gated to INTERNAL_EMAILS).
   const supabase = await createSupabaseServerClient();
@@ -168,29 +265,7 @@ export default async function TrendsPage({
                     <p className="text-sm text-white/35">No signals this week.</p>
                   )}
                   {trends.subniches.map((s, i) => (
-                    <div
-                      key={`${s.item}-${i}`}
-                      className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-sm font-medium text-white/90">
-                          {s.item}
-                        </span>
-                        <DirPill direction={s.direction} score={s.score} />
-                      </div>
-                      {s.rationale && (
-                        <p className="mt-1.5 text-xs text-white/50 leading-relaxed">
-                          {s.rationale}
-                        </p>
-                      )}
-                      <div className="mt-2">
-                        <ProvenanceTag
-                          provenance={s.provenance}
-                          source={s.source}
-                          week={s.week}
-                        />
-                      </div>
-                    </div>
+                    <TrendItemCard key={`${s.item}-${i}`} item={s} />
                   ))}
                 </div>
               </section>
@@ -205,29 +280,7 @@ export default async function TrendsPage({
                     <p className="text-sm text-white/35">No products this week.</p>
                   )}
                   {trends.products.map((p, i) => (
-                    <div
-                      key={`${p.product}-${i}`}
-                      className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-sm font-medium text-white/90">
-                          {p.product}
-                        </span>
-                        <DirPill direction={p.direction} score={p.score} />
-                      </div>
-                      {p.rationale && (
-                        <p className="mt-1.5 text-xs text-white/50 leading-relaxed">
-                          {p.rationale}
-                        </p>
-                      )}
-                      <div className="mt-2">
-                        <ProvenanceTag
-                          provenance={p.provenance}
-                          source={p.source}
-                          week={p.week}
-                        />
-                      </div>
-                    </div>
+                    <TrendItemCard key={`${p.item}-${i}`} item={p} />
                   ))}
                 </div>
               </section>
