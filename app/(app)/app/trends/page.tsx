@@ -1,18 +1,10 @@
 import Link from "next/link";
-import { TrendingUp, TrendingDown, Sparkles, Info, ArrowRight } from "lucide-react";
-import {
-  listNiches,
-  getNicheTrendHistory,
-  type Direction,
-  type Provenance,
-  type TrendStatus,
-  type TrendItemHistory,
-} from "@/lib/trends";
+import { Sparkles, Info, ArrowRight } from "lucide-react";
+import { listNiches, getNicheTrendHistory } from "@/lib/trends";
 import { NicheSearch } from "@/components/trends/niche-search";
-import { Sparkline } from "@/components/ui/sparkline";
+import { TrendsBoard } from "@/components/trends/trends-board";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { refreshTrendsNow } from "@/app/actions/trends";
-import { cn } from "@/lib/utils";
 
 export const metadata = { title: "Trends" };
 export const dynamic = "force-dynamic";
@@ -23,128 +15,6 @@ function fmtWeek(week: string): string {
     day: "numeric",
     year: "numeric",
   });
-}
-
-function DirPill({ direction, score }: { direction: Direction; score: number }) {
-  const up = direction === "up";
-  return (
-    <span
-      className={
-        up
-          ? "inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-medium text-success ring-1 ring-success/20"
-          : "inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-medium text-destructive ring-1 ring-destructive/20"
-      }
-    >
-      {up ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
-      <span className="font-mono tabular-nums">{score}</span>
-    </span>
-  );
-}
-
-function ProvenanceTag({
-  provenance,
-  source,
-  week,
-}: {
-  provenance: Provenance;
-  source: string | null;
-  week: string;
-}) {
-  return (
-    <span className="text-[10px] text-white/35">
-      {provenance === "sourced" && source ? `Source: ${source}` : "AI-estimated"}
-      {" · "}
-      week of {fmtWeek(week)}
-    </span>
-  );
-}
-
-/** Momentum status — teal for new/rising, destructive for cooling, muted otherwise. */
-function StatusTag({ status }: { status: TrendStatus }) {
-  const map = {
-    new: { c: "text-signal-300 ring-signal-400/30 bg-signal-600/10", label: "New" },
-    accelerating: {
-      c: "text-signal-300 ring-signal-400/30 bg-signal-600/10",
-      label: "Rising",
-    },
-    cooling: {
-      c: "text-destructive ring-destructive/30 bg-destructive/10",
-      label: "Cooling",
-    },
-    sustained: { c: "text-white/45 ring-white/10 bg-white/[0.03]", label: "Steady" },
-  } as const;
-  const s = map[status];
-  return (
-    <span
-      className={cn(
-        "inline-flex shrink-0 items-center rounded-full px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ring-1",
-        s.c,
-      )}
-    >
-      {s.label}
-    </span>
-  );
-}
-
-/** Week-over-week delta, MetricChip convention (▲ success / ▼ destructive). */
-function WowDelta({ delta }: { delta: number | null }) {
-  if (delta == null) {
-    return <span className="num text-[11px] text-white/30">first week</span>;
-  }
-  if (delta === 0) {
-    return <span className="num text-[11px] text-white/40">±0</span>;
-  }
-  const up = delta > 0;
-  return (
-    <span className={cn("num text-[11px]", up ? "text-success" : "text-destructive")}>
-      {up ? "▲" : "▼"}
-      {Math.abs(delta)}
-    </span>
-  );
-}
-
-/** One enriched trend card — name + status + score, momentum sparkline + Δ. */
-function TrendItemCard({ item }: { item: TrendItemHistory }) {
-  const cooling = item.status === "cooling";
-  return (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="truncate text-sm font-medium text-white/90">
-            {item.item}
-          </span>
-          <StatusTag status={item.status} />
-        </div>
-        <DirPill direction={item.direction} score={item.score} />
-      </div>
-
-      {/* Momentum row — sparkline + week-over-week delta from cached history */}
-      <div className="mt-2.5 flex items-center gap-3">
-        <Sparkline
-          data={item.series.map((p) => p.score)}
-          className={cooling ? "text-destructive" : "text-signal-400"}
-          ariaLabel={`${item.item} score trend`}
-        />
-        <WowDelta delta={item.delta} />
-        <span className="text-[10px] uppercase tracking-wider text-white/30">
-          wk / wk
-        </span>
-      </div>
-
-      {item.rationale && (
-        <p className="mt-2 text-xs text-white/50 leading-relaxed">
-          {item.rationale}
-        </p>
-      )}
-      <div className="mt-2">
-        <ProvenanceTag
-          provenance={item.provenance}
-          source={item.source}
-          week={item.week}
-        />
-      </div>
-    </div>
-  );
 }
 
 export default async function TrendsPage({
@@ -254,37 +124,11 @@ export default async function TrendsPage({
               </Link>
             </div>
 
-            <div className="mt-6 grid gap-6 lg:grid-cols-2">
-              {/* Sub-niches */}
-              <section>
-                <h3 className="text-[11px] uppercase tracking-widest text-white/40 mb-3">
-                  Sub-niches & themes
-                </h3>
-                <div className="space-y-2.5">
-                  {trends.subniches.length === 0 && (
-                    <p className="text-sm text-white/35">No signals this week.</p>
-                  )}
-                  {trends.subniches.map((s, i) => (
-                    <TrendItemCard key={`${s.item}-${i}`} item={s} />
-                  ))}
-                </div>
-              </section>
-
-              {/* Products */}
-              <section>
-                <h3 className="text-[11px] uppercase tracking-widest text-white/40 mb-3">
-                  Trending products
-                </h3>
-                <div className="space-y-2.5">
-                  {trends.products.length === 0 && (
-                    <p className="text-sm text-white/35">No products this week.</p>
-                  )}
-                  {trends.products.map((p, i) => (
-                    <TrendItemCard key={`${p.item}-${i}`} item={p} />
-                  ))}
-                </div>
-              </section>
-            </div>
+            <TrendsBoard
+              subniches={trends.subniches}
+              products={trends.products}
+              nicheSlug={trends.niche.slug}
+            />
           </div>
         )}
       </div>
