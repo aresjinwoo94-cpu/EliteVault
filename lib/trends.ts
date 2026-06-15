@@ -298,3 +298,93 @@ export async function getNicheTrendHistory(
     ),
   };
 }
+
+/* ─── Personalization (Phase T3) ───────────────────────────────────────────
+ * Infer a user's likely niche from data we ALREADY have — no new table, no
+ * `tracked_niches`, no model call. Pure keyword heuristic over their monitored
+ * self-store domain and most-recent analysis (url + AI summary). Returns null
+ * when nothing maps confidently, so the page falls back to the empty picker.
+ *
+ * The map is keyed by the active niche slugs; if the taxonomy changes it just
+ * stops matching that slug (degrades to the empty-picker state) — never wrong.
+ */
+const NICHE_KEYWORDS: Record<string, string[]> = {
+  "baby-kids": ["baby", "kids", "toddler", "nursery", "stroller", "diaper"],
+  "coffee-tea": ["coffee", "espresso", "matcha", "tea"],
+  "electronics-gadgets": ["electronics", "gadget", "headphone", "speaker", "charger", "smart home"],
+  "fashion-apparel": ["fashion", "apparel", "clothing", "streetwear", "outfit", "dress"],
+  "fitness-wellness": ["fitness", "workout", "gym", "yoga", "athletic", "wearable"],
+  "gaming": ["gaming", "gamer", "console", "esports", "keyboard"],
+  "home-kitchen": ["kitchen", "cookware", "appliance", "blender", "utensil"],
+  "home-decor": ["decor", "furniture", "lighting", "candle", "interior"],
+  "jewelry-accessories": ["jewelry", "jewellery", "necklace", "bracelet", "watch", "handbag"],
+  "outdoor-camping": ["outdoor", "camping", "hiking", "tent", "backpack"],
+  "pet-supplies": ["pet", "dog", "puppy", "kitten", "grooming", "leash"],
+  "skincare-beauty": ["skincare", "serum", "cleanser", "cosmetic", "makeup", "moisturizer", "beauty"],
+  "supplements-nutrition": ["supplement", "vitamin", "protein", "collagen", "nutrition", "gummies"],
+  "sustainable-eco": ["sustainable", "reusable", "refill", "ethical", "bamboo", "zero waste"],
+};
+
+/** Whole-word (or phrase) match for PROSE so "ring" doesn't hit "offering". */
+function wordHit(text: string, kw: string): boolean {
+  if (kw.includes(" ")) return text.includes(kw);
+  return new RegExp(`\\b${kw}\\b`, "i").test(text);
+}
+
+/** Lowercased hostname (no protocol/path) — domains concatenate words on
+ *  purpose ("altexapparel"), so we substring-match them. */
+function hostText(url: string | null | undefined): string {
+  if (!url) return "";
+  try {
+    return new URL(url).hostname.replace(/^www\./, "").toLowerCase();
+  } catch {
+    return url.toLowerCase();
+  }
+}
+
+/** Best-effort niche slug for a user, from existing data only. No model call. */
+export async function inferUserNicheSlug(userId: string): Promise<string | null> {
+  const supabase = await createSupabaseServerClient();
+  const domains: string[] = [];
+  const prose: string[] = [];
+
+  // 1. Monitored self-store — the strongest intent signal.
+  const { data: self } = await supabase
+    .from("monitored_stores")
+    .select("domain, url")
+    .eq("user_id", userId)
+    .eq("kind", "self")
+    .limit(1);
+  const s0 = (self as { domain: string | null; url: string | null }[] | null)?.[0];
+  if (s0) domains.push(`${(s0.domain ?? "").toLowerCase()} ${hostText(s0.url)}`);
+
+  // 2. Most recent analysis — domain + the AI summary prose.
+  const { data: an } = await supabase
+    .from("analyses")
+    .select("url, result")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1);
+  const a0 = (an as { url: string | null; result: { summary?: string } | null }[] | null)?.[0];
+  if (a0) {
+    domains.push(hostText(a0.url));
+    prose.push((a0.result?.summary ?? "").toLowerCase());
+  }
+
+  const domainText = domains.join(" ");
+  const proseText = prose.join(" ");
+  if (!domainText.trim() && !proseText.trim()) return null;
+
+  // Domain → substring (concatenated words); prose → whole-word.
+  let best: { slug: string; hits: number } | null = null;
+  for (const [slug, kws] of Object.entries(NICHE_KEYWORDS)) {
+    let hits = 0;
+    for (const kw of kws) {
+      if (domainText.includes(kw) || (proseText && wordHit(proseText, kw))) {
+        hits++;
+      }
+    }
+    if (hits > 0 && (best === null || hits > best.hits)) best = { slug, hits };
+  }
+  return best?.slug ?? null;
+}

@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { Sparkles, Info, ArrowRight } from "lucide-react";
-import { listNiches, getNicheTrendHistory } from "@/lib/trends";
+import {
+  listNiches,
+  getNicheTrendHistory,
+  inferUserNicheSlug,
+} from "@/lib/trends";
 import { NicheSearch } from "@/components/trends/niche-search";
 import { TrendsBoard } from "@/components/trends/trends-board";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -23,15 +27,25 @@ export default async function TrendsPage({
   searchParams: Promise<{ niche?: string }>;
 }) {
   const sp = await searchParams;
-  const slug = sp.niche ?? null;
-  const niches = await listNiches();
-  const trends = slug ? await getNicheTrendHistory(slug) : null;
+  const explicitSlug = sp.niche ?? null;
 
-  // Internal-only "refresh now" control (gated to INTERNAL_EMAILS).
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Personalization (T3): with no niche chosen, default to the user's likely
+  // niche, inferred from existing data only (self-store / latest analysis).
+  // Read-only, no model call; null → today's empty-picker state.
+  const inferredSlug =
+    !explicitSlug && user ? await inferUserNicheSlug(user.id) : null;
+  const slug = explicitSlug ?? inferredSlug;
+  const isInferred = !explicitSlug && !!inferredSlug;
+
+  const niches = await listNiches();
+  const trends = slug ? await getNicheTrendHistory(slug) : null;
+
+  // Internal-only "refresh now" control (gated to INTERNAL_EMAILS).
   const internalAllow = (process.env.INTERNAL_EMAILS ?? "")
     .split(",")
     .map((s) => s.trim().toLowerCase())
@@ -107,10 +121,18 @@ export default async function TrendsPage({
           <div className="mt-10">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <h2 className="font-serif text-2xl tracking-tight">
-                  {trends.niche.name}
-                </h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="font-serif text-2xl tracking-tight">
+                    {trends.niche.name}
+                  </h2>
+                  {isInferred && (
+                    <span className="inline-flex items-center rounded-full bg-signal-600/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-signal-300 ring-1 ring-signal-400/30">
+                      Your niche
+                    </span>
+                  )}
+                </div>
                 <p className="mt-1 text-xs text-white/40">
+                  {isInferred && "Auto-selected from your store · change above · "}
                   Week of {fmtWeek(trends.week)} · {trends.subniches.length}{" "}
                   sub-niches · {trends.products.length} products
                 </p>
