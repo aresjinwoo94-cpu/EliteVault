@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { Sparkles, Info, ArrowRight } from "lucide-react";
 import {
-  listNiches,
-  getNicheTrendHistory,
+  cacheTrendSource as trendSource,
   inferUserNicheSlug,
 } from "@/lib/trends";
 import { NicheSearch } from "@/components/trends/niche-search";
@@ -42,8 +41,8 @@ export default async function TrendsPage({
   const slug = explicitSlug ?? inferredSlug;
   const isInferred = !explicitSlug && !!inferredSlug;
 
-  const niches = await listNiches();
-  const trends = slug ? await getNicheTrendHistory(slug) : null;
+  const niches = await trendSource.listNiches();
+  const trends = slug ? await trendSource.getNicheTrendHistory(slug) : null;
 
   // Internal-only "refresh now" control (gated to INTERNAL_EMAILS).
   const internalAllow = (process.env.INTERNAL_EMAILS ?? "")

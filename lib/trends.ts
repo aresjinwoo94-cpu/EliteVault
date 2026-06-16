@@ -388,3 +388,30 @@ export async function inferUserNicheSlug(userId: string): Promise<string | null>
   }
   return best?.slug ?? null;
 }
+
+/* ─── Hybrid source seam (Phase T4) ────────────────────────────────────────
+ * The UI consumes trends through this interface, never the concrete readers,
+ * so a REAL-DATA provider (Google Trends, a scraping pipeline, a vendor API)
+ * can be dropped in later WITHOUT touching the page or the database: implement
+ * `TrendSource` and swap the instance the page imports. The default,
+ * `cacheTrendSource`, reads the weekly cache only — no external calls, no model
+ * calls. Keep new providers honest about provenance (the rows carry it).
+ */
+export interface TrendSource {
+  /** Stable id for telemetry/debug (e.g. "cache", "google-trends"). */
+  readonly id: string;
+  listNiches(): Promise<NicheRow[]>;
+  getNicheTrends(slug: string): Promise<NicheTrends | null>;
+  getNicheTrendHistory(
+    slug: string,
+    weeks?: number,
+  ): Promise<NicheTrendHistory | null>;
+}
+
+/** Default source — reads the existing weekly cache. No network, no model. */
+export const cacheTrendSource: TrendSource = {
+  id: "cache",
+  listNiches,
+  getNicheTrends,
+  getNicheTrendHistory,
+};
