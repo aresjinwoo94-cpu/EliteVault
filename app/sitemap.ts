@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { allPosts } from "@/lib/blog/posts";
 
 /**
  * Dynamic sitemap.xml at /sitemap.xml
@@ -69,40 +70,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ),
   ];
 
-  // Dynamic community audits — they're public, indexable, and each has
-  // unique content. These drive long-tail search ("audit shopify hair store"
-  // etc.) once Google indexes them.
-  let communityEntries: MetadataRoute.Sitemap = [];
-  try {
-    const service = createSupabaseServiceClient();
-    const { data } = await service
-      .from("community_analyses")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .select("slug, created_at")
-      .eq("is_removed", false)
-      .order("created_at", { ascending: false })
-      .limit(500); // sitemap soft-cap
+  // Blog — the organic-search content surface. Index + each guide.
+  const blogEntries: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/blog`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    ...allPosts().map(
+      (p): MetadataRoute.Sitemap[number] => ({
+        url: `${baseUrl}/blog/${p.slug}`,
+        lastModified: new Date(`${p.updated ?? p.date}T00:00:00Z`),
+        changeFrequency: "monthly",
+        priority: 0.7,
+      }),
+    ),
+  ];
 
-    if (Array.isArray(data)) {
-      communityEntries = data
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .filter((row: any) => row?.slug)
-        .map(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (row: any) => ({
-            url: `${baseUrl}/app/community/${row.slug}`,
-            lastModified: row.created_at
-              ? new Date(row.created_at)
-              : now,
-            changeFrequency: "monthly" as const,
-            priority: 0.6,
-          }),
-        );
-    }
-  } catch (err) {
-    console.warn("[sitemap] community fetch failed:", (err as Error).message);
-    // Soft-fail: ship a sitemap with just static routes rather than a 500
-  }
+  // NOTE: community audits live under /app/community/* which robots.txt
+  // disallows (the whole /app/* dashboard is crawler-blocked). Listing them
+  // here would just create "submitted URL blocked by robots.txt" warnings, so
+  // the public, logged-out-friendly /s/<slug> shares below are the indexable
+  // programmatic surface instead.
 
   // Public shareable audits (/s/<slug>) — the real logged-out-friendly,
   // indexable content (each is a unique store diagnosis). Stored as
@@ -134,5 +124,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.warn("[sitemap] shared audits fetch failed:", (err as Error).message);
   }
 
-  return [...staticEntries, ...sharedEntries, ...communityEntries];
+  return [...staticEntries, ...blogEntries, ...sharedEntries];
 }

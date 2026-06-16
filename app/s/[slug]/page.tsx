@@ -72,13 +72,14 @@ export async function generateMetadata({
   }
   const domain = domainOf(audit.url);
   const score = normalizedScore(audit.score);
-  const title = `${domain} scored ${score}/100 — EliteVault audit`;
+  const title = `${domain} conversion audit — scored ${score}/100 · EliteVault`;
   const description =
     audit.summary?.slice(0, 160) ??
     `See the annotated conversion audit of ${domain}, then audit your own store free.`;
   return {
     title,
     description,
+    alternates: { canonical: `/s/${slug}` },
     openGraph: { title, description, type: "article" },
     twitter: { card: "summary_large_image", title, description },
   };
@@ -121,8 +122,31 @@ export default async function SharedAuditPage({
       )
     : [];
 
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: `${domain} conversion audit — ${score}/100`,
+    description:
+      audit.summary?.slice(0, 200) ??
+      `An annotated conversion audit of ${domain}.`,
+    url: `${baseUrl}/s/${slug}`,
+    about: { "@type": "Thing", name: domain },
+    author: { "@type": "Organization", name: "EliteVault" },
+    publisher: {
+      "@type": "Organization",
+      name: "EliteVault",
+      logo: { "@type": "ImageObject", url: `${baseUrl}/icon.svg` },
+    },
+  };
+
   return (
     <div className="min-h-screen bg-obsidian-950 text-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Top bar */}
       <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-obsidian-950/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 md:px-6">
