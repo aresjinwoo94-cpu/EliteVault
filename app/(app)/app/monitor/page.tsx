@@ -1,67 +1,20 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Store, Target, Clock, Trash2, Mail, RefreshCw } from "lucide-react";
+import { Store, Target, Mail, RefreshCw } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { PLANS } from "@/lib/stripe/plans";
 import type { PlanTier } from "@/lib/supabase/types";
+import {
+  snapshotMonitorSource as monitorSource,
+  rankBenchmark,
+} from "@/lib/monitoring";
 import { AddStoreForm } from "@/components/monitor/add-store-form";
-import { removeMonitoredStore, runMyCheckNow } from "@/app/actions/monitoring";
+import { StoreOverviewCard } from "@/components/monitor/store-overview-card";
+import { Benchmark } from "@/components/monitor/benchmark";
+import { runMyCheckNow } from "@/app/actions/monitoring";
 
 export const metadata = { title: "Monitor" };
 export const dynamic = "force-dynamic";
-
-type StoreRow = {
-  id: string;
-  url: string;
-  domain: string;
-  label: string | null;
-  kind: "self" | "competitor";
-  last_score: number | null;
-  last_audited_at: string | null;
-};
-
-function ScoreBadge({ score }: { score: number | null }) {
-  if (score === null)
-    return <span className="text-sm text-white/30">not yet checked</span>;
-  return (
-    <span className="font-mono tabular-nums text-2xl text-gold-gradient tnum">
-      {score}
-      <span className="ml-0.5 text-xs text-white/40">/100</span>
-    </span>
-  );
-}
-
-function StoreCard({ store }: { store: StoreRow }) {
-  return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-      <div className="min-w-0">
-        <p className="truncate text-sm font-medium text-white/90">
-          {store.label ?? store.domain}
-        </p>
-        <p className="truncate text-xs text-white/40">{store.url}</p>
-        {store.last_audited_at && (
-          <p className="mt-1 flex items-center gap-1 text-[11px] text-white/35">
-            <Clock className="size-3" />
-            checked {new Date(store.last_audited_at).toLocaleDateString("en-US")}
-          </p>
-        )}
-      </div>
-      <div className="flex items-center gap-3 shrink-0">
-        <ScoreBadge score={store.last_score} />
-        <form action={removeMonitoredStore}>
-          <input type="hidden" name="id" value={store.id} />
-          <button
-            type="submit"
-            aria-label="Remove"
-            className="rounded-md p-1.5 text-white/30 hover:text-destructive hover:bg-white/[0.04] transition-colors"
-          >
-            <Trash2 className="size-4" />
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-}
 
 export default async function MonitorPage() {
   const supabase = await createSupabaseServerClient();
@@ -78,14 +31,11 @@ export default async function MonitorPage() {
   const plan = ((profile as { plan?: PlanTier } | null)?.plan ?? "free") as PlanTier;
   const competitorLimit = PLANS[plan].quotas.monitoredCompetitors;
 
-  const { data: rows } = await supabase
-    .from("monitored_stores")
-    .select("id, url, domain, label, kind, last_score, last_audited_at")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: true });
-  const stores = (rows as StoreRow[] | null) ?? [];
-  const self = stores.find((s) => s.kind === "self") ?? null;
-  const competitors = stores.filter((s) => s.kind === "competitor");
+  // Read-only over monitored_stores + score_snapshots (M1/M2/M4).
+  const overview = await monitorSource.getMonitorOverview(user.id);
+  const benchmark = rankBenchmark(overview);
+  const self = overview.self;
+  const competitors = overview.competitors;
   const competitorsLeft = Math.max(0, competitorLimit - competitors.length);
 
   return (
@@ -119,6 +69,9 @@ export default async function MonitorPage() {
           </form>
         </div>
 
+        {/* Competitor scoreboard — self-hides until there are 2+ scored stores */}
+        <Benchmark data={benchmark} />
+
         {/* Your store */}
         <section className="mt-8">
           <h2 className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-white/40 mb-3">
@@ -126,11 +79,15 @@ export default async function MonitorPage() {
             Your store
           </h2>
           {self ? (
-            <StoreCard store={self} />
+            <StoreOverviewCard store={self} />
           ) : (
-            <div className="rounded-xl border border-white/[0.06] bg-white/[0.01] p-4">
-              <p className="mb-3 text-sm text-white/55">
-                Add your store to start the weekly check.
+            <div className="rounded-xl border border-champagne-400/20 bg-champagne-400/[0.03] p-5">
+              <p className="text-sm font-medium text-white/85">
+                Add your store to start the weekly autopilot.
+              </p>
+              <p className="mt-1 mb-3 text-xs text-white/50 leading-relaxed">
+                We&apos;ll re-score it every week, chart the trend, and email you
+                when it moves. Takes 10 seconds.
               </p>
               <AddStoreForm kind="self" />
             </div>
@@ -145,7 +102,7 @@ export default async function MonitorPage() {
               Competitors
             </span>
             <span className="text-white/30">
-              <span className="font-mono tabular-nums">
+              <span className="num">
                 {competitors.length}/{competitorLimit}
               </span>{" "}
               used
@@ -166,8 +123,14 @@ export default async function MonitorPage() {
             </div>
           ) : (
             <div className="space-y-2.5">
+              {competitors.length === 0 && competitorsLeft > 0 && (
+                <p className="text-xs text-white/40">
+                  Add up to {competitorLimit} competitors to see the scoreboard
+                  and catch anyone pulling ahead.
+                </p>
+              )}
               {competitors.map((c) => (
-                <StoreCard key={c.id} store={c} />
+                <StoreOverviewCard key={c.id} store={c} />
               ))}
               {competitorsLeft > 0 && (
                 <div className="rounded-xl border border-white/[0.06] bg-white/[0.01] p-4">
@@ -184,7 +147,8 @@ export default async function MonitorPage() {
         <p className="mt-8 text-[11px] text-white/30 leading-relaxed">
           Scores are a fast conversion estimate of each store&apos;s homepage
           (not a full audit). Run the full Analyzer any time for the deep
-          breakdown.
+          breakdown. Alert thresholds are flagged here and included in your
+          weekly digest email; standalone real-time alerts are on the roadmap.
         </p>
       </div>
     </div>
