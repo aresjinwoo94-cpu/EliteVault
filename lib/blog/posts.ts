@@ -22,9 +22,204 @@ export type BlogPost = {
   readingMinutes: number;
   excerpt: string;
   bodyHtml: string;
+  /** Optional named author (Person); defaults to the EliteVault org. */
+  author?: string;
+  /** Optional FAQ — rendered on-page and emitted as FAQPage JSON-LD. */
+  faqs?: { q: string; a: string }[];
 };
 
 export const BLOG_POSTS: BlogPost[] = [
+  {
+    slug: "reverse-engineer-winning-shopify-stores",
+    title: "How to Reverse-Engineer Any Winning Shopify Store (2026 Guide)",
+    h1: "How to reverse-engineer any winning Shopify store (and copy what actually converts)",
+    description:
+      "The exact method to reverse-engineer winning Shopify stores — their offer, hero, pricing and trust stack — and copy what converts. No guru course required.",
+    keyword: "how to find winning shopify stores",
+    date: "2026-06-17",
+    author: "Ariel Jiménez",
+    readingMinutes: 9,
+    excerpt:
+      "The method gurus charge $997 to teach: break down any converting store, extract the principles, and copy what works — in an afternoon.",
+    bodyHtml: `
+<p class="lede">There's a quiet reason the "winning product" gurus keep their method behind a $997 paywall: the moment you learn to reverse-engineer winning stores yourself, you stop needing them. So let's burn the playbook in public.</p>
+<p>Every week a new "secret store list" drops in someone's paid Discord. The pitch is always the same — pay the membership, get the winners, follow the leader. But the stores on those lists are public. Their pages are public. Their offers, their hero sections, their pricing ladders, their trust stacks — all of it is sitting on the open internet for anyone willing to look properly.</p>
+<p>What you're actually paying for isn't the list. It's the <em>method</em> for reading a store like an operator instead of a shopper. And that method is learnable in an afternoon. Here it is.</p>
+<h2>Why "copy the winners" beats "test everything"</h2>
+<p>New founders burn months testing random changes — a button color here, a headline there — hoping something sticks. Operators do the opposite. They find stores that are <strong>already converting cold traffic profitably</strong> and treat them as a library of solved problems. If ten skincare brands scaling on Meta all put a founder-story video above the fold, that's not coincidence. That's the niche telling you what works.</p>
+<p>Reverse-engineering isn't theft. You're not lifting copy, images, or brand assets — that's both illegal and useless. You're extracting <em>principles</em>: hierarchy, offer structure, objection handling, trust placement. Those transfer. The execution stays yours.</p>
+<blockquote>You don't copy the paint. You copy the blueprint.</blockquote>
+<h2>Step 1 — Build your shortlist of real winners</h2>
+<p>Before you analyze anything, you need stores that are actually selling — not stores that merely look pretty. A beautiful store doing $0 teaches you nothing. Three reliable sources:</p>
+<ul>
+<li><strong>Ad libraries.</strong> If a brand has run the same ad creative for 60+ days, it's profitable. Nobody pays to run a losing ad for two months.</li>
+<li><strong>Paid-social cohorts.</strong> Stores actively scaling on Meta and TikTok right now — these are the ones whose decisions are being validated by real spend.</li>
+<li><strong>Curated winner libraries.</strong> Tools that watch revenue signals and surface stores generating sales now, filtered by niche, instead of a stale "top stores" blog post from 2023.</li>
+</ul>
+<div class="callout"><h3>The trap to avoid</h3><p>Most "top Shopify stores" lists are SEO bait — the same ten mega-brands (Gymshark, Allbirds, Aesop) recycled for years. They're useful as masterclasses but useless as templates: you don't have their budget or brand equity. You want stores one or two rungs above you, not ten.</p></div>
+<h2>Step 2 — The 6-layer teardown</h2>
+<p>Open a winning store and read it in this exact order. Don't browse like a customer. Audit like a media buyer. For each layer, write down what they do and <em>why it might work for their niche</em>.</p>
+<table><thead><tr><th>Layer</th><th>What to extract</th></tr></thead><tbody>
+<tr><td>1. Offer</td><td>What's the actual deal? Bundle, subscription, free-shipping threshold, first-order discount? Is it obvious in 2 seconds?</td></tr>
+<tr><td>2. Hero</td><td>Headline structure, sub-headline, primary CTA, the single image/video. Is the value prop clear before scroll?</td></tr>
+<tr><td>3. Trust stack</td><td>Where do badges, reviews, press logos, guarantees sit? How high on the page?</td></tr>
+<tr><td>4. Product page</td><td>Image count, benefit-led vs feature-led copy, delivery estimates, social-proof density, sticky add-to-cart.</td></tr>
+<tr><td>5. Pricing logic</td><td>Anchor pricing, tiered bundles, "most popular" framing, scarcity/urgency.</td></tr>
+<tr><td>6. Mobile</td><td>Repeat layers 1–5 on a phone. 80%+ of DTC traffic is mobile, and most stores quietly fall apart there.</td></tr>
+</tbody></table>
+<p>By the time you've done five stores in your niche this way, patterns scream at you. The winners almost always share the same three or four moves. Those shared moves are your roadmap.</p>
+<h2>Step 3 — Find your store's closest converting "sibling"</h2>
+<p>Here's where most teardowns go wrong: founders copy a store that looks nothing like theirs structurally. A single-product hero brand and a 200-SKU catalog store have almost no transferable lessons for each other.</p>
+<p>The shortcut is <strong>visual-structure matching</strong> — finding the winning stores whose layout and product presentation most resemble yours, then copying their moves. This is exactly why <a href="/#analyzer">EliteVault's image-similarity search</a> exists: drop a screenshot of your store and it surfaces the closest converting siblings by visual structure, not by tags. You skip the guesswork of "which winner is even relevant to me."</p>
+<h2>Step 4 — Translate, don't transplant</h2>
+<p>The mistake that wastes the whole exercise: lifting a winner's tactic without adapting it to your niche. <strong>What converts in skincare can destroy conversion in supplements.</strong> Skincare buyers want sensory, aspirational imagery and a founder story. Supplement buyers want ingredients, dosages, third-party testing, and proof. Same layer, opposite execution.</p>
+<p>So for every pattern you extract, ask: <em>does this work because of the tactic, or because of the audience?</em> Only transplant the ones that survive that question.</p>
+<div class="callout"><h3>Your 30-minute teardown sprint</h3><p>Pick 5 winning stores in your niche. Run all 6 layers on each (5 min/store). Tally the moves that show up 3+ times. Those are your priority changes. Ship them this week, not next quarter.</p></div>
+<h2>The part the gurus don't want you to internalize</h2>
+<p>Once you can do this teardown on autopilot, the entire "secret winners" economy loses its grip on you. You don't need someone else's list — you need a system to read the market yourself and a way to know which winner is relevant to <em>your</em> store. That's the whole game. The community sells dependence; the skill sells freedom.</p>
+<p>And honestly? Doing the 6-layer teardown by hand on 20 stores is slow. That's the one real advantage the paid groups have — speed. So we built the speed into a tool instead of a membership. Next, read <a href="/blog/how-to-increase-shopify-conversion-rate">the 11 highest-leverage fixes</a> and <a href="/blog/why-your-shopify-store-isnt-converting">why stores don't convert</a>.</p>
+`.trim(),
+    faqs: [
+      {
+        q: "Is reverse-engineering a competitor's store legal?",
+        a: "Yes. Studying public-facing pages, offers and structure is legal and standard practice. You're copying principles and patterns — not assets, copy, or trademarks.",
+      },
+      {
+        q: "How do I find winning Shopify stores in my niche?",
+        a: "Use ad libraries (look for creatives running 60+ days), paid-social cohorts, and curated 'winner' libraries that surface stores generating revenue now, then filter to your niche.",
+      },
+      {
+        q: "Can I just copy a winning store exactly?",
+        a: "No. Copy the principles — hierarchy, offer clarity, trust placement — not the literal design or copy. What converts in skincare can kill conversion in supplements.",
+      },
+    ],
+  },
+  {
+    slug: "ecommerce-store-audit-vs-consultant",
+    title: "The $2,000 Store Audit Is Dead: What 60-Second AI Reveals (2026)",
+    h1: "The $2,000 store audit is dead — here's the exact framework consultants don't want you to have",
+    description:
+      "CRO consultants charge $1,500–$2,000 for an ecommerce store audit. Here's the exact framework they use — and how a 60-second AI audit now does the same job free.",
+    keyword: "ecommerce store audit",
+    date: "2026-06-17",
+    author: "Ariel Jiménez",
+    readingMinutes: 8,
+    excerpt:
+      "Consultants charge $1,500–$2,000 to audit your store. The framework was never secret — just slow and manual. Here it is, in the open.",
+    bodyHtml: `
+<p class="lede">A CRO consultant will charge you $1,500–$2,000 to tell you your CTA is below the fold. The uncomfortable truth they'd rather you didn't notice: the entire diagnosis fits on one page — and a machine can now run it in 60 seconds.</p>
+<p>I'm not anti-consultant. The best ones are worth every dollar for implementation and strategy. But the <em>audit</em> — the part where someone looks at your store and tells you what's broken and in what order to fix it — has been quietly commoditized. The framework was never secret. It was just slow and manual, which is exactly what made it billable.</p>
+<p>So here's the whole thing, in the open. Run it on your own store this afternoon.</p>
+<h2>What you're actually paying $2,000 for</h2>
+<p>A senior CRO audit is three deliverables wearing a trench coat:</p>
+<ol>
+<li><strong>A diagnosis.</strong> A score across the levers that move conversion, so you know how far from "good" you are.</li>
+<li><strong>Evidence.</strong> Annotated screenshots pointing at the specific problems, so you can't argue with them.</li>
+<li><strong>A prioritized punch-list.</strong> Fixes ranked by impact, so you don't waste a month on a button color while your offer is invisible.</li>
+</ol>
+<p>That's it. That's the $2k. Everything else is the consultant's time spent doing it by hand. Remove the manual labor and the price collapses.</p>
+<h2>The 7 levers every real audit scores</h2>
+<p>Whether it's a human or an AI doing the work, a credible ecommerce audit grades these seven things. Score each one honestly from 1–10 right now:</p>
+<table><thead><tr><th>Lever</th><th>The question</th><th>Why it matters</th></tr></thead><tbody>
+<tr><td>Offer clarity</td><td>Is the deal obvious in 2 seconds?</td><td>If buyers can't tell what they get, nothing else matters.</td></tr>
+<tr><td>Hero / above-fold</td><td>Value prop + CTA visible without scrolling?</td><td>Most stores bury the CTA below the fold.</td></tr>
+<tr><td>Trust stack</td><td>Reviews, badges, guarantees high on the page?</td><td>Cold traffic doesn't know you. Trust is the bottleneck.</td></tr>
+<tr><td>Product page</td><td>Benefit-led copy, delivery estimates, proof?</td><td>Most visitors leave before add-to-cart.</td></tr>
+<tr><td>Mobile</td><td>Does it hold up on a phone?</td><td>80%+ of DTC traffic is mobile; conversion is typically lower there.</td></tr>
+<tr><td>Speed</td><td>Loads under ~3 seconds?</td><td>A slow load sheds a large share of mobile visitors.</td></tr>
+<tr><td>Checkout</td><td>Minimal fields, guest checkout, visible total?</td><td>Friction here is pure, recoverable lost revenue.</td></tr>
+</tbody></table>
+<p>Total it up. Most stores leave a meaningful share of potential revenue on the table across these levers, and fixing the top findings first is where the leverage is — which is exactly why the audit was worth $2k in the first place.</p>
+<blockquote>The value was never in spotting the problems. It was in spotting them <em>fast</em> and ranking them right.</blockquote>
+<h2>Why "do it yourself" still fails most founders</h2>
+<p>Here's the catch the DIY checklists never admit: <strong>you can't audit your own store objectively.</strong> You've stared at it for 300 hours. You know what every button does. You mentally fill in the gaps a first-time visitor never will. That's the actual thing you're paying a consultant for — a cold, outside set of eyes that reacts the way a stranger with a credit card would.</p>
+<p>This is the gap AI quietly closed. A vision model has never seen your store before. It reacts to your hero exactly like a cold visitor — because to it, every visit is the first.</p>
+<h2>What a 60-second AI audit actually returns</h2>
+<p>This is the part that makes the $2,000 line item hard to defend. Modern AI audits return the same three deliverables — diagnosis, evidence, prioritized fixes — plus things a consultant physically can't do at that speed:</p>
+<ul>
+<li><strong>An overall score</strong> across all seven levers, benchmarked against stores actually scaling in your niche — not a generic ideal.</li>
+<li><strong>Annotated screenshots</strong> marking each issue on your actual page.</li>
+<li><strong>A ranked punch-list</strong> — "move CTA above fold: high impact, &lt;1h" — so you fix in order of leverage.</li>
+<li><strong>Buyer-persona simulation.</strong> Pick a persona and watch them react in their own voice. "I'd bounce — the offer isn't obvious in the first 2 seconds" beats any heatmap, and no consultant runs ten personas for you in a minute.</li>
+</ul>
+<div class="callout"><h3>Honesty check</h3><p>AI won't replace a great consultant for hands-on implementation, bespoke brand strategy, or untangling a messy backend. But for the <em>diagnosis</em> — the expensive, commoditized part — it now matches a senior first pass. Pay humans for the cure, not the X-ray.</p></div>
+<h2>The math that ends the debate</h2>
+<p>A consultant audit: $1,500–$2,000, one store, one moment in time, 5–10 business days turnaround. An AI audit: under a minute, re-runnable every time you change something, free for your first run. When you can re-audit after every iteration instead of once a quarter, you don't just save money — you compound improvements faster than a consultant cadence ever allowed. (Not sure what "good" even looks like? See <a href="/blog/good-conversion-rate-for-shopify">what's a good conversion rate for Shopify</a>.)</p>
+<p>That's the real reason this stings for the audit-as-a-service crowd. It's not that AI is cheaper. It's that it removes the artificial scarcity their whole pricing depended on.</p>
+`.trim(),
+    faqs: [
+      {
+        q: "How much does an ecommerce store audit cost?",
+        a: "Professional CRO audits typically run $1,000–$2,500 as a one-time report. AI-powered audits now deliver the same diagnosis — score, annotated screenshot and ranked fixes — in under a minute, often free for the first run.",
+      },
+      {
+        q: "Is an AI store audit as good as a consultant?",
+        a: "For diagnosis — finding what's wrong and ranking fixes by impact — AI now matches a senior consultant's first pass. Consultants still add value for hands-on implementation and bespoke strategy.",
+      },
+      {
+        q: "What should an ecommerce audit actually check?",
+        a: "Offer clarity, hero and above-the-fold, trust signals, product-page persuasion, mobile experience, page speed, and checkout friction — each scored and prioritized by revenue impact.",
+      },
+    ],
+  },
+  {
+    slug: "why-meta-ads-arent-converting",
+    title: "Why Your Meta Ads Aren't Converting (It's Not Your Ads) — 2026",
+    h1: "Your Meta ads aren't broken — your store is (and your media buyer won't say it)",
+    description:
+      "Your Meta ads aren't converting and it isn't your targeting. The real reason is your store. Here's how to diagnose the landing-page leak before you burn another dollar.",
+    keyword: "why meta ads not converting",
+    date: "2026-06-17",
+    author: "Ariel Jiménez",
+    readingMinutes: 8,
+    excerpt:
+      "Clicks but no sales? The leak already moved past the ad. Here's how to find the store-side leak before you spend another dollar.",
+    bodyHtml: `
+<p class="lede">When the sales don't come, the media buyer reaches for the same three words every time: "scale the testing." More creatives, more audiences, more budget. There's a reason that's the answer — and it's not the one that fixes your ROAS.</p>
+<p>If your ads get clicks but the cart stays empty, the problem has already moved past the ad. The ad did its one job: it got a stranger to your store. What happened next — the bounce, the hesitation, the closed tab — happened on <em>your</em> page. But "your store is the problem" is a hard thing to hear from someone you're paying to run your ads, so most won't lead with it.</p>
+<blockquote>An ad can only sell the click. The store has to sell the product.</blockquote>
+<h2>The tell: clicks vs. conversions</h2>
+<p>You can diagnose where the leak is with one distinction most founders blur together:</p>
+<table><thead><tr><th>Symptom</th><th>Where the leak is</th></tr></thead><tbody>
+<tr><td>Expensive clicks, high CPM</td><td>Ad-side: creative or targeting</td></tr>
+<tr><td>Cheap clicks, no conversions</td><td>Store-side: landing experience</td></tr>
+<tr><td>People add to cart, then vanish</td><td>Checkout: friction or trust</td></tr>
+</tbody></table>
+<p>If you're getting cheap clicks and still no sales, throwing more money at audiences and creatives is like fixing a leaky bucket by pouring in more water. The water (traffic) was never the issue.</p>
+<h2>The 5 store-side leaks that kill paid traffic</h2>
+<h3>1. Message mismatch</h3>
+<p>Your ad screams "50% off today." The visitor lands on a homepage with no mention of the offer. That two-second gap between promise and page is where conversions die. The ad and the landing page have to tell <em>one</em> continuous story.</p>
+<h3>2. Speed</h3>
+<p>A slow load loses a large share of mobile visitors before they see a single pixel of your offer. You paid for that click. It bounced before your store loaded. That's not a targeting problem — it's a tax you're paying on every dollar of spend.</p>
+<h3>3. The offer isn't obvious in 2 seconds</h3>
+<p>Cold paid traffic has zero patience and zero prior relationship. If a stranger can't tell what you sell, why it's better, and what the deal is — instantly — they're gone. "I'd bounce, the offer isn't obvious" is the single most common reaction cold visitors have to underperforming stores.</p>
+<h3>4. No trust, no sale</h3>
+<p>Warm traffic converts far better than cold because it already trusts you. Cold paid traffic doesn't. If reviews, guarantees, and badges sit below the fold (or don't exist), you're asking a stranger to buy on faith. They won't.</p>
+<h3>5. Mobile collapse</h3>
+<p>80%+ of your Meta traffic is on a phone, and mobile typically converts lower than desktop. If you've only ever QA'd your store on a laptop, you've never actually seen what your paid traffic sees.</p>
+<div class="callout"><h3>The in-app browser trap</h3><p>Many brands under-count conversions because Meta links open in Meta's in-app browser instead of Safari/Chrome — which can break tracking and checkout. Before you blame your store's design, confirm your pixel and checkout actually work inside the in-app browser. Sometimes the leak is plumbing, not persuasion.</p></div>
+<h2>Why "test more" is the wrong reflex</h2>
+<p>Testing more creative is the right move when the <em>ad</em> is underperforming. But when the store is the bottleneck, every new ad you test just sends fresh traffic into the same leaky funnel — and you "learn" that nothing works. You didn't have a creative problem. You had a destination problem, and you spent your test budget proving it three more times.</p>
+<p>The fix order is almost always backwards from what founders do: <strong>audit the store first, then scale the ads.</strong> A store that converts cold traffic turns mediocre ads into profit. A store that doesn't turns great ads into expensive lessons. (More on the usual culprits in <a href="/blog/why-your-shopify-store-isnt-converting">why your store isn't converting</a>.)</p>
+<h2>Diagnose the store like a cold visitor would</h2>
+<p>You can't see your own store objectively — you've visited it a thousand times. The move is to look at it through the eyes of the exact person your ad just sent: a skeptical stranger, on a phone, with their thumb already hovering over "back."</p>
+<p>That's what EliteVault's analyzer does. Paste your URL and it reacts like a cold buyer — annotated screenshot of every leak, a buyer-persona reaction in their own voice, and a punch-list ranked by impact. And before you scale spend, the <a href="/#pricing">Campaign Scenario Modeler</a> projects a 7-day Meta campaign across conservative, balanced and aggressive cases based on your AOV and budget — so you know whether the math even works before you fund it.</p>
+`.trim(),
+    faqs: [
+      {
+        q: "Why are my Meta ads getting clicks but no sales?",
+        a: "Clicks without sales almost always means the leak is post-click: a slow or confusing landing page, a message mismatch between ad and page, or missing trust. The ad did its job; the store didn't.",
+      },
+      {
+        q: "Is it my targeting or my landing page?",
+        a: "If you're getting cheap clicks but no conversions, it's rarely targeting — it's the landing experience. Targeting problems show up as expensive clicks, not as clicks that fail to convert.",
+      },
+      {
+        q: "How do I fix Meta ads that aren't converting?",
+        a: "Match the ad promise to the landing page, cut load time under 3 seconds, surface the offer and trust above the fold, confirm tracking works in Meta's in-app browser, and audit the page like a cold visitor would experience it.",
+      },
+    ],
+  },
   {
     slug: "how-to-increase-shopify-conversion-rate",
     title: "How to Increase Your Shopify Conversion Rate (2026)",
