@@ -72,7 +72,9 @@ export default async function BlogPostPage({
     datePublished: post.date,
     dateModified: post.updated ?? post.date,
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
-    author: { "@type": "Organization", name: "EliteVault" },
+    author: post.author
+      ? { "@type": "Person", name: post.author }
+      : { "@type": "Organization", name: "EliteVault" },
     publisher: {
       "@type": "Organization",
       name: "EliteVault",
@@ -80,12 +82,31 @@ export default async function BlogPostPage({
     },
   };
 
+  const faqJsonLd =
+    post.faqs && post.faqs.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: post.faqs.map((f) => ({
+            "@type": "Question",
+            name: f.q,
+            acceptedAnswer: { "@type": "Answer", text: f.a },
+          })),
+        }
+      : null;
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
       <MarketingNav />
       <main className="container max-w-2xl pt-28 pb-24 md:pt-36">
         <Link
@@ -97,7 +118,13 @@ export default async function BlogPostPage({
         </Link>
 
         <article className="mt-6">
-          <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-wider text-white/35">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] uppercase tracking-wider text-white/35">
+            {post.author && (
+              <>
+                <span>By {post.author}</span>
+                <span className="text-white/15">·</span>
+              </>
+            )}
             <span>{fmtDate(post.date)}</span>
             <span className="text-white/15">·</span>
             <span className="inline-flex items-center gap-1">
@@ -110,9 +137,27 @@ export default async function BlogPostPage({
           </h1>
 
           <div
-            className="legal-prose mt-8"
+            className="article-prose mt-8"
             dangerouslySetInnerHTML={{ __html: post.bodyHtml }}
           />
+
+          {post.faqs && post.faqs.length > 0 && (
+            <section className="mt-12 border-t border-white/[0.06] pt-8">
+              <h2 className="font-serif text-2xl tracking-tight">
+                Frequently asked questions
+              </h2>
+              <div className="mt-4 space-y-5">
+                {post.faqs.map((f) => (
+                  <div key={f.q}>
+                    <h3 className="text-sm font-medium text-white">{f.q}</h3>
+                    <p className="mt-1 text-sm text-white/55 leading-relaxed">
+                      {f.a}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
         </article>
 
         {/* Conversion CTA */}
