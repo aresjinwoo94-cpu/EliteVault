@@ -1,5 +1,20 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { MarketingNav } from "@/components/marketing/nav";
+
+/**
+ * Homepage metadata — keyword-led title/description so the strongest page
+ * targets the queries we want to rank for ("free website audit", "website
+ * analyzer"). The visible hero copy is unchanged; only the SERP title is.
+ */
+export const metadata: Metadata = {
+  title: {
+    absolute: "Free Website Audit & Store Analyzer — EliteVault",
+  },
+  description:
+    "EliteVault is a free AI website audit and conversion analyzer for ecommerce. Score your store, see exactly what's costing you sales, and get ranked fixes — in 60 seconds, no card.",
+  alternates: { canonical: "/" },
+};
 
 /**
  * Force dynamic rendering — Vercel was edge-caching the landing HTML for
