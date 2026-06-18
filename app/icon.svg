@@ -12,17 +12,17 @@
   -->
   <defs>
     <linearGradient id="gold" x1="0" x2="1" y1="0" y2="1">
-      <stop offset="0" stop-color="#FFF8E1"/>
-      <stop offset="0.5" stop-color="#D4AF37"/>
-      <stop offset="1" stop-color="#8A6A1A"/>
+      <stop offset="0" stop-color="#99F6E4"/>
+      <stop offset="0.5" stop-color="#2DD4BF"/>
+      <stop offset="1" stop-color="#0D9488"/>
     </linearGradient>
     <linearGradient id="signal" x1="0" x2="1" y1="1" y2="0">
       <stop offset="0" stop-color="#5EEAD4"/>
       <stop offset="1" stop-color="#14B8A6"/>
     </linearGradient>
     <radialGradient id="glow" cx="0.5" cy="0.5" r="0.6">
-      <stop offset="0" stop-color="rgba(212,175,55,0.18)"/>
-      <stop offset="1" stop-color="rgba(212,175,55,0)"/>
+      <stop offset="0" stop-color="rgba(45, 212, 191,0.18)"/>
+      <stop offset="1" stop-color="rgba(45, 212, 191,0)"/>
     </radialGradient>
   </defs>
 
@@ -37,7 +37,7 @@
     stroke="url(#gold)"
     stroke-width="2.2"
     stroke-linejoin="round"
-    fill="rgba(212,175,55,0.08)"
+    fill="rgba(45, 212, 191,0.08)"
   />
 
   <!-- Teal signal vault keyhole: circle + rect = a stylized keyhole shape -->

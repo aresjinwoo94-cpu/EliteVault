@@ -91,7 +91,7 @@ export default async function Image({
             width: "640px",
             height: "640px",
             background:
-              "radial-gradient(circle, rgba(212,175,55,0.22) 0%, rgba(212,175,55,0) 65%)",
+              "radial-gradient(circle, rgba(45, 212, 191,0.22) 0%, rgba(45, 212, 191,0) 65%)",
             display: "flex",
           }}
         />
@@ -112,9 +112,9 @@ export default async function Image({
             <svg width="44" height="44" viewBox="0 0 32 32">
               <defs>
                 <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
-                  <stop offset="0" stopColor="#FFF8E1" />
-                  <stop offset="0.5" stopColor="#D4AF37" />
-                  <stop offset="1" stopColor="#8A6A1A" />
+                  <stop offset="0" stopColor="#99F6E4" />
+                  <stop offset="0.5" stopColor="#2DD4BF" />
+                  <stop offset="1" stopColor="#0D9488" />
                 </linearGradient>
               </defs>
               <path
@@ -122,7 +122,7 @@ export default async function Image({
                 stroke="url(#g)"
                 strokeWidth="2"
                 strokeLinejoin="round"
-                fill="rgba(212,175,55,0.06)"
+                fill="rgba(45, 212, 191,0.06)"
               />
             </svg>
             <span style={{ fontSize: "30px", color: "white", fontWeight: 500 }}>
@@ -148,7 +148,7 @@ export default async function Image({
                   lineHeight: 1,
                   fontWeight: 600,
                   background:
-                    "linear-gradient(135deg, #FFF8E1 0%, #D4AF37 50%, #8A6A1A 100%)",
+                    "linear-gradient(135deg, #99F6E4 0%, #2DD4BF 50%, #0D9488 100%)",
                   backgroundClip: "text",
                   color: "transparent",
                   display: "flex",
@@ -172,7 +172,7 @@ export default async function Image({
           <span
             style={{
               fontSize: "22px",
-              color: "rgba(212,175,55,0.85)",
+              color: "rgba(45, 212, 191,0.85)",
               letterSpacing: "0.02em",
               display: "flex",
             }}

@@ -44,8 +44,8 @@ export function buildReceipt(opts: {
         <tr><td style="padding:18px 28px 28px;">
           ${
             opts.invoiceUrl
-              ? `<a href="${opts.invoiceUrl}" style="display:inline-block;background:#D4AF37;color:#0A0A0F;text-decoration:none;font-weight:600;font-size:14px;padding:11px 18px;border-radius:9px;">View invoice</a>`
-              : `<a href="${opts.appUrl}/app/billing" style="display:inline-block;background:#D4AF37;color:#0A0A0F;text-decoration:none;font-weight:600;font-size:14px;padding:11px 18px;border-radius:9px;">Manage billing</a>`
+              ? `<a href="${opts.invoiceUrl}" style="display:inline-block;background:#2DD4BF;color:#0A0A0F;text-decoration:none;font-weight:600;font-size:14px;padding:11px 18px;border-radius:9px;">View invoice</a>`
+              : `<a href="${opts.appUrl}/app/billing" style="display:inline-block;background:#2DD4BF;color:#0A0A0F;text-decoration:none;font-weight:600;font-size:14px;padding:11px 18px;border-radius:9px;">Manage billing</a>`
           }
           <p style="margin:16px 0 0;color:#9ca3af;font-size:11px;line-height:1.5;">Manage or cancel anytime from your billing settings. Questions? Reply to support@elitevaultapp.com.</p>
         </td></tr>

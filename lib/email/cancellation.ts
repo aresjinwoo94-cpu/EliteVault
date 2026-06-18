@@ -25,7 +25,7 @@ export function buildCancellation(opts: {
           <p style="margin:0;color:#4b5563;font-size:14px;line-height:1.6;">${access} No further charges will be made.</p>
         </td></tr>
         <tr><td style="padding:18px 28px 28px;">
-          <a href="${opts.appUrl}/app/billing" style="display:inline-block;background:#D4AF37;color:#0A0A0F;text-decoration:none;font-weight:600;font-size:14px;padding:11px 18px;border-radius:9px;">Reactivate anytime</a>
+          <a href="${opts.appUrl}/app/billing" style="display:inline-block;background:#2DD4BF;color:#0A0A0F;text-decoration:none;font-weight:600;font-size:14px;padding:11px 18px;border-radius:9px;">Reactivate anytime</a>
           <p style="margin:16px 0 0;color:#9ca3af;font-size:11px;line-height:1.5;">Changed your mind or cancelled by mistake? Resubscribe anytime, or email support@elitevaultapp.com.</p>
         </td></tr>
       </table>
