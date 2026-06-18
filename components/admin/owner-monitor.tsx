@@ -145,6 +145,7 @@ export function OwnerMonitor() {
       ($("evm-live-big") as HTMLElement).textContent = fmtNum(live.count);
       ($("evm-live-top") as HTMLElement).textContent = fmtNum(live.count);
       setTag("evm-tag-live", live.source);
+      const liveSrc = $("evm-live-src"); if (liveSrc) liveSrc.textContent = live.source === "demo" ? " (demo)" : "";
       const sb = $("evm-sessions");
       if (sb) sb.innerHTML = (live.sessions || []).map((s: any) => `<tr><td>${esc(s.country)}</td><td class="muted">${esc(s.city)}</td><td class="muted">${esc(s.device)}</td><td class="muted mono">${esc(s.page)}</td><td class="mono">${durStr(s.durationSec)}</td></tr>`).join("") || `<tr><td colspan="5"><div class="empty">Sin sesiones activas.</div></td></tr>`;
       const byC: Record<string, number> = {}; (live.sessions || []).forEach((s: any) => (byC[s.country] = (byC[s.country] || 0) + 1));
@@ -209,12 +210,12 @@ export function OwnerMonitor() {
           <button data-range="30d">30d</button>
           <button data-range="90d">90d</button>
         </div>
-        <div className="badge"><span className="live-dot" /> EN VIVO · <span id="evm-live-top">0</span></div>
+        <div className="badge"><span className="live-dot" /> EN VIVO · <span id="evm-live-top">0</span><span id="evm-live-src" className="muted" style={{ fontSize: 11 }} /></div>
         <div className="badge"><span className="sdot ok" id="evm-dot" /> <span id="evm-state">Cargando…</span></div>
         <div className="muted refr">Refresh: <span id="evm-refresh">—</span></div>
       </div>
 
-      <div className="notice">ℹ️ <b>Datos reales</b> de Stripe (ingresos, suscripciones, abandonos, países) y Supabase (registros, auditorías). El <b>tráfico</b> (en vivo, dispositivos, fuentes) está en modo demo hasta conectar PostHog server-side — ver README del monitor.</div>
+      <div className="notice">ℹ️ <b>Dinero y usuarios</b> (Stripe + Supabase): datos reales. <b>Tráfico</b> (en vivo, dispositivos, fuentes): cada tarjeta muestra un chip <b>&quot;real&quot;</b> o <b>&quot;demo&quot;</b> junto a su título según el origen. Se vuelve real al registrar visitas en tu propia Supabase (tabla <code>page_views</code>).</div>
 
       <div className="sec-title">Resumen del periodo</div>
       <div className="kpi-row">
