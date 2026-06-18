@@ -113,6 +113,24 @@ export async function phDemographics(gte: number, lte: number) {
   return { devices, sources, newVsReturning, source: "posthog" as const };
 }
 
+/** Estado de configuración (sin exponer secretos). */
+export function phConfig() {
+  return { configured: posthogEnabled(), apiKeySet: Boolean(KEY), projectIdSet: Boolean(PROJECT), host: HOST };
+}
+
+/** Prueba de conexión real: ejecuta una consulta mínima y reporta resultado/error. */
+export async function phTest(): Promise<{ ok: boolean; detail: string; eventsLast30min?: number }> {
+  if (!posthogEnabled()) {
+    return { ok: false, detail: "Faltan POSTHOG_API_KEY y/o POSTHOG_PROJECT_ID en las variables de entorno." };
+  }
+  try {
+    const rows = await hogql(`SELECT count() FROM events WHERE timestamp > now() - INTERVAL 30 MINUTE`);
+    return { ok: true, detail: "Conexión a PostHog OK", eventsLast30min: Number(rows?.[0]?.[0] ?? 0) };
+  } catch (e) {
+    return { ok: false, detail: (e as Error).message };
+  }
+}
+
 /** Visitantes únicos en el rango (para el tope del embudo). */
 export async function phVisits(gte: number, lte: number): Promise<number> {
   const g = dtUTC(gte), l = dtUTC(lte);
