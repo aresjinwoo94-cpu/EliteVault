@@ -4,6 +4,7 @@ import { stripe } from "@/lib/stripe/server";
 import { PLANS } from "@/lib/stripe/plans";
 import type { PlanTier } from "@/lib/supabase/types";
 import * as ph from "@/lib/admin/posthog";
+import * as fp from "@/lib/admin/firstparty";
 
 /* ============================================================================
    Capa de métricas del panel del dueño.
@@ -249,13 +250,14 @@ export async function getFunnel(range: Range) {
     { stage: "Inició checkout", count: co.created },
     { stage: "Pago completado", count: co.completed },
   ];
-  // Si PostHog está conectado, antepone "Visitas" (tráfico real) como tope del embudo.
+  // Antepone "Visitas" (tráfico real) como tope del embudo: PostHog → first-party.
+  let visits = 0;
   if (ph.posthogEnabled()) {
-    try {
-      const visits = await ph.phVisits(b.gte, b.lte);
-      if (visits > 0) stages.unshift({ stage: "Visitas", count: visits });
-    } catch { /* sin Visitas si PostHog falla */ }
+    try { visits = await ph.phVisits(b.gte, b.lte); } catch { /* ignora */ }
+  } else {
+    try { if (await fp.fpHasAnyData()) visits = await fp.fpVisits(b.gte, b.lte); } catch { /* ignora */ }
   }
+  if (visits > 0) stages.unshift({ stage: "Visitas", count: visits });
   return stages;
 }
 
@@ -291,25 +293,27 @@ export async function getRecentSubscriptions() {
 }
 
 export async function getLiveVisitors() {
-  // Tráfico en vivo: PostHog real si está configurado; si no (o si falla), demo marcado.
+  // Tráfico en vivo: PostHog → first-party (Supabase) → demo. Todo marcado en `source`.
   if (ph.posthogEnabled()) {
     try { return await ph.phLiveVisitors(); }
     catch { return { ...demoLive(), source: "demo" as const }; }
   }
+  try { if (await fp.fpHasAnyData()) return await fp.fpLiveVisitors(); } catch { /* cae a demo */ }
   return demoLive();
 }
 
 export async function getDemographics(range: Range) {
   const b = bounds(range);
-  let traffic: { devices: any[]; sources: any[]; newVsReturning: any[]; source: "posthog" | "demo" };
+  let traffic: { devices: any[]; sources: any[]; newVsReturning: any[]; source: "posthog" | "firstparty" | "demo" };
   if (ph.posthogEnabled()) {
     try {
       const t = await ph.phDemographics(b.gte, b.lte);
-      // Si PostHog respondió pero vino vacío (sin eventos), cae a demo para no mostrar gráficas en blanco.
       traffic = t.devices.length || t.sources.length ? t : { ...demoTrafficDemographics(range) };
     } catch { traffic = { ...demoTrafficDemographics(range) }; }
   } else {
-    traffic = { ...demoTrafficDemographics(range) };
+    try {
+      traffic = (await fp.fpHasAnyData()) ? await fp.fpDemographics(b.gte, b.lte) : { ...demoTrafficDemographics(range) };
+    } catch { traffic = { ...demoTrafficDemographics(range) }; }
   }
   const countries = await chargesByCountry(b);
   return {
