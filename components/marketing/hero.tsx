@@ -48,7 +48,7 @@ export function Hero() {
           className="absolute left-[30%] top-0 -translate-x-1/2 size-[1200px] rounded-full opacity-[0.6]"
           style={{
             background:
-              "radial-gradient(circle, rgba(212,175,55,0.18) 0%, rgba(45,212,191,0.08) 35%, transparent 70%)",
+              "radial-gradient(circle, rgba(45, 212, 191,0.18) 0%, rgba(45,212,191,0.08) 35%, transparent 70%)",
           }}
         />
       </div>
@@ -356,7 +356,14 @@ function HeroPreview() {
   );
 }
 
-/** Small annotation dot + label for the hero mockup. Static — no animation. */
+/** Severity → solid pin color (shared visual language with the in-app overlay). */
+const ANNOTATION_COLOR = {
+  destructive: "#EF4444",
+  warning: "#FB923C",
+  success: "#22C55E",
+} as const;
+
+/** Solid numbered "pin" + glass label for the hero mockup. Static — no animation. */
 function HeroAnnotation({
   n,
   x,
@@ -372,28 +379,17 @@ function HeroAnnotation({
   color: "destructive" | "warning" | "success";
   label: string;
 }) {
-  const ring =
-    color === "destructive"
-      ? "ring-destructive/50 bg-destructive/30"
-      : color === "warning"
-        ? "ring-warning/50 bg-warning/30"
-        : "ring-success/50 bg-success/30";
-  const labelBg =
-    color === "destructive"
-      ? "bg-destructive/15 text-destructive border-destructive/30"
-      : color === "warning"
-        ? "bg-warning/15 text-warning border-warning/30"
-        : "bg-success/15 text-success border-success/30";
+  const c = ANNOTATION_COLOR[color];
 
   const labelStyle =
     side === "right"
       ? {
-          left: `calc(${x} + 14px)`,
+          left: `calc(${x} + 16px)`,
           top: y,
           transform: "translateY(-50%)",
         }
       : {
-          right: `calc(100% - ${x} + 14px)`,
+          right: `calc(100% - ${x} + 16px)`,
           top: y,
           transform: "translateY(-50%)",
         };
@@ -401,16 +397,27 @@ function HeroAnnotation({
   return (
     <>
       <div
-        className={`absolute -translate-x-1/2 -translate-y-1/2 size-5 rounded-full ring-2 backdrop-blur flex items-center justify-center text-[9px] font-bold text-white ${ring}`}
-        style={{ left: x, top: y }}
+        className="absolute -translate-x-1/2 -translate-y-1/2 grid place-items-center rounded-full text-[9px] font-semibold text-white"
+        style={{
+          left: x,
+          top: y,
+          width: 22,
+          height: 22,
+          background: c,
+          border: "2px solid rgba(255,255,255,0.92)",
+          boxShadow: "0 2px 8px -1px rgba(0,0,0,0.55)",
+        }}
       >
         {n}
       </div>
       <div
-        className={`absolute text-[9px] backdrop-blur px-1.5 py-0.5 rounded border whitespace-nowrap pointer-events-none ${labelBg}`}
+        className="glass absolute flex items-center gap-1.5 text-[9px] text-white/85 px-1.5 py-0.5 rounded-md whitespace-nowrap pointer-events-none"
         style={labelStyle}
       >
-        {color === "success" ? "✓ " : ""}
+        <span
+          className="inline-block size-1.5 rounded-full"
+          style={{ background: c }}
+        />
         {label}
       </div>
     </>
