@@ -30,6 +30,59 @@ export type BlogPost = {
 
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: "free-website-audit-tools",
+    title: "Free Website Audit Tools (2026): What They Check & Which to Use",
+    h1: "Free website audit tools in 2026: what they actually check (and which to use)",
+    description:
+      "A plain-English guide to free website audit tools and analyzers in 2026 — the three types, what each really checks, and how to run a free conversion audit of your store.",
+    keyword: "free website audit tools",
+    date: "2026-06-17",
+    author: "Ariel Jiménez",
+    readingMinutes: 7,
+    excerpt:
+      "Not all 'free website audit' tools measure the same thing. The three types, what each checks, and which one actually tells you why you're losing sales.",
+    bodyHtml: `
+<p class="lede">Search "free website audit" and you'll get a hundred tools that all promise a score — and measure completely different things. Before you trust any number, you need to know which kind of audit you're running, because a perfect score in one can sit right next to a store that doesn't sell.</p>
+<p>A website audit tool (or website analyzer) reviews a page and reports what's helping or hurting it. The catch: "helping or hurting" depends entirely on the <em>goal</em> the tool was built around. There are three goals, and three corresponding types of tool.</p>
+<h2>The 3 types of website audit tool</h2>
+<table><thead><tr><th>Type</th><th>What it measures</th><th>Best for</th></tr></thead><tbody>
+<tr><td>Speed / performance</td><td>Load time, Core Web Vitals, asset weight</td><td>Engineering fixes</td></tr>
+<tr><td>SEO</td><td>Meta tags, crawlability, links, keywords</td><td>Organic visibility</td></tr>
+<tr><td>Conversion (CRO)</td><td>Offer clarity, trust, layout, what makes people buy</td><td>Turning traffic into sales</td></tr>
+</tbody></table>
+<p>Speed and SEO tools are useful and genuinely free (Google's own PageSpeed Insights and Search Console are the gold standard). But here's the trap most founders fall into: <strong>a fast, SEO-clean store can still convert at near-zero.</strong> Speed and crawlability get visitors <em>to</em> your store. Conversion is whether they buy once they arrive. If you have traffic but no sales, a speed score won't tell you why.</p>
+<blockquote>A 100/100 speed score on a store nobody buys from is a fast way to lose money.</blockquote>
+<h2>What a conversion-focused audit actually checks</h2>
+<p>This is the type that answers "why am I not selling?" — and the one generic analyzers skip. A real conversion audit grades how a buyer experiences your store:</p>
+<ul>
+<li><strong>First impression / offer clarity</strong> — can a stranger tell what you sell in 2 seconds?</li>
+<li><strong>Layout & hierarchy</strong> — is the value prop and CTA above the fold?</li>
+<li><strong>Trust & proof</strong> — are reviews, badges and guarantees where buyers look?</li>
+<li><strong>Imagery & niche fit</strong> — do your visuals match what converts in your category?</li>
+<li><strong>CRO principles</strong> — friction, objection handling, the levers that move sales.</li>
+<li><strong>Technical signals</strong> — the speed issues that also leak conversions.</li>
+</ul>
+<div class="callout"><h3>Why generic scores mislead</h3><p>A single "website grade" averaged across unrelated factors hides the one thing you need: <em>which</em> problem is costing you the most. The value isn't a number — it's a ranked list of fixes. A tool that says "73/100" and stops there has told you almost nothing.</p></div>
+<h2>How to run a free conversion audit of your store</h2>
+<p>You can grade the six categories above by hand — but you can't see your own store objectively after staring at it for 300 hours. The fix is a tool that reacts like a first-time visitor. That's exactly what <a href="/free-website-audit">EliteVault's free website audit</a> does: paste your URL and get a conversion score, an annotated screenshot marking each issue, a buyer-persona reaction, and the fixes ranked by impact — free, in under a minute, nothing to install.</p>
+<p>Pair it with the free fundamentals — run <strong>PageSpeed Insights</strong> for speed and set up <strong>Google Search Console</strong> for SEO — and you've covered all three audit types for $0. Then fix in order of leverage: usually the conversion findings move revenue fastest. Start with <a href="/blog/how-to-increase-shopify-conversion-rate">the 11 highest-leverage fixes</a>, and if you're running paid traffic, read <a href="/blog/why-meta-ads-arent-converting">why your Meta ads aren't converting</a>.</p>
+`.trim(),
+    faqs: [
+      {
+        q: "What is the best free website audit tool?",
+        a: "It depends on your goal. For speed, Google PageSpeed Insights; for SEO, Google Search Console — both free. For conversion (why you're not selling), use a CRO-focused analyzer like EliteVault, which scores your store and ranks the fixes free on the first run.",
+      },
+      {
+        q: "Are free website audits accurate?",
+        a: "For what they measure, yes — speed and SEO tools are reliable. The bigger risk is measuring the wrong thing: a clean speed score says nothing about whether your store converts. Use a conversion-focused audit to answer that.",
+      },
+      {
+        q: "What's the difference between a website analyzer and an SEO tool?",
+        a: "An SEO tool checks whether search engines can find and rank your page. A conversion-focused website analyzer checks whether visitors actually buy once they arrive — offer clarity, trust, layout and CRO. You want both, but conversion is what turns traffic into revenue.",
+      },
+    ],
+  },
+  {
     slug: "reverse-engineer-winning-shopify-stores",
     title: "How to Reverse-Engineer Any Winning Shopify Store (2026 Guide)",
     h1: "How to reverse-engineer any winning Shopify store (and copy what actually converts)",
