@@ -20,9 +20,10 @@ export function PlanCard({
   hasExistingSub: boolean;
 }) {
   const router = useRouter();
-  // ARPU: default to annual (charged upfront) — the toggle still lets users
-  // switch to monthly.
-  const [interval, setInterval] = useState<Interval>("year");
+  // Default to MONTHLY — the lower entry price ($19/$49) converts far better
+  // than leading with the annual upfront charge. The toggle still lets users
+  // switch to yearly (and see the savings) before checkout.
+  const [interval, setInterval] = useState<Interval>("month");
   const [isPending, startTransition] = useTransition();
 
   /**
