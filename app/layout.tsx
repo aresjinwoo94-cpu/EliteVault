@@ -3,6 +3,7 @@ import { fontsVariables } from "@/lib/fonts";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { AnalyticsGate } from "@/components/analytics/analytics-gate";
+import { PageTracker } from "@/components/analytics/page-tracker";
 import { isInternalRequest } from "@/lib/analytics/is-internal";
 import { SupportChat } from "@/components/support/support-chat";
 import { socialUrls } from "@/lib/company";
@@ -133,6 +134,9 @@ export default async function RootLayout({
           `__ev_no_analytics` localStorage flag (client) so developer
           activity never inflates the funnel.
         */}
+        {/* Analítica first-party del panel del dueño (registra visitas en page_views).
+            Respeta el mismo opt-out interno que AnalyticsGate. */}
+        <PageTracker isInternal={isInternal} />
         <AnalyticsGate isInternal={isInternal}>
           <TooltipProvider delayDuration={150}>
             {children}

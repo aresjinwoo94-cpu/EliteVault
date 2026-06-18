@@ -60,6 +60,7 @@ export function OwnerMonitor() {
     function setTag(id: string, source?: string) {
       const el = $(id); if (!el) return;
       if (source === "posthog") { el.textContent = "PostHog"; el.className = "tag"; }
+      else if (source === "firstparty") { el.textContent = "real"; el.className = "tag"; }
       else { el.textContent = "demo"; el.className = "tag amber"; }
     }
 
