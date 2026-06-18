@@ -57,6 +57,11 @@ export function OwnerMonitor() {
       if (st) st.textContent = txt;
     }
     function stamp() { const el = $("evm-refresh"); if (el) el.textContent = new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" }); }
+    function setTag(id: string, source?: string) {
+      const el = $(id); if (!el) return;
+      if (source === "posthog") { el.textContent = "PostHog"; el.className = "tag"; }
+      else { el.textContent = "demo"; el.className = "tag amber"; }
+    }
 
     function drawSpark(id: string, data: number[], color: string) {
       const ctx = $(id) as HTMLCanvasElement | null; if (!ctx) return;
@@ -138,6 +143,7 @@ export function OwnerMonitor() {
       const live = await api("live-visitors");
       ($("evm-live-big") as HTMLElement).textContent = fmtNum(live.count);
       ($("evm-live-top") as HTMLElement).textContent = fmtNum(live.count);
+      setTag("evm-tag-live", live.source);
       const sb = $("evm-sessions");
       if (sb) sb.innerHTML = (live.sessions || []).map((s: any) => `<tr><td>${esc(s.country)}</td><td class="muted">${esc(s.city)}</td><td class="muted">${esc(s.device)}</td><td class="muted mono">${esc(s.page)}</td><td class="mono">${durStr(s.durationSec)}</td></tr>`).join("") || `<tr><td colspan="5"><div class="empty">Sin sesiones activas.</div></td></tr>`;
       const byC: Record<string, number> = {}; (live.sessions || []).forEach((s: any) => (byC[s.country] = (byC[s.country] || 0) + 1));
@@ -165,6 +171,7 @@ export function OwnerMonitor() {
       donut("evm-devices", d.devices, [t.accent, t.accent2, t.amber], (v) => fmtNum(v));
       donut("evm-sources", d.sources, [t.accent, t.accent2, t.green, t.amber, t.purple, t.red], (v) => fmtNum(v));
       donut("evm-newret", d.newVsReturning, [t.accent2, t.text], (v) => fmtNum(v));
+      setTag("evm-tag-dev", d.source); setTag("evm-tag-src", d.source); setTag("evm-tag-nr", d.source);
     }
 
     function runRenders(fns: Array<() => Promise<void>>) {
@@ -232,16 +239,16 @@ export function OwnerMonitor() {
       </div>
 
       <div className="row-2b">
-        <div className="card"><div className="sec-title">Visitantes en tiempo real <span className="tag amber">demo</span></div><div className="live-counter"><span className="big" id="evm-live-big">0</span><span className="muted">sesiones activas<br />ahora mismo</span></div><div className="country-list" id="evm-live-country" /></div>
+        <div className="card"><div className="sec-title">Visitantes en tiempo real <span className="tag amber" id="evm-tag-live">demo</span></div><div className="live-counter"><span className="big" id="evm-live-big">0</span><span className="muted">sesiones activas<br />ahora mismo</span></div><div className="country-list" id="evm-live-country" /></div>
         <div className="card"><div className="sec-title">Sesiones activas</div><div className="table-scroll"><table><thead><tr><th>País</th><th>Ciudad</th><th>Dispositivo</th><th>Página</th><th>Duración</th></tr></thead><tbody id="evm-sessions" /></table></div></div>
       </div>
 
       <div className="sec-title">Demografía y tráfico</div>
       <div className="demo-grid">
         <div className="card"><div className="sec-title">Top países (por ingresos · Stripe)</div><div className="country-list" id="evm-demo-country" /></div>
-        <div className="card"><div className="sec-title">Dispositivos <span className="tag amber">demo</span></div><div className="chart-box sm"><canvas id="evm-devices" /></div></div>
-        <div className="card"><div className="sec-title">Fuentes de tráfico <span className="tag amber">demo</span></div><div className="chart-box sm"><canvas id="evm-sources" /></div></div>
-        <div className="card"><div className="sec-title">Nuevos vs recurrentes <span className="tag amber">demo</span></div><div className="chart-box sm"><canvas id="evm-newret" /></div></div>
+        <div className="card"><div className="sec-title">Dispositivos <span className="tag amber" id="evm-tag-dev">demo</span></div><div className="chart-box sm"><canvas id="evm-devices" /></div></div>
+        <div className="card"><div className="sec-title">Fuentes de tráfico <span className="tag amber" id="evm-tag-src">demo</span></div><div className="chart-box sm"><canvas id="evm-sources" /></div></div>
+        <div className="card"><div className="sec-title">Nuevos vs recurrentes <span className="tag amber" id="evm-tag-nr">demo</span></div><div className="chart-box sm"><canvas id="evm-newret" /></div></div>
       </div>
     </div>
   );

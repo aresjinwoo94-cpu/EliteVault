@@ -3,6 +3,7 @@ import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { stripe } from "@/lib/stripe/server";
 import { PLANS } from "@/lib/stripe/plans";
 import type { PlanTier } from "@/lib/supabase/types";
+import * as ph from "@/lib/admin/posthog";
 
 /* ============================================================================
    Capa de métricas del panel del dueño.
@@ -242,12 +243,20 @@ export async function getFunnel(range: Range) {
   const [signups, activated, co] = await Promise.all([
     countProfiles(b.gte, b.lte), distinctAuditUsers(b.gte, b.lte), checkoutStats(b.gte, b.lte),
   ]);
-  return [
+  const stages = [
     { stage: "Registro (free)", count: signups },
     { stage: "Activación (1ª auditoría)", count: activated },
     { stage: "Inició checkout", count: co.created },
     { stage: "Pago completado", count: co.completed },
   ];
+  // Si PostHog está conectado, antepone "Visitas" (tráfico real) como tope del embudo.
+  if (ph.posthogEnabled()) {
+    try {
+      const visits = await ph.phVisits(b.gte, b.lte);
+      if (visits > 0) stages.unshift({ stage: "Visitas", count: visits });
+    } catch { /* sin Visitas si PostHog falla */ }
+  }
+  return stages;
 }
 
 export async function getAlmostBuyers(range: Range) {
@@ -282,17 +291,32 @@ export async function getRecentSubscriptions() {
 }
 
 export async function getLiveVisitors() {
-  // Tráfico en vivo: PostHog (server) opcional → por ahora demo marcado.
+  // Tráfico en vivo: PostHog real si está configurado; si no (o si falla), demo marcado.
+  if (ph.posthogEnabled()) {
+    try { return await ph.phLiveVisitors(); }
+    catch { return { ...demoLive(), source: "demo" as const }; }
+  }
   return demoLive();
 }
 
 export async function getDemographics(range: Range) {
   const b = bounds(range);
-  const [countries, traffic] = await Promise.all([chargesByCountry(b), Promise.resolve(demoTrafficDemographics(range))]);
+  let traffic: { devices: any[]; sources: any[]; newVsReturning: any[]; source: "posthog" | "demo" };
+  if (ph.posthogEnabled()) {
+    try {
+      const t = await ph.phDemographics(b.gte, b.lte);
+      // Si PostHog respondió pero vino vacío (sin eventos), cae a demo para no mostrar gráficas en blanco.
+      traffic = t.devices.length || t.sources.length ? t : { ...demoTrafficDemographics(range) };
+    } catch { traffic = { ...demoTrafficDemographics(range) }; }
+  } else {
+    traffic = { ...demoTrafficDemographics(range) };
+  }
+  const countries = await chargesByCountry(b);
   return {
     countries: countries.length ? countries : [{ name: "Sin cargos en el rango", value: 1 }],
     devices: traffic.devices,
     sources: traffic.sources,
     newVsReturning: traffic.newVsReturning,
+    source: traffic.source,
   };
 }
