@@ -223,6 +223,7 @@ function Walkthrough({ skipAnimations }: { skipAnimations: boolean }) {
               target={62}
               delaySec={skipAnimations ? 0 : 3.0}
               durationSec={skipAnimations ? 0.01 : 1.4}
+              skip={skipAnimations}
             />
             <span className="text-white/40 text-sm">/ 100</span>
           </div>
@@ -401,22 +402,32 @@ function ScoreCounter({
   target,
   delaySec,
   durationSec,
+  skip,
 }: {
   target: number;
   delaySec: number;
   durationSec: number;
+  skip: boolean;
 }) {
-  const v = useMotionValue(0);
+  // First paint (SSR / pre-hydration / reduced-motion) shows the FINAL value —
+  // never a bare `0`. The 0 → target tick only runs as a post-mount client
+  // enhancement, restarted with the cycle key by the parent.
+  const v = useMotionValue(target);
   const display = useTransform(v, (n) => Math.round(n).toString());
 
   useEffect(() => {
+    if (skip) {
+      v.set(target);
+      return;
+    }
+    v.set(0);
     const controls = animate(v, target, {
       duration: durationSec,
       delay: delaySec,
       ease: [0.22, 1, 0.36, 1],
     });
     return controls.stop;
-  }, [target, delaySec, durationSec, v]);
+  }, [target, delaySec, durationSec, v, skip]);
 
   return (
     <motion.span className="font-mono tabular-nums text-5xl tnum text-gold-gradient">
@@ -449,18 +460,13 @@ function Annotation({
   delay: number;
   skip: boolean;
 }) {
-  const ring =
+  // Solid severity pin color — shared visual language with the in-app overlay.
+  const c =
     color === "destructive"
-      ? "ring-destructive/50 bg-destructive/30"
+      ? "#EF4444"
       : color === "warning"
-        ? "ring-warning/50 bg-warning/30"
-        : "ring-success/50 bg-success/30";
-  const labelBg =
-    color === "destructive"
-      ? "bg-destructive/15 text-destructive border-destructive/30"
-      : color === "warning"
-        ? "bg-warning/15 text-warning border-warning/30"
-        : "bg-success/15 text-success border-success/30";
+        ? "#FB923C"
+        : "#22C55E";
 
   // Position the label on the chosen side of the dot, with a translate so
   // the label's edge anchors next to the dot — not the label's center.
@@ -488,8 +494,16 @@ function Annotation({
           duration: 0.45,
           ease: [0.22, 1, 0.36, 1],
         }}
-        className={`absolute -translate-x-1/2 -translate-y-1/2 size-5 rounded-full ring-2 backdrop-blur flex items-center justify-center text-[9px] font-bold text-white ${ring}`}
-        style={{ left: x, top: y }}
+        className="absolute -translate-x-1/2 -translate-y-1/2 grid place-items-center rounded-full text-[9px] font-semibold text-white"
+        style={{
+          left: x,
+          top: y,
+          width: 22,
+          height: 22,
+          background: c,
+          border: "2px solid rgba(255,255,255,0.92)",
+          boxShadow: "0 2px 8px -1px rgba(0,0,0,0.55)",
+        }}
       >
         {n}
       </motion.div>
@@ -506,10 +520,13 @@ function Annotation({
           duration: 0.35,
           ease: [0.22, 1, 0.36, 1],
         }}
-        className={`absolute text-[9px] backdrop-blur px-1.5 py-0.5 rounded border whitespace-nowrap pointer-events-none ${labelBg}`}
+        className="glass absolute flex items-center gap-1.5 text-[9px] text-white/85 px-1.5 py-0.5 rounded-md whitespace-nowrap pointer-events-none"
         style={labelStyle}
       >
-        {color === "success" ? "✓ " : ""}
+        <span
+          className="inline-block size-1.5 rounded-full"
+          style={{ background: c }}
+        />
         {label}
       </motion.div>
     </AnimatePresence>

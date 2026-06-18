@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Brain, Eye, Scan, Target } from "lucide-react";
 import { AnalyzerWalkthrough } from "./analyzer-walkthrough";
+import { AnalyzerBg } from "./analyzer-bg";
 import { DataPill } from "@/components/ui/data-pill";
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -32,8 +33,12 @@ const STEPS = [
 
 export function AnalyzerDemo() {
   return (
-    <section id="analyzer" className="py-24 md:py-36">
-      <div className="container max-w-6xl">
+    <section
+      id="analyzer"
+      className="relative overflow-hidden py-24 md:py-36"
+    >
+      <AnalyzerBg />
+      <div className="container relative max-w-6xl">
         {/*
           v3.4.1 — Give the visual (walkthrough) more room than the text.
           Was 50/50 which made the inner canvas only ~260px wide and
