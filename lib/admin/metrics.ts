@@ -183,35 +183,10 @@ async function chargesByCountry(b: Bounds) {
     .sort((a, c) => c.value - a.value);
 }
 
-/* ---------------------- Tráfico (demo; PostHog opcional vía README) ---------------------- */
-const VISITORS_BASE: Record<Range, number> = { today: 900, "7d": 7200, "30d": 31000, "90d": 92000 };
-const DEMO_COUNTRIES: Array<[string, number]> = [["US", 0.36], ["MX", 0.16], ["ES", 0.12], ["CO", 0.09], ["AR", 0.07], ["GB", 0.06], ["CA", 0.05], ["CL", 0.05], ["PE", 0.04]];
-const CITIES: Record<string, string[]> = { US: ["Miami", "Austin", "Nueva York"], MX: ["CDMX", "Guadalajara"], ES: ["Madrid", "Barcelona"], CO: ["Bogotá"], AR: ["Buenos Aires"], GB: ["Londres"], CA: ["Toronto"], CL: ["Santiago"], PE: ["Lima"] };
-const DEVICES = ["Móvil", "Escritorio", "Tablet"];
-const PAGES = ["/", "/app/analyzer", "/app/library", "/pricing", "/app/checkout", "/app", "/docs"];
-const SOURCES: Array<[string, number]> = [["Búsqueda orgánica", 0.26], ["Anuncios Meta", 0.24], ["Twitter/X", 0.16], ["YouTube", 0.13], ["Directo", 0.12], ["Comunidades", 0.09]];
-const pickW = (arr: Array<[string, number]>) => { const r = Math.random(); let acc = 0; for (const [k, w] of arr) { acc += w; if (r <= acc) return k; } return arr[arr.length - 1][0]; };
-const randItem = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
-
-function demoLive() {
-  const h = new Date().getHours();
-  const dayFactor = 0.45 + 0.55 * Math.max(0, Math.sin((h / 24) * Math.PI));
-  const count = Math.max(6, Math.round(40 * dayFactor + (Math.random() * 14 - 7)));
-  const sessions = Array.from({ length: Math.min(9, count) }, (_, i) => {
-    const cc = pickW(DEMO_COUNTRIES);
-    return { id: "S" + i + Math.floor(Math.random() * 999), country: countryLabel(cc), city: (CITIES[cc] && randItem(CITIES[cc])) || "—", device: randItem(DEVICES), page: randItem(PAGES), durationSec: Math.round(5 + Math.random() * 600) };
-  });
-  return { count, sessions, source: "demo" as const };
-}
-function demoTrafficDemographics(range: Range) {
-  const v = VISITORS_BASE[range];
-  return {
-    devices: [{ name: "Móvil", value: Math.round(v * 0.54) }, { name: "Escritorio", value: Math.round(v * 0.39) }, { name: "Tablet", value: Math.round(v * 0.07) }],
-    sources: SOURCES.map(([name, w]) => ({ name, value: Math.round(v * w) })),
-    newVsReturning: [{ name: "Nuevos", value: Math.round(v * 0.61) }, { name: "Recurrentes", value: Math.round(v * 0.39) }],
-    source: "demo" as const,
-  };
-}
+/* Tráfico SIEMPRE real: viene de PostHog o de la analítica first-party (page_views).
+   Sin datos → ceros reales / listas vacías, NUNCA números inventados. */
+const EMPTY_LIVE = { count: 0, sessions: [] as Array<{ id: string; country: string; city: string; device: string; page: string; durationSec: number }>, source: "firstparty" as const };
+const EMPTY_DEMOGRAPHICS = { devices: [] as Array<{ name: string; value: number }>, sources: [] as Array<{ name: string; value: number }>, newVsReturning: [] as Array<{ name: string; value: number }>, source: "firstparty" as const };
 
 /* ============================================================================
    API pública del módulo
@@ -293,27 +268,20 @@ export async function getRecentSubscriptions() {
 }
 
 export async function getLiveVisitors() {
-  // Tráfico en vivo: PostHog → first-party (Supabase) → demo. Todo marcado en `source`.
+  // Tráfico en vivo SIEMPRE real: PostHog → first-party. Sin datos → ceros reales.
   if (ph.posthogEnabled()) {
-    try { return await ph.phLiveVisitors(); }
-    catch { return { ...demoLive(), source: "demo" as const }; }
+    try { return await ph.phLiveVisitors(); } catch { return EMPTY_LIVE; }
   }
-  try { if (await fp.fpHasAnyData()) return await fp.fpLiveVisitors(); } catch { /* cae a demo */ }
-  return demoLive();
+  try { return await fp.fpLiveVisitors(); } catch { return EMPTY_LIVE; }
 }
 
 export async function getDemographics(range: Range) {
   const b = bounds(range);
-  let traffic: { devices: any[]; sources: any[]; newVsReturning: any[]; source: "posthog" | "firstparty" | "demo" };
+  let traffic: { devices: any[]; sources: any[]; newVsReturning: any[]; source: "posthog" | "firstparty" };
   if (ph.posthogEnabled()) {
-    try {
-      const t = await ph.phDemographics(b.gte, b.lte);
-      traffic = t.devices.length || t.sources.length ? t : { ...demoTrafficDemographics(range) };
-    } catch { traffic = { ...demoTrafficDemographics(range) }; }
+    try { traffic = await ph.phDemographics(b.gte, b.lte); } catch { traffic = EMPTY_DEMOGRAPHICS; }
   } else {
-    try {
-      traffic = (await fp.fpHasAnyData()) ? await fp.fpDemographics(b.gte, b.lte) : { ...demoTrafficDemographics(range) };
-    } catch { traffic = { ...demoTrafficDemographics(range) }; }
+    try { traffic = await fp.fpDemographics(b.gte, b.lte); } catch { traffic = EMPTY_DEMOGRAPHICS; }
   }
   const countries = await chargesByCountry(b);
   return {

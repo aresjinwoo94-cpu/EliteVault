@@ -59,9 +59,8 @@ export function OwnerMonitor() {
     function stamp() { const el = $("evm-refresh"); if (el) el.textContent = new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" }); }
     function setTag(id: string, source?: string) {
       const el = $(id); if (!el) return;
-      if (source === "posthog") { el.textContent = "PostHog"; el.className = "tag"; }
-      else if (source === "firstparty") { el.textContent = "real"; el.className = "tag"; }
-      else { el.textContent = "demo"; el.className = "tag amber"; }
+      el.textContent = source === "posthog" ? "PostHog" : "real";
+      el.className = "tag";
     }
 
     function drawSpark(id: string, data: number[], color: string) {
@@ -145,7 +144,6 @@ export function OwnerMonitor() {
       ($("evm-live-big") as HTMLElement).textContent = fmtNum(live.count);
       ($("evm-live-top") as HTMLElement).textContent = fmtNum(live.count);
       setTag("evm-tag-live", live.source);
-      const liveSrc = $("evm-live-src"); if (liveSrc) liveSrc.textContent = live.source === "demo" ? " (demo)" : "";
       const sb = $("evm-sessions");
       if (sb) sb.innerHTML = (live.sessions || []).map((s: any) => `<tr><td>${esc(s.country)}</td><td class="muted">${esc(s.city)}</td><td class="muted">${esc(s.device)}</td><td class="muted mono">${esc(s.page)}</td><td class="mono">${durStr(s.durationSec)}</td></tr>`).join("") || `<tr><td colspan="5"><div class="empty">Sin sesiones activas.</div></td></tr>`;
       const byC: Record<string, number> = {}; (live.sessions || []).forEach((s: any) => (byC[s.country] = (byC[s.country] || 0) + 1));
@@ -215,7 +213,7 @@ export function OwnerMonitor() {
         <div className="muted refr">Refresh: <span id="evm-refresh">—</span></div>
       </div>
 
-      <div className="notice">ℹ️ <b>Dinero y usuarios</b> (Stripe + Supabase): datos reales. <b>Tráfico</b> (en vivo, dispositivos, fuentes): cada tarjeta muestra un chip <b>&quot;real&quot;</b> o <b>&quot;demo&quot;</b> junto a su título según el origen. Se vuelve real al registrar visitas en tu propia Supabase (tabla <code>page_views</code>).</div>
+      <div className="notice">ℹ️ <b>Todos los datos son reales.</b> Dinero y usuarios → Stripe + Supabase. Tráfico (en vivo, dispositivos, fuentes) → tu analítica propia (<code>page_views</code>). Si una sección sale vacía o en 0, es que aún no hay datos en ese rango — nunca se muestran cifras simuladas.</div>
 
       <div className="sec-title">Resumen del periodo</div>
       <div className="kpi-row">
