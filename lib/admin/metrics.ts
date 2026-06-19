@@ -292,3 +292,33 @@ export async function getDemographics(range: Range) {
     source: traffic.source,
   };
 }
+
+/** Estado del negocio AHORA (no por periodo): MRR, suscriptores activos, usuarios, planes. */
+export async function getBusinessState() {
+  try {
+    const supa = createSupabaseServiceClient();
+    const planCounts: Record<PlanTier, number> = { free: 0, pro: 0, scale: 0 };
+    const [usersRes, freeRes, proRes, scaleRes, subsRes] = await Promise.all([
+      supa.from("profiles").select("id", { count: "exact", head: true }),
+      supa.from("profiles").select("id", { count: "exact", head: true }).eq("plan", "free"),
+      supa.from("profiles").select("id", { count: "exact", head: true }).eq("plan", "pro"),
+      supa.from("profiles").select("id", { count: "exact", head: true }).eq("plan", "scale"),
+      supa.from("subscriptions").select("plan, price_id, status").in("status", ["active", "trialing"]).limit(10000),
+    ]);
+    planCounts.free = freeRes.count ?? 0;
+    planCounts.pro = proRes.count ?? 0;
+    planCounts.scale = scaleRes.count ?? 0;
+
+    const subs = (subsRes.data ?? []) as Array<{ plan: PlanTier; price_id: string | null; status: string }>;
+    let mrr = 0;
+    for (const s of subs) {
+      const plan = PLANS[s.plan];
+      if (!plan) continue;
+      const isYearly = !!plan.stripePriceIds.year && s.price_id === plan.stripePriceIds.year;
+      mrr += isYearly ? plan.price.year / 12 : plan.price.month; // normaliza anual → mensual
+    }
+    return { mrr: Math.round(mrr), activeSubscribers: subs.length, totalUsers: usersRes.count ?? 0, planCounts };
+  } catch {
+    return { mrr: 0, activeSubscribers: 0, totalUsers: 0, planCounts: { free: 0, pro: 0, scale: 0 } };
+  }
+}
