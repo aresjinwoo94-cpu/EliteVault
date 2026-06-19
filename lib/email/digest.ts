@@ -76,7 +76,7 @@ export function buildDigest(opts: {
           <table width="100%" cellpadding="0" cellspacing="0">${rows}</table>
         </td></tr>
         <tr><td style="padding:20px 28px 28px;">
-          <a href="${opts.appUrl}/app/monitor" style="display:inline-block;background:#D4AF37;color:#0A0A0F;text-decoration:none;font-weight:600;font-size:14px;padding:11px 18px;border-radius:9px;">Open your dashboard →</a>
+          <a href="${opts.appUrl}/app/monitor" style="display:inline-block;background:#2DD4BF;color:#0A0A0F;text-decoration:none;font-weight:600;font-size:14px;padding:11px 18px;border-radius:9px;">Open your dashboard →</a>
           <p style="margin:16px 0 0;color:#9ca3af;font-size:11px;line-height:1.5;">You're getting this because you're monitoring stores in EliteVault. Manage or turn this off in your <a href="${opts.appUrl}/app/monitor" style="color:#b8941f;">monitor settings</a>.</p>
         </td></tr>
       </table>

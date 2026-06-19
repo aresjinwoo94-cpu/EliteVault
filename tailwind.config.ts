@@ -25,14 +25,16 @@ const config: Config = {
           600: "#1C1C26",
           500: "#26262F",
         },
+        // champagne — KEYS kept so un-migrated `champagne-*` classes still
+        // resolve, but the VALUES are now teal (no gold anywhere in the brand).
         champagne: {
-          50: "#FFF8E1",
-          100: "#FBEFC6",
-          200: "#F2DC8F",
-          300: "#E7C75E",
-          400: "#D4AF37", // primary gold
-          500: "#B89026",
-          600: "#8A6A1A",
+          50: "#F0FDFA",
+          100: "#CCFBF1",
+          200: "#99F6E4",
+          300: "#5EEAD4",
+          400: "#2DD4BF", // primary brand teal (was gold)
+          500: "#14B8A6",
+          600: "#0D9488",
         },
         signal: {
           // live data / score / proof / signal — teal-green
@@ -45,7 +47,7 @@ const config: Config = {
         },
         border: "rgb(255 255 255 / 0.06)",
         input: "rgb(255 255 255 / 0.08)",
-        ring: "rgb(212 175 55 / 0.5)",
+        ring: "rgb(45 212 191 / 0.5)",
         background: "#0A0A0F",
         foreground: "#FAFAFA",
         muted: {
@@ -61,8 +63,8 @@ const config: Config = {
           foreground: "#FAFAFA",
         },
         primary: {
-          DEFAULT: "#D4AF37",
-          foreground: "#0A0A0F",
+          DEFAULT: "#2DD4BF",
+          foreground: "#06060A",
         },
         secondary: {
           DEFAULT: "#1C1C26",
@@ -76,8 +78,8 @@ const config: Config = {
           DEFAULT: "#2DD4BF",
           foreground: "#06060A",
         },
-        success: "#10B981",
-        warning: "#F59E0B",
+        success: "#22C55E",
+        warning: "#FB923C",
       },
       borderRadius: {
         lg: "12px",
@@ -119,6 +121,28 @@ const config: Config = {
         "border-spin": {
           "100%": { transform: "rotate(-360deg)" },
         },
+        // Analyzer ambient background (teal aurora + scan line) — GPU-only
+        // (transform/opacity), so it never reflows.
+        "aurora-drift": {
+          "0%,100%": { transform: "translate3d(0,0,0) scale(1)" },
+          "50%": { transform: "translate3d(7%,-5%,0) scale(1.15)" },
+        },
+        "aurora-drift-2": {
+          "0%,100%": { transform: "translate3d(0,0,0) scale(1.1)" },
+          "50%": { transform: "translate3d(-6%,4%,0) scale(1)" },
+        },
+        // Wrapper is full-height; translateY % is relative to its own height,
+        // so -18% → 100% sweeps the bar from just above the top to the bottom.
+        "scan-sweep": {
+          "0%": { transform: "translateY(-18%)", opacity: "0" },
+          "12%": { opacity: "0.6" },
+          "88%": { opacity: "0.6" },
+          "100%": { transform: "translateY(100%)", opacity: "0" },
+        },
+        "node-pulse": {
+          "0%,100%": { opacity: "0.18" },
+          "50%": { opacity: "0.4" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -128,18 +152,25 @@ const config: Config = {
         "fade-up": "fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both",
         glow: "glow 2.5s ease-in-out infinite",
         "border-spin": "border-spin 7s linear infinite",
+        "aurora-drift": "aurora-drift 18s ease-in-out infinite",
+        "aurora-drift-2": "aurora-drift-2 22s ease-in-out infinite",
+        "scan-sweep": "scan-sweep 7.5s cubic-bezier(0.4,0,0.2,1) infinite",
+        "node-pulse": "node-pulse 4s ease-in-out infinite",
       },
       backgroundImage: {
+        // KEYS kept (grid-fade / gold-shine) so existing classes keep working,
+        // but the color is teal — zero gold.
         "grid-fade":
-          "radial-gradient(circle at center, rgba(212,175,55,0.06) 0, transparent 60%)",
+          "radial-gradient(circle at center, rgba(45,212,191,0.06) 0, transparent 60%)",
         "signal-fade":
           "radial-gradient(circle at center, rgba(45,212,191,0.07) 0, transparent 60%)",
         "gold-shine":
-          "linear-gradient(90deg, transparent, rgba(212,175,55,0.5), transparent)",
+          "linear-gradient(90deg, transparent, rgba(45,212,191,0.5), transparent)",
       },
       boxShadow: {
-        gold: "0 0 32px -8px rgba(212, 175, 55, 0.35)",
-        "gold-lg": "0 0 80px -12px rgba(212, 175, 55, 0.45)",
+        // `gold` / `gold-lg` keys kept for `shadow-gold` consumers; color teal.
+        gold: "0 0 32px -8px rgba(45, 212, 191, 0.35)",
+        "gold-lg": "0 0 80px -12px rgba(45, 212, 191, 0.45)",
         signal: "0 0 32px -8px rgba(45, 212, 191, 0.40)",
         "signal-lg": "0 0 80px -12px rgba(45, 212, 191, 0.45)",
         card: "0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px -12px rgba(0,0,0,0.6)",

@@ -91,13 +91,13 @@ export function CategoryRadar({ scores }: { scores: CategoryScores }) {
           {/* polygon */}
           <polygon
             points={polygon}
-            fill="rgba(212,175,55,0.18)"
-            stroke="#D4AF37"
+            fill="rgba(45, 212, 191,0.18)"
+            stroke="#2DD4BF"
             strokeWidth="1.3"
             strokeLinejoin="round"
           />
           {points.map((p) => (
-            <circle key={p.short} cx={p.x} cy={p.y} r="2" fill="#D4AF37" />
+            <circle key={p.short} cx={p.x} cy={p.y} r="2" fill="#2DD4BF" />
           ))}
           {/* labels */}
           {points.map((p) => (

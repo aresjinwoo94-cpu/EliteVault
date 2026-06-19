@@ -21,7 +21,7 @@ export function buildPaymentFailed(opts: {
           <p style="margin:0;color:#4b5563;font-size:14px;line-height:1.6;">Your latest payment for EliteVault ${opts.planName} failed. This usually means an expired card or insufficient funds. We'll retry automatically, but you can fix it now to avoid any interruption to your plan.</p>
         </td></tr>
         <tr><td style="padding:18px 28px 28px;">
-          <a href="${opts.appUrl}/app/billing" style="display:inline-block;background:#D4AF37;color:#0A0A0F;text-decoration:none;font-weight:600;font-size:14px;padding:11px 18px;border-radius:9px;">Update payment method</a>
+          <a href="${opts.appUrl}/app/billing" style="display:inline-block;background:#2DD4BF;color:#0A0A0F;text-decoration:none;font-weight:600;font-size:14px;padding:11px 18px;border-radius:9px;">Update payment method</a>
           <p style="margin:16px 0 0;color:#9ca3af;font-size:11px;line-height:1.5;">You'll manage this in the Stripe Customer Portal. Need help? Email support@elitevaultapp.com.</p>
         </td></tr>
       </table>

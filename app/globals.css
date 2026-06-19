@@ -36,12 +36,12 @@
     line-height: 1.6;
   }
   .legal-prose a {
-    color: #d4af37;
+    color: #2dd4bf;
     text-decoration: underline;
     text-underline-offset: 2px;
   }
   .legal-prose a:hover {
-    color: #e7c75e;
+    color: #5eead4;
   }
   .legal-prose strong {
     color: #fff;
@@ -64,14 +64,14 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Refined ambient backdrop — single-toned and quiet. One soft gold wash
-     from the top so the page feels "lit from within" without being washed
-     in two competing colors. Teal stays a DATA accent, not ambient light. */
+  /* Refined ambient backdrop — single-toned and quiet. One soft teal wash
+     from the top so the page feels "lit from within". Teal is the brand
+     color now; no gold ambient light anywhere. */
   body {
     background:
       radial-gradient(
         ellipse 75% 45% at 50% -12%,
-        rgba(212, 175, 55, 0.06),
+        rgba(45, 212, 191, 0.07),
         transparent
       ),
       radial-gradient(
@@ -84,7 +84,7 @@
   }
 
   ::selection {
-    background: rgba(212, 175, 55, 0.25);
+    background: rgba(45, 212, 191, 0.25);
     color: #fff;
   }
 
@@ -124,10 +124,10 @@
     display: none;
   }
 
-  /* Focus ring — always champagne */
+  /* Focus ring — always teal */
   :focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px #0a0a0f, 0 0 0 4px rgba(212, 175, 55, 0.6);
+    box-shadow: 0 0 0 2px #0a0a0f, 0 0 0 4px rgba(45, 212, 191, 0.6);
     border-radius: 8px;
   }
 }
@@ -156,9 +156,9 @@
     border: 1px solid rgba(255, 255, 255, 0.08);
   }
 
-  /* The signature gold gradient text */
+  /* The signature brand gradient text — teal (key kept for consumers) */
   .text-gold-gradient {
-    background: linear-gradient(135deg, #fff8e1 0%, #d4af37 50%, #b89026 100%);
+    background: linear-gradient(135deg, #99f6e4 0%, #2dd4bf 50%, #14b8a6 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -196,8 +196,8 @@
     background: conic-gradient(
       from var(--angle, 0deg),
       transparent 30%,
-      #2dd4bf 50%,
-      #d4af37 70%,
+      #5eead4 50%,
+      #2dd4bf 70%,
       transparent 90%
     );
     -webkit-mask:
@@ -336,12 +336,12 @@
   line-height: 1.65;
 }
 .article-prose a {
-  color: #d4af37;
+  color: #2dd4bf;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 .article-prose a:hover {
-  color: #e7c75e;
+  color: #5eead4;
 }
 .article-prose strong {
   color: #fff;

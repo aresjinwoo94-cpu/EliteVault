@@ -1,46 +1,44 @@
 import localFont from "next/font/local";
 
 /**
- * Self-hosted, bundled fonts — the real "Obsidian Quant" type opinion.
+ * Self-hosted, bundled font — the WHOLE UI is now **Rubik**, everywhere.
  *
- * Files live in `public/fonts/*.woff2` and are loaded via `next/font/local`,
- * so the build needs NO network (downloaded once at dev time) and renders
- * identically on every machine — fixing the system-font-fallback look.
+ * The file lives in `public/fonts/rubik.woff2` (a variable face, weights
+ * 300–700) and is loaded via `next/font/local`, so the build needs NO network
+ * and renders identically on every machine.
  *
- * Variable names are kept EXACTLY as before (`--font-serif`, `--font-geist`,
- * `--font-mono`) so `tailwind.config.ts` (font-serif/sans/mono) and every
- * existing className keep working untouched.
- *
- *   --font-serif → Fraunces   — editorial display serif: wordmark + headlines
- *   --font-geist → Geist Sans — UI + body
- *   --font-mono  → Geist Mono — all numbers / metrics / labels
+ * The THREE legacy CSS variables (`--font-serif`, `--font-geist`, `--font-mono`)
+ * are ALL backed by the same Rubik file. This means every existing className —
+ * `font-serif`, `font-sans`, `font-mono`, `.text-display`, `.text-h1/h2`,
+ * `.num`, `.article-prose`, `.legal-prose` — renders in Rubik with NO refactor,
+ * and it is impossible for a stray serif (Fraunces) or Geist to slip through.
  */
 const fontSerif = localFont({
-  src: "../public/fonts/fraunces.woff2",
+  src: "../public/fonts/rubik.woff2",
   variable: "--font-serif",
   display: "swap",
-  weight: "100 900",
-  fallback: ["Iowan Old Style", "Georgia", "Times New Roman", "serif"],
+  weight: "300 700",
+  fallback: ["Inter", "Segoe UI Variable", "system-ui", "sans-serif"],
 });
 
 const fontSans = localFont({
-  src: "../public/fonts/geist-sans.woff2",
+  src: "../public/fonts/rubik.woff2",
   variable: "--font-geist",
   display: "swap",
-  weight: "100 900",
+  weight: "300 700",
   fallback: ["Inter", "Segoe UI Variable", "system-ui", "sans-serif"],
 });
 
 const fontMono = localFont({
-  src: "../public/fonts/geist-mono.woff2",
+  src: "../public/fonts/rubik.woff2",
   variable: "--font-mono",
   display: "swap",
-  weight: "100 900",
-  fallback: ["ui-monospace", "JetBrains Mono", "SF Mono", "monospace"],
+  weight: "300 700",
+  fallback: ["Inter", "Segoe UI Variable", "system-ui", "sans-serif"],
 });
 
 /**
  * Space-joined `.variable` classes — apply on <html> so the CSS vars are
- * available everywhere. Replaces the old system-font arbitrary-value string.
+ * available everywhere. All three resolve to Rubik.
  */
 export const fontsVariables = `${fontSerif.variable} ${fontSans.variable} ${fontMono.variable}`;
