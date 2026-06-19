@@ -78,6 +78,15 @@ export function OwnerMonitor() {
       el.textContent = (up ? "▲ " : "▼ ") + fmtPct(val) + " vs periodo anterior";
     }
 
+    async function renderBusiness() {
+      const b = await api("business-state");
+      ($("evm-mrr") as HTMLElement).textContent = fmtMoney(b.mrr);
+      ($("evm-activesubs") as HTMLElement).textContent = fmtNum(b.activeSubscribers);
+      ($("evm-totalusers") as HTMLElement).textContent = fmtNum(b.totalUsers);
+      const p = b.planCounts || { free: 0, pro: 0, scale: 0 };
+      ($("evm-plansplit") as HTMLElement).textContent = `Free ${p.free} · Pro ${p.pro} · Scale ${p.scale}`;
+    }
+
     async function renderKpis() {
       const t = theme();
       const k = await api("kpis", { range: currentRange });
@@ -178,7 +187,7 @@ export function OwnerMonitor() {
       const ps = fns.map((fn) => Promise.resolve().then(fn).catch((err) => { console.error("[owner-monitor]", err.message); return { __err: err }; }));
       Promise.all(ps).then((rs) => { const err = rs.find((r: any) => r && r.__err); setDataState(err ? "err" : "ok", err ? "Error al cargar" : "Datos reales"); });
     }
-    function renderAll() { runRenders([renderKpis, renderRevenueChart, renderFunnel, renderAlmost, renderOrders, renderLive, renderDemographics]); stamp(); }
+    function renderAll() { runRenders([renderBusiness, renderKpis, renderRevenueChart, renderFunnel, renderAlmost, renderOrders, renderLive, renderDemographics]); stamp(); }
     function renderLiveTick() { tick++; runRenders([renderLive, renderOrders]); stamp(); }
 
     (async () => {
@@ -214,6 +223,14 @@ export function OwnerMonitor() {
       </div>
 
       <div className="notice">ℹ️ <b>Todos los datos son reales.</b> Dinero y usuarios → Stripe + Supabase. Tráfico (en vivo, dispositivos, fuentes) → tu analítica propia (<code>page_views</code>). Si una sección sale vacía o en 0, es que aún no hay datos en ese rango — nunca se muestran cifras simuladas.</div>
+
+      <div className="sec-title">Estado del negocio (ahora)</div>
+      <div className="kpi-row" style={{ marginBottom: 22 }}>
+        <div className="card kpi"><span className="label">MRR (ingreso recurrente / mes)</span><span className="value" id="evm-mrr">—</span></div>
+        <div className="card kpi"><span className="label">Suscriptores activos</span><span className="value" id="evm-activesubs">—</span></div>
+        <div className="card kpi"><span className="label">Usuarios totales</span><span className="value" id="evm-totalusers">—</span></div>
+        <div className="card kpi"><span className="label">Distribución de planes</span><span className="value" id="evm-plansplit" style={{ fontSize: 15, fontWeight: 700 }}>—</span></div>
+      </div>
 
       <div className="sec-title">Resumen del periodo</div>
       <div className="kpi-row">

@@ -31,6 +31,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ metric: string 
   try {
     let data: unknown;
     switch (metric) {
+      case "business-state": data = await M.getBusinessState(); break;
       case "kpis": data = await M.getKpis(range); break;
       case "revenue-series": data = await M.getRevenueSeries(range); break;
       case "funnel": data = await M.getFunnel(range); break;
