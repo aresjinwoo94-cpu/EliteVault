@@ -34,6 +34,16 @@ function bounds(range: Range): Bounds {
 }
 const iso = (ms: number) => new Date(ms).toISOString();
 const minutesSince = (isoStr: string | null) => (isoStr ? Math.max(0, Math.round((Date.now() - Date.parse(isoStr)) / 60000)) : 0);
+
+/* ──────────────────────────────────────────────────────────────────────────
+   RESET DEL PANEL — las estadísticas SOLO cuentan datos a partir de esta fecha.
+   No borra nada (los 19 usuarios y las suscripciones siguen en Stripe/Supabase):
+   simplemente filtra. Para mover el punto de reset, define en Vercel
+   OWNER_METRICS_RESET_AT con una fecha ISO (ej. 2026-06-20T00:00:00Z).
+   ────────────────────────────────────────────────────────────────────────── */
+export const RESET_AT_MS = Date.parse(process.env.OWNER_METRICS_RESET_AT || "2026-06-20T00:00:00Z") || 0;
+export const RESET_AT_ISO = new Date(RESET_AT_MS).toISOString();
+const rg = (gteMs: number) => Math.max(gteMs, RESET_AT_MS); // nunca cuenta por debajo del reset
 function bucketIndex(tsMs: number, b: Bounds) {
   const size = b.unit === "h" ? 3600000 : 86400000;
   return Math.max(0, Math.min(b.points - 1, Math.floor((tsMs - b.gte) / size)));
@@ -66,7 +76,7 @@ async function countProfiles(gte: number, lte: number): Promise<number> {
     const { count } = await supa
       .from("profiles")
       .select("id", { count: "exact", head: true })
-      .gte("created_at", iso(gte))
+      .gte("created_at", iso(rg(gte)))
       .lt("created_at", iso(lte));
     return count ?? 0;
   } catch { return 0; }
@@ -77,7 +87,7 @@ async function countSubs(gte: number, lte: number): Promise<number> {
     const { count } = await supa
       .from("subscriptions")
       .select("id", { count: "exact", head: true })
-      .gte("created_at", iso(gte))
+      .gte("created_at", iso(rg(gte)))
       .lt("created_at", iso(lte));
     return count ?? 0;
   } catch { return 0; }
@@ -88,7 +98,7 @@ async function distinctAuditUsers(gte: number, lte: number): Promise<number> {
     const { data } = await supa
       .from("analyses")
       .select("user_id")
-      .gte("created_at", iso(gte))
+      .gte("created_at", iso(rg(gte)))
       .lt("created_at", iso(lte))
       .limit(10000);
     return new Set((data ?? []).map((r) => (r as { user_id: string }).user_id)).size;
@@ -101,7 +111,7 @@ async function subBuckets(b: Bounds): Promise<number[]> {
     const { data } = await supa
       .from("subscriptions")
       .select("created_at")
-      .gte("created_at", iso(b.gte))
+      .gte("created_at", iso(rg(b.gte)))
       .lt("created_at", iso(b.lte))
       .limit(10000);
     for (const r of data ?? []) {
@@ -117,7 +127,7 @@ async function invoiceStats(b: Bounds): Promise<{ total: number; buckets: number
   const buckets = new Array(b.points).fill(0);
   let total = 0, n = 0;
   try {
-    for await (const inv of stripe.invoices.list({ status: "paid", created: { gte: Math.floor(b.gte / 1000), lte: Math.floor(b.lte / 1000) }, limit: 100 })) {
+    for await (const inv of stripe.invoices.list({ status: "paid", created: { gte: Math.floor(rg(b.gte) / 1000), lte: Math.floor(b.lte / 1000) }, limit: 100 })) {
       const amt = (inv.amount_paid || 0) / 100;
       total += amt;
       buckets[bucketIndex(inv.created * 1000, b)] += amt;
@@ -129,7 +139,7 @@ async function invoiceStats(b: Bounds): Promise<{ total: number; buckets: number
 async function totalPaid(gte: number, lte: number): Promise<number> {
   let total = 0, n = 0;
   try {
-    for await (const inv of stripe.invoices.list({ status: "paid", created: { gte: Math.floor(gte / 1000), lte: Math.floor(lte / 1000) }, limit: 100 })) {
+    for await (const inv of stripe.invoices.list({ status: "paid", created: { gte: Math.floor(rg(gte) / 1000), lte: Math.floor(lte / 1000) }, limit: 100 })) {
       total += (inv.amount_paid || 0) / 100;
       if (++n >= STRIPE_CAP) break;
     }
@@ -139,7 +149,7 @@ async function totalPaid(gte: number, lte: number): Promise<number> {
 async function checkoutStats(gte: number, lte: number): Promise<{ created: number; completed: number }> {
   let created = 0, completed = 0, n = 0;
   try {
-    for await (const s of stripe.checkout.sessions.list({ created: { gte: Math.floor(gte / 1000), lte: Math.floor(lte / 1000) }, limit: 100 })) {
+    for await (const s of stripe.checkout.sessions.list({ created: { gte: Math.floor(rg(gte) / 1000), lte: Math.floor(lte / 1000) }, limit: 100 })) {
       created++;
       if (s.status === "complete" || s.payment_status === "paid") completed++;
       if (++n >= STRIPE_CAP) break;
@@ -151,7 +161,7 @@ async function abandonedCheckouts(gte: number, lte: number) {
   const out: Array<{ id: string; email: string | null; plan: string; value: number; stage: string; lastSeen: number }> = [];
   let n = 0;
   try {
-    for await (const s of stripe.checkout.sessions.list({ created: { gte: Math.floor(gte / 1000), lte: Math.floor(lte / 1000) }, limit: 100 })) {
+    for await (const s of stripe.checkout.sessions.list({ created: { gte: Math.floor(rg(gte) / 1000), lte: Math.floor(lte / 1000) }, limit: 100 })) {
       if (s.status === "complete" || s.payment_status === "paid") continue;
       const cents = s.amount_total || 0;
       out.push({
@@ -171,7 +181,7 @@ async function chargesByCountry(b: Bounds) {
   const byCountry: Record<string, number> = {};
   let n = 0;
   try {
-    for await (const ch of stripe.charges.list({ created: { gte: Math.floor(b.gte / 1000), lte: Math.floor(b.lte / 1000) }, limit: 100 })) {
+    for await (const ch of stripe.charges.list({ created: { gte: Math.floor(rg(b.gte) / 1000), lte: Math.floor(b.lte / 1000) }, limit: 100 })) {
       if (!ch.paid) continue;
       const cc = ch.billing_details?.address?.country || "??";
       byCountry[cc] = (byCountry[cc] || 0) + (ch.amount || 0) / 100;
@@ -247,6 +257,7 @@ export async function getRecentSubscriptions() {
     const { data: subs } = await supa
       .from("subscriptions")
       .select("id, user_id, plan, created_at")
+      .gte("created_at", RESET_AT_ISO)
       .order("created_at", { ascending: false })
       .limit(10);
     const rows = (subs ?? []) as Array<{ id: string; user_id: string; plan: PlanTier; created_at: string }>;
@@ -298,12 +309,13 @@ export async function getBusinessState() {
   try {
     const supa = createSupabaseServiceClient();
     const planCounts: Record<PlanTier, number> = { free: 0, pro: 0, scale: 0 };
+    // Reset: solo cuenta usuarios/suscripciones creados a partir del reset.
     const [usersRes, freeRes, proRes, scaleRes, subsRes] = await Promise.all([
-      supa.from("profiles").select("id", { count: "exact", head: true }),
-      supa.from("profiles").select("id", { count: "exact", head: true }).eq("plan", "free"),
-      supa.from("profiles").select("id", { count: "exact", head: true }).eq("plan", "pro"),
-      supa.from("profiles").select("id", { count: "exact", head: true }).eq("plan", "scale"),
-      supa.from("subscriptions").select("plan, price_id, status").in("status", ["active", "trialing"]).limit(10000),
+      supa.from("profiles").select("id", { count: "exact", head: true }).gte("created_at", RESET_AT_ISO),
+      supa.from("profiles").select("id", { count: "exact", head: true }).eq("plan", "free").gte("created_at", RESET_AT_ISO),
+      supa.from("profiles").select("id", { count: "exact", head: true }).eq("plan", "pro").gte("created_at", RESET_AT_ISO),
+      supa.from("profiles").select("id", { count: "exact", head: true }).eq("plan", "scale").gte("created_at", RESET_AT_ISO),
+      supa.from("subscriptions").select("plan, price_id, status").in("status", ["active", "trialing"]).gte("created_at", RESET_AT_ISO).limit(10000),
     ]);
     planCounts.free = freeRes.count ?? 0;
     planCounts.pro = proRes.count ?? 0;
@@ -317,8 +329,8 @@ export async function getBusinessState() {
       const isYearly = !!plan.stripePriceIds.year && s.price_id === plan.stripePriceIds.year;
       mrr += isYearly ? plan.price.year / 12 : plan.price.month; // normaliza anual → mensual
     }
-    return { mrr: Math.round(mrr), activeSubscribers: subs.length, totalUsers: usersRes.count ?? 0, planCounts };
+    return { mrr: Math.round(mrr), activeSubscribers: subs.length, totalUsers: usersRes.count ?? 0, planCounts, resetAt: RESET_AT_ISO };
   } catch {
-    return { mrr: 0, activeSubscribers: 0, totalUsers: 0, planCounts: { free: 0, pro: 0, scale: 0 } };
+    return { mrr: 0, activeSubscribers: 0, totalUsers: 0, planCounts: { free: 0, pro: 0, scale: 0 }, resetAt: RESET_AT_ISO };
   }
 }

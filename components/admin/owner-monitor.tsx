@@ -85,6 +85,8 @@ export function OwnerMonitor() {
       ($("evm-totalusers") as HTMLElement).textContent = fmtNum(b.totalUsers);
       const p = b.planCounts || { free: 0, pro: 0, scale: 0 };
       ($("evm-plansplit") as HTMLElement).textContent = `Free ${p.free} · Pro ${p.pro} · Scale ${p.scale}`;
+      const rEl = $("evm-resetat");
+      if (rEl && b.resetAt) rEl.textContent = new Date(b.resetAt).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" });
     }
 
     async function renderKpis() {
@@ -222,7 +224,7 @@ export function OwnerMonitor() {
         <div className="muted refr">Refresh: <span id="evm-refresh">—</span></div>
       </div>
 
-      <div className="notice">ℹ️ <b>Todos los datos son reales.</b> Dinero y usuarios → Stripe + Supabase. Tráfico (en vivo, dispositivos, fuentes) → tu analítica propia (<code>page_views</code>). Si una sección sale vacía o en 0, es que aún no hay datos en ese rango — nunca se muestran cifras simuladas.</div>
+      <div className="notice">ℹ️ <b>Todos los datos son reales.</b> Dinero y usuarios → Stripe + Supabase. Tráfico (en vivo, dispositivos, fuentes) → tu analítica propia (<code>page_views</code>). Si una sección sale vacía o en 0, es que aún no hay datos en ese rango — nunca se muestran cifras simuladas. <b>Contando desde:</b> <span id="evm-resetat">—</span> (reset).</div>
 
       <div className="sec-title">Estado del negocio (ahora)</div>
       <div className="kpi-row" style={{ marginBottom: 22 }}>
