@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -8,28 +10,62 @@ import {
   AlertTriangle,
   Zap,
   TrendingUp,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { DataPill } from "@/components/ui/data-pill";
 import { CountUp } from "@/components/ui/count-up";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
 /**
- * Primary hero CTA. We intentionally DON'T show a URL input here: the
- * audit requires a (verified-email) account first, so a paste-your-URL bar
- * on the landing would promise an instant analysis it can't deliver and
- * just adds friction before the same sign-up step. One clear button.
+ * Primary hero CTA — P2.1 "URL box as the entry to the product".
+ *
+ * The audit can't run before the user has a (verified-email) account —
+ * that's the anti-abuse gate — so we deliberately DON'T fake an instant
+ * analysis from the landing. Instead the pasted URL is CAPTURED here and
+ * carried THROUGH sign-up: it rides along as `?url=` on the post-auth
+ * `next` route and lands prefilled in /app/analyzer, leaving the new user
+ * one click from their "wow". Fewer steps to the aha, honest copy (no
+ * "instant" promise), and the receiving end (analyzer-launcher `initialUrl`)
+ * was already wired for exactly this. An empty box just goes to sign-up.
  */
 function HeroCta() {
+  const router = useRouter();
+  const [url, setUrl] = useState("");
+
+  function go() {
+    const trimmed = url.trim();
+    // Nest the store URL inside the analyzer route, then hand the whole
+    // route to sign-up as `next` (the callback validates it's a same-origin
+    // relative path). Double-encode because `next` is itself a query value.
+    const next = trimmed
+      ? `/app/analyzer?url=${encodeURIComponent(trimmed)}`
+      : "/app/analyzer";
+    router.push(`/sign-up?next=${encodeURIComponent(next)}`);
+  }
+
   return (
-    <div className="flex flex-col items-start gap-3">
-      <Link href="/sign-up?next=/app/analyzer">
-        <Button size="xl">
+    <div className="flex w-full max-w-xl flex-col items-start gap-3">
+      <div className="flex w-full flex-col gap-2.5 sm:flex-row">
+        <div className="relative flex-1">
+          <Globe className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-white/30" />
+          <Input
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && go()}
+            placeholder="yourstore.com"
+            aria-label="Your store URL"
+            inputMode="url"
+            className="h-12 bg-white/[0.03] pl-10 text-base"
+          />
+        </div>
+        <Button size="xl" onClick={go} className="shrink-0">
           Audit my store free
           <ArrowRight className="size-4" />
         </Button>
-      </Link>
+      </div>
       <Link href="#analyzer">
         <Button variant="ghost" size="sm" className="text-white/55">
           or see it in action first
