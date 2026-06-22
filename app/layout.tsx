@@ -7,6 +7,8 @@ import { PageTracker } from "@/components/analytics/page-tracker";
 import { isInternalRequest } from "@/lib/analytics/is-internal";
 import { SupportChat } from "@/components/support/support-chat";
 import { socialUrls } from "@/lib/company";
+import { getLocale } from "@/lib/i18n/server";
+import { LocaleProvider } from "@/components/i18n/locale-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -117,9 +119,10 @@ export default async function RootLayout({
   // (email in INTERNAL_EMAILS env), the gate suppresses ALL analytics
   // and sets a localStorage flag that persists even after logout.
   const isInternal = await isInternalRequest();
+  const locale = await getLocale();
 
   return (
-    <html lang="en" className={`${fontsVariables} dark`} suppressHydrationWarning>
+    <html lang={locale} className={`${fontsVariables} dark`} suppressHydrationWarning>
       <body className="font-sans antialiased min-h-screen">
         {/* Structured data — Google parses this to understand the brand */}
         <script
@@ -137,12 +140,14 @@ export default async function RootLayout({
         {/* Analítica first-party del panel del dueño (registra visitas en page_views).
             Respeta el mismo opt-out interno que AnalyticsGate. */}
         <PageTracker isInternal={isInternal} />
-        <AnalyticsGate isInternal={isInternal}>
-          <TooltipProvider delayDuration={150}>
-            {children}
-            <Toaster />
-          </TooltipProvider>
-        </AnalyticsGate>
+        <LocaleProvider locale={locale}>
+          <AnalyticsGate isInternal={isInternal}>
+            <TooltipProvider delayDuration={150}>
+              {children}
+              <Toaster />
+            </TooltipProvider>
+          </AnalyticsGate>
+        </LocaleProvider>
         {/* Floating support chatbot — grounded strictly in lib/support/kb.ts;
             always offers "talk to a human" → /support/contact. */}
         <SupportChat />
