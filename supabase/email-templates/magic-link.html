@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  EliteVault — Magic Link email template (v4.0)
+  EliteVault — Magic Link email template (v3.9)
   ────────────────────────────────────────────────────────────────────
   Paste this HTML into:
     Supabase Dashboard → Authentication → Email Templates → Magic Link
@@ -12,17 +12,9 @@
     {{ .ConfirmationURL }}  — the magic-link URL the user clicks
     {{ .Email }}             — recipient address (optional, we don't show it)
 
-  Brand (v4 — matches the live app, see tailwind.config.ts):
-    • PRIMARY is teal #2DD4BF — the brand dropped gold entirely.
-      ("no gold anywhere in the brand"). Teal ramp:
-        #99F6E4 · #5EEAD4 · #2DD4BF · #14B8A6 · #0D9488
-    • Surfaces are obsidian: #06060A (page) / #0A0A0F (card)
-    • Hairlines are rgba(255,255,255,0.06)
-    • Logo is the vault diamond + keyhole (teal), wordmark in serif
-
   Email-client constraints we work around:
     • Gmail strips <style> blocks → all critical styling is INLINE
-    • Outlook on Windows ignores CSS gradients → we use solid #2DD4BF teal
+    • Outlook on Windows ignores CSS gradients → we use solid #D4AF37 gold
     • Dark-mode clients sometimes invert backgrounds → we lock with
       `background-color` + `color` together on every block
     • Buttons get clipped if not in a <table> — the CTA is a 3-cell table
@@ -40,7 +32,7 @@
     style="
       margin: 0;
       padding: 0;
-      background-color: #06060a;
+      background-color: #050507;
       color: #ffffff;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
         Helvetica, Arial, sans-serif;
@@ -56,7 +48,7 @@
         overflow: hidden;
         font-size: 1px;
         line-height: 1px;
-        color: #06060a;
+        color: #050507;
       "
     >
       Tap the button to sign into EliteVault — your AI ecommerce auditor.
@@ -68,7 +60,7 @@
       cellspacing="0"
       border="0"
       width="100%"
-      style="background-color: #06060a"
+      style="background-color: #050507"
     >
       <tr>
         <td align="center" style="padding: 32px 16px">
@@ -83,18 +75,18 @@
               width: 100%;
               max-width: 600px;
               background-color: #0a0a0f;
-              border: 1px solid rgba(255, 255, 255, 0.06);
+              border: 1px solid rgba(255, 255, 255, 0.05);
               border-radius: 16px;
               overflow: hidden;
             "
           >
-            <!-- Top teal accent bar -->
+            <!-- Top gold accent bar -->
             <tr>
               <td
                 height="3"
                 style="
                   height: 3px;
-                  background-color: #2dd4bf;
+                  background-color: #d4af37;
                   line-height: 3px;
                   font-size: 0;
                 "
@@ -113,7 +105,7 @@
                   border="0"
                 >
                   <tr>
-                    <!-- Vault diamond mark in teal -->
+                    <!-- Diamond mark in gold -->
                     <td style="vertical-align: middle">
                       <table
                         role="presentation"
@@ -123,22 +115,23 @@
                       >
                         <tr>
                           <td
-                            width="34"
-                            height="34"
+                            width="32"
+                            height="32"
                             align="center"
                             style="
-                              width: 34px;
-                              height: 34px;
-                              background-color: #0c1f1d;
-                              border: 1px solid rgba(45, 212, 191, 0.35);
-                              border-radius: 9px;
-                              color: #2dd4bf;
-                              font-size: 17px;
-                              line-height: 34px;
+                              width: 32px;
+                              height: 32px;
+                              background-color: #d4af37;
+                              border-radius: 8px;
+                              color: #0a0a0f;
+                              font-family: 'Georgia', serif;
+                              font-size: 18px;
+                              font-weight: 700;
+                              line-height: 32px;
                               text-align: center;
                             "
                           >
-                            &#9670;
+                            ◆
                           </td>
                         </tr>
                       </table>
@@ -202,9 +195,9 @@
                   <tr>
                     <td
                       align="center"
-                      bgcolor="#2DD4BF"
+                      bgcolor="#D4AF37"
                       style="
-                        background-color: #2dd4bf;
+                        background-color: #d4af37;
                         border-radius: 10px;
                         padding: 0;
                       "
@@ -215,7 +208,7 @@
                         style="
                           display: inline-block;
                           padding: 14px 32px;
-                          color: #06060a;
+                          color: #0a0a0f;
                           font-family: -apple-system, BlinkMacSystemFont,
                             'Segoe UI', Roboto, sans-serif;
                           font-size: 15px;
@@ -240,7 +233,7 @@
                   <a
                     href="{{ .ConfirmationURL }}"
                     style="
-                      color: rgba(45, 212, 191, 0.85);
+                      color: rgba(212, 175, 55, 0.7);
                       word-break: break-all;
                       text-decoration: underline;
                     "
@@ -272,7 +265,7 @@
                 <p
                   style="
                     margin: 0 0 16px 0;
-                    color: rgba(45, 212, 191, 0.9);
+                    color: rgba(212, 175, 55, 0.8);
                     font-size: 11px;
                     font-weight: 600;
                     letter-spacing: 0.12em;
@@ -303,12 +296,12 @@
                             width="24"
                             style="
                               vertical-align: top;
-                              color: #2dd4bf;
+                              color: #d4af37;
                               font-size: 16px;
                               line-height: 22px;
                             "
                           >
-                            &#9670;
+                            ◆
                           </td>
                           <td style="vertical-align: top; padding-left: 8px">
                             <p
@@ -354,12 +347,12 @@
                             width="24"
                             style="
                               vertical-align: top;
-                              color: #2dd4bf;
+                              color: #d4af37;
                               font-size: 16px;
                               line-height: 22px;
                             "
                           >
-                            &#9670;
+                            ◆
                           </td>
                           <td style="vertical-align: top; padding-left: 8px">
                             <p
@@ -381,7 +374,7 @@
                                 line-height: 1.5;
                               "
                             >
-                              45+ DTC brands actually generating revenue right
+                              50+ DTC brands actually generating revenue right
                               now. Search by prompt or screenshot.
                             </p>
                           </td>
@@ -404,12 +397,12 @@
                             width="24"
                             style="
                               vertical-align: top;
-                              color: #2dd4bf;
+                              color: #d4af37;
                               font-size: 16px;
                               line-height: 22px;
                             "
                           >
-                            &#9670;
+                            ◆
                           </td>
                           <td style="vertical-align: top; padding-left: 8px">
                             <p
@@ -453,8 +446,8 @@
                   border="0"
                   width="100%"
                   style="
-                    background-color: rgba(45, 212, 191, 0.05);
-                    border: 1px solid rgba(45, 212, 191, 0.2);
+                    background-color: rgba(212, 175, 55, 0.04);
+                    border: 1px solid rgba(212, 175, 55, 0.18);
                     border-radius: 10px;
                   "
                 >
@@ -468,12 +461,11 @@
                           line-height: 1.5;
                         "
                       >
-                        Start free with one audit of your own store + 9
-                        hand-picked winners. Pro
-                        <strong style="color: #2dd4bf">$19/mo</strong> unlocks
-                        unlimited audits &amp; your prioritized fixes. Scale
-                        <strong style="color: #2dd4bf">$49/mo</strong> adds the
-                        7-day Meta Ads modeler &amp; API.
+                        Start free with 9 hand-picked winners. Pro
+                        <strong style="color: #d4af37">$19/mo</strong> unlocks
+                        the analyzer. Scale
+                        <strong style="color: #d4af37">$49/mo</strong> adds
+                        the scenario modeler &amp; API.
                       </p>
                     </td>
                   </tr>

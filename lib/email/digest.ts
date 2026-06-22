@@ -68,7 +68,7 @@ export function buildDigest(opts: {
     <tr><td align="center">
       <table width="520" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:14px;border:1px solid #ececec;overflow:hidden;">
         <tr><td style="padding:28px 28px 8px;">
-          <div style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#0D9488;font-weight:600;">EliteVault · weekly check</div>
+          <div style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#b8941f;font-weight:600;">EliteVault · weekly check</div>
           <h1 style="margin:8px 0 4px;font-size:22px;color:#111827;">Here's what moved this week</h1>
           <p style="margin:0;color:#6b7280;font-size:13px;">Week of ${escapeHtml(opts.week)}. Scores are a fast conversion estimate of each store's homepage.</p>
         </td></tr>
@@ -77,7 +77,7 @@ export function buildDigest(opts: {
         </td></tr>
         <tr><td style="padding:20px 28px 28px;">
           <a href="${opts.appUrl}/app/monitor" style="display:inline-block;background:#2DD4BF;color:#0A0A0F;text-decoration:none;font-weight:600;font-size:14px;padding:11px 18px;border-radius:9px;">Open your dashboard →</a>
-          <p style="margin:16px 0 0;color:#9ca3af;font-size:11px;line-height:1.5;">You're getting this because you're monitoring stores in EliteVault. Manage or turn this off in your <a href="${opts.appUrl}/app/monitor" style="color:#0D9488;">monitor settings</a>.</p>
+          <p style="margin:16px 0 0;color:#9ca3af;font-size:11px;line-height:1.5;">You're getting this because you're monitoring stores in EliteVault. Manage or turn this off in your <a href="${opts.appUrl}/app/monitor" style="color:#b8941f;">monitor settings</a>.</p>
         </td></tr>
       </table>
     </td></tr>
