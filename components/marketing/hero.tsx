@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DataPill } from "@/components/ui/data-pill";
 import { CountUp } from "@/components/ui/count-up";
+import { useT } from "@/components/i18n/locale-provider";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -32,6 +33,7 @@ const ease = [0.22, 1, 0.36, 1] as const;
  * was already wired for exactly this. An empty box just goes to sign-up.
  */
 function HeroCta() {
+  const { t } = useT();
   const router = useRouter();
   const [url, setUrl] = useState("");
 
@@ -55,20 +57,20 @@ function HeroCta() {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && go()}
-            placeholder="yourstore.com"
+            placeholder={t("hero.urlPlaceholder")}
             aria-label="Your store URL"
             inputMode="url"
             className="h-12 bg-white/[0.03] pl-10 text-base"
           />
         </div>
         <Button size="xl" onClick={go} className="shrink-0">
-          Audit my store free
+          {t("hero.ctaPrimary")}
           <ArrowRight className="size-4" />
         </Button>
       </div>
       <Link href="#analyzer">
         <Button variant="ghost" size="sm" className="text-white/55">
-          or see it in action first
+          {t("hero.ctaSecondary")}
         </Button>
       </Link>
     </div>
@@ -76,6 +78,7 @@ function HeroCta() {
 }
 
 export function Hero() {
+  const { t } = useT();
   return (
     <section className="relative pt-32 pb-24 md:pt-44 md:pb-32 overflow-hidden">
       {/* radial backdrop */}
@@ -95,9 +98,7 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease }}
         >
-          <DataPill
-            items={["AI CONVERSION AUDIT", "BUILT FOR ECOMMERCE FOUNDERS"]}
-          />
+          <DataPill items={[t("hero.badge1"), t("hero.badge2")]} />
         </motion.div>
 
         {/*
@@ -111,9 +112,9 @@ export function Hero() {
           initial={false}
           className="mt-6 font-serif text-5xl md:text-7xl lg:text-8xl leading-[1.02] tracking-tight"
         >
-          <span className="block">Copy what's</span>
-          <span className="block text-gold-gradient">actually</span>
-          <span className="block">converting.</span>
+          <span className="block">{t("hero.line1")}</span>
+          <span className="block text-gold-gradient">{t("hero.line2")}</span>
+          <span className="block">{t("hero.line3")}</span>
         </motion.h1>
 
         <motion.p
@@ -122,10 +123,9 @@ export function Hero() {
           transition={{ duration: 0.7, ease, delay: 0.15 }}
           className="mt-7 max-w-2xl text-lg md:text-xl text-white/55 leading-relaxed"
         >
-          EliteVault hunts down stores that are <span className="text-white/85">already selling</span>,
-          breaks down exactly why they convert, and gives your store the same
-          brutal audit a senior media buyer would — annotated screenshots,
-          buyer-persona simulations and a 7-day Meta Ads scenario modeler.
+          {t("hero.subPre")}
+          <span className="text-white/85">{t("hero.subHighlight")}</span>
+          {t("hero.subPost")}
         </motion.p>
 
         <motion.div
@@ -143,7 +143,7 @@ export function Hero() {
           transition={{ duration: 1.2, delay: 0.6 }}
           className="mt-6 text-xs tracking-wide text-white/30"
         >
-          No credit card. 1 free analysis. Cancel anytime.
+          {t("hero.trust")}
         </motion.p>
       </div>
 

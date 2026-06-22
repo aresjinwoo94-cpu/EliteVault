@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { signOut } from "@/app/actions/auth";
+import { LanguageToggle } from "@/components/i18n/language-toggle";
 import type { Database } from "@/lib/supabase/types";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"] | null;
@@ -46,7 +47,9 @@ export function AppTopbar({ profile }: { profile: Profile }) {
         </kbd>
       </button>
 
-      <DropdownMenu>
+      <div className="flex items-center gap-3">
+        <LanguageToggle />
+        <DropdownMenu>
         <DropdownMenuTrigger className="rounded-full focus:outline-none">
           <Avatar>
             {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
@@ -76,6 +79,7 @@ export function AppTopbar({ profile }: { profile: Profile }) {
           </form>
         </DropdownMenuContent>
       </DropdownMenu>
+      </div>
     </header>
   );
 }
