@@ -7,7 +7,21 @@ import { Card } from "@/components/ui/card";
 import { ScoreBadge } from "@/components/ui/score-badge";
 import { PLANS } from "@/lib/stripe/plans";
 
-export const metadata = { title: "Analyzer" };
+// NOTE: /app/* is disallowed in robots.txt (dashboard, not indexed), so this
+// description/keywords are for the browser tab + completeness, not Google
+// ranking. The PUBLIC, indexable analyzer landing is /free-website-audit.
+export const metadata = {
+  title: "Analyzer",
+  description:
+    "Run an AI conversion audit of your store — annotated screenshot, buyer-persona simulation and prioritized fixes ranked by impact.",
+  keywords: [
+    "store analyzer",
+    "ai conversion audit",
+    "annotated screenshot audit",
+    "buyer persona simulation",
+    "cro analyzer",
+  ],
+};
 
 export default async function AnalyzerPage({
   searchParams,
