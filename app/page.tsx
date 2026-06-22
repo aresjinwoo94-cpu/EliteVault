@@ -13,7 +13,26 @@ export const metadata: Metadata = {
   },
   description:
     "EliteVault is a free AI website audit and conversion analyzer for ecommerce. Score your store, see exactly what's costing you sales, and get ranked fixes — in 60 seconds, no card.",
+  keywords: [
+    "free website audit",
+    "ai store audit",
+    "ecommerce conversion analyzer",
+    "shopify store audit",
+    "cro audit tool",
+    "winning shopify stores",
+    "buyer persona simulator",
+    "meta ads forecast",
+    "dtc conversion optimization",
+    "website analyzer",
+  ],
   alternates: { canonical: "/" },
+  openGraph: {
+    title: "Free Website Audit & Store Analyzer — EliteVault",
+    description:
+      "Free AI conversion audit for ecommerce: score, annotated screenshot and ranked fixes in 60 seconds. Plus a library of winning stores and a 7-day Meta Ads modeler.",
+    type: "website",
+    url: "/",
+  },
 };
 
 /**

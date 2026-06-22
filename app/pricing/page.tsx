@@ -12,6 +12,15 @@ export const metadata: Metadata = {
   title: "Pricing",
   description:
     "Simple, transparent pricing for EliteVault. Free tier with 9 hand-picked winning stores. Pro at $19/mo for the full analyzer. Scale at $49/mo for Meta Ads optimization + 7-day scenario modeler + REST API.",
+  keywords: [
+    "elitevault pricing",
+    "ecommerce audit pricing",
+    "cro tool pricing",
+    "shopify audit plans",
+    "meta ads tool pricing",
+    "free store audit",
+    "conversion optimization software cost",
+  ],
   alternates: {
     canonical: "/pricing",
   },
