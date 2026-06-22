@@ -44,6 +44,7 @@ const en: Dict = {
     freeAudit: "Free audit",
     persona: "Persona simulator",
     metaAds: "Meta Ads forecast",
+    winners: "Winning stores",
     blog: "Blog",
     about: "About",
     support: "Support",
@@ -181,6 +182,45 @@ const en: Dict = {
     billing: "Billing",
     helpSupport: "Help & support",
     signOut: "Sign out",
+  },
+  winnersPage: {
+    badge1: "WINNING STORES LIBRARY",
+    badge2: "REVENUE-VALIDATED, NOT A MOODBOARD",
+    heroH1: "A live library of winning ecommerce stores",
+    heroBody:
+      "Browse Shopify and DTC stores that are actually generating revenue right now — filter by niche, see full metrics, and find the winners structurally closest to yours with image-similarity search. Then audit your own store free.",
+    heroCta: "Browse winning stores",
+    heroCaption: "9 winners free · no credit card",
+    whatH2: "What's inside the library",
+    whatSub:
+      "Not a Pinterest board of pretty stores — winners validated by real revenue signals.",
+    card1Label: "Stores actually selling",
+    card1Body:
+      "An AI agent surfaces stores generating revenue now from paid-social cohorts — not a stale 'top 10' list recycled since 2023.",
+    card2Label: "Filter by your niche",
+    card2Body:
+      "What converts in skincare destroys conversion in supplements. Filter to the winners that match your category.",
+    card3Label: "Image-similarity search",
+    card3Body:
+      "Drop a screenshot of your store and find the closest converting siblings by visual structure — not by tags.",
+    howH2: "How to use it",
+    step1Title: "Find revenue-validated winners",
+    step1Body:
+      "Start from stores proven to convert cold traffic, filtered to your niche — your library of solved problems.",
+    step2Title: "Study the full metrics",
+    step2Body:
+      "See how each winner is built — offer, hero, trust stack and more — with the numbers behind it.",
+    step3Title: "Copy the principles, audit yours",
+    step3Body:
+      "Extract what works, then run a free audit of your own store to see where you stand against them.",
+    valueH2: "Don't copy the paint — copy the blueprint",
+    valueBody:
+      "Reverse-engineering winners isn't theft. You extract principles — hierarchy, offer structure, trust placement — that transfer to your store. The library just makes finding the right winners fast.",
+    valueLink: "How to reverse-engineer any winning store",
+    finalH2: "Find your winning stores",
+    finalBody:
+      "Browse 9 hand-picked winners free, then unlock the full library and image-similarity search on Pro.",
+    finalCta: "Start free",
   },
   reviews: {
     heading: "What founders say",
@@ -373,6 +413,7 @@ const es: Dict = {
     freeAudit: "Auditoría gratis",
     persona: "Simulador de persona",
     metaAds: "Forecast de Meta Ads",
+    winners: "Tiendas ganadoras",
     blog: "Blog",
     about: "Nosotros",
     support: "Soporte",
@@ -510,6 +551,45 @@ const es: Dict = {
     billing: "Facturación",
     helpSupport: "Ayuda y soporte",
     signOut: "Cerrar sesión",
+  },
+  winnersPage: {
+    badge1: "LIBRERÍA DE TIENDAS GANADORAS",
+    badge2: "VALIDADAS POR INGRESOS, NO UN MOODBOARD",
+    heroH1: "Una librería en vivo de tiendas ecommerce ganadoras",
+    heroBody:
+      "Explora tiendas de Shopify y DTC que de verdad están generando ingresos ahora mismo — filtra por nicho, mira métricas completas y encuentra las ganadoras más parecidas a la tuya con búsqueda por similitud de imagen. Luego audita tu propia tienda gratis.",
+    heroCta: "Explorar tiendas ganadoras",
+    heroCaption: "9 ganadoras gratis · sin tarjeta",
+    whatH2: "Qué hay dentro de la librería",
+    whatSub:
+      "No un tablero de Pinterest de tiendas bonitas — ganadoras validadas por señales reales de ingresos.",
+    card1Label: "Tiendas que de verdad venden",
+    card1Body:
+      "Un agente de IA muestra tiendas que generan ingresos ahora a partir de cohortes de paid social — no una lista 'top 10' reciclada desde 2023.",
+    card2Label: "Filtra por tu nicho",
+    card2Body:
+      "Lo que convierte en skincare destruye la conversión en suplementos. Filtra a las ganadoras que encajan con tu categoría.",
+    card3Label: "Búsqueda por similitud de imagen",
+    card3Body:
+      "Sube una captura de tu tienda y encuentra las ganadoras más parecidas por estructura visual — no por etiquetas.",
+    howH2: "Cómo usarla",
+    step1Title: "Encuentra ganadoras validadas por ingresos",
+    step1Body:
+      "Parte de tiendas que ya convierten tráfico frío, filtradas a tu nicho — tu librería de problemas resueltos.",
+    step2Title: "Estudia las métricas completas",
+    step2Body:
+      "Mira cómo está construida cada ganadora — oferta, hero, stack de confianza y más — con los números detrás.",
+    step3Title: "Copia los principios, audita la tuya",
+    step3Body:
+      "Extrae lo que funciona y luego corre una auditoría gratis de tu tienda para ver dónde estás frente a ellas.",
+    valueH2: "No copies la pintura — copia el plano",
+    valueBody:
+      "Hacer ingeniería inversa de las ganadoras no es robar. Extraes principios — jerarquía, estructura de oferta, ubicación de la confianza — que se transfieren a tu tienda. La librería solo hace que encontrar las ganadoras correctas sea rápido.",
+    valueLink: "Cómo hacer ingeniería inversa de cualquier tienda ganadora",
+    finalH2: "Encuentra tus tiendas ganadoras",
+    finalBody:
+      "Explora 9 ganadoras seleccionadas gratis, y desbloquea la librería completa y la búsqueda por imagen en Pro.",
+    finalCta: "Empezar gratis",
   },
   reviews: {
     heading: "Lo que dicen los fundadores",

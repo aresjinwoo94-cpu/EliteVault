@@ -34,6 +34,9 @@ export function Footer() {
             <Link href="/meta-ads-forecast" className="hover:text-white">
               {t("footer.metaAds")}
             </Link>
+            <Link href="/winning-shopify-stores" className="hover:text-white">
+              {t("footer.winners")}
+            </Link>
             <Link href="/blog" className="hover:text-white">
               {t("footer.blog")}
             </Link>

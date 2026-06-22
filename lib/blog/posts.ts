@@ -16,7 +16,10 @@ export type BlogPost = {
   title: string;
   h1: string;
   description: string;
+  /** Primary target query. */
   keyword: string;
+  /** Secondary/related queries → emitted as the page's <meta keywords>. */
+  keywords?: string[];
   date: string; // ISO (publish)
   updated?: string; // ISO (last meaningful edit)
   readingMinutes: number;
@@ -36,6 +39,14 @@ export const BLOG_POSTS: BlogPost[] = [
     description:
       "A plain-English guide to free website audit tools and analyzers in 2026 — the three types, what each really checks, and how to run a free conversion audit of your store.",
     keyword: "free website audit tools",
+    keywords: [
+      "free website audit tools",
+      "best free website audit tool",
+      "website audit tool",
+      "free cro audit tools",
+      "website analyzer tools",
+      "free store audit tool",
+    ],
     date: "2026-06-17",
     author: "Ariel Jiménez",
     readingMinutes: 7,
@@ -89,6 +100,14 @@ export const BLOG_POSTS: BlogPost[] = [
     description:
       "The exact method to reverse-engineer winning Shopify stores — their offer, hero, pricing and trust stack — and copy what converts. No guru course required.",
     keyword: "how to find winning shopify stores",
+    keywords: [
+      "how to find winning shopify stores",
+      "reverse engineer shopify store",
+      "find winning shopify stores",
+      "copy winning ecommerce stores",
+      "shopify competitor research",
+      "winning store teardown",
+    ],
     date: "2026-06-17",
     author: "Ariel Jiménez",
     readingMinutes: 9,
@@ -154,6 +173,14 @@ export const BLOG_POSTS: BlogPost[] = [
     description:
       "CRO consultants charge $1,500–$2,000 for an ecommerce store audit. Here's the exact framework they use — and how a 60-second AI audit now does the same job free.",
     keyword: "ecommerce store audit",
+    keywords: [
+      "ecommerce store audit",
+      "shopify store audit",
+      "cro audit cost",
+      "cro consultant cost",
+      "ai store audit",
+      "store audit vs consultant",
+    ],
     date: "2026-06-17",
     author: "Ariel Jiménez",
     readingMinutes: 8,
@@ -222,6 +249,14 @@ export const BLOG_POSTS: BlogPost[] = [
     description:
       "Your Meta ads aren't converting and it isn't your targeting. The real reason is your store. Here's how to diagnose the landing-page leak before you burn another dollar.",
     keyword: "why meta ads not converting",
+    keywords: [
+      "why meta ads not converting",
+      "facebook ads not converting",
+      "meta ads getting clicks but no sales",
+      "ad to landing page mismatch",
+      "meta ads landing page",
+      "fix facebook ads conversions",
+    ],
     date: "2026-06-17",
     author: "Ariel Jiménez",
     readingMinutes: 8,
@@ -280,6 +315,14 @@ export const BLOG_POSTS: BlogPost[] = [
     description:
       "A practical, no-fluff guide to raising your Shopify conversion rate in 2026 — the 11 highest-leverage fixes, ranked by impact, with how to diagnose each.",
     keyword: "how to increase shopify conversion rate",
+    keywords: [
+      "how to increase shopify conversion rate",
+      "improve shopify conversion rate",
+      "shopify cro tips",
+      "boost ecommerce conversions",
+      "shopify conversion optimization",
+      "increase online store sales",
+    ],
     date: "2026-06-15",
     readingMinutes: 8,
     excerpt:
@@ -351,6 +394,14 @@ export const BLOG_POSTS: BlogPost[] = [
     description:
       "What counts as a good Shopify conversion rate in 2026, how it varies by niche and traffic source, and how to tell if yours is actually a problem.",
     keyword: "good conversion rate for shopify",
+    keywords: [
+      "good conversion rate for shopify",
+      "average shopify conversion rate",
+      "average ecommerce conversion rate",
+      "shopify conversion rate benchmark",
+      "ecommerce conversion rate by niche",
+      "what is a good conversion rate",
+    ],
     date: "2026-06-15",
     readingMinutes: 6,
     excerpt:
@@ -413,6 +464,14 @@ export const BLOG_POSTS: BlogPost[] = [
     description:
       "Traffic but no sales? Here are the 8 most common reasons a Shopify store doesn't convert, how to diagnose each one fast, and what to fix first.",
     keyword: "why is my shopify store not converting",
+    keywords: [
+      "why is my shopify store not converting",
+      "shopify store not converting",
+      "shopify traffic but no sales",
+      "shopify no sales",
+      "ecommerce store not converting",
+      "why am i not getting sales shopify",
+    ],
     date: "2026-06-15",
     readingMinutes: 7,
     excerpt:
