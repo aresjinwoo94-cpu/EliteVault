@@ -64,9 +64,15 @@ function normalizeCoords(annotations: Annotation[]): Annotation[] {
 export function AnnotationsOverlay({
   imageUrl,
   annotations: raw,
+  altLabel = "Audit screenshot",
 }: {
   imageUrl: string;
   annotations: Annotation[];
+  // SEO: on public, crawlable pages (e.g. /s/<slug>) pass a keyword-rich,
+  // store-specific alt ("Annotated conversion audit screenshot of acme.com").
+  // In-app pages live under /app/* (robots-disallowed) so they keep the
+  // generic default — alt text there has no crawl value.
+  altLabel?: string;
 }) {
   const annotations = normalizeCoords(raw);
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
@@ -129,7 +135,7 @@ export function AnnotationsOverlay({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={imageUrl}
-            alt="Audit screenshot"
+            alt={altLabel}
             className="block w-full h-auto"
             style={{ touchAction: "pinch-zoom" }}
             onError={() => setImgErrored(true)}

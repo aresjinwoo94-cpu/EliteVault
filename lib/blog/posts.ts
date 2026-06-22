@@ -329,6 +329,20 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>Once you've shipped the top three, re-audit and measure. Conversion optimization is a loop, not a one-time project. If you're not sure where you stand, start by checking <a href="/blog/why-your-shopify-store-isnt-converting">why your store might not be converting</a>, then <a href="/pricing">see how the full audit works</a>.</p>
 `.trim(),
+    faqs: [
+      {
+        q: "How can I increase my Shopify conversion rate fast?",
+        a: "Start with the highest-leverage fixes, not a hundred small tweaks: make the offer obvious above the fold, surface trust signals near the buy button, and cut mobile load time. Those three move the most for most stores — ship them first, then re-measure.",
+      },
+      {
+        q: "What is a good Shopify conversion rate to aim for?",
+        a: "It depends on niche, price point and traffic source, but most stores sit roughly between 1.5% and 3.5%. Judge cold paid traffic separately from branded traffic, and track your own trend over time rather than chasing a universal number.",
+      },
+      {
+        q: "Why is my Shopify store getting traffic but no sales?",
+        a: "Usually the offer isn't clear in the first 2 seconds, trust is missing or buried below the fold, or the store is slow on mobile. Diagnose which one is yours with a free audit before changing anything — fixing the wrong thing wastes weeks.",
+      },
+    ],
   },
   {
     slug: "good-conversion-rate-for-shopify",
@@ -377,6 +391,20 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p><em>A note on honesty: any benchmark — including ours — is an estimate, not a precise stat. Use these ranges as direction, and trust your own segmented data over any blanket figure.</em></p>
 `.trim(),
+    faqs: [
+      {
+        q: "What is a good conversion rate for Shopify in 2026?",
+        a: "Across ecommerce, conversion rates are widely reported around 1.5%–3.5%, with the average often quoted near 2%–2.5%. Treat that as a directional range — your niche, price point and traffic source shift it a lot, so compare against your own segmented data.",
+      },
+      {
+        q: "What is the average ecommerce conversion rate?",
+        a: "It's commonly cited near 2%–2.5%, but figures move with the source, the year and how each tool defines a 'session.' Your own trend over time is a far more reliable signal than any blanket industry average.",
+      },
+      {
+        q: "Is a 1% conversion rate bad for Shopify?",
+        a: "Not necessarily. For higher-priced or considered purchases, or for cold paid traffic in a campaign's first week, around 1% can be perfectly normal. Compare against your niche and your own trend, not a single universal benchmark.",
+      },
+    ],
   },
   {
     slug: "why-your-shopify-store-isnt-converting",
@@ -419,6 +447,20 @@ export const BLOG_POSTS: BlogPost[] = [
 <h2>The fastest way to find your reason</h2>
 <p>You could check all eight by hand — or get a senior-media-buyer read of your store in under a minute. <a href="/sign-up?next=/app/analyzer">EliteVault's free audit</a> annotates your homepage with the exact issues from this list, simulates how a buyer persona reacts, and ranks what to fix first by leverage. When you know <em>which</em> reason is yours, fixing it is the easy part — then work the <a href="/blog/how-to-increase-shopify-conversion-rate">11 highest-leverage fixes</a>.</p>
 `.trim(),
+    faqs: [
+      {
+        q: "Why is my Shopify store not converting?",
+        a: "The eight usual causes are an unclear offer, judging cold traffic by the wrong yardstick, slow load time, hidden or missing trust signals, checkout friction, ad-to-page mismatch, weak product pages, and the wrong audience. Diagnose which one is yours before you start fixing.",
+      },
+      {
+        q: "Why am I getting traffic but no sales on Shopify?",
+        a: "Traffic without sales almost always means a post-click problem — a confusing first impression, missing trust, or a slow mobile page — not a traffic problem. Sending more volume into a leaky funnel won't fix it; fix the leak first.",
+      },
+      {
+        q: "How do I diagnose why my store isn't converting?",
+        a: "Look at your store the way a skeptical first-time visitor on a phone would, or run a free audit that annotates the exact issues on your homepage and ranks the fixes — so you fix the one costing you the most first.",
+      },
+    ],
   },
 ];
 
