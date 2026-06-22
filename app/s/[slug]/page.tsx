@@ -224,6 +224,7 @@ export default async function SharedAuditPage({
           <AnnotationsOverlay
             imageUrl={audit.screenshot_url ?? ""}
             annotations={audit.annotations}
+            altLabel={`Annotated conversion audit screenshot of ${domain}`}
           />
         )}
 

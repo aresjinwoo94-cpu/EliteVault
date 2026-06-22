@@ -11,6 +11,10 @@ const NAV = [
   { label: "Analyzer", href: "/#analyzer" },
   { label: "Library", href: "/#library" },
   { label: "Pricing", href: "/#pricing" },
+  // SEO: surface the blog ("Guides") in the top nav. Every page renders the
+  // nav, so this gives the content hub an internal link from the whole site —
+  // not just the footer — which helps the guides get crawled and pass authority.
+  { label: "Guides", href: "/blog" },
   { label: "FAQ", href: "/#faq" },
   { label: "About", href: "/about" },
 ];
