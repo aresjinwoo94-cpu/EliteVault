@@ -1,6 +1,12 @@
 import { redirect } from "next/navigation";
 import { getOwner } from "@/lib/admin/guard";
 import { OwnerMonitor } from "@/components/admin/owner-monitor";
+import { OwnerReviews } from "@/components/admin/owner-reviews";
+import {
+  getAllReviewsForOwner,
+  getReviewSettings,
+  reviewsTablesReady,
+} from "@/lib/reviews/data";
 
 export const metadata = { title: "Monitor del dueño" };
 export const dynamic = "force-dynamic";
@@ -13,5 +19,23 @@ export const dynamic = "force-dynamic";
 export default async function OwnerPage() {
   const owner = await getOwner();
   if (!owner) redirect("/app");
-  return <OwnerMonitor />;
+
+  const [settings, reviews, ready] = await Promise.all([
+    getReviewSettings(),
+    getAllReviewsForOwner(),
+    reviewsTablesReady(),
+  ]);
+
+  return (
+    <>
+      <OwnerMonitor />
+      <div className="mx-auto w-full max-w-[1100px] px-4 pb-16">
+        <OwnerReviews
+          initialSettings={settings}
+          initialReviews={reviews}
+          tablesReady={ready}
+        />
+      </div>
+    </>
+  );
 }
