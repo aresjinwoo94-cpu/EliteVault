@@ -23,6 +23,12 @@ export function Footer() {
             <Link href="/free-website-audit" className="hover:text-white">
               Free audit
             </Link>
+            <Link href="/ai-buyer-persona-simulator" className="hover:text-white">
+              Persona simulator
+            </Link>
+            <Link href="/meta-ads-forecast" className="hover:text-white">
+              Meta Ads forecast
+            </Link>
             <Link href="/blog" className="hover:text-white">
               Blog
             </Link>
