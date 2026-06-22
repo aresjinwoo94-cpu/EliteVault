@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useT } from "@/components/i18n/locale-provider";
 
 const LOGOS = [
   "Allbirds",
@@ -16,11 +17,12 @@ const LOGOS = [
 ];
 
 export function LogoStrip() {
+  const { t } = useT();
   return (
     <section className="py-16 border-y border-white/[0.04] bg-white/[0.01]">
       <div className="container">
         <p className="text-center text-xs uppercase tracking-widest text-white/40">
-          Brands modeled in the vault
+          {t("logoStrip.caption")}
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-x-10 gap-y-4 opacity-70">
           {LOGOS.map((name, i) => (

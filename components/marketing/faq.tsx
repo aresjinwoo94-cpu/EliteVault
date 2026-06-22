@@ -5,13 +5,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FAQ_ITEMS } from "@/lib/content/faq";
+import { useT } from "@/components/i18n/locale-provider";
 
 export function FAQ() {
+  const { t } = useT();
   return (
     <section id="faq" className="py-24 md:py-32 border-t border-white/[0.04]">
       <div className="container max-w-3xl">
         <h2 className="text-center font-serif text-4xl md:text-5xl tracking-tight">
-          Questions, answered.
+          {t("faq.heading")}
         </h2>
         <div className="mt-12 space-y-2">
           {FAQ_ITEMS.map((item, i) => (

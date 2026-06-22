@@ -15,11 +15,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { signOut } from "@/app/actions/auth";
 import { LanguageToggle } from "@/components/i18n/language-toggle";
+import { useT } from "@/components/i18n/locale-provider";
 import type { Database } from "@/lib/supabase/types";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"] | null;
 
 export function AppTopbar({ profile }: { profile: Profile }) {
+  const { t } = useT();
   const [isMac, setIsMac] = useState(false);
   useEffect(() => {
     setIsMac(navigator.platform.toLowerCase().includes("mac"));
@@ -41,7 +43,7 @@ export function AppTopbar({ profile }: { profile: Profile }) {
         className="group flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 text-sm text-white/50 hover:text-white hover:border-white/[0.12] transition-all min-w-[260px]"
       >
         <Search className="size-3.5" />
-        Quick search
+        {t("topbar.quickSearch")}
         <kbd className="ml-auto rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] font-mono text-white/40">
           {isMac ? "⌘K" : "Ctrl K"}
         </kbd>
@@ -60,20 +62,20 @@ export function AppTopbar({ profile }: { profile: Profile }) {
           <DropdownMenuLabel>{profile?.email}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link href="/app/settings">Settings</Link>
+            <Link href="/app/settings">{t("topbar.settings")}</Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/app/billing">Billing</Link>
+            <Link href="/app/billing">{t("topbar.billing")}</Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/support">Help &amp; support</Link>
+            <Link href="/support">{t("topbar.helpSupport")}</Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <form action={signOut}>
             <button type="submit" className="w-full">
               <DropdownMenuItem className="text-destructive focus:text-destructive">
                 <LogOut className="size-4" />
-                Sign out
+                {t("topbar.signOut")}
               </DropdownMenuItem>
             </button>
           </form>

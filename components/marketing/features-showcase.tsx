@@ -3,50 +3,51 @@
 import { motion } from "framer-motion";
 import { Compass, Image as ImageIcon, Library, TrendingUp } from "lucide-react";
 import { DataPill } from "@/components/ui/data-pill";
+import { useT } from "@/components/i18n/locale-provider";
 
 const FEATURES = [
   {
     icon: Library,
-    title: "A live portfolio of winners",
-    body: "An AI agent watches paid-social cohorts and surfaces stores actually generating revenue right now — not a stale Pinterest board.",
+    titleKey: "features.feature1Title",
+    bodyKey: "features.feature1Body",
     href: "#library",
   },
   {
     icon: ImageIcon,
-    title: "Image-similarity search",
-    body: "Drop a screenshot of your own store. We find the closest converting siblings by visual structure — not by tags.",
+    titleKey: "features.feature2Title",
+    bodyKey: "features.feature2Body",
   },
   {
     icon: Compass,
-    title: "Niche-aware judgment",
-    body: "What works for skincare destroys conversion in supplements. The agent knows the difference.",
+    titleKey: "features.feature3Title",
+    bodyKey: "features.feature3Body",
   },
   {
     icon: TrendingUp,
-    title: "Campaign Scenario Modeler (Scale)",
-    body: "Project a 7-day Meta Ads campaign across 3 honest scenarios — conservative, balanced, aggressive — calibrated to your audit, AOV and budget. Estimates, not guarantees.",
+    titleKey: "features.feature4Title",
+    bodyKey: "features.feature4Body",
   },
 ];
 
 export function FeaturesShowcase() {
+  const { t } = useT();
   return (
     <section id="library" className="py-24 md:py-32">
       <div className="container max-w-6xl">
         <div className="max-w-2xl">
-          <DataPill items={["THE ENGINE", "NOT A CHECKLIST"]} />
+          <DataPill items={[t("features.pill1"), t("features.pill2")]} />
           <h2 className="mt-5 font-serif text-4xl md:text-5xl tracking-tight leading-tight">
-            More than a checklist tool.
+            {t("features.heading")}
           </h2>
           <p className="mt-4 text-white/55 leading-relaxed text-lg">
-            EliteVault is the kind of leverage that used to belong to agencies
-            and growth consultants. Now it lives in your dashboard.
+            {t("features.subheading")}
           </p>
         </div>
 
         <div className="mt-12 grid sm:grid-cols-2 gap-4">
           {FEATURES.map((f, i) => (
             <motion.div
-              key={f.title}
+              key={f.titleKey}
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-80px" }}
@@ -57,10 +58,10 @@ export function FeaturesShowcase() {
                 <f.icon className="size-4 text-signal-300" />
               </div>
               <h3 className="mt-5 text-lg font-medium tracking-tight text-white">
-                {f.title}
+                {t(f.titleKey)}
               </h3>
               <p className="mt-1.5 text-sm text-white/55 leading-relaxed">
-                {f.body}
+                {t(f.bodyKey)}
               </p>
             </motion.div>
           ))}

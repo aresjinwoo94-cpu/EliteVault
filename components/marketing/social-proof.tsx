@@ -12,6 +12,7 @@ import { Card } from "@/components/ui/card";
 import { DataPill } from "@/components/ui/data-pill";
 import { ScoreBadge } from "@/components/ui/score-badge";
 import { COMPANY } from "@/lib/company";
+import { useT } from "@/components/i18n/locale-provider";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -44,36 +45,37 @@ const SAMPLE_AUDITS: {
   store: string;
   niche: string;
   score: number;
-  takeaway: string;
+  takeawayKey: string;
 }[] = [
   {
     store: "Gymshark",
     niche: "Activewear",
     score: 91,
-    takeaway: "Ruthless hierarchy, instant offer clarity, heavy social proof.",
+    takeawayKey: "social.takeawayGymshark",
   },
   {
     store: "Allbirds",
     niche: "Footwear",
     score: 88,
-    takeaway: "Calm palette, strong sustainability story, fast above-the-fold.",
+    takeawayKey: "social.takeawayAllbirds",
   },
   {
     store: "MVMT",
     niche: "Watches",
     score: 84,
-    takeaway: "Bold imagery and urgency, but trust badges sit below the fold.",
+    takeawayKey: "social.takeawayMvmt",
   },
 ];
 
-const TRUST_BADGES: { icon: typeof ShieldCheck; label: string }[] = [
-  { icon: CreditCard, label: "No credit card for your free audit" },
-  { icon: Lock, label: "Payments secured by Stripe" },
-  { icon: ShieldCheck, label: "Cancel anytime · no lock-in" },
-  { icon: Sparkles, label: "Estimates, not predictions" },
+const TRUST_BADGES: { icon: typeof ShieldCheck; key: string; labelKey: string }[] = [
+  { icon: CreditCard, key: "noCard", labelKey: "social.badgeNoCard" },
+  { icon: Lock, key: "stripe", labelKey: "social.badgeStripe" },
+  { icon: ShieldCheck, key: "cancel", labelKey: "social.badgeCancel" },
+  { icon: Sparkles, key: "estimates", labelKey: "social.badgeEstimates" },
 ];
 
 export function SocialProof() {
+  const { t } = useT();
   return (
     <section className="relative py-20 md:py-28">
       <div className="container max-w-6xl">
@@ -81,11 +83,10 @@ export function SocialProof() {
         <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
           <DataPill items={["LIVE AUDIT", "REAL SCORES"]} />
           <h2 className="mt-5 font-serif text-3xl md:text-5xl tracking-tight">
-            The same lens the best stores already pass
+            {t("social.heading")}
           </h2>
           <p className="mt-4 text-white/55 leading-relaxed">
-            Here&apos;s how EliteVault grades a few recognizable winners.
-            Illustrative examples — your own audit runs live on your URL.
+            {t("social.subheading")}
           </p>
         </div>
 
@@ -110,15 +111,14 @@ export function SocialProof() {
                   </div>
                 </div>
                 <p className="mt-4 text-sm text-white/60 leading-relaxed">
-                  {a.takeaway}
+                  {t(a.takeawayKey)}
                 </p>
               </Card>
             </motion.div>
           ))}
         </div>
         <p className="mt-4 text-center text-[11px] text-white/30">
-          Illustrative example audits — demonstrative scores, not an
-          endorsement or a real-time result.
+          {t("social.disclaimer")}
         </p>
 
         {/* Founder note */}
@@ -145,13 +145,7 @@ export function SocialProof() {
               <div className="min-w-0">
                 <Quote className="size-5 text-champagne-300/70" />
                 <p className="mt-2 text-base md:text-lg text-white/75 leading-relaxed">
-                  I built EliteVault because I was tired of guessing why a
-                  store wasn&apos;t converting and paying $2k for a consultant
-                  to tell me what an honest audit could in 60 seconds. So I
-                  made the diagnosis free — run it on your own store, see the
-                  exact score and the annotated screenshot, and only pay if you
-                  want the prioritized cure. No fake numbers, no dark patterns,
-                  cancel in two clicks.
+                  {t("social.founderNote")}
                 </p>
               </div>
             </div>
@@ -162,11 +156,11 @@ export function SocialProof() {
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           {TRUST_BADGES.map((b) => (
             <div
-              key={b.label}
+              key={b.key}
               className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] px-4 py-2"
             >
               <b.icon className="size-3.5 text-champagne-300" />
-              <span className="text-xs text-white/65">{b.label}</span>
+              <span className="text-xs text-white/65">{t(b.labelKey)}</span>
             </div>
           ))}
         </div>

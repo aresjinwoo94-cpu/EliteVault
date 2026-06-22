@@ -8,6 +8,7 @@ import { ArrowRight, Lock, Mail, Sparkles, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useT } from "@/components/i18n/locale-provider";
 import {
   sendMagicLink,
   signInWithPassword,
@@ -57,6 +58,7 @@ export function AuthForm({
   message?: string;
 }) {
   const router = useRouter();
+  const { t } = useT();
   // Magic link is the default — most users want one-click. Password mode
   // is a toggle for those who prefer the classic flow.
   const [method, setMethod] = useState<AuthMethod>("magic");
@@ -74,12 +76,12 @@ export function AuthForm({
         </div>
         <div>
           <h1 className="text-xl font-medium tracking-tight">
-            {mode === "sign-in" ? "Welcome back" : "Create your vault"}
+            {mode === "sign-in" ? t("auth.headingSignIn") : t("auth.headingSignUp")}
           </h1>
           <p className="text-sm text-white/50">
             {method === "magic"
-              ? "Sign in with a one-tap email link"
-              : "Sign in with your password"}
+              ? t("auth.subtitleMagic")
+              : t("auth.subtitlePassword")}
           </p>
         </div>
       </div>
@@ -110,14 +112,14 @@ export function AuthForm({
             onClick={() => setMethod("password")}
             className="text-xs text-white/45 hover:text-white/80 transition-colors"
           >
-            Prefer a password? <span className="text-champagne-400">Use email + password →</span>
+            {t("auth.toggleToPasswordPrefix")} <span className="text-champagne-400">{t("auth.toggleToPasswordLink")} →</span>
           </button>
         ) : (
           <button
             onClick={() => setMethod("magic")}
             className="text-xs text-white/45 hover:text-white/80 transition-colors"
           >
-            <span className="text-champagne-400">← Back to one-tap email link</span>
+            <span className="text-champagne-400">← {t("auth.toggleToMagicLink")}</span>
           </button>
         )}
       </div>
@@ -125,22 +127,22 @@ export function AuthForm({
       <p className="mt-5 text-center text-xs text-white/40">
         {mode === "sign-in" ? (
           <>
-            Don&apos;t have an account?{" "}
+            {t("auth.noAccountPrompt")}{" "}
             <Link
               href="/sign-up"
               className="text-champagne-400 hover:text-champagne-300 transition-colors"
             >
-              Sign up
+              {t("auth.signUpLink")}
             </Link>
           </>
         ) : (
           <>
-            Already have an account?{" "}
+            {t("auth.haveAccountPrompt")}{" "}
             <Link
               href="/sign-in"
               className="text-champagne-400 hover:text-champagne-300 transition-colors"
             >
-              Sign in
+              {t("auth.signInLink")}
             </Link>
           </>
         )}
@@ -219,6 +221,7 @@ function inboxLinkFor(email: string): { url: string; label: string } | null {
 }
 
 function MagicLinkForm({ nextUrl }: { nextUrl: string }) {
+  const { t } = useT();
   const [state, formAction, isPending] = useActionState<AuthState, FormData>(
     sendMagicLink,
     { status: "idle" },
@@ -241,10 +244,9 @@ function MagicLinkForm({ nextUrl }: { nextUrl: string }) {
         <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-success/15 ring-1 ring-success/25">
           <CheckCircle2 className="size-6 text-success" />
         </div>
-        <p className="mt-3 font-medium text-white">Check your email</p>
+        <p className="mt-3 font-medium text-white">{t("auth.checkEmailTitle")}</p>
         <p className="mt-1 text-sm text-white/55 leading-relaxed">
-          We sent you a one-tap sign-in link. It can take a few seconds to
-          arrive — if your inbox looks empty, give it a moment and refresh.
+          {t("auth.checkEmailBody")}
         </p>
 
         {/* One-tap shortcut straight to the user's inbox (known providers). */}
@@ -254,7 +256,7 @@ function MagicLinkForm({ nextUrl }: { nextUrl: string }) {
           return (
             <Button asChild size="lg" className="mt-4 w-full">
               <a href={inbox.url} target="_blank" rel="noopener noreferrer">
-                Open {inbox.label}
+                {t("auth.openInbox")} {inbox.label}
                 <ArrowRight className="size-4" />
               </a>
             </Button>
@@ -262,7 +264,7 @@ function MagicLinkForm({ nextUrl }: { nextUrl: string }) {
         })()}
 
         <p className="mt-4 text-[11px] text-white/35">
-          Didn&apos;t get it? Check spam, or wait 60 seconds and try again.
+          {t("auth.checkEmailHelper")}
         </p>
       </motion.div>
     );
@@ -281,7 +283,7 @@ function MagicLinkForm({ nextUrl }: { nextUrl: string }) {
       <input type="hidden" name="next" value={nextUrl} />
 
       <div className="space-y-1.5">
-        <Label htmlFor="magic-email">Email</Label>
+        <Label htmlFor="magic-email">{t("auth.emailLabel")}</Label>
         <div className="relative">
           <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-white/30 pointer-events-none" />
           <Input
@@ -289,7 +291,7 @@ function MagicLinkForm({ nextUrl }: { nextUrl: string }) {
             name="email"
             type="email"
             autoComplete="email"
-            placeholder="you@yourstore.com"
+            placeholder={t("auth.emailPlaceholder")}
             required
             className="pl-10"
             disabled={isPending}
@@ -300,7 +302,7 @@ function MagicLinkForm({ nextUrl }: { nextUrl: string }) {
       </div>
 
       <Button type="submit" size="lg" className="w-full" disabled={isPending}>
-        {isPending ? "Sending link…" : "Email me a sign-in link"}
+        {isPending ? t("auth.sendingLink") : t("auth.sendMagicLink")}
         {!isPending && <ArrowRight className="size-4" />}
       </Button>
 
@@ -309,7 +311,7 @@ function MagicLinkForm({ nextUrl }: { nextUrl: string }) {
       )}
 
       <p className="text-[11px] text-white/35 text-center leading-relaxed">
-        No password to remember. Same link works for sign-up and sign-in.
+        {t("auth.magicHelper")}
       </p>
     </motion.form>
   );
@@ -327,6 +329,7 @@ function PasswordForm({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   router: any;
 }) {
+  const { t } = useT();
   const formRef = useRef<HTMLFormElement>(null);
   const action = mode === "sign-up" ? signUpWithPassword : signInWithPassword;
   const [state, formAction, isPending] = useActionState<AuthState, FormData>(
@@ -365,19 +368,19 @@ function PasswordForm({
       <input type="hidden" name="next" value={nextUrl} />
 
       <div className="space-y-1.5">
-        <Label htmlFor="pw-email">Email</Label>
+        <Label htmlFor="pw-email">{t("auth.emailLabel")}</Label>
         <Input
           id="pw-email"
           name="email"
           type="email"
           autoComplete="email"
-          placeholder="you@yourstore.com"
+          placeholder={t("auth.emailPlaceholder")}
           required
         />
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="pw-password">Password</Label>
+        <Label htmlFor="pw-password">{t("auth.passwordLabel")}</Label>
         <div className="relative">
           <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-white/30 pointer-events-none" />
           <Input
@@ -388,7 +391,9 @@ function PasswordForm({
               mode === "sign-up" ? "new-password" : "current-password"
             }
             placeholder={
-              mode === "sign-up" ? "At least 8 characters" : "Your password"
+              mode === "sign-up"
+                ? t("auth.passwordPlaceholderSignUp")
+                : t("auth.passwordPlaceholderSignIn")
             }
             required
             minLength={8}
@@ -400,11 +405,11 @@ function PasswordForm({
       <Button type="submit" size="lg" className="w-full" disabled={isPending}>
         {isPending
           ? mode === "sign-up"
-            ? "Creating account…"
-            : "Signing in…"
+            ? t("auth.creatingAccount")
+            : t("auth.signingIn")
           : mode === "sign-up"
-            ? "Create account"
-            : "Sign in"}
+            ? t("auth.createAccount")
+            : t("auth.signIn")}
         {!isPending && <ArrowRight className="size-4" />}
       </Button>
 

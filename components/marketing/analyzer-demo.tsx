@@ -5,33 +5,39 @@ import { Brain, Eye, Scan, Target } from "lucide-react";
 import { AnalyzerWalkthrough } from "./analyzer-walkthrough";
 import { AnalyzerBg } from "./analyzer-bg";
 import { DataPill } from "@/components/ui/data-pill";
+import { useT } from "@/components/i18n/locale-provider";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
 const STEPS = [
   {
     icon: Eye,
-    title: "Reads your store like a human",
-    body: "AI vision parses your hero, product grid, copy, color system, and motion — exactly what a senior CRO consultant would clock in the first 5 seconds.",
+    key: "stepReads",
+    titleKey: "analyzerDemo.stepReadsTitle",
+    bodyKey: "analyzerDemo.stepReadsBody",
   },
   {
     icon: Scan,
-    title: "Scores you against the rubric",
-    body: "Six categories — color, layout, imagery, technical, niche fit, CRO principles — calibrated against the brands actually scaling on paid social.",
+    key: "stepScores",
+    titleKey: "analyzerDemo.stepScoresTitle",
+    bodyKey: "analyzerDemo.stepScoresBody",
   },
   {
     icon: Brain,
-    title: "Simulates your buyer persona",
-    body: "Pick a persona (or define one) and watch them react to your store in their own voice. 'I'd bounce' beats any heatmap.",
+    key: "stepPersona",
+    titleKey: "analyzerDemo.stepPersonaTitle",
+    bodyKey: "analyzerDemo.stepPersonaBody",
   },
   {
     icon: Target,
-    title: "Projects a 7-day campaign before you spend",
-    body: "Scale-plan add-on: feed in your AOV + daily budget and the modeler returns 3 honest 7-day scenarios — conservative, balanced, aggressive — with day-by-day spend, ROAS and risks.",
+    key: "stepCampaign",
+    titleKey: "analyzerDemo.stepCampaignTitle",
+    bodyKey: "analyzerDemo.stepCampaignBody",
   },
 ];
 
 export function AnalyzerDemo() {
+  const { t } = useT();
   return (
     <section
       id="analyzer"
@@ -56,21 +62,19 @@ export function AnalyzerDemo() {
             >
               <DataPill items={["THE ANALYZER", "LIVE DEMO"]} />
               <h2 className="mt-5 font-serif text-4xl md:text-5xl tracking-tight leading-tight">
-                A senior media buyer in a tab.
+                {t("analyzerDemo.heading")}
               </h2>
               <p className="mt-4 text-white/55 leading-relaxed text-lg">
-                Paste a URL. In under a minute, EliteVault returns the kind of
-                audit you'd otherwise pay <span className="text-white/80">$1,500 for</span> —
-                annotated screenshot, conversion-rate scenarios, persona
-                reactions, and a brutal punch-list of fixes ranked by leverage.
-                Watch a full run on the right.
+                {t("analyzerDemo.subheadingPre")}{" "}
+                <span className="text-white/80">{t("analyzerDemo.subheadingPrice")}</span>{" "}
+                {t("analyzerDemo.subheadingPost")}
               </p>
             </motion.div>
 
             <div className="mt-10 space-y-5">
               {STEPS.map((s, i) => (
                 <motion.div
-                  key={s.title}
+                  key={s.key}
                   initial={{ opacity: 0, x: -10 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
@@ -81,9 +85,9 @@ export function AnalyzerDemo() {
                     <s.icon className="size-4 text-signal-300" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-white">{s.title}</h3>
+                    <h3 className="font-medium text-white">{t(s.titleKey)}</h3>
                     <p className="mt-1 text-sm text-white/50 leading-relaxed">
-                      {s.body}
+                      {t(s.bodyKey)}
                     </p>
                   </div>
                 </motion.div>

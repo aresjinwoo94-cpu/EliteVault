@@ -13,6 +13,7 @@ import { MarketingNav } from "@/components/marketing/nav";
 import { Footer } from "@/components/marketing/footer";
 import { DataPill } from "@/components/ui/data-pill";
 import { ScoreBadge } from "@/components/ui/score-badge";
+import { getT } from "@/lib/i18n/server";
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
@@ -41,12 +42,18 @@ export const metadata: Metadata = {
 };
 
 const CHECKS = [
-  { icon: Eye, label: "First impression", body: "Is the offer clear in 2 seconds? The exact read a cold visitor gets." },
-  { icon: Gauge, label: "Layout & hierarchy", body: "Above-the-fold, CTA placement, visual flow and proportion." },
-  { icon: ShieldCheck, label: "Trust & proof", body: "Reviews, badges and guarantees — and whether they're where buyers look." },
-  { icon: ScanLine, label: "Imagery & niche fit", body: "Whether your visuals match what converts in your category." },
-  { icon: Zap, label: "CRO principles", body: "Friction, objection handling and the levers that move conversion." },
-  { icon: ListChecks, label: "Technical signals", body: "Speed and on-page issues that quietly leak paid and organic traffic." },
+  { icon: Eye, labelKey: "freeAudit.check1Label", bodyKey: "freeAudit.check1Body" },
+  { icon: Gauge, labelKey: "freeAudit.check2Label", bodyKey: "freeAudit.check2Body" },
+  { icon: ShieldCheck, labelKey: "freeAudit.check3Label", bodyKey: "freeAudit.check3Body" },
+  { icon: ScanLine, labelKey: "freeAudit.check4Label", bodyKey: "freeAudit.check4Body" },
+  { icon: Zap, labelKey: "freeAudit.check5Label", bodyKey: "freeAudit.check5Body" },
+  { icon: ListChecks, labelKey: "freeAudit.check6Label", bodyKey: "freeAudit.check6Body" },
+];
+
+const STEPS = [
+  { n: 1, titleKey: "freeAudit.step1Title", bodyKey: "freeAudit.step1Body" },
+  { n: 2, titleKey: "freeAudit.step2Title", bodyKey: "freeAudit.step2Body" },
+  { n: 3, titleKey: "freeAudit.step3Title", bodyKey: "freeAudit.step3Body" },
 ];
 
 const FAQS = [
@@ -72,7 +79,8 @@ const FAQS = [
   },
 ];
 
-export default function FreeWebsiteAuditPage() {
+export default async function FreeWebsiteAuditPage() {
+  const { t } = await getT();
   const jsonLd = [
     {
       "@context": "https://schema.org",
@@ -115,26 +123,22 @@ export default function FreeWebsiteAuditPage() {
       <main className="container max-w-5xl pt-28 pb-24 md:pt-36">
         {/* Hero */}
         <div className="max-w-3xl">
-          <DataPill items={["FREE WEBSITE AUDIT", "NO CREDIT CARD"]} />
+          <DataPill items={[t("freeAudit.badge1"), t("freeAudit.badge2")]} />
           <h1 className="mt-5 font-serif text-4xl md:text-6xl tracking-tight leading-[1.05]">
-            Free website audit — your store&apos;s conversion score in 60
-            seconds
+            {t("freeAudit.heroH1")}
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-white/55 leading-relaxed">
-            EliteVault is an AI website analyzer built for ecommerce. Paste your
-            URL and get an honest conversion score, an annotated screenshot of
-            exactly what&apos;s costing you sales, and a punch-list of fixes
-            ranked by impact — free, no card, in under a minute.
+            {t("freeAudit.heroBody")}
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link href="/sign-up?next=/app/analyzer">
               <span className="inline-flex items-center gap-2 rounded-lg bg-champagne-400 px-6 py-3 text-base font-medium text-obsidian-950 shadow-gold transition-colors hover:bg-champagne-300">
-                Audit my store free
+                {t("freeAudit.heroCta")}
                 <ArrowRight className="size-4" />
               </span>
             </Link>
             <span className="font-mono text-xs uppercase tracking-wider text-white/40">
-              1 free analysis · cancel anytime
+              {t("freeAudit.heroCaption")}
             </span>
           </div>
         </div>
@@ -142,24 +146,23 @@ export default function FreeWebsiteAuditPage() {
         {/* What it checks */}
         <section className="mt-20">
           <h2 className="font-serif text-2xl md:text-3xl tracking-tight">
-            What the website analyzer checks
+            {t("freeAudit.checksH2")}
           </h2>
           <p className="mt-2 max-w-2xl text-sm text-white/55 leading-relaxed">
-            Six categories, scored the way a buyer — and a senior media buyer —
-            actually experience your store.
+            {t("freeAudit.checksSub")}
           </p>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {CHECKS.map((c) => (
               <div
-                key={c.label}
+                key={c.labelKey}
                 className="rounded-2xl border border-white/[0.06] bg-card p-5 shadow-card"
               >
                 <div className="flex size-9 items-center justify-center rounded-lg bg-signal-600/10 ring-1 ring-signal-500/20">
                   <c.icon className="size-4 text-signal-300" />
                 </div>
-                <h3 className="mt-4 font-medium text-white">{c.label}</h3>
+                <h3 className="mt-4 font-medium text-white">{t(c.labelKey)}</h3>
                 <p className="mt-1.5 text-sm text-white/55 leading-relaxed">
-                  {c.body}
+                  {t(c.bodyKey)}
                 </p>
               </div>
             ))}
@@ -169,22 +172,18 @@ export default function FreeWebsiteAuditPage() {
         {/* How it works */}
         <section className="mt-20">
           <h2 className="font-serif text-2xl md:text-3xl tracking-tight">
-            How the free audit works
+            {t("freeAudit.stepsH2")}
           </h2>
           <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {[
-              { n: 1, t: "Paste your URL", b: "No install, no code on your site. The analyzer captures your page automatically." },
-              { n: 2, t: "AI reviews it cold", b: "A vision model reads your store like a first-time visitor and scores six categories." },
-              { n: 3, t: "Get your score + fixes", b: "An annotated screenshot and a punch-list ranked by leverage — in under a minute." },
-            ].map((s) => (
+            {STEPS.map((s) => (
               <div
                 key={s.n}
                 className="rounded-2xl border border-white/[0.06] bg-card p-5 shadow-card"
               >
                 <span className="num text-2xl text-gold-gradient">{s.n}</span>
-                <h3 className="mt-2 font-medium text-white">{s.t}</h3>
+                <h3 className="mt-2 font-medium text-white">{t(s.titleKey)}</h3>
                 <p className="mt-1.5 text-sm text-white/55 leading-relaxed">
-                  {s.b}
+                  {t(s.bodyKey)}
                 </p>
               </div>
             ))}
@@ -196,20 +195,16 @@ export default function FreeWebsiteAuditPage() {
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="max-w-xl">
               <h2 className="font-serif text-2xl md:text-3xl tracking-tight">
-                A real diagnosis, not a vanity number
+                {t("freeAudit.valueH2")}
               </h2>
               <p className="mt-3 text-sm text-white/55 leading-relaxed">
-                Most &ldquo;free website audit&rdquo; tools spit out a generic
-                score. EliteVault gives you an overall conversion score, the
-                six category breakdowns, an annotated screenshot marking each
-                issue, a buyer-persona reaction, and the fixes ranked by impact
-                — the same diagnosis consultants charge $2,000 for.
+                {t("freeAudit.valueBody")}
               </p>
               <Link
                 href="/blog/ecommerce-store-audit-vs-consultant"
                 className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-signal-300 hover:text-signal-200"
               >
-                Why the $2,000 audit is dead
+                {t("freeAudit.valueLink")}
                 <ArrowRight className="size-3.5" />
               </Link>
             </div>
@@ -247,15 +242,14 @@ export default function FreeWebsiteAuditPage() {
         {/* Final CTA */}
         <section className="mt-16 rounded-3xl border border-champagne-400/20 bg-champagne-400/[0.04] p-8 text-center">
           <h2 className="font-serif text-2xl md:text-3xl tracking-tight text-white">
-            Audit your store free
+            {t("freeAudit.finalH2")}
           </h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-white/55 leading-relaxed">
-            Your conversion score, an annotated screenshot, and a ranked
-            punch-list — in under a minute. No credit card.
+            {t("freeAudit.finalBody")}
           </p>
           <Link href="/sign-up?next=/app/analyzer">
             <span className="mt-5 inline-flex items-center gap-2 rounded-lg bg-champagne-400 px-6 py-3 text-base font-medium text-obsidian-950 shadow-gold transition-colors hover:bg-champagne-300">
-              Run my free website audit
+              {t("freeAudit.finalCta")}
               <ArrowRight className="size-4" />
             </span>
           </Link>

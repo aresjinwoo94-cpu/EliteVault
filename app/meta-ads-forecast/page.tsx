@@ -12,6 +12,7 @@ import {
 import { MarketingNav } from "@/components/marketing/nav";
 import { Footer } from "@/components/marketing/footer";
 import { DataPill } from "@/components/ui/data-pill";
+import { getT } from "@/lib/i18n/server";
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
@@ -40,42 +41,15 @@ export const metadata: Metadata = {
 };
 
 const SCENARIOS = [
-  {
-    icon: ShieldAlert,
-    label: "Conservative",
-    body: "The cautious case — softer CTR and ROAS. The floor you should be able to live with if the creative underperforms.",
-    tone: "text-warning",
-  },
-  {
-    icon: LineChart,
-    label: "Balanced",
-    body: "The realistic mid-case built from current niche benchmarks for your AOV and budget. Your planning number.",
-    tone: "text-signal-300",
-  },
-  {
-    icon: TrendingUp,
-    label: "Aggressive",
-    body: "The upside if the angle hits — stronger CTR and efficiency. What &ldquo;working&rdquo; could look like.",
-    tone: "text-success",
-  },
+  { icon: ShieldAlert, labelKey: "metaAdsPage.scenario1Label", bodyKey: "metaAdsPage.scenario1Body", tone: "text-warning" },
+  { icon: LineChart, labelKey: "metaAdsPage.scenario2Label", bodyKey: "metaAdsPage.scenario2Body", tone: "text-signal-300" },
+  { icon: TrendingUp, labelKey: "metaAdsPage.scenario3Label", bodyKey: "metaAdsPage.scenario3Body", tone: "text-success" },
 ];
 
 const INPUTS = [
-  {
-    icon: Wallet,
-    label: "Your budget & AOV",
-    body: "Daily spend and average order value anchor the math to your store, not a generic template.",
-  },
-  {
-    icon: Calculator,
-    label: "Real niche benchmarks",
-    body: "CPC, CPM, CTR and ROAS ranges drawn from current ecommerce benchmarks for your category.",
-  },
-  {
-    icon: GitBranch,
-    label: "Three parallel scenarios",
-    body: "Conservative, balanced and aggressive — modeled together so you see the full range before funding.",
-  },
+  { icon: Wallet, labelKey: "metaAdsPage.input1Label", bodyKey: "metaAdsPage.input1Body" },
+  { icon: Calculator, labelKey: "metaAdsPage.input2Label", bodyKey: "metaAdsPage.input2Body" },
+  { icon: GitBranch, labelKey: "metaAdsPage.input3Label", bodyKey: "metaAdsPage.input3Body" },
 ];
 
 const FAQS = [
@@ -101,7 +75,8 @@ const FAQS = [
   },
 ];
 
-export default function MetaAdsForecastPage() {
+export default async function MetaAdsForecastPage() {
+  const { t } = await getT();
   const jsonLd = [
     {
       "@context": "https://schema.org",
@@ -144,26 +119,22 @@ export default function MetaAdsForecastPage() {
       <main className="container max-w-5xl pt-28 pb-24 md:pt-36">
         {/* Hero */}
         <div className="max-w-3xl">
-          <DataPill items={["META ADS FORECAST", "BEFORE YOU SPEND A DOLLAR"]} />
+          <DataPill items={[t("metaAdsPage.badge1"), t("metaAdsPage.badge2")]} />
           <h1 className="mt-5 font-serif text-4xl md:text-6xl tracking-tight leading-[1.05]">
-            Forecast your Meta Ads campaign before you fund it
+            {t("metaAdsPage.heroH1")}
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-white/55 leading-relaxed">
-            EliteVault projects a 7-day Meta campaign across three scenarios —
-            conservative, balanced and aggressive — using your budget, average
-            order value and current niche benchmarks. See the likely spend, CPC,
-            ROAS and revenue range before you commit, so you know whether the
-            math even works.
+            {t("metaAdsPage.heroBody")}
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link href="/sign-up?next=/app/analyzer">
               <span className="inline-flex items-center gap-2 rounded-lg bg-champagne-400 px-6 py-3 text-base font-medium text-obsidian-950 shadow-gold transition-colors hover:bg-champagne-300">
-                Model my campaign
+                {t("metaAdsPage.heroCta")}
                 <ArrowRight className="size-4" />
               </span>
             </Link>
             <span className="font-mono text-xs uppercase tracking-wider text-white/40">
-              estimate, not prediction
+              {t("metaAdsPage.heroCaption")}
             </span>
           </div>
         </div>
@@ -171,25 +142,24 @@ export default function MetaAdsForecastPage() {
         {/* Three scenarios */}
         <section className="mt-20">
           <h2 className="font-serif text-2xl md:text-3xl tracking-tight">
-            Three scenarios, modeled side by side
+            {t("metaAdsPage.scenariosH2")}
           </h2>
           <p className="mt-2 max-w-2xl text-sm text-white/55 leading-relaxed">
-            One projection hides the risk. The modeler shows the floor, the
-            realistic middle and the upside together.
+            {t("metaAdsPage.scenariosSub")}
           </p>
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             {SCENARIOS.map((s) => (
               <div
-                key={s.label}
+                key={s.labelKey}
                 className="rounded-2xl border border-white/[0.06] bg-card p-5 shadow-card"
               >
                 <div className="flex items-center gap-2">
                   <s.icon className={`size-4 ${s.tone}`} />
-                  <h3 className={`font-medium ${s.tone}`}>{s.label}</h3>
+                  <h3 className={`font-medium ${s.tone}`}>{t(s.labelKey)}</h3>
                 </div>
                 <p
                   className="mt-3 text-sm text-white/55 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: s.body }}
+                  dangerouslySetInnerHTML={{ __html: t(s.bodyKey) }}
                 />
               </div>
             ))}
@@ -199,20 +169,20 @@ export default function MetaAdsForecastPage() {
         {/* What goes in */}
         <section className="mt-20">
           <h2 className="font-serif text-2xl md:text-3xl tracking-tight">
-            What the forecast is built from
+            {t("metaAdsPage.inputsH2")}
           </h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {INPUTS.map((c) => (
               <div
-                key={c.label}
+                key={c.labelKey}
                 className="rounded-2xl border border-white/[0.06] bg-card p-5 shadow-card"
               >
                 <div className="flex size-9 items-center justify-center rounded-lg bg-signal-600/10 ring-1 ring-signal-500/20">
                   <c.icon className="size-4 text-signal-300" />
                 </div>
-                <h3 className="mt-4 font-medium text-white">{c.label}</h3>
+                <h3 className="mt-4 font-medium text-white">{t(c.labelKey)}</h3>
                 <p className="mt-1.5 text-sm text-white/55 leading-relaxed">
-                  {c.body}
+                  {t(c.bodyKey)}
                 </p>
               </div>
             ))}
@@ -223,24 +193,19 @@ export default function MetaAdsForecastPage() {
         <section className="mt-20 rounded-3xl border border-white/[0.06] bg-card p-6 shadow-card md:p-8">
           <div className="max-w-2xl">
             <h2 className="font-serif text-2xl md:text-3xl tracking-tight">
-              A planning tool, not a crystal ball
+              {t("metaAdsPage.honestyH2")}
             </h2>
             <p className="mt-3 text-sm text-white/55 leading-relaxed">
-              We keep this honest: the forecast is an <em>estimate</em> based on
-              real benchmarks and your numbers — not a prediction of what will
-              happen. The biggest variable isn&apos;t the model, it&apos;s your
-              store. A great forecast on a page that doesn&apos;t convert cold
-              traffic is just an expensive lesson waiting to happen.
+              {t("metaAdsPage.honestyBody1Pre")} <em>{t("metaAdsPage.honestyBody1Em")}</em> {t("metaAdsPage.honestyBody1Post")}
             </p>
             <p className="mt-3 text-sm text-white/55 leading-relaxed">
-              So forecast the campaign — then make sure the destination can take
-              the traffic.
+              {t("metaAdsPage.honestyBody2")}
             </p>
             <Link
               href="/blog/why-meta-ads-arent-converting"
               className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-signal-300 hover:text-signal-200"
             >
-              Why your Meta ads aren&apos;t converting
+              {t("metaAdsPage.honestyLink")}
               <ArrowRight className="size-3.5" />
             </Link>
           </div>
@@ -266,15 +231,14 @@ export default function MetaAdsForecastPage() {
         {/* Final CTA */}
         <section className="mt-16 rounded-3xl border border-champagne-400/20 bg-champagne-400/[0.04] p-8 text-center">
           <h2 className="font-serif text-2xl md:text-3xl tracking-tight text-white">
-            Know the math before you spend
+            {t("metaAdsPage.finalH2")}
           </h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-white/55 leading-relaxed">
-            Start free with a store audit. The 7-day Meta Ads Campaign Scenario
-            Modeler lives on the Scale plan.
+            {t("metaAdsPage.finalBody")}
           </p>
           <Link href="/sign-up?next=/app/analyzer">
             <span className="mt-5 inline-flex items-center gap-2 rounded-lg bg-champagne-400 px-6 py-3 text-base font-medium text-obsidian-950 shadow-gold transition-colors hover:bg-champagne-300">
-              Start free
+              {t("metaAdsPage.finalCta")}
               <ArrowRight className="size-4" />
             </span>
           </Link>

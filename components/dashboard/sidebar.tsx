@@ -15,6 +15,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { PLANS } from "@/lib/stripe/plans";
+import { useT } from "@/components/i18n/locale-provider";
 import { Logo } from "@/components/brand/logo";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -23,25 +24,26 @@ import type { Database } from "@/lib/supabase/types";
 type Profile = Database["public"]["Tables"]["profiles"]["Row"] | null;
 
 const BASE_NAV: Array<{
-  label: string;
+  key: string;
   href: string;
   icon: typeof Compass;
   highlight?: boolean;
   scaleOnly?: boolean;
 }> = [
-  { label: "Overview", href: "/app", icon: Compass },
-  { label: "Analyzer", href: "/app/analyzer", icon: Scan, highlight: true },
-  { label: "Trends", href: "/app/trends", icon: TrendingUp },
-  { label: "Monitor", href: "/app/monitor", icon: Radar },
-  { label: "Library", href: "/app/library", icon: Library },
-  { label: "Community", href: "/app/community", icon: Globe },
-  { label: "API keys", href: "/app/settings/api-keys", icon: KeyRound, scaleOnly: true },
-  { label: "Billing", href: "/app/billing", icon: CreditCard },
-  { label: "Settings", href: "/app/settings", icon: Settings },
+  { key: "sidebar.navOverview", href: "/app", icon: Compass },
+  { key: "sidebar.navAnalyzer", href: "/app/analyzer", icon: Scan, highlight: true },
+  { key: "sidebar.navTrends", href: "/app/trends", icon: TrendingUp },
+  { key: "sidebar.navMonitor", href: "/app/monitor", icon: Radar },
+  { key: "sidebar.navLibrary", href: "/app/library", icon: Library },
+  { key: "sidebar.navCommunity", href: "/app/community", icon: Globe },
+  { key: "sidebar.navApiKeys", href: "/app/settings/api-keys", icon: KeyRound, scaleOnly: true },
+  { key: "sidebar.navBilling", href: "/app/billing", icon: CreditCard },
+  { key: "sidebar.navSettings", href: "/app/settings", icon: Settings },
 ];
 
 export function AppSidebar({ profile }: { profile: Profile }) {
   const path = usePathname();
+  const { t } = useT();
   const isScale = PLANS[profile?.plan ?? "free"].unlocksScale;
   const NAV = BASE_NAV.filter((item) => !item.scaleOnly || isScale);
 
@@ -87,7 +89,7 @@ export function AppSidebar({ profile }: { profile: Profile }) {
                     : "text-white/40 group-hover:text-white/70",
                 )}
               />
-              {item.label}
+              {t(item.key)}
               {item.highlight && (
                 <Sparkles className="ml-auto size-3 text-signal-400" />
               )}
@@ -99,7 +101,7 @@ export function AppSidebar({ profile }: { profile: Profile }) {
       <div className="mx-3 mt-2 rounded-xl border border-white/[0.06] p-4 bg-gradient-to-br from-signal-600/[0.08] to-champagne-400/[0.05]">
         <div className="flex items-center justify-between">
           <span className="text-[10px] uppercase tracking-widest text-white/40">
-            Plan
+            {t("sidebar.planLabel")}
           </span>
           <Badge variant={profile?.plan === "free" ? "default" : "gold"}>
             {(profile?.plan ?? "free").toUpperCase()}
@@ -109,14 +111,14 @@ export function AppSidebar({ profile }: { profile: Profile }) {
           <span className="num text-3xl text-gold-gradient">
             {profile?.credits ?? 0}
           </span>
-          <span className="text-xs text-white/40">credits left</span>
+          <span className="text-xs text-white/40">{t("sidebar.creditsLeft")}</span>
         </div>
         {profile?.plan === "free" && (
           <Link
             href="/app/billing"
             className="mt-3 block text-xs text-champagne-400 hover:text-champagne-300 transition-colors"
           >
-            Upgrade to Pro →
+            {t("sidebar.upgradeCta")} →
           </Link>
         )}
       </div>
