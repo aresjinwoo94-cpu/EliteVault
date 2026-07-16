@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Activity, ExternalLink, Lock, Sparkles, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +32,13 @@ export function SiteCard({
     | null
     | undefined;
   const locked = !!site.metrics_locked;
+  // Thumbnails used to be live WordPress-mshots URLs, which render on demand
+  // and hand back a blank placeholder on a cold cache — that's what produced
+  // the empty grey cards. Thumbnails are now snapshotted into our own Supabase
+  // Storage (see scripts/snapshot-library-thumbnails.ts), but a row can still
+  // 404 (pre-backfill, or a since-deleted object), so never leave a broken box:
+  // fall back to a branded tile built from the domain itself.
+  const [imgFailed, setImgFailed] = useState(false);
 
   return (
     <motion.div
@@ -59,16 +67,31 @@ export function SiteCard({
       )}
 
       <div className="relative aspect-[4/3] overflow-hidden bg-obsidian-900">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={site.thumbnail_url}
-          alt={site.title}
-          className={cn(
-            "absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105",
-            locked && "grayscale-[40%]",
-          )}
-          loading="lazy"
-        />
+        {imgFailed || !site.thumbnail_url ? (
+          <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-obsidian-800 to-obsidian-900">
+            <div className="absolute inset-0 bg-dot-grid opacity-20" />
+            <span className="relative font-serif text-4xl text-white/25">
+              {site.domain.replace(/^www\./, "").charAt(0).toUpperCase()}
+            </span>
+          </div>
+        ) : (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={site.thumbnail_url}
+            alt={site.title}
+            onError={() => setImgFailed(true)}
+            className={cn(
+              // object-TOP, not the browser default (center): thumbnails are
+              // full-page captures, often 2880x20000 (ratio ~7), so centering
+              // crops this 4:3 window to a random slice of the page's middle —
+              // usually a footer or a product grid. The top is the hero, which
+              // is what identifies the store at a glance.
+              "absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105",
+              locked && "grayscale-[40%]",
+            )}
+            loading="lazy"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-obsidian-950/80 via-obsidian-950/20 to-transparent" />
         <div className="absolute bottom-3 left-3 flex gap-1.5">
           {site.is_featured && (

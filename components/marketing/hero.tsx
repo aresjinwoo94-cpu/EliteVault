@@ -1,8 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -10,10 +8,10 @@ import {
   AlertTriangle,
   Zap,
   TrendingUp,
-  Globe,
+  ShieldCheck,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { DataPill } from "@/components/ui/data-pill";
 import { CountUp } from "@/components/ui/count-up";
 import { useT } from "@/components/i18n/locale-provider";
@@ -21,58 +19,56 @@ import { useT } from "@/components/i18n/locale-provider";
 const ease = [0.22, 1, 0.36, 1] as const;
 
 /**
- * Primary hero CTA — P2.1 "URL box as the entry to the product".
+ * Primary hero CTA — single, unambiguous focus.
  *
- * The audit can't run before the user has a (verified-email) account —
- * that's the anti-abuse gate — so we deliberately DON'T fake an instant
- * analysis from the landing. Instead the pasted URL is CAPTURED here and
- * carried THROUGH sign-up: it rides along as `?url=` on the post-auth
- * `next` route and lands prefilled in /app/analyzer, leaving the new user
- * one click from their "wow". Fewer steps to the aha, honest copy (no
- * "instant" promise), and the receiving end (analyzer-launcher `initialUrl`)
- * was already wired for exactly this. An empty box just goes to sign-up.
+ * The old hero paired a URL <input> with the button. That created a second
+ * decision ("do I paste now or later?") on cold traffic and split attention
+ * from the one action that matters. We removed it: one strong primary CTA
+ * that routes straight into sign-up → /app/analyzer (the analyzer-launcher
+ * prompts for the URL at exactly the moment it can act on it), plus a quiet
+ * secondary link that scrolls to the live demo for visitors who want to see
+ * it work before committing.
  */
 function HeroCta() {
   const { t } = useT();
-  const router = useRouter();
-  const [url, setUrl] = useState("");
-
-  function go() {
-    const trimmed = url.trim();
-    // Nest the store URL inside the analyzer route, then hand the whole
-    // route to sign-up as `next` (the callback validates it's a same-origin
-    // relative path). Double-encode because `next` is itself a query value.
-    const next = trimmed
-      ? `/app/analyzer?url=${encodeURIComponent(trimmed)}`
-      : "/app/analyzer";
-    router.push(`/sign-up?next=${encodeURIComponent(next)}`);
-  }
-
   return (
-    <div className="flex w-full max-w-xl flex-col items-start gap-3">
-      <div className="flex w-full flex-col gap-2.5 sm:flex-row">
-        <div className="relative flex-1">
-          <Globe className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-white/30" />
-          <Input
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && go()}
-            placeholder={t("hero.urlPlaceholder")}
-            aria-label="Your store URL"
-            inputMode="url"
-            className="h-12 bg-white/[0.03] pl-10 text-base"
-          />
-        </div>
-        <Button size="xl" onClick={go} className="shrink-0">
-          {t("hero.ctaPrimary")}
-          <ArrowRight className="size-4" />
+    <div className="flex w-full max-w-xl flex-col items-start gap-4">
+      <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+        <Button asChild size="xl" className="shrink-0">
+          <Link href="/sign-up?next=/app/analyzer">
+            {t("hero.ctaPrimary")}
+            <ArrowRight className="size-4" />
+          </Link>
         </Button>
-      </div>
-      <Link href="#analyzer">
-        <Button variant="ghost" size="sm" className="text-white/55">
+        <Link
+          href="#analyzer"
+          className="group inline-flex items-center gap-1.5 px-1 text-sm text-white/55 transition-colors hover:text-white/85"
+        >
           {t("hero.ctaSecondary")}
-        </Button>
-      </Link>
+          <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Stripe + SSL trust row. Deliberately quiet — hairline chips, muted text —
+ * so it reassures without competing with the CTA. Reuses the same glass /
+ * champagne language as the rest of the hero.
+ */
+function StripeTrust() {
+  const { t } = useT();
+  return (
+    <div className="mt-5 flex flex-wrap items-center gap-2.5">
+      <span className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.02] px-2.5 py-1 text-[11px] text-white/50">
+        <ShieldCheck className="size-3.5 text-champagne-400/80" />
+        {t("hero.stripeBadge")}
+      </span>
+      <span className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.02] px-2.5 py-1 text-[11px] text-white/50">
+        <Lock className="size-3.5 text-champagne-400/80" />
+        {t("hero.sslBadge")}
+      </span>
     </div>
   );
 }
@@ -145,6 +141,14 @@ export function Hero() {
         >
           {t("hero.trust")}
         </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.2, delay: 0.75 }}
+        >
+          <StripeTrust />
+        </motion.div>
       </div>
 
       {/* hero preview card */}

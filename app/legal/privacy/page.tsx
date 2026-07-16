@@ -88,11 +88,22 @@ export default function PrivacyPage() {
         </p>
         <p>
           <strong>
-            We do not use your URLs, screenshots, or audits to train AI models,
-            and we do not sell or share your screenshots with third parties for
-            their own purposes.
+            EliteVault does not train any AI model on your URLs, screenshots, or
+            audits, and we never sell them.
           </strong>{" "}
           Your analyses are private to your account.
+        </p>
+        <p>
+          <strong>How Google uses this content.</strong> EliteVault currently
+          runs on the Google Gemini API <strong>free tier</strong>. Under
+          Google&apos;s free-tier terms, the content we send to generate your
+          audit (the page URL and its screenshot) may be used by Google to
+          improve its products and services, and human reviewers may read and
+          annotate it. Google states that content submitted through its paid
+          tier is not used for those purposes. Because of this, please do not
+          run audits on pages containing confidential or personal information
+          you would not want reviewed. If we move to Gemini&apos;s paid tier, we
+          will update this section.
         </p>
 
         <h2>6. Service providers (sub-processors)</h2>

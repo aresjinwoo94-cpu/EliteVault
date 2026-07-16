@@ -11,14 +11,13 @@ import type { PlanTier } from "@/lib/supabase/types";
  *   - 'analysis'            → profiles.credits (UNCHANGED from the existing
  *                             credit system, so the Analyzer behaves exactly
  *                             as before; credits stay the source of truth).
- *   - 'monitoredCompetitor' → row count in monitored_stores (Phase 3).
  *   - 'trackedNiche'        → row count in tracked_niches  (Phase 2/3).
  *
  * Phase-2/3 kinds are defined now so callers can depend on a stable API, but
  * their backing tables land in later phases; until then they expose the plan
  * limit without enforcing (no query against tables that don't exist yet).
  */
-export type QuotaKind = "analysis" | "monitoredCompetitor" | "trackedNiche";
+export type QuotaKind = "analysis" | "trackedNiche";
 
 export type QuotaResult =
   | { ok: true; remaining: number | null }
@@ -55,26 +54,6 @@ export async function assertQuota(
       return { ok: true, remaining: credits };
     }
 
-    case "monitoredCompetitor": {
-      const limit = quotas.monitoredCompetitors;
-      const { count } = await service
-        .from("monitored_stores")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", userId)
-        .eq("kind", "competitor");
-      const used = count ?? 0;
-      if (used >= limit) {
-        return {
-          ok: false,
-          reason:
-            limit === 0
-              ? "Competitor monitoring is a Pro feature. Upgrade to track competitors."
-              : `Your plan allows ${limit} monitored competitors. Upgrade for more.`,
-          limit,
-        };
-      }
-      return { ok: true, remaining: limit - used };
-    }
     // Enforcement wired in a later phase (table not created yet).
     case "trackedNiche":
       return { ok: true, remaining: quotas.trackedNiches };

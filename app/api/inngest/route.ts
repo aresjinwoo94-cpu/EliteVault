@@ -3,7 +3,6 @@ import { inngest } from "@/inngest/client";
 import { analyzeWebsite } from "@/inngest/functions/analyze-website";
 import { runMetaSimulationFn } from "@/inngest/functions/run-meta-simulation";
 import { refreshTrends } from "@/inngest/functions/refresh-trends";
-import { weeklyReaudit } from "@/inngest/functions/weekly-reaudit";
 import { activationFollowup } from "@/inngest/functions/activation-followup";
 
 export const { GET, POST, PUT } = serve({
@@ -12,7 +11,6 @@ export const { GET, POST, PUT } = serve({
     analyzeWebsite,
     runMetaSimulationFn,
     refreshTrends,
-    weeklyReaudit,
     activationFollowup,
   ],
   streaming: "allow",

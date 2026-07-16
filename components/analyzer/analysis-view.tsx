@@ -4,7 +4,13 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowLeft, RefreshCw, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Library as LibraryIcon,
+  RefreshCw,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -288,6 +294,37 @@ export function AnalysisView({
               <NichePositionBar score={data.result.score} />
               <StrengthsIssuesMap scores={data.result.category_scores} />
             </div>
+
+            {/*
+              Analyzer → Library bridge. The niche bar directly above just told
+              the operator where they stand against their niche; the natural next
+              question is "so who's beating me, and what do they do differently?".
+              One hop to the Library answers it. The reverse link (Library →
+              "Audit my store") lives in the Library header, so the product's two
+              pillars are always one click apart in both directions.
+            */}
+            <Link
+              href="/app/library"
+              className="group flex items-center justify-between gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] px-5 py-4 transition-colors hover:border-signal-500/25 hover:bg-white/[0.03]"
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-signal-600/10 ring-1 ring-signal-500/20">
+                  <LibraryIcon className="size-4 text-signal-300" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm text-white/85">
+                    See the stores already converting in your niche
+                  </p>
+                  <p className="text-xs text-white/45">
+                    Study what the winners do differently — then copy it.
+                  </p>
+                </div>
+              </div>
+              <span className="flex shrink-0 items-center gap-1.5 text-xs text-signal-300">
+                Open Library
+                <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+              </span>
+            </Link>
 
             {/*
               Two-column body. LEFT column is the "primary content" stream —

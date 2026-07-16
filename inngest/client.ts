@@ -46,14 +46,6 @@ type Events = {
       force?: boolean;
     };
   };
-  // Phase 3 — manual trigger for the weekly monitoring re-audit + digest
-  // (also runs on a weekly cron). `userId` targets a single user (e.g. the
-  // operator testing their own digest); omitted = all users.
-  "monitoring/reaudit.requested": {
-    data: {
-      userId?: string | null;
-    };
-  };
   // Phase 5 — fired the first time a user gets a successful audit. Kicks off
   // the delayed activation follow-up email.
   "activation/first-value": {

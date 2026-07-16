@@ -109,7 +109,6 @@ export default function SupportPage() {
                     <tr className="text-left text-[11px] uppercase tracking-wider text-white/40 border-b border-white/[0.06]">
                       <th className="py-2 pr-4 font-medium">Plan</th>
                       <th className="py-2 px-2 font-medium text-right">Audits / mo</th>
-                      <th className="py-2 px-2 font-medium text-right">Competitors</th>
                       <th className="py-2 pl-2 font-medium text-right">Tracked niches</th>
                     </tr>
                   </thead>
@@ -128,9 +127,6 @@ export default function SupportPage() {
                           </td>
                           <td className="py-2 px-2 text-right tabular-nums text-white/70">
                             {p.quotas.analysesPerMonth}
-                          </td>
-                          <td className="py-2 px-2 text-right tabular-nums text-white/70">
-                            {p.quotas.monitoredCompetitors}
                           </td>
                           <td className="py-2 pl-2 text-right tabular-nums text-white/70">
                             {p.quotas.trackedNiches}

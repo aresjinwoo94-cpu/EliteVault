@@ -7,8 +7,16 @@ import type {
 } from "../provider";
 import { recordUsage } from "@/lib/usage/meter";
 
-const MODEL = process.env.GEMINI_MODEL ?? "gemini-2.5-pro";
-const MODEL_FAST = process.env.GEMINI_MODEL_FAST ?? "gemini-2.5-flash";
+// Defaults target the BEST models still covered by Google's free tier:
+//   MODEL      → paid audits. gemini-3.5-flash is the strongest free-tier
+//                vision model; far better reasoning than any *-flash-lite.
+//   MODEL_FAST → free audits + the fallback rung of the model chain below.
+//                flash-lite has the highest RPM, so it absorbs bursts.
+// If MODEL hits its (lower) free-tier RPM, the chain degrades to MODEL_FAST
+// instead of failing the audit. Switch to gemini-2.5-pro / gemini-3.1-pro
+// once the project has billing enabled.
+const MODEL = process.env.GEMINI_MODEL ?? "gemini-3.5-flash";
+const MODEL_FAST = process.env.GEMINI_MODEL_FAST ?? "gemini-3.1-flash-lite";
 
 // ─── Multi-key rotation pool ────────────────────────────────────────────────
 //

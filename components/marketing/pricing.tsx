@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Check, X } from "lucide-react";
+import { Check, X, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataPill } from "@/components/ui/data-pill";
@@ -165,6 +165,15 @@ export function Pricing() {
               </ul>
             </motion.div>
           ))}
+        </div>
+
+        {/* Stripe reassurance — payments are handled by Stripe; make that
+            explicit right where the purchase decision happens. */}
+        <div className="mt-10 flex items-center justify-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] px-4 py-1.5 text-xs text-white/45">
+            <Lock className="size-3.5 text-champagne-400/80" />
+            {t("pricing.stripeNote")}
+          </span>
         </div>
       </div>
     </section>

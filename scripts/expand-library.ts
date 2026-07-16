@@ -68,6 +68,12 @@ for (const c of result.candidates) {
     title: c.title,
     description: c.description,
     niche: c.niche || niche,
+    // TEMPORARY seed only. This is a LIVE mshots URL: it re-renders someone
+    // else's site at page-load and hands back a blank placeholder on a cold
+    // cache. Run `npm run library:thumbs` after this script to snapshot every
+    // new row into our own Supabase Storage — that's what the Library should
+    // actually serve. Rows still on an mshots URL render the SiteCard fallback
+    // tile rather than a broken image.
     thumbnail_url: `https://s.wordpress.com/mshots/v1/${encodeURIComponent(c.url)}?w=800&h=560`,
     metrics: c.metrics,
     tags: c.tags,
@@ -95,3 +101,10 @@ if (result.caveats.length) {
 }
 
 console.log(`\nDone. ${added} added/updated, ${skipped} skipped.`);
+if (added > 0) {
+  console.log(
+    "\nNext: run `npm run library:thumbs` to snapshot these thumbnails into\n" +
+      "our own storage — until then they point at live mshots URLs and will\n" +
+      "render the fallback tile instead of a real screenshot.",
+  );
+}
