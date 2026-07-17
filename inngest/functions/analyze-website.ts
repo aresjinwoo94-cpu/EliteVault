@@ -225,37 +225,51 @@ export const analyzeWebsite = inngest.createFunction(
         .filter((u) => u !== url)
         .slice(0, 2);
       if (extraUrls.length === 0) return [];
-      const out: {
+      type Extra = {
         url: string;
         publicUrl: string;
         mediaType: "image/png" | "image/jpeg";
-      }[] = [];
-      for (const u of extraUrls) {
-        try {
-          const shot = await captureScreenshot(u);
-          const ext = shot.mediaType === "image/png" ? "png" : "jpg";
-          const path = `${analysisId}-extra-${out.length}.${ext}`;
-          const { error: upErr } = await service.storage
-            .from("screenshots")
-            .upload(path, Buffer.from(shot.base64, "base64"), {
-              contentType: shot.mediaType,
-              upsert: true,
-            });
-          if (upErr) {
+      };
+
+      // Captured in PARALLEL. These used to run in a sequential for-loop, so
+      // two extra pages added ~2x a full capture (~15s each) to every audit
+      // that discovered them — pure wall-clock the user waits through, since
+      // the pages are independent. The index is bound per URL (not derived
+      // from a mutating array length) so concurrent uploads can't collide on
+      // the same storage path.
+      const settled = await Promise.all(
+        extraUrls.map(async (u, i): Promise<Extra | null> => {
+          try {
+            const shot = await captureScreenshot(u);
+            const ext = shot.mediaType === "image/png" ? "png" : "jpg";
+            const path = `${analysisId}-extra-${i}.${ext}`;
+            const { error: upErr } = await service.storage
+              .from("screenshots")
+              .upload(path, Buffer.from(shot.base64, "base64"), {
+                contentType: shot.mediaType,
+                upsert: true,
+              });
+            if (upErr) {
+              console.warn(
+                `[analyzer] extra shot upload failed for ${u}:`,
+                upErr.message,
+              );
+              return null;
+            }
+            const { data: pub } = service.storage
+              .from("screenshots")
+              .getPublicUrl(path);
+            return { url: u, publicUrl: pub.publicUrl, mediaType: shot.mediaType };
+          } catch (err) {
             console.warn(
-              `[analyzer] extra shot upload failed for ${u}:`,
-              upErr.message,
+              `[analyzer] extra shot failed for ${u}:`,
+              (err as Error).message,
             );
-            continue;
+            return null;
           }
-          const { data: pub } = service.storage
-            .from("screenshots")
-            .getPublicUrl(path);
-          out.push({ url: u, publicUrl: pub.publicUrl, mediaType: shot.mediaType });
-        } catch (err) {
-          console.warn(`[analyzer] extra shot failed for ${u}:`, (err as Error).message);
-        }
-      }
+        }),
+      );
+      const out = settled.filter((s): s is Extra => s !== null);
       console.log(`[analyzer] captured ${out.length} extra screenshots`);
       return out;
     });

@@ -7,11 +7,19 @@ import type {
 } from "../provider";
 import { recordUsage } from "@/lib/usage/meter";
 
+// maxRetries: the SDK retries transient failures (429 rate-limit, 529
+// overloaded, 500/503, connection/timeouts) with exponential backoff and
+// honours any Retry-After header — exactly the resilience the analyzer needs
+// under load. Default 2; we bump it so a brief Anthropic hiccup doesn't fail
+// (and refund) a paid audit. Override with ANTHROPIC_MAX_RETRIES.
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY ?? "noop",
+  maxRetries: Number(process.env.ANTHROPIC_MAX_RETRIES ?? 4),
 });
 
-const MODEL = process.env.ANTHROPIC_MODEL ?? "claude-opus-4-7";
+// Default workhorse = Sonnet 5 (top-tier visual reasoning at ~$3/$15 per 1M).
+// Bump to claude-opus-4-8 via env for maximum quality on the Scale tier.
+const MODEL = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-5";
 const MODEL_FAST =
   process.env.ANTHROPIC_MODEL_FAST ?? "claude-haiku-4-5-20251001";
 

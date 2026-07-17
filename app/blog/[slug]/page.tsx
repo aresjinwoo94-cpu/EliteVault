@@ -161,11 +161,20 @@ export default async function BlogPostPage({
           )}
         </article>
 
-        {/* Conversion CTA */}
+        {/*
+          Conversion CTA.
+
+          Deliberately NOT a <h2>: it sits outside <article> and is boilerplate
+          repeated on every post, so as a heading it injected "See exactly
+          what's costing your store sales" into the document outline that
+          search engines read as the article's topical structure. Rendered as a
+          <p> with identical classes — same pixels, cleaner semantics. Same
+          reasoning for "Keep reading" and the related-post titles below.
+        */}
         <div className="mt-12 rounded-2xl border border-champagne-400/20 bg-champagne-400/[0.04] p-6 text-center">
-          <h2 className="font-serif text-xl tracking-tight text-white">
+          <p className="font-serif text-xl tracking-tight text-white">
             See exactly what&apos;s costing your store sales
-          </h2>
+          </p>
           <p className="mx-auto mt-2 max-w-md text-sm text-white/55 leading-relaxed">
             Run a free EliteVault audit — an annotated score of your homepage and
             a ranked punch-list of fixes, in under a minute.
@@ -182,9 +191,9 @@ export default async function BlogPostPage({
         {/* Related */}
         {related.length > 0 && (
           <div className="mt-12">
-            <h2 className="font-mono text-[11px] uppercase tracking-widest text-white/40">
+            <p className="font-mono text-[11px] uppercase tracking-widest text-white/40">
               Keep reading
-            </h2>
+            </p>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               {related.map((r) => (
                 <Link
@@ -192,9 +201,9 @@ export default async function BlogPostPage({
                   href={`/blog/${r.slug}`}
                   className="group rounded-xl border border-white/[0.06] bg-card p-4 shadow-card transition-colors hover:border-white/[0.10]"
                 >
-                  <h3 className="font-serif text-base tracking-tight text-white">
+                  <p className="font-serif text-base tracking-tight text-white">
                     {r.title}
-                  </h3>
+                  </p>
                   <p className="mt-1.5 text-xs text-white/50 leading-relaxed">
                     {r.excerpt}
                   </p>

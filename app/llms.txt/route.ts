@@ -25,7 +25,7 @@ EliteVault is operated by ${COMPANY.legalEntity} (${COMPANY.country}). Scores, p
 - Buyer-persona simulation of how a target shopper reacts to the store.
 - Meta Ads 7-day, 3-scenario campaign modeler (Scale plan).
 - Library of vetted high-performing ecommerce stores with metrics.
-- Weekly niche Trends and continuous competitor monitoring with email digests.
+- Weekly niche Trends across high-signal ecommerce categories.
 - REST API with bearer tokens (Scale plan).
 
 ## Pricing
@@ -43,7 +43,7 @@ EliteVault is operated by ${COMPANY.legalEntity} (${COMPANY.country}). Scores, p
 - [Terms of Service](${base}/legal/terms)
 
 ## Data & privacy
-EliteVault processes the URLs and screenshots you submit with Google Gemini to generate audits. It does NOT train AI models on customer content and does not sell or share screenshots.
+EliteVault processes the URLs and screenshots you submit with Google Gemini to generate audits. EliteVault does not train AI models on customer content and never sells it. EliteVault currently runs on Gemini's free tier, under which Google may use submitted content to improve its products and human reviewers may process it — see the Privacy Policy for details.
 
 ## Contact
 ${COMPANY.contactEmail}

@@ -348,7 +348,14 @@ export async function inferUserNicheSlug(userId: string): Promise<string | null>
   const domains: string[] = [];
   const prose: string[] = [];
 
-  // 1. Monitored self-store — the strongest intent signal.
+  // 1. Monitored self-store — LEGACY signal. The Monitor feature was retired,
+  //    so nothing writes `monitored_stores` any more; the table and its rows
+  //    were kept (no user data was deleted), which means this still resolves
+  //    for anyone who had registered a store before the removal. Deliberately
+  //    NOT deleted with the rest of Monitor: it costs one indexed lookup and
+  //    dropping it would quietly downgrade niche inference for those users.
+  //    Signal 2 below covers everyone else, so this degrades to a no-op on its
+  //    own as the rows age out. Safe to delete alongside the table itself.
   const { data: self } = await supabase
     .from("monitored_stores")
     .select("domain, url")

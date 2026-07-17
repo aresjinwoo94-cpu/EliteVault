@@ -1,5 +1,5 @@
 import "server-only";
-import { getProvider } from "@/ai/provider";
+import { resolveAnalyzerProviders } from "@/ai/provider";
 import {
   ANALYSIS_TOOL_SCHEMA,
   AnalysisResultSchema,
@@ -63,7 +63,12 @@ export async function runAnalyzerAgent(opts: {
   fast?: boolean;
   signal?: AbortSignal;
 }): Promise<AnalysisResult> {
-  const provider = await getProvider();
+  // Route by tier (free/fast vs paid) and optionally fall back to the other
+  // provider on a hard failure. Defaults preserve the previous single-provider
+  // behaviour — see resolveAnalyzerProviders.
+  const { primary, fallback } = await resolveAnalyzerProviders(
+    Boolean(opts.fast),
+  );
 
   // Build parts: PRIMARY screenshot first (so annotation coords map to it)
   // + labeled extra screenshots + text prompt.
@@ -94,25 +99,37 @@ export async function runAnalyzerAgent(opts: {
     }),
   } as never);
 
-  const raw = await provider.generateStructured<unknown>(
-    {
-      name: "submit_analysis",
-      description:
-        "Submit the structured audit for the provided ecommerce store.",
-      schema: ANALYSIS_TOOL_SCHEMA,
-    },
-    {
-      system: ANALYZER_SYSTEM,
-      temperature: 0.4,
-      // Full audit JSON can be 5-8k chars — give the model headroom so it
-      // doesn't truncate mid-string (which broke schema validation before).
-      maxTokens: 8192,
-      // P1.1 — free audits run on the cheap/fast model tier.
-      fast: opts.fast,
-      signal: opts.signal,
-      parts,
-    },
-  );
+  const tool = {
+    name: "submit_analysis",
+    description:
+      "Submit the structured audit for the provided ecommerce store.",
+    schema: ANALYSIS_TOOL_SCHEMA,
+  };
+  const generateOpts = {
+    system: ANALYZER_SYSTEM,
+    temperature: 0.4,
+    // Full audit JSON can be 5-8k chars — give the model headroom so it
+    // doesn't truncate mid-string (which broke schema validation before).
+    maxTokens: 8192,
+    // P1.1 — free audits run on the cheap/fast model tier.
+    fast: opts.fast,
+    signal: opts.signal,
+    parts,
+  };
+
+  let raw: unknown;
+  try {
+    raw = await primary.generateStructured<unknown>(tool, generateOpts);
+  } catch (err) {
+    // Don't fall back on a user-initiated cancel — that's not a provider fault.
+    if (opts.signal?.aborted || !fallback) throw err;
+    console.warn(
+      `[analyzer] provider "${primary.name}" failed (${
+        (err as Error).message
+      }) — falling back to "${fallback.name}"`,
+    );
+    raw = await fallback.generateStructured<unknown>(tool, generateOpts);
+  }
 
   const parsed = AnalysisResultSchema.safeParse(raw);
   if (!parsed.success) {

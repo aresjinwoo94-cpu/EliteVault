@@ -33,8 +33,26 @@ const en: Dict = {
       ", breaks down exactly why they convert, and gives your store the same brutal audit a senior media buyer would — annotated screenshots, buyer-persona simulations and a 7-day Meta Ads scenario modeler.",
     ctaPrimary: "Audit my store free",
     ctaSecondary: "or see it in action first",
-    urlPlaceholder: "yourstore.com",
-    trust: "No credit card. 1 free analysis. Cancel anytime.",
+    trust: "No credit card · 1 free analysis · Cancel anytime.",
+    stripeBadge: "Payments secured by Stripe",
+    sslBadge: "256-bit SSL",
+  },
+  twoPaths: {
+    pill1: "TWO WAYS TO WIN",
+    pill2: "ANALYZER + LIBRARY",
+    heading: "One product, two ways to grow.",
+    subheading:
+      "EliteVault stands on two pillars that feed each other: brutally audit your own store, or reverse-engineer the ones already converting. Most founders do both.",
+    analyzeLabel: "Path 1 — Diagnose",
+    analyzeTitle: "Analyze your store",
+    analyzeBody:
+      "Paste your URL and get a CRO score, an annotated screenshot, a buyer-persona reaction and a ranked punch-list of fixes — in about a minute.",
+    analyzeCta: "Audit my store free",
+    studyLabel: "Path 2 — Model",
+    studyTitle: "Or study the ones already converting",
+    studyBody:
+      "Browse a live library of winning Shopify & DTC stores validated by real revenue signals. Filter by niche and find the winners structurally closest to yours.",
+    studyCta: "Browse winning stores",
   },
   footer: {
     tagline:
@@ -70,6 +88,7 @@ const en: Dict = {
     billedYearly: "/mo billed yearly · save",
     ctaFree: "Get started",
     ctaStart: "Start",
+    stripeNote: "Secure checkout powered by Stripe · Cancel anytime · No hidden fees",
   },
   faq: {
     heading: "Questions, answered.",
@@ -166,7 +185,6 @@ const en: Dict = {
     navOverview: "Overview",
     navAnalyzer: "Analyzer",
     navTrends: "Trends",
-    navMonitor: "Monitor",
     navLibrary: "Library",
     navCommunity: "Community",
     navApiKeys: "API keys",
@@ -402,8 +420,26 @@ const es: Dict = {
       ", desglosa exactamente por qué convierten y le da a tu tienda la misma auditoría brutal que haría un media buyer senior — capturas anotadas, simulaciones de buyer-persona y un modelador de campañas de Meta Ads a 7 días.",
     ctaPrimary: "Audita mi tienda gratis",
     ctaSecondary: "o míralo en acción primero",
-    urlPlaceholder: "tutienda.com",
-    trust: "Sin tarjeta. 1 análisis gratis. Cancela cuando quieras.",
+    trust: "Sin tarjeta · 1 análisis gratis · Cancela cuando quieras.",
+    stripeBadge: "Pagos protegidos con Stripe",
+    sslBadge: "SSL de 256 bits",
+  },
+  twoPaths: {
+    pill1: "DOS FORMAS DE GANAR",
+    pill2: "ANALYZER + BIBLIOTECA",
+    heading: "Un producto, dos formas de crecer.",
+    subheading:
+      "EliteVault se apoya en dos pilares que se retroalimentan: audita tu propia tienda sin filtros, o haz ingeniería inversa de las que ya están convirtiendo. La mayoría hace ambas.",
+    analyzeLabel: "Camino 1 — Diagnostica",
+    analyzeTitle: "Analiza tu tienda",
+    analyzeBody:
+      "Pega tu URL y obtén un score de conversión, un screenshot anotado, la reacción de un buyer persona y una lista priorizada de mejoras — en cerca de un minuto.",
+    analyzeCta: "Audita mi tienda gratis",
+    studyLabel: "Camino 2 — Modela",
+    studyTitle: "O estudia las que ya están convirtiendo",
+    studyBody:
+      "Explora una biblioteca viva de tiendas Shopify y DTC ganadoras validadas por señales reales de ingresos. Filtra por nicho y encuentra las más parecidas a la tuya.",
+    studyCta: "Ver tiendas ganadoras",
   },
   footer: {
     tagline:
@@ -439,6 +475,7 @@ const es: Dict = {
     billedYearly: "/mes facturado anual · ahorra",
     ctaFree: "Empezar gratis",
     ctaStart: "Empieza con",
+    stripeNote: "Pago seguro con Stripe · Cancela cuando quieras · Sin cargos ocultos",
   },
   faq: {
     heading: "Preguntas, resueltas.",
@@ -535,7 +572,6 @@ const es: Dict = {
     navOverview: "Resumen",
     navAnalyzer: "Analizador",
     navTrends: "Tendencias",
-    navMonitor: "Monitor",
     navLibrary: "Biblioteca",
     navCommunity: "Comunidad",
     navApiKeys: "Claves API",

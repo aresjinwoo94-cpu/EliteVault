@@ -8,10 +8,16 @@ import type { PlanTier } from "@/lib/supabase/types";
  * ONLY, never for billing. Update if Google/Anthropic change prices. Matched
  * by prefix so dated model suffixes still resolve.
  */
+// NOTE: matched by PREFIX (first key that `model.startsWith(...)` wins), so
+// order matters — more specific keys must come BEFORE their shorter prefixes
+// (e.g. "gemini-2.5-flash-lite" before "gemini-2.5-flash", "claude-opus-4-8"
+// before "claude-opus"). Prices are per 1M tokens, USD, July 2026.
 const PRICING: Record<string, { inPer1M: number; outPer1M: number }> = {
   "gemini-2.5-pro": { inPer1M: 1.25, outPer1M: 10.0 },
+  "gemini-2.5-flash-lite": { inPer1M: 0.1, outPer1M: 0.4 },
   "gemini-2.5-flash": { inPer1M: 0.3, outPer1M: 2.5 },
-  "claude-opus": { inPer1M: 15.0, outPer1M: 75.0 },
+  "claude-opus": { inPer1M: 5.0, outPer1M: 25.0 },
+  "claude-sonnet": { inPer1M: 3.0, outPer1M: 15.0 },
   "claude-haiku": { inPer1M: 1.0, outPer1M: 5.0 },
 };
 

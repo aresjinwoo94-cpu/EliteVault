@@ -35,8 +35,6 @@ export interface Plan {
      *  Analyzer keeps its existing behaviour — this number must equal the
      *  effective credit grant (Free = 1 lifetime welcome credit). */
     analysesPerMonth: number;
-    /** Competitor stores the user can monitor for weekly re-audits (Phase 3). */
-    monitoredCompetitors: number;
     /** Niches the user can track for weekly Trend alerts (Phase 2/3). */
     trackedNiches: number;
   };
@@ -66,7 +64,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     unlocksScale: false,
     canPublish: false,
     libraryFullMetricsCap: 9,
-    quotas: { analysesPerMonth: 1, monitoredCompetitors: 0, trackedNiches: 1 },
+    quotas: { analysesPerMonth: 1, trackedNiches: 1 },
     features: [
       { text: "1 free audit: score + annotated screenshot", included: true, highlight: true },
       { text: "9 hand-picked winners with full metrics", included: true },
@@ -93,7 +91,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     unlocksScale: false,
     canPublish: true,
     libraryFullMetricsCap: null,
-    quotas: { analysesPerMonth: 40, monitoredCompetitors: 3, trackedNiches: 5 },
+    quotas: { analysesPerMonth: 40, trackedNiches: 5 },
     badge: "Most popular",
     highlight: true,
     features: [
@@ -127,7 +125,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     unlocksScale: true,
     canPublish: true,
     libraryFullMetricsCap: null,
-    quotas: { analysesPerMonth: 200, monitoredCompetitors: 10, trackedNiches: 20 },
+    quotas: { analysesPerMonth: 200, trackedNiches: 20 },
     badge: "For teams",
     features: [
       { text: "Everything in Pro", included: true },

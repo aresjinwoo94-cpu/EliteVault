@@ -77,3 +77,76 @@ export function isAIConfigured() {
   if (choice === "anthropic") return Boolean(process.env.ANTHROPIC_API_KEY);
   return Boolean(process.env.GEMINI_API_KEY);
 }
+
+export type ProviderName = "anthropic" | "gemini";
+
+// Cache each concrete provider once so we can hold BOTH at the same time
+// (the single `_provider` above only ever holds the globally-configured one).
+const _byName: Partial<Record<ProviderName, AIProvider>> = {};
+
+/** Resolve a specific provider by name (lazy-imported + cached). */
+export async function getProviderByName(
+  name: ProviderName,
+): Promise<AIProvider> {
+  const cached = _byName[name];
+  if (cached) return cached;
+  const provider =
+    name === "anthropic"
+      ? (await import("./providers/anthropic")).anthropicProvider
+      : (await import("./providers/gemini")).geminiProvider;
+  _byName[name] = provider;
+  return provider;
+}
+
+/** Whether a given provider has its API key configured. */
+function providerConfigured(name: ProviderName): boolean {
+  return name === "anthropic"
+    ? Boolean(process.env.ANTHROPIC_API_KEY)
+    : Boolean(process.env.GEMINI_API_KEY);
+}
+
+function normalizeName(value: string | undefined, fallback: ProviderName): ProviderName {
+  return (value ?? fallback).toLowerCase() === "anthropic" ? "anthropic" : "gemini";
+}
+
+/**
+ * Analyzer-specific provider routing. Lets the FREE/fast audit and the PAID
+ * audit run on different providers (e.g. Gemini Flash for free to keep the
+ * marginal cost in cents, Claude for paid quality), with an optional
+ * cross-provider fallback for resilience.
+ *
+ * Backward-compatible by default: with none of the new env vars set, both
+ * tiers resolve to `AI_PROVIDER` and the fallback is off — i.e. identical to
+ * the previous single-provider behaviour. Fully reversible via env, no code
+ * changes needed to roll back.
+ *
+ *   ANALYZER_PROVIDER_PAID   provider for paid audits   (default: AI_PROVIDER)
+ *   ANALYZER_PROVIDER_FAST   provider for free/fast     (default: AI_PROVIDER)
+ *   ANALYZER_CROSS_FALLBACK  "1"/"true" → on a hard failure, retry once on the
+ *                            OTHER provider (only if its key is configured).
+ *                            Off by default so it never causes surprise spend.
+ */
+export async function resolveAnalyzerProviders(fast: boolean): Promise<{
+  primary: AIProvider;
+  fallback: AIProvider | null;
+}> {
+  const base = normalizeName(process.env.AI_PROVIDER, "gemini");
+  const primaryName = fast
+    ? normalizeName(process.env.ANALYZER_PROVIDER_FAST, base)
+    : normalizeName(process.env.ANALYZER_PROVIDER_PAID, base);
+
+  const otherName: ProviderName =
+    primaryName === "anthropic" ? "gemini" : "anthropic";
+
+  const crossOn = /^(1|true|yes|on)$/i.test(
+    process.env.ANALYZER_CROSS_FALLBACK ?? "",
+  );
+
+  const primary = await getProviderByName(primaryName);
+  const fallback =
+    crossOn && providerConfigured(otherName)
+      ? await getProviderByName(otherName)
+      : null;
+
+  return { primary, fallback };
+}

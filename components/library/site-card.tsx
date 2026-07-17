@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Activity, ExternalLink, Lock, Sparkles, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,30 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { SaveButton } from "./save-button";
 import { cn, formatCompact } from "@/lib/utils";
 import type { WinningSiteCard } from "@/app/actions/search";
+
+/**
+ * Resolve what a card should actually load, if anything.
+ *
+ * Two cases, both of which used to render a dead grey box:
+ *
+ *  1. LEGACY mshots URLs. Rows we couldn't snapshot (the store bot-blocks our
+ *     capture) still point at s.wordpress.com/mshots, which renders on demand
+ *     and answers a cold cache with a BLANK placeholder — served as HTTP 200,
+ *     so `onError` never fires and the fallback never shows. Return null and
+ *     go straight to the branded tile: an honest tile beats a blank image.
+ *
+ *  2. Our own snapshots are full-page captures (~2880x20000, 1-4MB) while the
+ *     card is a ~400px 4:3 window — 53 of them was ~124MB of page weight.
+ *     Supabase's render endpoint resizes on the fly: at width=800 the same
+ *     shot drops 1173KB -> 141KB (-88%) for free, no re-capture. Aspect ratio
+ *     is preserved (still tall), so `object-top` below still frames the hero.
+ */
+function thumbSrc(url: string | null | undefined): string | null {
+  if (!url || url.includes("s.wordpress.com/mshots")) return null;
+  const marker = "/storage/v1/object/public/";
+  if (!url.includes(marker)) return url;
+  return `${url.replace(marker, "/storage/v1/render/image/public/")}?width=800&quality=70`;
+}
 
 export function SiteCard({
   site,
@@ -31,6 +56,8 @@ export function SiteCard({
     | null
     | undefined;
   const locked = !!site.metrics_locked;
+  const [imgFailed, setImgFailed] = useState(false);
+  const src = thumbSrc(site.thumbnail_url);
 
   return (
     <motion.div
@@ -59,16 +86,31 @@ export function SiteCard({
       )}
 
       <div className="relative aspect-[4/3] overflow-hidden bg-obsidian-900">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={site.thumbnail_url}
-          alt={site.title}
-          className={cn(
-            "absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105",
-            locked && "grayscale-[40%]",
-          )}
-          loading="lazy"
-        />
+        {imgFailed || !src ? (
+          <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-obsidian-800 to-obsidian-900">
+            <div className="absolute inset-0 bg-dot-grid opacity-20" />
+            <span className="relative font-serif text-4xl text-white/25">
+              {site.domain.replace(/^www\./, "").charAt(0).toUpperCase()}
+            </span>
+          </div>
+        ) : (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={src}
+            alt={site.title}
+            onError={() => setImgFailed(true)}
+            className={cn(
+              // object-TOP, not the browser default (center): thumbnails are
+              // full-page captures, often 2880x20000 (ratio ~7), so centering
+              // crops this 4:3 window to a random slice of the page's middle —
+              // usually a footer or a product grid. The top is the hero, which
+              // is what identifies the store at a glance.
+              "absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105",
+              locked && "grayscale-[40%]",
+            )}
+            loading="lazy"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-obsidian-950/80 via-obsidian-950/20 to-transparent" />
         <div className="absolute bottom-3 left-3 flex gap-1.5">
           {site.is_featured && (
