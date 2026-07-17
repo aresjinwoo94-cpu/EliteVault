@@ -9,6 +9,30 @@ import { SaveButton } from "./save-button";
 import { cn, formatCompact } from "@/lib/utils";
 import type { WinningSiteCard } from "@/app/actions/search";
 
+/**
+ * Resolve what a card should actually load, if anything.
+ *
+ * Two cases, both of which used to render a dead grey box:
+ *
+ *  1. LEGACY mshots URLs. Rows we couldn't snapshot (the store bot-blocks our
+ *     capture) still point at s.wordpress.com/mshots, which renders on demand
+ *     and answers a cold cache with a BLANK placeholder — served as HTTP 200,
+ *     so `onError` never fires and the fallback never shows. Return null and
+ *     go straight to the branded tile: an honest tile beats a blank image.
+ *
+ *  2. Our own snapshots are full-page captures (~2880x20000, 1-4MB) while the
+ *     card is a ~400px 4:3 window — 53 of them was ~124MB of page weight.
+ *     Supabase's render endpoint resizes on the fly: at width=800 the same
+ *     shot drops 1173KB -> 141KB (-88%) for free, no re-capture. Aspect ratio
+ *     is preserved (still tall), so `object-top` below still frames the hero.
+ */
+function thumbSrc(url: string | null | undefined): string | null {
+  if (!url || url.includes("s.wordpress.com/mshots")) return null;
+  const marker = "/storage/v1/object/public/";
+  if (!url.includes(marker)) return url;
+  return `${url.replace(marker, "/storage/v1/render/image/public/")}?width=800&quality=70`;
+}
+
 export function SiteCard({
   site,
   index = 0,
@@ -32,13 +56,8 @@ export function SiteCard({
     | null
     | undefined;
   const locked = !!site.metrics_locked;
-  // Thumbnails used to be live WordPress-mshots URLs, which render on demand
-  // and hand back a blank placeholder on a cold cache — that's what produced
-  // the empty grey cards. Thumbnails are now snapshotted into our own Supabase
-  // Storage (see scripts/snapshot-library-thumbnails.ts), but a row can still
-  // 404 (pre-backfill, or a since-deleted object), so never leave a broken box:
-  // fall back to a branded tile built from the domain itself.
   const [imgFailed, setImgFailed] = useState(false);
+  const src = thumbSrc(site.thumbnail_url);
 
   return (
     <motion.div
@@ -67,7 +86,7 @@ export function SiteCard({
       )}
 
       <div className="relative aspect-[4/3] overflow-hidden bg-obsidian-900">
-        {imgFailed || !site.thumbnail_url ? (
+        {imgFailed || !src ? (
           <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-obsidian-800 to-obsidian-900">
             <div className="absolute inset-0 bg-dot-grid opacity-20" />
             <span className="relative font-serif text-4xl text-white/25">
@@ -77,7 +96,7 @@ export function SiteCard({
         ) : (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
-            src={site.thumbnail_url}
+            src={src}
             alt={site.title}
             onError={() => setImgFailed(true)}
             className={cn(
