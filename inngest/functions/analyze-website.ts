@@ -17,6 +17,24 @@ import { runMetaAdsOptimizerAgent } from "@/ai/agents/meta-ads-optimizer-agent";
 import type { BuyerPersona } from "@/lib/supabase/types";
 
 /**
+ * How many ADDITIONAL product-page screenshots to capture per audit.
+ *
+ * Was hardcoded to 2, which made every audit cost up to 3 ScreenshotOne
+ * captures. Only the primary shot is URL-cached, so the extras re-billed on
+ * every run — 2/3 of the quota (the free tier is 100/month: ~33 audits at 3
+ * shots vs ~100 at 1). They were also the biggest latency cost: an extra
+ * capture round-trip plus two more 1-4MB full-page images in the vision call.
+ *
+ * Set to 0 because the model already receives the discovery step's TEXT
+ * context for those same pages — headings, prices, CTA copy, trust signals,
+ * review snippets, FAQ, image alts — which costs no captures, and the prompt
+ * omits the multi-screenshot preamble cleanly when there are none.
+ *
+ * Raise via ANALYZER_EXTRA_SHOTS once capture volume isn't rationed.
+ */
+const MAX_EXTRA_SHOTS = Number(process.env.ANALYZER_EXTRA_SHOTS ?? 0);
+
+/**
  * Fetch an image URL and return its raw base64. Used to pull screenshot bytes
  * INSIDE the steps that need them, so the large base64 is a local variable and
  * never a persisted step output (Inngest rejects step outputs over its size
@@ -223,7 +241,7 @@ export const analyzeWebsite = inngest.createFunction(
     const extraShots = await step.run("capture-extra-screenshots", async () => {
       const extraUrls = (discovery?.pageUrls ?? [])
         .filter((u) => u !== url)
-        .slice(0, 2);
+        .slice(0, MAX_EXTRA_SHOTS);
       if (extraUrls.length === 0) return [];
       type Extra = {
         url: string;

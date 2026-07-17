@@ -145,7 +145,16 @@ export async function captureWithScreenshotOne(
      * sliver. Viewport-only gives the hero at ~200-400KB.
      */
     fullPage?: boolean;
-    /** 2 = retina (audit needs the detail). 1 is plenty for a thumbnail. */
+    /**
+     * Default 1 (was 2). At a 1440 viewport, @2x renders a 2880px-wide image —
+     * and full-page shots are already 10-20k tall, so @2x quadruples the pixels
+     * of an image that's several MB before it's even uploaded, re-fetched,
+     * base64'd and pushed through the vision model. Vision models downscale
+     * large inputs anyway, so most of that detail is paid for and then thrown
+     * away. 1440 CSS px is a normal desktop render — enough to judge layout,
+     * hierarchy, colour and CTA placement, which is what the audit grades.
+     * Pass 2 explicitly if a caller ever needs to read fine print.
+     */
     deviceScaleFactor?: 1 | 2;
   } = {},
 ): Promise<{
@@ -157,7 +166,7 @@ export async function captureWithScreenshotOne(
     url,
     viewport_width: String(VIEWPORT_W),
     viewport_height: String(VIEWPORT_H),
-    device_scale_factor: String(opts.deviceScaleFactor ?? 2),
+    device_scale_factor: String(opts.deviceScaleFactor ?? 1),
     format: "jpg",
     image_quality: "92",
     full_page: String(opts.fullPage ?? true),
