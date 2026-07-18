@@ -36,6 +36,8 @@ const en: Dict = {
     trust: "No credit card · 1 free analysis · Cancel anytime.",
     stripeBadge: "Payments secured by Stripe",
     sslBadge: "256-bit SSL",
+    teaserTitle: "See how the analyzer works",
+    teaserDuration: "54 sec · sound on",
   },
   twoPaths: {
     pill1: "TWO WAYS TO WIN",
@@ -426,6 +428,8 @@ const es: Dict = {
     trust: "Sin tarjeta · 1 análisis gratis · Cancela cuando quieras.",
     stripeBadge: "Pagos protegidos con Stripe",
     sslBadge: "SSL de 256 bits",
+    teaserTitle: "Mira cómo funciona el analizador",
+    teaserDuration: "54 s · con sonido",
   },
   twoPaths: {
     pill1: "DOS FORMAS DE GANAR",

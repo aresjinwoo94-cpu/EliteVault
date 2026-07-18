@@ -1,22 +1,27 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Play } from "lucide-react";
 import { useT } from "@/components/i18n/locale-provider";
 
 /**
- * Real teaser video of the analyzer, shown in the landing's LIVE DEMO
- * section (replaced the old animated walkthrough mockup).
+ * Real teaser video of the analyzer, shown as the hero visual.
  *
  * Behavior:
- *   • Lazy: preload="none" until the panel nears the viewport, then an
- *     IntersectionObserver flips preload and starts playback — the video
- *     never competes with LCP.
- *   • Autoplays muted + looped, playsInline so iOS stays embedded.
- *   • prefers-reduced-motion: no autoplay — static poster with a manual
- *     play button instead.
- *   • Poster doubles as the fallback if the video can't load; the 2:1
- *     aspect ratio is reserved up front so there's no layout shift.
+ *   • Click-to-play WITH sound — no autoplay. The poster (a real frame of
+ *     the analyzer) + a play button carry the visual until the visitor
+ *     opts in, which also makes unmuted playback reliable in every
+ *     browser (user-gesture requirement) and inherently respects
+ *     prefers-reduced-motion.
+ *   • preload="metadata" only — a few KB up front; the stream starts on
+ *     click, so the video never competes with the page's LCP.
+ *   • Native controls appear once playing (pause / seek / volume); when
+ *     the teaser ends it resets back to the poster + play button.
+ *   • playsInline keeps iOS embedded; the 1080×512 aspect ratio is
+ *     reserved up front so there's no layout shift.
+ *
+ * The video file is pre-cropped: the screen recording's browser URL bar
+ * is cut off because this component draws its own chrome bar on top.
  */
 
 const VIDEO_WEBM = "/videos/analyzer-teaser.webm";
@@ -25,63 +30,33 @@ const POSTER = "/videos/analyzer-teaser-poster.jpg";
 
 export function AnalyzerTeaserVideo() {
   const { t } = useT();
-  const wrapRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [reducedMotion, setReducedMotion] = useState(false);
-  const [playing, setPlaying] = useState(false);
-  const [autoplayFailed, setAutoplayFailed] = useState(false);
+  const [started, setStarted] = useState(false);
 
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReducedMotion(mq.matches);
-    const listener = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
-    mq.addEventListener("change", listener);
-    return () => mq.removeEventListener("change", listener);
-  }, []);
-
-  useEffect(() => {
-    if (reducedMotion) {
-      videoRef.current?.pause();
-      return;
-    }
-    const el = wrapRef.current;
-    const video = videoRef.current;
-    if (!el || !video) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          video.preload = "auto";
-          video.muted = true;
-          video
-            .play()
-            .then(() => setAutoplayFailed(false))
-            .catch(() => setAutoplayFailed(true));
-        } else {
-          video.pause();
-        }
-      },
-      // Start fetching a bit before the panel scrolls into view so the
-      // first visible frame is already moving.
-      { rootMargin: "200px" },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [reducedMotion]);
-
-  const manualPlay = () => {
+  const start = () => {
     const video = videoRef.current;
     if (!video) return;
-    video.preload = "auto";
-    video.muted = true;
     video.play().catch(() => {});
   };
 
-  const showPlayButton = !playing && (reducedMotion || autoplayFailed);
+  const reset = () => {
+    const video = videoRef.current;
+    setStarted(false);
+    if (video) video.currentTime = 0;
+  };
 
   return (
-    <div ref={wrapRef} className="relative">
+    <div className="relative">
+      {/* Teaser title — invitation above the panel */}
+      <div className="mb-5 flex items-center justify-center gap-2.5 text-[11px] font-mono uppercase tracking-widest text-white/45">
+        <span className="grid size-5 place-items-center rounded-full bg-signal-600/15 ring-1 ring-signal-500/25">
+          <Play className="size-2.5 translate-x-px text-signal-300" fill="currentColor" />
+        </span>
+        {t("hero.teaserTitle")}
+      </div>
+
       {/* Ambient glow — teal (signal) is the AI/data accent for this surface */}
-      <div className="absolute -inset-4 rounded-3xl bg-gradient-to-tr from-signal-600/20 via-transparent to-signal-400/15 blur-2xl pointer-events-none" />
+      <div className="absolute -inset-4 top-6 rounded-3xl bg-gradient-to-tr from-signal-600/20 via-transparent to-signal-400/15 blur-2xl pointer-events-none" />
 
       <div className="relative glass-strong rounded-2xl overflow-hidden shadow-2xl">
         {/* Browser chrome */}
@@ -94,27 +69,24 @@ export function AnalyzerTeaserVideo() {
           <div className="ml-3 flex-1 rounded-md bg-white/[0.04] px-3 py-1 text-xs text-white/40 font-mono">
             elitevaultapp.com/app/analyzer
           </div>
-          {!reducedMotion && (
-            <div className="flex items-center gap-1.5 text-[10px] text-white/30 uppercase tracking-widest">
-              <span className="size-1.5 rounded-full bg-success animate-pulse" />
-              Live demo
-            </div>
-          )}
+          <div className="flex items-center gap-1.5 text-[10px] text-white/30 uppercase tracking-widest">
+            <span className="size-1.5 rounded-full bg-success animate-pulse motion-reduce:animate-none" />
+            Live demo
+          </div>
         </div>
 
-        {/* aspect-[2/1] matches the encoded video (1080×540) exactly */}
-        <div className="relative aspect-[2/1] bg-obsidian-900">
+        {/* aspect matches the encoded video (1080×512) exactly */}
+        <div className="relative aspect-[1080/512] bg-obsidian-900">
           <video
             ref={videoRef}
             className="absolute inset-0 h-full w-full"
-            muted
-            loop
+            controls={started}
             playsInline
-            preload="none"
+            preload="metadata"
             poster={POSTER}
             aria-label={t("analyzerDemo.videoAria")}
-            onPlay={() => setPlaying(true)}
-            onPause={() => setPlaying(false)}
+            onPlay={() => setStarted(true)}
+            onEnded={reset}
           >
             <source src={VIDEO_WEBM} type="video/webm" />
             <source src={VIDEO_MP4} type="video/mp4" />
@@ -122,15 +94,20 @@ export function AnalyzerTeaserVideo() {
             <img src={POSTER} alt={t("analyzerDemo.videoAria")} />
           </video>
 
-          {showPlayButton && (
+          {!started && (
             <button
               type="button"
-              onClick={manualPlay}
+              onClick={start}
               aria-label={t("analyzerDemo.videoPlay")}
-              className="absolute inset-0 grid place-items-center bg-obsidian-950/25 transition-colors hover:bg-obsidian-950/10"
+              className="group absolute inset-0 grid place-items-center bg-obsidian-950/30 transition-colors hover:bg-obsidian-950/15"
             >
-              <span className="flex size-14 items-center justify-center rounded-full bg-obsidian-950/70 ring-1 ring-white/20 backdrop-blur-sm">
-                <Play className="size-5 translate-x-0.5 text-white" fill="currentColor" />
+              <span className="flex flex-col items-center gap-3">
+                <span className="flex size-16 items-center justify-center rounded-full bg-obsidian-950/70 ring-1 ring-white/20 backdrop-blur-sm transition-transform group-hover:scale-105">
+                  <Play className="size-6 translate-x-0.5 text-white" fill="currentColor" />
+                </span>
+                <span className="rounded-full bg-obsidian-950/60 px-3 py-1 text-[11px] text-white/70 backdrop-blur-sm">
+                  {t("hero.teaserDuration")}
+                </span>
               </span>
             </button>
           )}
