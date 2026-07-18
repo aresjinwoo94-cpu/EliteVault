@@ -150,6 +150,9 @@ const en: Dict = {
     stepCampaignTitle: "Projects a 7-day campaign before you spend",
     stepCampaignBody:
       "Scale-plan add-on: feed in your AOV + daily budget and the modeler returns 3 honest 7-day scenarios — conservative, balanced, aggressive — with day-by-day spend, ROAS and risks.",
+    videoAria:
+      "EliteVault analyzer demo: paste a URL and get a score, an annotated screenshot, and ranked fixes",
+    videoPlay: "Play the analyzer demo",
   },
   auth: {
     headingSignIn: "Welcome back",
@@ -537,6 +540,9 @@ const es: Dict = {
     stepCampaignTitle: "Proyecta una campaña de 7 días antes de que gastes",
     stepCampaignBody:
       "Complemento de plan de escala: ingresa tu AOV + presupuesto diario y el modelador devuelve 3 escenarios honestos de 7 días — conservador, equilibrado, agresivo — con gasto día a día, ROAS y riesgos.",
+    videoAria:
+      "Demostración del analizador de EliteVault: pega una URL y obtén score, captura anotada y arreglos priorizados",
+    videoPlay: "Reproducir la demo del analizador",
   },
   auth: {
     headingSignIn: "Bienvenido de nuevo",

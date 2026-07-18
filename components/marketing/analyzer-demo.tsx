@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Brain, Eye, Scan, Target } from "lucide-react";
-import { AnalyzerWalkthrough } from "./analyzer-walkthrough";
+import { AnalyzerTeaserVideo } from "./analyzer-teaser-video";
 import { AnalyzerBg } from "./analyzer-bg";
 import { DataPill } from "@/components/ui/data-pill";
 import { useT } from "@/components/i18n/locale-provider";
@@ -46,11 +46,9 @@ export function AnalyzerDemo() {
       <AnalyzerBg />
       <div className="container relative max-w-6xl">
         {/*
-          v3.4.1 — Give the visual (walkthrough) more room than the text.
-          Was 50/50 which made the inner canvas only ~260px wide and
-          squashed the 3 annotations into a vertical stack. Now text gets
-          ~40%, visual gets ~60%, so the walkthrough canvas ends up ~380px
-          and annotations can actually spread across a fake screenshot.
+          v3.4.1 — Give the visual more room than the text (~40/60 split)
+          so the demo panel stays legible; the teaser video is a 2:1 UI
+          recording that needs the width.
         */}
         <div className="grid lg:grid-cols-[2fr_3fr] gap-12 lg:gap-16 items-center">
           <div>
@@ -96,11 +94,10 @@ export function AnalyzerDemo() {
           </div>
 
           {/*
-            v3.4 — Animated walkthrough replaces the static demo card.
-            Plays a full audit run on loop (URL typing → analyzing →
-            screenshot reveal → annotations cascade → score counter →
-            conversion bars → persona quote → niche position bar).
-            Cycle is ~12s. Respects prefers-reduced-motion.
+            v3.5 — Real teaser video replaces the animated walkthrough.
+            Autoplays muted on loop once it nears the viewport (lazy via
+            IntersectionObserver). Respects prefers-reduced-motion by
+            showing the poster with a manual play button instead.
           */}
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }}
@@ -108,7 +105,7 @@ export function AnalyzerDemo() {
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease }}
           >
-            <AnalyzerWalkthrough />
+            <AnalyzerTeaserVideo />
           </motion.div>
         </div>
       </div>
