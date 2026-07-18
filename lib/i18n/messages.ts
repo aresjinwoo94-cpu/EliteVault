@@ -32,10 +32,12 @@ const en: Dict = {
     subPost:
       ", breaks down exactly why they convert, and gives your store the same brutal audit a senior media buyer would — annotated screenshots, buyer-persona simulations and a 7-day Meta Ads scenario modeler.",
     ctaPrimary: "Audit my store free",
-    ctaSecondary: "or see it in action first",
+    ctaSecondary: "or see how it works first",
     trust: "No credit card · 1 free analysis · Cancel anytime.",
     stripeBadge: "Payments secured by Stripe",
     sslBadge: "256-bit SSL",
+    teaserTitle: "See how the analyzer works",
+    teaserDuration: "54 sec · sound on",
   },
   twoPaths: {
     pill1: "TWO WAYS TO WIN",
@@ -137,7 +139,7 @@ const en: Dict = {
       "Paste a URL. In under a minute, EliteVault returns the kind of audit you'd otherwise pay",
     subheadingPrice: "$1,500 for",
     subheadingPost:
-      "— annotated screenshot, conversion-rate scenarios, persona reactions, and a brutal punch-list of fixes ranked by leverage. Watch a full run on the right.",
+      "— annotated screenshot, conversion-rate scenarios, persona reactions, and a brutal punch-list of fixes ranked by leverage. That's the report on the right.",
     stepReadsTitle: "Reads your store like a human",
     stepReadsBody:
       "AI vision parses your hero, product grid, copy, color system, and motion — exactly what a senior CRO consultant would clock in the first 5 seconds.",
@@ -150,6 +152,9 @@ const en: Dict = {
     stepCampaignTitle: "Projects a 7-day campaign before you spend",
     stepCampaignBody:
       "Scale-plan add-on: feed in your AOV + daily budget and the modeler returns 3 honest 7-day scenarios — conservative, balanced, aggressive — with day-by-day spend, ROAS and risks.",
+    videoAria:
+      "EliteVault analyzer demo: paste a URL and get a score, an annotated screenshot, and ranked fixes",
+    videoPlay: "Play the analyzer demo",
   },
   auth: {
     headingSignIn: "Welcome back",
@@ -419,10 +424,12 @@ const es: Dict = {
     subPost:
       ", desglosa exactamente por qué convierten y le da a tu tienda la misma auditoría brutal que haría un media buyer senior — capturas anotadas, simulaciones de buyer-persona y un modelador de campañas de Meta Ads a 7 días.",
     ctaPrimary: "Audita mi tienda gratis",
-    ctaSecondary: "o míralo en acción primero",
+    ctaSecondary: "o mira cómo funciona primero",
     trust: "Sin tarjeta · 1 análisis gratis · Cancela cuando quieras.",
     stripeBadge: "Pagos protegidos con Stripe",
     sslBadge: "SSL de 256 bits",
+    teaserTitle: "Mira cómo funciona el analizador",
+    teaserDuration: "54 s · con sonido",
   },
   twoPaths: {
     pill1: "DOS FORMAS DE GANAR",
@@ -524,7 +531,7 @@ const es: Dict = {
       "Pega una URL. En menos de un minuto, EliteVault te devuelve el tipo de auditoría por la que de otro modo pagarías",
     subheadingPrice: "$1,500",
     subheadingPost:
-      "— captura anotada, escenarios de tasa de conversión, reacciones de personas y una lista brutal de arreglos ordenados por impacto. Mira una corrida completa a la derecha.",
+      "— captura anotada, escenarios de tasa de conversión, reacciones de personas y una lista brutal de arreglos ordenados por impacto. Ese es el informe que ves a la derecha.",
     stepReadsTitle: "Lee tu tienda como un humano",
     stepReadsBody:
       "La visión por IA analiza tu hero, la grilla de productos, los textos, el sistema de color y el movimiento — justo lo que un consultor CRO senior detectaría en los primeros 5 segundos.",
@@ -537,6 +544,9 @@ const es: Dict = {
     stepCampaignTitle: "Proyecta una campaña de 7 días antes de que gastes",
     stepCampaignBody:
       "Complemento de plan de escala: ingresa tu AOV + presupuesto diario y el modelador devuelve 3 escenarios honestos de 7 días — conservador, equilibrado, agresivo — con gasto día a día, ROAS y riesgos.",
+    videoAria:
+      "Demostración del analizador de EliteVault: pega una URL y obtén score, captura anotada y arreglos priorizados",
+    videoPlay: "Reproducir la demo del analizador",
   },
   auth: {
     headingSignIn: "Bienvenido de nuevo",
