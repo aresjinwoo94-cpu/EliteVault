@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Brain, Eye, Scan, Target } from "lucide-react";
-import { AnalyzerTeaserVideo } from "./analyzer-teaser-video";
+import { AuditSnapshot } from "./audit-snapshot";
 import { AnalyzerBg } from "./analyzer-bg";
 import { DataPill } from "@/components/ui/data-pill";
 import { useT } from "@/components/i18n/locale-provider";
@@ -94,10 +94,10 @@ export function AnalyzerDemo() {
           </div>
 
           {/*
-            v3.5 — Real teaser video replaces the animated walkthrough.
-            Autoplays muted on loop once it nears the viewport (lazy via
-            IntersectionObserver). Respects prefers-reduced-motion by
-            showing the poster with a manual play button instead.
+            v3.5 — The real teaser video moved up to the hero (highest
+            attention slot). This section now shows the static audit
+            snapshot instead: the four steps on the left tell "how it
+            works", the snapshot on the right shows "what you get".
           */}
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }}
@@ -105,7 +105,7 @@ export function AnalyzerDemo() {
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease }}
           >
-            <AnalyzerTeaserVideo />
+            <AuditSnapshot />
           </motion.div>
         </div>
       </div>
