@@ -37,13 +37,13 @@ export async function GET(request: NextRequest) {
   // redirect: e.g. next=".evil.com" would build
   // "https://elitevaultapp.com.evil.com" — a phishing host. Require a single
   // leading slash and reject protocol-relative ("//host") or backslash tricks.
-  const rawNext = searchParams.get("next") ?? "/app/analyzer";
+  const rawNext = searchParams.get("next") ?? "/app/library";
   const next =
     rawNext.startsWith("/") &&
     !rawNext.startsWith("//") &&
     !rawNext.startsWith("/\\")
       ? rawNext
-      : "/app/analyzer";
+      : "/app/library";
 
   // Diagnostic logging — surfaces every hop in the auth flow so we can
   // pinpoint where the session is getting dropped. Vercel logs surface

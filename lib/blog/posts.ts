@@ -48,6 +48,7 @@ export const BLOG_POSTS: BlogPost[] = [
       "free store audit tool",
     ],
     date: "2026-06-17",
+    updated: "2026-07-18",
     author: "Ariel Jiménez",
     readingMinutes: 7,
     excerpt:
@@ -76,6 +77,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <div class="callout"><h3>Why generic scores mislead</h3><p>A single "website grade" averaged across unrelated factors hides the one thing you need: <em>which</em> problem is costing you the most. The value isn't a number — it's a ranked list of fixes. A tool that says "73/100" and stops there has told you almost nothing.</p></div>
 <h2>How to run a free conversion audit of your store</h2>
 <p>You can grade the six categories above by hand — but you can't see your own store objectively after staring at it for 300 hours. The fix is a tool that reacts like a first-time visitor. That's exactly what <a href="/free-website-audit">EliteVault's free website audit</a> does: paste your URL and get a conversion score, an annotated screenshot marking each issue, a buyer-persona reaction, and the fixes ranked by impact — free, in under a minute, nothing to install.</p>
+<p>One more note if you're tool-shopping in 2026: some CRO tools are being discontinued. ConvertMate — the AI product-page optimizer for Shopify — has announced it's shutting down; if you relied on it, there's <a href="/convertmate-alternative">a free ConvertMate alternative</a> that covers the same job with a full-store conversion audit.</p>
 <p>Pair it with the free fundamentals — run <strong>PageSpeed Insights</strong> for speed and set up <strong>Google Search Console</strong> for SEO — and you've covered all three audit types for $0. Then fix in order of leverage: usually the conversion findings move revenue fastest. Start with <a href="/blog/how-to-increase-shopify-conversion-rate">the 11 highest-leverage fixes</a>, and if you're running paid traffic, read <a href="/blog/why-meta-ads-arent-converting">why your Meta ads aren't converting</a>.</p>
 `.trim(),
     faqs: [

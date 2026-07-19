@@ -17,9 +17,9 @@ import { getT } from "@/lib/i18n/server";
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
 export const metadata: Metadata = {
-  title: "Winning Shopify Stores — A Live Library of Converting Stores",
+  title: "Winning Shopify Stores 2026 — Live Library | EliteVault",
   description:
-    "Browse a live library of winning Shopify & ecommerce stores actually generating revenue. Filter by niche, study what converts, and search by image similarity — then audit your own store free.",
+    "Browse a live library of winning Shopify & DTC stores validated by real revenue signals. Filter by niche, search by image similarity, and copy what actually converts.",
   keywords: [
     "winning shopify stores",
     "winning ecommerce stores",

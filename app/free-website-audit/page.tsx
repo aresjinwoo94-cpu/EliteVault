@@ -18,11 +18,13 @@ import { getT } from "@/lib/i18n/server";
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
 export const metadata: Metadata = {
-  title: "Free Website Audit & Conversion Analyzer for Your Store",
+  title: "Free Shopify Store Audit — Score + Fixes in 60s | EliteVault",
   description:
-    "Run a free website audit in 60 seconds. EliteVault's AI website analyzer scores your store, annotates what's costing you conversions, and ranks the fixes. No card.",
+    "Paste your URL for a free AI CRO audit: conversion score, annotated screenshot and a ranked punch-list of fixes. Built for Shopify & DTC founders. No credit card.",
   keywords: [
     "free website audit",
+    "free shopify store audit",
+    "shopify store audit",
     "website analyzer",
     "web analyzer",
     "free website analyzer",

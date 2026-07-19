@@ -9,12 +9,13 @@ import { MarketingNav } from "@/components/marketing/nav";
  */
 export const metadata: Metadata = {
   title: {
-    absolute: "Free Website Audit & Store Analyzer — EliteVault",
+    absolute: "Free Shopify & Ecommerce Store Audit (AI) — EliteVault",
   },
   description:
-    "EliteVault is a free AI website audit and conversion analyzer for ecommerce. Score your store, see exactly what's costing you sales, and get ranked fixes — in 60 seconds, no card.",
+    "Free AI store audit for Shopify & DTC: get a CRO score, an annotated screenshot and ranked fixes in 60 seconds — no card. See why top stores convert and copy it.",
   keywords: [
     "free website audit",
+    "free shopify store audit",
     "ai store audit",
     "ecommerce conversion analyzer",
     "shopify store audit",
@@ -48,6 +49,7 @@ export const dynamic = "force-dynamic";
 import { Hero } from "@/components/marketing/hero";
 import { LogoStrip } from "@/components/marketing/logo-strip";
 import { FeaturesShowcase } from "@/components/marketing/features-showcase";
+import { ComparisonTable } from "@/components/marketing/comparison-table";
 import { AnalyzerDemo } from "@/components/marketing/analyzer-demo";
 import { TwoPaths } from "@/components/marketing/two-paths";
 import { SocialProof } from "@/components/marketing/social-proof";
@@ -56,7 +58,65 @@ import { Pricing } from "@/components/marketing/pricing";
 import { FAQ } from "@/components/marketing/faq";
 import { Footer } from "@/components/marketing/footer";
 import { PLANS } from "@/lib/stripe/plans";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  createSupabaseServerClient,
+  createSupabaseServiceClient,
+} from "@/lib/supabase/server";
+import type { FeaturedStore } from "@/components/marketing/social-proof";
+
+/**
+ * Fetch 3 real winning stores from the Library for the social-proof
+ * section — replaces the old "illustrative" cards with entries a
+ * logged-in user actually sees. Only stores with self-hosted thumbnails
+ * qualify (mshots URLs can render blank), ranked featured-first then by
+ * real conv_rate. Fails soft: on any error the section renders without
+ * cards rather than breaking the landing.
+ */
+async function getFeaturedStores(): Promise<FeaturedStore[]> {
+  try {
+    const service = createSupabaseServiceClient();
+    const { data } = await service
+      .from("winning_sites")
+      .select("title, niche, thumbnail_url, metrics, is_featured")
+      .like("thumbnail_url", "%/storage/v1/object/public/%")
+      .limit(24);
+    if (!Array.isArray(data)) return [];
+    return (
+      (data as unknown as {
+        title: string;
+        niche: string;
+        thumbnail_url: string;
+        metrics: { conv_rate?: number } | null;
+        is_featured: boolean;
+      }[])
+        .map((row) => ({
+          title: row.title,
+          niche: row.niche,
+          // Supabase image transform: ~85% lighter than the raw capture.
+          thumbnailUrl: `${row.thumbnail_url.replace(
+            "/storage/v1/object/public/",
+            "/storage/v1/render/image/public/",
+          )}?width=800&quality=70`,
+          convRate:
+            typeof row.metrics?.conv_rate === "number"
+              ? row.metrics.conv_rate
+              : null,
+          featured: row.is_featured,
+        }))
+        .sort(
+          (a, b) =>
+            Number(b.featured) - Number(a.featured) ||
+            (b.convRate ?? 0) - (a.convRate ?? 0),
+        )
+        .slice(0, 3)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        .map(({ featured, ...store }) => store)
+    );
+  } catch (err) {
+    console.warn("[landing] featured stores fetch failed:", (err as Error).message);
+    return [];
+  }
+}
 
 /**
  * Landing-page JSON-LD structured data.
@@ -156,18 +216,21 @@ function buildLandingJsonLd() {
 
 export default async function HomePage() {
   // v3.6.2 — if the visitor is already signed in, skip the marketing
-  // landing and drop them straight into the analyzer. They explicitly
-  // chose this product; making them re-scroll past the pitch every visit
-  // is friction. Logged-out visitors still see the full landing.
+  // landing and drop them straight into the app. They explicitly chose
+  // this product; making them re-scroll past the pitch every visit is
+  // friction. Logged-out visitors still see the full landing.
+  // (Default in-app destination is the Library — same default as the
+  // post-login redirect; explicit `next` links still reach the analyzer.)
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (user) {
-    redirect("/app/analyzer");
+    redirect("/app/library");
   }
 
   const jsonLd = buildLandingJsonLd();
+  const featuredStores = await getFeaturedStores();
   return (
     <>
       {/*
@@ -191,8 +254,9 @@ export default async function HomePage() {
         <AnalyzerDemo />
         <TwoPaths />
         <FeaturesShowcase />
+        <ComparisonTable />
         <Reviews />
-        <SocialProof />
+        <SocialProof stores={featuredStores} />
         <Pricing />
         <FAQ />
       </main>
