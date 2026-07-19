@@ -47,55 +47,68 @@ export function AuditSnapshot() {
           <div className="relative aspect-[16/11] bg-gradient-to-br from-obsidian-800 to-obsidian-900 overflow-hidden border-r border-white/[0.04]">
             <div className="absolute inset-0 bg-dot-grid opacity-30" />
 
-            {/* Mock store layout */}
-            <div className="absolute inset-x-6 top-6 bottom-6 rounded-xl bg-gradient-to-br from-obsidian-700/30 to-obsidian-800/40 border border-white/[0.04] overflow-hidden">
-              {/* Mock nav */}
-              <div className="absolute inset-x-3 top-3 h-4 rounded-sm bg-white/[0.04]" />
-              {/* Mock hero block */}
-              <div className="absolute inset-x-3 top-10 h-16 rounded-md bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/[0.04]" />
-              {/* Mock product grid */}
-              <div className="absolute inset-x-3 bottom-3 grid grid-cols-3 gap-2">
-                {[0, 1, 2].map((i) => (
-                  <div
-                    key={i}
-                    className="aspect-square rounded-md bg-white/[0.03] border border-white/[0.04]"
-                  />
-                ))}
-              </div>
+            {/*
+              Mock store layout, framed by the same spinning conic-gradient
+              border (`ai-border`) as the in-app analyzer launcher — the
+              "AI is scanning this screenshot" cue. The ::before ring draws
+              1px OUTSIDE the element, so overflow-hidden lives on an inner
+              wrapper instead of the ai-border element itself.
+            */}
+            <div className="absolute inset-x-4 top-4 bottom-4 md:inset-x-6 md:top-6 md:bottom-6 ai-border rounded-xl">
+              <div className="relative h-full w-full rounded-xl bg-gradient-to-br from-obsidian-700/30 to-obsidian-800/40 border border-white/[0.04] overflow-hidden">
+                {/* Mock nav */}
+                <div className="absolute inset-x-3 top-3 h-4 rounded-sm bg-white/[0.04]" />
+                {/* Mock hero block */}
+                <div className="absolute inset-x-3 top-10 h-16 rounded-md bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/[0.04]" />
+                {/* Mock product grid */}
+                <div className="absolute inset-x-3 bottom-3 grid grid-cols-3 gap-2">
+                  {[0, 1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className="aspect-square rounded-md bg-white/[0.03] border border-white/[0.04]"
+                    />
+                  ))}
+                </div>
 
-              {/* Annotation dots + labels */}
-              <SnapshotAnnotation
-                n={1}
-                x="28%"
-                y="32%"
-                side="right"
-                color="destructive"
-                label="CTA below fold"
-              />
-              <SnapshotAnnotation
-                n={2}
-                x="68%"
-                y="32%"
-                side="left"
-                color="warning"
-                label="Hero too quiet"
-              />
-              <SnapshotAnnotation
-                n={3}
-                x="22%"
-                y="78%"
-                side="right"
-                color="success"
-                label="Solid imagery"
-              />
-              <SnapshotAnnotation
-                n={4}
-                x="78%"
-                y="78%"
-                side="left"
-                color="destructive"
-                label="No trust badges"
-              />
+                {/*
+                  Annotation dots + labels. Every pin sits on its OWN row
+                  (staggered y) — two labels on the same row grow toward
+                  each other and overlap once the canvas drops below
+                  ~450px (analyzer column / mobile).
+                */}
+                <SnapshotAnnotation
+                  n={1}
+                  x="26%"
+                  y="22%"
+                  side="right"
+                  color="destructive"
+                  label="CTA below fold"
+                />
+                <SnapshotAnnotation
+                  n={2}
+                  x="72%"
+                  y="42%"
+                  side="left"
+                  color="warning"
+                  label="Hero too quiet"
+                />
+                <SnapshotAnnotation
+                  n={3}
+                  x="24%"
+                  y="64%"
+                  side="right"
+                  color="success"
+                  label="Solid imagery"
+                />
+                <SnapshotAnnotation
+                  n={4}
+                  x="74%"
+                  y="85%"
+                  side="left"
+                  color="destructive"
+                  label="No trust badges"
+                />
+              </div>
             </div>
 
             <div className="absolute left-3 bottom-2 text-[9px] uppercase tracking-widest text-white/25">
@@ -103,8 +116,9 @@ export function AuditSnapshot() {
             </div>
           </div>
 
-          {/* RIGHT: audit summary */}
-          <div className="bg-obsidian-900/40 p-5 space-y-4">
+          {/* RIGHT: audit summary — tighter paddings/type below md so the
+              stacked mobile layout doesn't tower */}
+          <div className="bg-obsidian-900/40 p-4 md:p-5 space-y-3 md:space-y-4">
             {/* Score + verdict */}
             <div>
               <p className="text-[10px] font-mono uppercase tracking-widest text-white/40">
@@ -113,7 +127,7 @@ export function AuditSnapshot() {
               <div className="mt-1 flex items-baseline gap-2">
                 <CountUp
                   value={62}
-                  className="font-mono text-5xl tabular-nums text-signal-300 leading-none"
+                  className="font-mono text-4xl md:text-5xl tabular-nums text-signal-300 leading-none"
                 />
                 <span className="font-mono text-white/40 text-sm tabular-nums">
                   / 100
@@ -198,7 +212,7 @@ export function AuditSnapshot() {
         </div>
 
         {/* Bottom strip — top 3 fixes */}
-        <div className="border-t border-white/[0.04] bg-obsidian-900/30 px-5 py-3">
+        <div className="border-t border-white/[0.04] bg-obsidian-900/30 px-4 py-2.5 md:px-5 md:py-3">
           <div className="flex items-center gap-2 mb-2">
             <Zap className="size-3 text-champagne-400" />
             <p className="text-[10px] font-mono uppercase tracking-widest text-white/40">
