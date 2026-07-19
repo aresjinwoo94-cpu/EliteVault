@@ -191,8 +191,8 @@ export default async function HomePage() {
         <AnalyzerDemo />
         <TwoPaths />
         <FeaturesShowcase />
-        <SocialProof />
         <Reviews />
+        <SocialProof />
         <Pricing />
         <FAQ />
       </main>
