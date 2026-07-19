@@ -37,6 +37,9 @@ export function Footer() {
             <Link href="/winning-shopify-stores" className="hover:text-white">
               {t("footer.winners")}
             </Link>
+            <Link href="/convertmate-alternative" className="hover:text-white">
+              {t("footer.convertmate")}
+            </Link>
             <Link href="/blog" className="hover:text-white">
               {t("footer.blog")}
             </Link>

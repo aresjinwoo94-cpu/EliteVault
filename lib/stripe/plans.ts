@@ -14,6 +14,13 @@ export interface Plan {
   tagline: string;
   description: string;
   price: { month: number; year: number };
+  /**
+   * Visual-only "launch price" anchor for the MONTHLY interval: the
+   * regular price this plan will move to once the launch promo ends.
+   * Shown struck-through next to the live price. Stripe keeps charging
+   * `price.month` — this never touches price_ids or billing.
+   */
+  launchAnchor?: { month: number };
   stripePriceIds: { month?: string; year?: string };
   /** Monthly credits granted by this plan (0 = cannot analyze) */
   monthlyCredits: number;
@@ -82,6 +89,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     description:
       "Full Library + brutal Analyzer with annotated screenshots, buyer-persona simulations, and the ability to publish your audits to the Community.",
     price: { month: 19, year: 180 },
+    launchAnchor: { month: 29 },
     stripePriceIds: {
       month: process.env.STRIPE_PRICE_PRO_MONTHLY,
       year: process.env.STRIPE_PRICE_PRO_YEARLY,
@@ -116,6 +124,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     description:
       "Diagnosis + cure + crystal ball. Project a 7-day Meta Ads campaign across 3 scenarios before you spend a dollar. Plus Meta Ads optimizer targets and REST API.",
     price: { month: 49, year: 499 },
+    launchAnchor: { month: 79 },
     stripePriceIds: {
       month: process.env.STRIPE_PRICE_SCALE_MONTHLY,
       year: process.env.STRIPE_PRICE_SCALE_YEARLY,

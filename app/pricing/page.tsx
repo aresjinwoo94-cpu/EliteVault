@@ -3,6 +3,14 @@ import { MarketingNav } from "@/components/marketing/nav";
 import { Pricing } from "@/components/marketing/pricing";
 import { FAQ } from "@/components/marketing/faq";
 import { Footer } from "@/components/marketing/footer";
+import { PLANS } from "@/lib/stripe/plans";
+
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
+
+// End date of the launch-price promo, mirrored in the visual anchor on the
+// pricing cards (lib/stripe/plans.ts launchAnchor). TODO(owner): confirm or
+// move this date — after it, either raise prices to the anchor or extend it.
+const LAUNCH_PRICE_VALID_UNTIL = "2026-09-30";
 
 // Per-route metadata. Title slots into the layout's template ("%s · EliteVault")
 // so the browser tab and search-result title both read "Pricing · EliteVault".
@@ -33,8 +41,37 @@ export const metadata: Metadata = {
 };
 
 export default function PricingPage() {
+  // Product + Offer structured data — makes the tiers eligible for price
+  // rich results. Prices come from PLANS (single source of truth); no
+  // aggregateRating (no verifiable third-party reviews yet — faking one
+  // violates Google's policies).
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: "EliteVault",
+    description:
+      "AI conversion audits for ecommerce — CRO score, annotated screenshot, buyer-persona simulation and a 7-day Meta Ads scenario modeler.",
+    brand: { "@type": "Brand", name: "EliteVault" },
+    url: `${baseUrl}/pricing`,
+    offers: Object.values(PLANS).map((plan) => ({
+      "@type": "Offer",
+      name: `EliteVault ${plan.name} (monthly)`,
+      price: plan.price.month,
+      priceCurrency: "USD",
+      url: `${baseUrl}/pricing`,
+      availability: "https://schema.org/InStock",
+      ...(plan.launchAnchor
+        ? { priceValidUntil: LAUNCH_PRICE_VALID_UNTIL }
+        : {}),
+    })),
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <MarketingNav />
       <main className="pt-32 pb-8">
         <Pricing />

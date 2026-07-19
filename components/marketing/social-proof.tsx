@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
+  ArrowRight,
   CreditCard,
   Lock,
   ShieldCheck,
@@ -10,27 +12,20 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { DataPill } from "@/components/ui/data-pill";
-import { ScoreBadge } from "@/components/ui/score-badge";
 import { COMPANY } from "@/lib/company";
 import { useT } from "@/components/i18n/locale-provider";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
 /**
- * P0.5 — Social proof + founder note + trust badges.
+ * Social proof — 3 REAL winning stores from the Library + founder note +
+ * trust badges.
  *
- * Two jobs:
- *   1. Resolve the irony that the demo flags "no trust badges" while the
- *      marketing site itself had none. The badge row below states exactly
- *      how the product is run (Stripe, no card for the free audit, etc.).
- *   2. Give the visitor recognizable reference points + a human founder
- *      voice before the pricing section.
- *
- * HONESTY NOTE: the sample-audit cards are clearly labelled "illustrative"
- * — they demonstrate the FORMAT of an audit on well-known stores, not a
- * claim that we ran or endorse them. This matches the product's
- * "estimates, not predictions" stance; it would be self-defeating to fake
- * numbers on the page that sells honest numbers.
+ * The old version showed "illustrative" audit cards (Gymshark 91, …) with
+ * a demonstrative-scores disclaimer. It now renders real Library entries
+ * (fetched server-side in app/page.tsx and passed in as props), so the
+ * numbers are the same conversion metrics a logged-in user sees — no
+ * disclaimer needed. CTA routes to sign-in with next=/app/library.
  *
  * The founder identity is the SINGLE source of truth in lib/company.ts
  * (gap #9) — update it there and every surface (here, About, JSON-LD)
@@ -39,33 +34,14 @@ const ease = [0.22, 1, 0.36, 1] as const;
 
 const FOUNDER = COMPANY.founder;
 
-// Illustrative example audits on recognizable DTC stores. Scores are
-// demonstrative bands, not real audit results — see HONESTY NOTE above.
-const SAMPLE_AUDITS: {
-  store: string;
+/** Serializable card data for a real Library store (built in app/page.tsx). */
+export interface FeaturedStore {
+  title: string;
   niche: string;
-  score: number;
-  takeawayKey: string;
-}[] = [
-  {
-    store: "Gymshark",
-    niche: "Activewear",
-    score: 91,
-    takeawayKey: "social.takeawayGymshark",
-  },
-  {
-    store: "Allbirds",
-    niche: "Footwear",
-    score: 88,
-    takeawayKey: "social.takeawayAllbirds",
-  },
-  {
-    store: "MVMT",
-    niche: "Watches",
-    score: 84,
-    takeawayKey: "social.takeawayMvmt",
-  },
-];
+  thumbnailUrl: string;
+  /** Real conv_rate metric from winning_sites.metrics, e.g. 4.4 */
+  convRate: number | null;
+}
 
 const TRUST_BADGES: { icon: typeof ShieldCheck; key: string; labelKey: string }[] = [
   { icon: CreditCard, key: "noCard", labelKey: "social.badgeNoCard" },
@@ -74,14 +50,14 @@ const TRUST_BADGES: { icon: typeof ShieldCheck; key: string; labelKey: string }[
   { icon: Sparkles, key: "estimates", labelKey: "social.badgeEstimates" },
 ];
 
-export function SocialProof() {
+export function SocialProof({ stores = [] }: { stores?: FeaturedStore[] }) {
   const { t } = useT();
   return (
     <section className="relative py-20 md:py-28">
       <div className="container max-w-6xl">
         {/* Section heading */}
         <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
-          <DataPill items={["LIVE AUDIT", "REAL SCORES"]} />
+          <DataPill items={["FROM THE LIBRARY", "REAL STORES"]} />
           <h2 className="mt-5 font-serif text-3xl md:text-5xl tracking-tight">
             {t("social.heading")}
           </h2>
@@ -90,36 +66,63 @@ export function SocialProof() {
           </p>
         </div>
 
-        {/* Sample audit cards */}
-        <div className="mt-12 grid gap-4 md:grid-cols-3">
-          {SAMPLE_AUDITS.map((a, i) => (
-            <motion.div
-              key={a.store}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.5, ease, delay: i * 0.08 }}
-            >
-              <Card className="h-full p-6">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-medium text-white truncate">{a.store}</p>
-                    <p className="font-mono text-xs uppercase tracking-wider text-white/40">{a.niche}</p>
+        {/* Real winning stores from the Library */}
+        {stores.length > 0 && (
+          <div className="mt-12 grid gap-4 md:grid-cols-3">
+            {stores.map((s, i) => (
+              <motion.div
+                key={s.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.5, ease, delay: i * 0.08 }}
+              >
+                <Card className="h-full overflow-hidden p-0">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-obsidian-800">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={s.thumbnailUrl}
+                      alt={`${s.title} — winning ${s.niche} store`}
+                      loading="lazy"
+                      className="absolute inset-0 h-full w-full object-cover object-top"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-obsidian-950/80 to-transparent" />
                   </div>
-                  <div className="shrink-0">
-                    <ScoreBadge score={a.score} size="lg" animate />
+                  <div className="flex items-start justify-between gap-3 p-5">
+                    <div className="min-w-0">
+                      <p className="font-medium text-white truncate">{s.title}</p>
+                      <p className="font-mono text-xs uppercase tracking-wider text-white/40">
+                        {s.niche}
+                      </p>
+                    </div>
+                    {s.convRate != null && (
+                      <div className="shrink-0 rounded-lg bg-signal-600/10 px-2.5 py-1.5 text-right ring-1 ring-signal-500/20">
+                        <p className="font-mono tabular-nums text-lg leading-none text-signal-300">
+                          {s.convRate}%
+                        </p>
+                        <p className="mt-0.5 text-[9px] uppercase tracking-wider text-white/40">
+                          {t("social.convRate")}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                </div>
-                <p className="mt-4 text-sm text-white/60 leading-relaxed">
-                  {t(a.takeawayKey)}
-                </p>
-              </Card>
-            </motion.div>
-          ))}
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {/* CTA into the Library (post-login default also lands there) */}
+        <div className="mt-8 flex flex-col items-center gap-2 text-center">
+          <p className="text-sm text-white/55">{t("social.libraryCtaLead")}</p>
+          <Link
+            href="/sign-in?next=/app/library"
+            className="inline-flex items-center gap-2 rounded-lg border border-signal-500/30 bg-signal-600/10 px-5 py-2.5 text-sm font-medium text-signal-200 transition-colors hover:bg-signal-600/20 hover:text-signal-100"
+          >
+            {t("social.libraryCta")}
+            <ArrowRight className="size-4" />
+          </Link>
         </div>
-        <p className="mt-4 text-center text-[11px] text-white/30">
-          {t("social.disclaimer")}
-        </p>
 
         {/* Founder note */}
         <motion.div
