@@ -6,6 +6,8 @@
  *   npm run library:thumbs                     # snapshot everything missing
  *   npm run library:thumbs -- --limit 10       # do it in batches
  *   npm run library:thumbs -- --force          # re-snapshot even migrated rows
+ *   npm run library:thumbs -- --only a.com,b.com   # restrict to these domains
+ *                                              # (quota-rationing: pair with --force)
  *
  * # Why this exists
  * `winning_sites.thumbnail_url` used to hold a LIVE WordPress-mshots URL
@@ -46,6 +48,16 @@ const dryRun = args.includes("--dry-run");
 const force = args.includes("--force");
 const limitIdx = args.indexOf("--limit");
 const limit = limitIdx !== -1 ? Number(args[limitIdx + 1]) : Infinity;
+const onlyIdx = args.indexOf("--only");
+const only =
+  onlyIdx !== -1
+    ? new Set(
+        args[onlyIdx + 1]
+          .split(",")
+          .map((d) => d.trim().toLowerCase())
+          .filter(Boolean),
+      )
+    : null;
 
 /**
  * Hard requirement: this script captures via ScreenshotOne ONLY (see the import
@@ -121,6 +133,9 @@ const SHOT_OPTS = {
   timeoutMs: TIMEOUT_MS,
   fullPage: false,
   deviceScaleFactor: 1,
+  // Cards want the hero, not a newsletter modal (bearaby/daily-harvest
+  // came back as a blank overlay without this).
+  blockBannersByHeuristics: true,
 } as const;
 
 async function capture(url: string) {
@@ -166,7 +181,15 @@ const sites = (rows ?? []) as {
 
 // Count BEFORE applying --limit, otherwise the "already self-hosted" tally
 // silently absorbs the rows the limit skipped.
-const pending = sites.filter((s) => force || !isSelfHosted(s.thumbnail_url));
+const scoped = only
+  ? sites.filter((s) => only.has(s.domain.toLowerCase()))
+  : sites;
+if (only && scoped.length < only.size) {
+  const found = new Set(scoped.map((s) => s.domain.toLowerCase()));
+  for (const d of only)
+    if (!found.has(d)) console.warn(`--only: domain not in winning_sites: ${d}`);
+}
+const pending = scoped.filter((s) => force || !isSelfHosted(s.thumbnail_url));
 const todo = pending.slice(0, limit);
 
 console.log(
@@ -194,7 +217,10 @@ for (const [i, site] of todo.entries()) {
   try {
     const shot = await capture(site.url);
     const ext = shot.mediaType === "image/png" ? "png" : "jpg";
-    const path = `${PREFIX}/${site.id}.${ext}`;
+    // Timestamped path: a re-capture gets a NEW public URL, so the Supabase
+    // CDN (and browsers) can't keep serving the stale cached image — an
+    // upsert to the same path would look "unchanged" for up to an hour.
+    const path = `${PREFIX}/${site.id}-${Date.now()}.${ext}`;
 
     const { error: upErr } = await svc.storage
       .from(BUCKET)
@@ -213,6 +239,20 @@ for (const [i, site] of todo.entries()) {
       .update({ thumbnail_url: publicUrl })
       .eq("id", site.id);
     if (updErr) throw new Error(`update: ${updErr.message}`);
+
+    // The row now points at the new object — delete the superseded one so
+    // storage doesn't accumulate a dead multi-MB capture per re-run.
+    if (isSelfHosted(site.thumbnail_url)) {
+      const oldPath = site.thumbnail_url!.split(
+        `/storage/v1/object/public/${BUCKET}/`,
+      )[1];
+      if (oldPath && oldPath !== path) {
+        const { error: rmErr } = await svc.storage
+          .from(BUCKET)
+          .remove([decodeURIComponent(oldPath)]);
+        if (rmErr) console.warn(`${label} (old object not removed: ${rmErr.message})`);
+      }
+    }
 
     console.log(`${label} ✓ ${publicUrl}`);
     ok++;

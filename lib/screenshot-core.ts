@@ -156,6 +156,14 @@ export async function captureWithScreenshotOne(
      * Pass 2 explicitly if a caller ever needs to read fine print.
      */
     deviceScaleFactor?: 1 | 2;
+    /**
+     * Also dismiss newsletter/discount modals via ScreenshotOne's heuristics
+     * (`block_banners_by_heuristics`). OFF by default: the AUDIT should see the
+     * store exactly as a visitor does — an aggressive popup IS a CRO finding.
+     * Thumbnail captures turn it on: a card wants the hero, not the modal
+     * (measured: bearaby/daily-harvest thumbs were a blank modal overlay).
+     */
+    blockBannersByHeuristics?: boolean;
   } = {},
 ): Promise<{
   base64: string;
@@ -172,6 +180,9 @@ export async function captureWithScreenshotOne(
     full_page: String(opts.fullPage ?? true),
     block_ads: "true",
     block_cookie_banners: "true",
+    ...(opts.blockBannersByHeuristics
+      ? { block_banners_by_heuristics: "true" }
+      : {}),
     cache: "true",
     cache_ttl: "86400",
   });
