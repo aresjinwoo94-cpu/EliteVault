@@ -11,22 +11,30 @@ import { cn } from "@/lib/utils";
 const ease = [0.22, 1, 0.36, 1] as const;
 
 /**
- * "How EliteVault compares" — capability table vs. recognizable options
- * in the space (Hotjar, Triple Whale, a human CRO agency).
+ * "How EliteVault compares" — capability table vs. real competitors in the
+ * AI CRO-audit category: ConvertMate, AuditMyStore, and a human CRO agency.
  *
- * Placement: right after FeaturesShowcase ("More than a checklist tool")
- * and before Reviews/social proof — the visitor already understands the
- * full value, so the table works as price justification on the way to
- * pricing.
+ * We deliberately do NOT compare against Hotjar or Triple Whale — those are
+ * continuous session/attribution analytics, a different category. An operator
+ * who uses them reads such a comparison and concludes we don't understand the
+ * space. These three actually overlap with what EliteVault does.
  *
- * SEO note: the table is rendered unconditionally (no whileInView gating
- * on the rows), so every cell ships in the server HTML — this is
- * rankable comparison content. Only the heading wrapper animates.
+ * HONESTY: the table is intentionally NOT a clean sweep. There are rows where
+ * EliteVault loses on purpose (native Shopify integration, and actually
+ * running A/B tests + implementing the fixes) — a table where one column wins
+ * everything reads as an ad, not a comparison. The "What EliteVault does NOT
+ * do" callout below makes the boundary explicit; naming the limitation kills
+ * the objection before the buyer raises it.
  *
- * LEGAL note: competitor cells describe publicly known capabilities
- * factually (Hotjar = behavior analytics via installed script; Triple
- * Whale = data-connected analytics/attribution). The footnote dates the
- * comparison. Keep cells verifiable — no disparagement.
+ * Placement: right after FeaturesShowcase and before Reviews/social proof.
+ *
+ * SEO note: rows render unconditionally (no whileInView gating), so every
+ * cell ships in the server HTML — rankable comparison content.
+ *
+ * LEGAL note: competitor cells describe publicly known capabilities factually
+ * (ConvertMate = Shopify-native AI CRO that auto-applies changes; AuditMyStore
+ * = one-shot AI store audit; CRO agency = human audit + A/B testing). The
+ * footnote dates the comparison. Keep cells verifiable — no disparagement.
  *
  * Mobile: the table scrolls horizontally inside its own container
  * (min-w + overflow-x-auto) — the page never scrolls sideways.
@@ -34,24 +42,28 @@ const ease = [0.22, 1, 0.36, 1] as const;
 
 type Cell = true | false | string; // string = i18n key for a nuanced cell
 
+// cells order = [EliteVault, ConvertMate, AuditMyStore, CRO agency]
 const ROWS: { labelKey: string; cells: [Cell, Cell, Cell, Cell] }[] = [
-  { labelKey: "compare.rowAudit", cells: [true, false, false, "compare.cellDays"] },
-  { labelKey: "compare.rowScreenshot", cells: [true, false, false, "compare.cellManual"] },
+  { labelKey: "compare.rowAudit", cells: [true, "compare.cellContinuous", true, "compare.cellDays"] },
+  { labelKey: "compare.rowScreenshot", cells: [true, false, true, "compare.cellManual"] },
   { labelKey: "compare.rowPersona", cells: [true, false, false, false] },
   { labelKey: "compare.rowLibrary", cells: [true, false, false, false] },
   { labelKey: "compare.rowImageSearch", cells: [true, false, false, false] },
-  { labelKey: "compare.rowMetaModeler", cells: [true, false, "compare.cellPartial", false] },
-  { labelKey: "compare.rowNicheAware", cells: [true, false, false, true] },
+  { labelKey: "compare.rowMetaModeler", cells: [true, false, false, false] },
+  { labelKey: "compare.rowNicheAware", cells: [true, false, "compare.cellPartial", true] },
+  // ↓ Rows EliteVault loses on purpose — a real comparison, not an ad.
+  { labelKey: "compare.rowShopify", cells: [false, true, false, true] },
+  { labelKey: "compare.rowImplements", cells: [false, true, false, true] },
   {
     labelKey: "compare.rowNoInstall",
-    cells: [true, "compare.cellNeedsScript", "compare.cellNeedsData", true],
+    cells: [true, "compare.cellNeedsApp", true, true],
   },
   {
     labelKey: "compare.rowPrice",
     cells: [
       "compare.cellPriceEv",
-      "compare.cellPriceHotjar",
-      "compare.cellPriceTw",
+      "compare.cellPriceConvertmate",
+      "compare.cellPriceAudit",
       "compare.cellPriceAgency",
     ],
   },
@@ -72,8 +84,8 @@ export function ComparisonTable() {
   const { t } = useT();
   const columns = [
     { key: "ev", label: "EliteVault", highlight: true },
-    { key: "hotjar", label: "Hotjar", highlight: false },
-    { key: "tw", label: "Triple Whale", highlight: false },
+    { key: "convertmate", label: "ConvertMate", highlight: false },
+    { key: "auditmystore", label: "AuditMyStore", highlight: false },
     { key: "agency", label: t("compare.colAgency"), highlight: false },
   ];
 
@@ -160,6 +172,18 @@ export function ComparisonTable() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* What EliteVault does NOT do — naming the boundary kills the
+            objection before the buyer thinks it. This raises conversion,
+            it doesn't lower it. */}
+        <div className="mx-auto mt-6 max-w-3xl rounded-2xl border border-white/[0.07] bg-white/[0.015] p-5 md:p-6">
+          <p className="text-sm font-medium text-white">
+            {t("compare.notDoTitle")}
+          </p>
+          <p className="mt-1.5 text-sm text-white/55 leading-relaxed">
+            {t("compare.notDoBody")}
+          </p>
         </div>
 
         {/* Legal footnote — dates the comparison */}
