@@ -204,7 +204,7 @@ export default async function NichePage(props: {
                       {s.convRate}%
                     </p>
                     <p className="mt-0.5 text-[9px] uppercase tracking-wider text-white/40">
-                      conv. rate
+                      est. conv. rate
                     </p>
                   </div>
                 ) : (
@@ -220,6 +220,13 @@ export default async function NichePage(props: {
             </div>
           ))}
         </section>
+
+        {/* Estimate disclaimer — conversion figures are modeled from public
+            signals, never brand-reported. Keep it adjacent to the numbers. */}
+        <p className="mt-4 text-center text-xs text-white/35 leading-relaxed">
+          Conversion figures are estimated by modeling public traffic and
+          behavior signals. They are not numbers reported by the brands.
+        </p>
 
         {/* CTA into the Library */}
         <section className="mt-12 rounded-3xl border border-signal-500/20 bg-signal-600/[0.04] p-8 text-center">

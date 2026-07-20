@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Activity, ExternalLink, Lock, Sparkles, TrendingUp } from "lucide-react";
+import { Activity, ExternalLink, Info, Lock, Sparkles, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SaveButton } from "./save-button";
@@ -168,12 +168,15 @@ export function SiteCard({
         <div className="mt-3 grid grid-cols-4 gap-2">
           {(
             [
-              ["CTR", m.ctr ? `${m.ctr.toFixed(1)}%` : "—"],
-              ["ROI", m.roi ? `${m.roi.toFixed(1)}x` : "—"],
-              ["Conv.", m.conv_rate ? `${m.conv_rate.toFixed(1)}%` : "—"],
-              ["Traffic", m.traffic_est ? formatCompact(m.traffic_est) : "—"],
+              ["CTR", m.ctr ? `${m.ctr.toFixed(1)}%` : "—", false],
+              ["ROI", m.roi ? `${m.roi.toFixed(1)}x` : "—", false],
+              // Conversion is the number an operator will challenge first —
+              // flag it explicitly as an estimate with an accessible tooltip
+              // explaining the source. We don't have anyone's Shopify data.
+              ["Est. conv.", m.conv_rate ? `${m.conv_rate.toFixed(1)}%` : "—", true],
+              ["Traffic", m.traffic_est ? formatCompact(m.traffic_est) : "—", false],
             ] as const
-          ).map(([label, val]) => (
+          ).map(([label, val, withTip]) => (
             <div
               key={label}
               className={cn(
@@ -181,14 +184,32 @@ export function SiteCard({
                 locked && "select-none",
               )}
             >
-              <p
-                className={cn(
-                  "font-mono text-[10px] uppercase tracking-widest text-white/40",
-                  locked && "blur-[3px]",
-                )}
-              >
-                {label}
-              </p>
+              {withTip && !locked ? (
+                <Tooltip>
+                  <TooltipTrigger
+                    aria-label="Estimated conversion rate — modeled from public signals, not brand-reported."
+                    className="mx-auto flex items-center justify-center gap-0.5 rounded text-white/40 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
+                  >
+                    <span className="font-mono text-[10px] uppercase tracking-widest">
+                      {label}
+                    </span>
+                    <Info className="size-2.5" aria-hidden="true" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-[220px] text-left">
+                    Estimated from public traffic &amp; behavior signals — not an
+                    official figure reported by the brand.
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <p
+                  className={cn(
+                    "font-mono text-[10px] uppercase tracking-widest text-white/40",
+                    locked && "blur-[3px]",
+                  )}
+                >
+                  {label}
+                </p>
+              )}
               <p
                 className={cn(
                   "mt-0.5 text-xs font-medium text-white num",
