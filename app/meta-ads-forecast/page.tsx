@@ -71,7 +71,7 @@ const FAQS = [
   },
   {
     q: "Is the campaign modeler free?",
-    a: "You can start free with a store audit. The 7-day Meta Ads Campaign Scenario Modeler is part of the Scale plan, alongside the Meta Ads optimizer targets and REST API.",
+    a: "You can start free with a store audit — which now includes a modeled ROAS range for your store. Running the full 7-day Campaign Scenario Modeler is included on Pro (1 projection per month) and unlimited on Scale, alongside the Meta Ads optimizer targets and REST API.",
   },
 ];
 
@@ -91,7 +91,7 @@ export default async function MetaAdsForecastPage() {
         "@type": "Offer",
         price: "0",
         priceCurrency: "USD",
-        description: "Start free with a store audit; campaign modeler on the Scale plan.",
+        description: "Start free with a store audit; campaign modeler included on Pro (1/mo) and unlimited on Scale.",
       },
     },
     {

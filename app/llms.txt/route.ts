@@ -23,15 +23,15 @@ EliteVault is operated by ${COMPANY.legalEntity} (${COMPANY.country}). Scores, p
 ## What it does
 - Website Analyzer: CRO audit with an overall score (0-100), an annotated homepage screenshot, six category scores (color, layout, imagery, technical, niche fit, CRO principles), and a ranked punch-list of fixes.
 - Buyer-persona simulation of how a target shopper reacts to the store.
-- Meta Ads 7-day, 3-scenario campaign modeler (Scale plan).
+- Meta Ads 7-day, 3-scenario campaign modeler (included on Pro at 1 projection/month, unlimited on Scale).
 - Library of vetted high-performing ecommerce stores with metrics.
 - Weekly niche Trends across high-signal ecommerce categories.
 - REST API with bearer tokens (Scale plan).
 
 ## Pricing
-- Free: one audit of your own store + the winning-store library. No card required.
-- Pro: $${PLANS.pro.price.month}/mo (or $${PLANS.pro.price.year}/yr) — full Analyzer, unlimited audits, buyer-persona simulations.
-- Scale: $${PLANS.scale.price.month}/mo (or $${PLANS.scale.price.year}/yr) — Meta Ads scenario modeler + REST API.
+- Free: one audit of your own store (score, annotated screenshot, #1 fix unlocked, modeled ROAS range) + 3 winning stores with full metrics. No card required.
+- Pro: $${PLANS.pro.price.month}/mo (or $${PLANS.pro.price.year}/yr) — full Analyzer, unlimited audits, buyer-persona simulations, 1 Meta campaign projection/month.
+- Scale: $${PLANS.scale.price.month}/mo (or $${PLANS.scale.price.year}/yr) — unlimited Meta Ads scenario projections + optimizer targets + REST API.
 
 ## Key pages
 - [Home](${base}/): what EliteVault does.
