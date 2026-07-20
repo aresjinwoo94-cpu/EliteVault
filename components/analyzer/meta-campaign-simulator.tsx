@@ -1,14 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { TrendingUp, Sparkles, RefreshCw, RotateCw } from "lucide-react";
+import { TrendingUp, Sparkles, RefreshCw, RotateCw, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SimulatorEmpty } from "./simulator-empty";
 import { SimulatorScenarioCard } from "./simulator-scenario-card";
 import type { SimulationScenario } from "@/lib/supabase/types";
+
+/** Monthly Meta-run quota for this viewer (null limit = unlimited / Scale). */
+export type MetaQuota = { limit: number | null; used: number };
 
 /**
  * Top-level wrapper for the Meta Campaign Scenario Modeler section.
@@ -42,14 +46,32 @@ type Simulation = {
 export function MetaCampaignSimulator({
   analysisId,
   initial,
+  quota,
 }: {
   analysisId: string;
   initial: Simulation | null;
+  quota?: MetaQuota;
 }) {
   // Current simulation we're tracking. null = no simulation yet (show form).
   const [sim, setSim] = useState<Simulation | null>(initial);
   // Force-render the form even if a successful sim exists ("Re-run" button)
   const [showForm, setShowForm] = useState(false);
+
+  // Finite monthly limit = Pro (Scale passes limit=null → unlimited).
+  const finiteLimit =
+    quota && quota.limit !== null ? (quota.limit as number) : null;
+  const hasResults = sim?.status === "succeeded";
+  // Once the row exists we count it as consumed even before `used` reflects it
+  // server-side (the initial run is optimistic-queued in this component).
+  const usedNow = quota
+    ? Math.max(quota.used, sim ? 1 : 0)
+    : 0;
+  const exhausted = finiteLimit !== null && usedNow >= finiteLimit;
+
+  // Pro who has spent this month's run and has nothing to show → upsell only.
+  if (exhausted && !hasResults) {
+    return <MetaQuotaUpsell used={usedNow} limit={finiteLimit as number} />;
+  }
 
   const statusRef = useRef(sim?.status ?? null);
   statusRef.current = sim?.status ?? null;
@@ -89,10 +111,15 @@ export function MetaCampaignSimulator({
   // CASE 1: no simulation yet OR user clicked "Re-run with new inputs"
   if (!sim || showForm) {
     return (
-      <SimulatorEmpty
-        analysisId={analysisId}
-        previousError={sim?.status === "failed" ? sim.error : null}
-        onQueued={(simulationId) => {
+      <div className="space-y-3">
+        {finiteLimit !== null && (
+          <MetaQuotaCounter used={usedNow} limit={finiteLimit} />
+        )}
+        <SimulatorEmpty
+          analysisId={analysisId}
+          previousError={sim?.status === "failed" ? sim.error : null}
+          planLabel={finiteLimit !== null ? "Pro · 1 / mo" : "Scale plan"}
+          onQueued={(simulationId) => {
           // optimistic state: empty scenarios + queued status
           setSim({
             id: simulationId,
@@ -112,7 +139,8 @@ export function MetaCampaignSimulator({
           });
           setShowForm(false);
         }}
-      />
+        />
+      </div>
     );
   }
 
@@ -166,24 +194,62 @@ export function MetaCampaignSimulator({
           <div className="flex items-center gap-2">
             <TrendingUp className="size-4 text-champagne-400" />
             <h3 className="font-medium text-white">Campaign Scenario Modeler</h3>
-            <Badge variant="gold">
-              <Sparkles className="size-3" />
-              Scale plan
-            </Badge>
+            {finiteLimit !== null ? (
+              <Badge variant="default">
+                {usedNow} of {finiteLimit} this month
+              </Badge>
+            ) : (
+              <Badge variant="gold">
+                <Sparkles className="size-3" />
+                Scale plan
+              </Badge>
+            )}
           </div>
           <p className="mt-1 text-sm text-white/55">
             7-day Meta Ads projection · AOV ${sim.aov_usd} · ${sim.daily_budget_usd}/day budget
           </p>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => setShowForm(true)}
-          className="shrink-0"
-        >
-          <RotateCw className="size-3.5" />
-          Re-run
-        </Button>
+        {/* Re-run is free for Scale (unlimited). For Pro, once the monthly
+            run is spent the button becomes a Scale upsell instead. */}
+        {exhausted ? (
+          <Button asChild variant="primary" className="shrink-0">
+            <Link href="/app/checkout?plan=scale&interval=month">
+              <Sparkles className="size-3.5" />
+              Unlimited on Scale
+              <ArrowRight className="size-3.5" />
+            </Link>
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            onClick={() => setShowForm(true)}
+            className="shrink-0"
+          >
+            <RotateCw className="size-3.5" />
+            Re-run
+          </Button>
+        )}
       </header>
+
+      {/* Pro upsell bar under a consumed projection — the result stays visible
+          (never yanked away); this just points to Scale for more. */}
+      {exhausted && (
+        <div className="flex flex-col gap-2 rounded-xl border border-signal-500/20 bg-signal-600/[0.05] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-white/70">
+            You&apos;ve used your Meta projection for this month.{" "}
+            <span className="text-signal-200">
+              Scale includes unlimited projections.
+            </span>
+          </p>
+          <Link
+            href="/app/checkout?plan=scale&interval=month"
+            className="inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-signal-200 hover:text-signal-100"
+          >
+            Upgrade to Scale
+            <ArrowRight className="size-3.5" />
+          </Link>
+        </div>
+      )}
 
       {sim.error && (
         <Card className="p-3 border-warning/20 bg-warning/[0.04]">
@@ -206,6 +272,64 @@ export function MetaCampaignSimulator({
         variance. Use the recommendations as starting points for your own testing.
       </p>
     </motion.section>
+  );
+}
+
+/** Pro counter chip above the form: "Projection 1 of 1 this month". */
+function MetaQuotaCounter({ used, limit }: { used: number; limit: number }) {
+  const remaining = Math.max(0, limit - used);
+  return (
+    <div className="flex items-center gap-2 rounded-xl border border-champagne-400/15 bg-champagne-400/[0.04] px-4 py-2.5">
+      <Sparkles className="size-3.5 text-champagne-300" />
+      <p className="text-xs text-white/70">
+        <span className="font-medium text-white">
+          {remaining} of {limit}
+        </span>{" "}
+        Meta {limit === 1 ? "projection" : "projections"} left this month on
+        Pro.{" "}
+        <Link
+          href="/app/checkout?plan=scale&interval=month"
+          className="text-signal-200 hover:text-signal-100"
+        >
+          Scale = unlimited →
+        </Link>
+      </p>
+    </div>
+  );
+}
+
+/**
+ * Shown to a Pro user who has spent this month's Meta run and has no result
+ * to display (e.g. the run failed). Honest counter + Scale upsell — no fake
+ * urgency, no result promised.
+ */
+function MetaQuotaUpsell({ used, limit }: { used: number; limit: number }) {
+  return (
+    <Card className="relative overflow-hidden p-6 md:p-7 border-signal-500/20 bg-gradient-to-br from-signal-600/[0.06] to-champagne-400/[0.04]">
+      <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-signal-600/12 blur-3xl" />
+      <div className="relative">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="size-4 text-signal-300" />
+          <h3 className="font-medium text-white">Campaign Scenario Modeler</h3>
+          <Badge variant="default">
+            {used} of {limit} this month
+          </Badge>
+        </div>
+        <p className="mt-2 max-w-xl text-sm text-white/60 leading-relaxed">
+          You&apos;ve used your Meta campaign projection for this month. Your
+          quota resets at the start of your next billing period — or upgrade to
+          Scale for unlimited 7-day projections, the Meta Ads optimizer and the
+          REST API.
+        </p>
+        <Link href="/app/checkout?plan=scale&interval=month" className="mt-4 inline-block">
+          <Button variant="primary">
+            <Sparkles className="size-4" />
+            Upgrade to Scale
+            <ArrowRight className="size-4" />
+          </Button>
+        </Link>
+      </div>
+    </Card>
   );
 }
 

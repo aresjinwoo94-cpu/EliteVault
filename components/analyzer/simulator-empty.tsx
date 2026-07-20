@@ -51,10 +51,13 @@ export function SimulatorEmpty({
   analysisId,
   onQueued,
   previousError,
+  planLabel = "Scale plan",
 }: {
   analysisId: string;
   onQueued: (simulationId: string) => void;
   previousError?: string | null;
+  /** Plan badge shown in the form header (Pro shows its 1/mo entitlement). */
+  planLabel?: string;
 }) {
   const [aov, setAov] = useState("");
   const [budget, setBudget] = useState("");
@@ -117,7 +120,7 @@ export function SimulatorEmpty({
             <h3 className="font-medium">Meta Campaign Scenario Modeler</h3>
             <Badge variant="gold">
               <Sparkles className="size-3" />
-              Scale plan
+              {planLabel}
             </Badge>
           </div>
           <p className="mt-1.5 text-sm text-white/55 leading-relaxed max-w-2xl">
