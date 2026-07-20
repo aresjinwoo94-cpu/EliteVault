@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AnalysisView } from "@/components/analyzer/analysis-view";
 import { PLANS } from "@/lib/stripe/plans";
+import { getMetaRunUsage } from "@/lib/quota/guard";
 
 export const dynamic = "force-dynamic";
 
@@ -73,24 +74,32 @@ export default async function AnalysisPage({
   }
 
   const plan = PLANS[profile?.plan ?? "free"];
+  // P1-7 — the Campaign Scenario Modeler is now available to Pro (1/mo) AND
+  // Scale (unlimited). Free (metaRunsPerMonth = 0) can't run it.
+  const canRunMeta = (plan.quotas.metaRunsPerMonth ?? 1) !== 0;
 
-  // v3.0 — Latest Meta Campaign Scenario Modeler run for this analysis.
-  // We fetch only for Scale users (no point loading + then ignoring on lower
-  // plans). The simulator UI manages its own polling on the returned ID.
+  // Latest Meta Campaign Scenario Modeler run for this analysis, plus the
+  // month's usage counter. Fetch for anyone who CAN run the Meta block (Pro
+  // + Scale); the simulator UI manages its own polling on the returned ID.
   let initialSimulation = null;
-  if (plan.unlocksScale) {
-    const { data: simRow } = await supabase
-      .from("meta_simulations")
-      .select(
-        "id, analysis_id, aov_usd, daily_budget_usd, product_margin_pct, notes, conservative, balanced, aggressive, status, error, started_at, finished_at, created_at",
-      )
-      .eq("analysis_id", id)
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+  let metaUsage: { limit: number | null; used: number } = { limit: 0, used: 0 };
+  if (canRunMeta) {
+    const [{ data: simRow }, usage] = await Promise.all([
+      supabase
+        .from("meta_simulations")
+        .select(
+          "id, analysis_id, aov_usd, daily_budget_usd, product_margin_pct, notes, conservative, balanced, aggressive, status, error, started_at, finished_at, created_at",
+        )
+        .eq("analysis_id", id)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      getMetaRunUsage(user.id),
+    ]);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     initialSimulation = (simRow as any) ?? null;
+    metaUsage = usage;
   }
 
   return (
@@ -104,6 +113,10 @@ export default async function AnalysisPage({
         isScale: plan.unlocksScale,
         // P0.2 — Pro/Scale see the full "cure"; Free sees it blurred.
         isPaid: (profile?.plan ?? "free") !== "free",
+        // P1-7 — Meta block access + monthly quota (null limit = unlimited).
+        canRunMeta,
+        metaLimit: metaUsage.limit,
+        metaUsed: metaUsage.used,
       }}
       initialSimulation={initialSimulation}
     />
