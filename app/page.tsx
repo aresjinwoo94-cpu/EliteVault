@@ -180,12 +180,12 @@ function buildLandingJsonLd() {
     {
       question: "Do I need a Meta Ads account to use EliteVault?",
       answer:
-        "No. The analyzer works on any URL. The Meta Ads optimizer and scenario modeler are Scale-plan add-ons that recommend targets and project campaigns — you don't need an active Meta account.",
+        "No. The analyzer works on any URL. The 7-day scenario modeler is included on Pro (1 projection/month) and unlimited on Scale; the Meta Ads optimizer targets are a Scale add-on — you don't need an active Meta account for either.",
     },
     {
       question: "Is there a free plan?",
       // Prices derive from PLANS (single source of truth) — never hardcode.
-      answer: `Yes. The Free plan gives you the curated library of 9 hand-picked winning stores with full metrics. The Analyzer requires Pro ($${PLANS.pro.price.month}/mo). The scenario modeler and REST API require Scale ($${PLANS.scale.price.month}/mo).`,
+      answer: `Yes. The Free plan runs one full audit of your store — score, annotated screenshot, your #1 priority fix unlocked and a modeled 7-day ROAS range — plus 3 hand-picked winning stores with full metrics. Pro ($${PLANS.pro.price.month}/mo) unlocks the rest of your ranked fixes, the buyer-persona simulation, unlimited audits and 1 Meta campaign projection/month. Scale ($${PLANS.scale.price.month}/mo) adds unlimited projections and the REST API.`,
     },
   ];
 

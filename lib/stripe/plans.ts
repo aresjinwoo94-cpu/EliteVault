@@ -14,13 +14,6 @@ export interface Plan {
   tagline: string;
   description: string;
   price: { month: number; year: number };
-  /**
-   * Visual-only "launch price" anchor for the MONTHLY interval: the
-   * regular price this plan will move to once the launch promo ends.
-   * Shown struck-through next to the live price. Stripe keeps charging
-   * `price.month` — this never touches price_ids or billing.
-   */
-  launchAnchor?: { month: number };
   stripePriceIds: { month?: string; year?: string };
   /** Monthly credits granted by this plan (0 = cannot analyze) */
   monthlyCredits: number;
@@ -44,6 +37,14 @@ export interface Plan {
     analysesPerMonth: number;
     /** Niches the user can track for weekly Trend alerts (Phase 2/3). */
     trackedNiches: number;
+    /**
+     * Meta block runs (Campaign Scenario Modeler + Ads Optimizer, counted as
+     * one unit) per billing period. Backed by a row count in meta_simulations.
+     *   Free  = 0   (cannot run the Meta block)
+     *   Pro   = 1   (the Pro→Scale bridge — one taste of the modeler)
+     *   Scale = null (unlimited within its analyses quota)
+     */
+    metaRunsPerMonth: number | null;
   };
   features: PlanFeature[];
   badge?: string;
@@ -56,7 +57,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     name: "Free",
     tagline: "Audit your store free",
     description:
-      "Run one free audit of your own store — overall score + annotated screenshot, no credit card. Browse 9 hand-picked winning stores with full metrics and read the community feed. Upgrade to Pro to unlock your prioritized fixes, buyer-persona simulation and unlimited audits.",
+      "Run one free audit of your own store — overall score, annotated screenshot AND your #1 priority fix, unlocked, no credit card. Browse 3 hand-picked winning stores with full metrics and read the community feed. Upgrade to Pro to unlock the rest of your ranked fixes, buyer-persona simulation and unlimited audits.",
     price: { month: 0, year: 0 },
     stripePriceIds: {},
     // monthlyCredits stays 0: paid plans renew credits monthly via the
@@ -70,13 +71,14 @@ export const PLANS: Record<PlanTier, Plan> = {
     unlocksAnalyzer: true,
     unlocksScale: false,
     canPublish: false,
-    libraryFullMetricsCap: 9,
-    quotas: { analysesPerMonth: 1, trackedNiches: 1 },
+    libraryFullMetricsCap: 3,
+    quotas: { analysesPerMonth: 1, trackedNiches: 1, metaRunsPerMonth: 0 },
     features: [
       { text: "1 free audit: score + annotated screenshot", included: true, highlight: true },
-      { text: "9 hand-picked winners with full metrics", included: true },
+      { text: "Your #1 priority fix — unlocked & actionable", included: true, highlight: true },
+      { text: "3 hand-picked winners with full metrics", included: true },
       { text: "Browse the Community feed", included: true },
-      { text: "Prioritized fixes + buyer-persona simulation", included: false },
+      { text: "The rest of your ranked fixes + buyer-persona simulation", included: false },
       { text: "AI image + text search across 45+ stores", included: false },
       { text: "Unlimited audits + publish to Community", included: false },
       { text: "Meta Campaign Scenario Modeler + Ads optimizer + API", included: false },
@@ -87,9 +89,8 @@ export const PLANS: Record<PlanTier, Plan> = {
     name: "Pro",
     tagline: "Where most stores level up",
     description:
-      "Full Library + brutal Analyzer with annotated screenshots, buyer-persona simulations, and the ability to publish your audits to the Community.",
+      "Full Library + brutal Analyzer with annotated screenshots, buyer-persona simulations, and the ability to publish your audits to the Community. Includes 1 Meta campaign projection per month.",
     price: { month: 19, year: 180 },
-    launchAnchor: { month: 29 },
     stripePriceIds: {
       month: process.env.STRIPE_PRICE_PRO_MONTHLY,
       year: process.env.STRIPE_PRICE_PRO_YEARLY,
@@ -99,7 +100,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     unlocksScale: false,
     canPublish: true,
     libraryFullMetricsCap: null,
-    quotas: { analysesPerMonth: 40, trackedNiches: 5 },
+    quotas: { analysesPerMonth: 40, trackedNiches: 5, metaRunsPerMonth: 1 },
     badge: "Most popular",
     highlight: true,
     features: [
@@ -114,7 +115,12 @@ export const PLANS: Record<PlanTier, Plan> = {
       { text: "Buyer-Persona simulations", included: true },
       { text: "40 analyses / month", included: true },
       { text: "Publish to Community + Compare Mode", included: true },
-      { text: "Meta Campaign Scenario Modeler + API", included: false },
+      {
+        text: "1 Meta campaign projection / month",
+        included: true,
+        highlight: true,
+      },
+      { text: "Unlimited Meta projections + Ads optimizer + REST API", included: false },
     ],
   },
   scale: {
@@ -124,7 +130,6 @@ export const PLANS: Record<PlanTier, Plan> = {
     description:
       "Diagnosis + cure + crystal ball. Project a 7-day Meta Ads campaign across 3 scenarios before you spend a dollar. Plus Meta Ads optimizer targets and REST API.",
     price: { month: 49, year: 499 },
-    launchAnchor: { month: 79 },
     stripePriceIds: {
       month: process.env.STRIPE_PRICE_SCALE_MONTHLY,
       year: process.env.STRIPE_PRICE_SCALE_YEARLY,
@@ -134,7 +139,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     unlocksScale: true,
     canPublish: true,
     libraryFullMetricsCap: null,
-    quotas: { analysesPerMonth: 200, trackedNiches: 20 },
+    quotas: { analysesPerMonth: 200, trackedNiches: 20, metaRunsPerMonth: null },
     badge: "For teams",
     features: [
       { text: "Everything in Pro", included: true },
