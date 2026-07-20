@@ -13,6 +13,7 @@ import { MarketingNav } from "@/components/marketing/nav";
 import { Footer } from "@/components/marketing/footer";
 import { DataPill } from "@/components/ui/data-pill";
 import { getT } from "@/lib/i18n/server";
+import { getQualifyingNiches } from "@/lib/library/niche-pages";
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
@@ -98,6 +99,7 @@ const FAQS = [
 
 export default async function WinningShopifyStoresPage() {
   const { t } = await getT();
+  const niches = await getQualifyingNiches();
   const jsonLd = [
     {
       "@context": "https://schema.org",
@@ -222,6 +224,31 @@ export default async function WinningShopifyStoresPage() {
             </Link>
           </div>
         </section>
+
+        {/* Browse by niche — links into the programmatic niche pages
+            (SEO crawl mesh + genuinely useful navigation) */}
+        {niches.length > 0 && (
+          <section className="mt-20">
+            <h2 className="font-serif text-2xl md:text-3xl tracking-tight">
+              Browse winners by niche
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm text-white/55 leading-relaxed">
+              What converts in skincare kills conversion in supplements — study
+              the winners of your own category.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              {niches.map((n) => (
+                <Link
+                  key={n.slug}
+                  href={`/winning-shopify-stores/${n.slug}`}
+                  className="rounded-full border border-white/[0.08] bg-white/[0.02] px-4 py-1.5 text-sm text-white/60 transition-colors hover:border-white/[0.16] hover:text-white"
+                >
+                  {n.label} ({n.count})
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* FAQ (English, tied to JSON-LD) */}
         <section className="mt-20 max-w-2xl">

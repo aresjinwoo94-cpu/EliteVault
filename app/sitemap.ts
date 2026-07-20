@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { allPosts } from "@/lib/blog/posts";
+import { getQualifyingNiches } from "@/lib/library/niche-pages";
 
 /**
  * Dynamic sitemap.xml at /sitemap.xml
@@ -100,6 +101,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ),
   ];
 
+  // Programmatic niche pages (/winning-shopify-stores/[niche]) — one per
+  // Library niche with enough stores. Fails soft to [] on DB errors.
+  const nicheEntries: MetadataRoute.Sitemap = (
+    await getQualifyingNiches()
+  ).map((n) => ({
+    url: `${baseUrl}/winning-shopify-stores/${n.slug}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.7,
+  }));
+
   // Blog — the organic-search content surface. Index + each guide.
   const blogEntries: MetadataRoute.Sitemap = [
     {
@@ -154,5 +166,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.warn("[sitemap] shared audits fetch failed:", (err as Error).message);
   }
 
-  return [...staticEntries, ...blogEntries, ...sharedEntries];
+  return [...staticEntries, ...nicheEntries, ...blogEntries, ...sharedEntries];
 }
