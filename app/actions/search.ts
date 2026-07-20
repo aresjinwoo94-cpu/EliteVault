@@ -175,12 +175,21 @@ export async function searchLibrary(opts: {
     }
   }
 
-  // ── v2.3: lock metrics for Free users on non-preselected sites ────
+  // ── Lock metrics for Free users (P1-6) ───────────────────────────
+  // `libraryFullMetricsCap` is the NUMBER of winners a plan sees with full
+  // metrics (null = unlimited). We unlock metrics on the first `cap`
+  // preselected stores only; every other card (extra preselected ones plus
+  // all non-preselected) is locked. Enforcing the count in code — instead of
+  // relying on however many rows happen to have is_preselected=true — makes
+  // "3 winners on Free" literally true without a data migration.
   const cap = PLANS[plan].libraryFullMetricsCap;
-  items = items.map((it) => ({
-    ...it,
-    metrics_locked: cap !== null && !it.is_preselected,
-  }));
+  let unlocked = 0;
+  items = items.map((it) => {
+    if (cap === null) return { ...it, metrics_locked: false };
+    const canUnlock = it.is_preselected && unlocked < cap;
+    if (canUnlock) unlocked++;
+    return { ...it, metrics_locked: !canUnlock };
+  });
 
   return {
     items,
