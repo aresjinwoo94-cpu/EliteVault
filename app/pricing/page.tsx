@@ -7,11 +7,6 @@ import { PLANS } from "@/lib/stripe/plans";
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
-// End date of the launch-price promo, mirrored in the visual anchor on the
-// pricing cards (lib/stripe/plans.ts launchAnchor). TODO(owner): confirm or
-// move this date — after it, either raise prices to the anchor or extend it.
-const LAUNCH_PRICE_VALID_UNTIL = "2026-09-30";
-
 // Per-route metadata. Title slots into the layout's template ("%s · EliteVault")
 // so the browser tab and search-result title both read "Pricing · EliteVault".
 // Description is unique so Google doesn't penalize duplicate descriptions
@@ -19,7 +14,7 @@ const LAUNCH_PRICE_VALID_UNTIL = "2026-09-30";
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Simple, transparent pricing for EliteVault. Free tier with 9 hand-picked winning stores. Pro at $19/mo for the full analyzer. Scale at $49/mo for Meta Ads optimization + 7-day scenario modeler + REST API.",
+    "Simple, transparent pricing for EliteVault. Free tier: one full audit with your #1 fix unlocked + 3 hand-picked winning stores. Pro at $19/mo for the full analyzer. Scale at $49/mo for Meta Ads optimization + 7-day scenario modeler + REST API.",
   keywords: [
     "elitevault pricing",
     "ecommerce audit pricing",
@@ -60,9 +55,6 @@ export default function PricingPage() {
       priceCurrency: "USD",
       url: `${baseUrl}/pricing`,
       availability: "https://schema.org/InStock",
-      ...(plan.launchAnchor
-        ? { priceValidUntil: LAUNCH_PRICE_VALID_UNTIL }
-        : {}),
     })),
   };
 
