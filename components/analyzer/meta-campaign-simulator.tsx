@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { TrendingUp, Sparkles, RefreshCw, RotateCw, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -56,23 +57,9 @@ export function MetaCampaignSimulator({
   const [sim, setSim] = useState<Simulation | null>(initial);
   // Force-render the form even if a successful sim exists ("Re-run" button)
   const [showForm, setShowForm] = useState(false);
+  const router = useRouter();
 
-  // Finite monthly limit = Pro (Scale passes limit=null → unlimited).
-  const finiteLimit =
-    quota && quota.limit !== null ? (quota.limit as number) : null;
-  const hasResults = sim?.status === "succeeded";
-  // Once the row exists we count it as consumed even before `used` reflects it
-  // server-side (the initial run is optimistic-queued in this component).
-  const usedNow = quota
-    ? Math.max(quota.used, sim ? 1 : 0)
-    : 0;
-  const exhausted = finiteLimit !== null && usedNow >= finiteLimit;
-
-  // Pro who has spent this month's run and has nothing to show → upsell only.
-  if (exhausted && !hasResults) {
-    return <MetaQuotaUpsell used={usedNow} limit={finiteLimit as number} />;
-  }
-
+  // ── ALL hooks must run before any conditional return (Rules of Hooks) ──
   const statusRef = useRef(sim?.status ?? null);
   statusRef.current = sim?.status ?? null;
 
@@ -96,6 +83,11 @@ export function MetaCampaignSimulator({
         const next = (await res.json()) as Simulation;
         if (!alive) return;
         setSim(next);
+        // On completion, refresh the server components so the Ads Optimizer
+        // (computed as part of this run for Pro) shows up in the report.
+        if (next.status === "succeeded" || next.status === "failed") {
+          router.refresh();
+        }
       } catch {
         /* network blip — try again next tick */
       }
@@ -106,7 +98,23 @@ export function MetaCampaignSimulator({
       alive = false;
       clearInterval(t);
     };
-  }, [sim?.id, sim?.status]);
+  }, [sim?.id, sim?.status, router]);
+
+  // Finite monthly limit = Pro (Scale passes limit=null → unlimited).
+  const finiteLimit =
+    quota && quota.limit !== null ? (quota.limit as number) : null;
+  const hasResults = sim?.status === "succeeded";
+  // Once the row exists we count it as consumed even before `used` reflects it
+  // server-side (the initial run is optimistic-queued in this component).
+  const usedNow = quota
+    ? Math.max(quota.used, sim ? 1 : 0)
+    : 0;
+  const exhausted = finiteLimit !== null && usedNow >= finiteLimit;
+
+  // Pro who has spent this month's run and has nothing to show → upsell only.
+  if (exhausted && !hasResults) {
+    return <MetaQuotaUpsell used={usedNow} limit={finiteLimit as number} />;
+  }
 
   // CASE 1: no simulation yet OR user clicked "Re-run with new inputs"
   if (!sim || showForm) {
@@ -260,9 +268,17 @@ export function MetaCampaignSimulator({
         </Card>
       )}
 
-      <div className="grid lg:grid-cols-3 gap-4">
+      {/* 3 comparable cards side-by-side on desktop; horizontal snap carousel
+          on mobile (Fase 2 P0-1) — the page never scrolls sideways, only this
+          track does. */}
+      <div className="-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-2 lg:mx-0 lg:grid lg:grid-cols-3 lg:overflow-visible lg:px-0 lg:pb-0">
         {scenarios.map((s, i) => (
-          <SimulatorScenarioCard key={s.variant} scenario={s} index={i} />
+          <div
+            key={s.variant}
+            className="min-w-[85%] shrink-0 snap-center sm:min-w-[65%] lg:min-w-0 lg:shrink"
+          >
+            <SimulatorScenarioCard scenario={s} index={i} />
+          </div>
         ))}
       </div>
 

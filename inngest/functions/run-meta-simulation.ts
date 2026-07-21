@@ -1,8 +1,13 @@
 import { inngest } from "../client";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { runMetaSimulation } from "@/ai/agents/run-meta-simulation";
+import { runMetaAdsOptimizerAgent } from "@/ai/agents/meta-ads-optimizer-agent";
 import { enterMeter } from "@/lib/usage/context";
-import type { AnalysisResult, PlanTier } from "@/lib/supabase/types";
+import type {
+  AnalysisResult,
+  BuyerPersona,
+  PlanTier,
+} from "@/lib/supabase/types";
 
 /**
  * Meta Campaign Scenario Modeler — durable Inngest function.
@@ -85,7 +90,7 @@ export const runMetaSimulationFn = inngest.createFunction(
     const ctx = await step.run("load-analysis-context", async () => {
       const { data: row, error: err } = await service
         .from("analyses")
-        .select("url, result, user_id")
+        .select("url, result, user_id, meta_ads, buyer_persona")
         .eq("id", analysisId)
         .single();
       if (err || !row) {
@@ -109,6 +114,12 @@ export const runMetaSimulationFn = inngest.createFunction(
         score: result.score,
         summary: result.summary ?? "",
         niche,
+        // Fase 2 — the Meta BLOCK bundles the Optimizer with the Modeler.
+        // If this analysis has no Ads-Optimizer output yet (Pro audits skip
+        // it at audit time to save cost), compute it now as part of this run.
+        needsMetaAds: row.meta_ads == null,
+        topFixes: result.top_fixes ?? [],
+        persona: (row.buyer_persona as BuyerPersona | null) ?? null,
       };
     });
 
@@ -154,6 +165,38 @@ export const runMetaSimulationFn = inngest.createFunction(
         })
         .eq("id", simulationId);
     });
+
+    // Step 5 (Fase 2 P0-2): the Meta block = Modeler + Ads Optimizer as ONE
+    // unit. If the analysis lacks Ads-Optimizer output (Pro audits skip it at
+    // audit time), compute + persist it now so a Pro user's single monthly run
+    // delivers both. Skipped for Scale (already computed at audit time) and
+    // never blocks the simulation result if it fails.
+    if (ctx.needsMetaAds) {
+      await step.run("run-meta-ads-optimizer", async () => {
+        try {
+          const metaAds = await runMetaAdsOptimizerAgent({
+            url: ctx.url,
+            score: ctx.score,
+            summary: ctx.summary,
+            topFixes: ctx.topFixes,
+            persona: ctx.persona,
+            niche: ctx.niche,
+            siteInfo: null,
+          });
+          if (metaAds) {
+            await service
+              .from("analyses")
+              .update({ meta_ads: metaAds })
+              .eq("id", analysisId);
+          }
+        } catch (err) {
+          console.warn(
+            "[meta-simulation] ads-optimizer skipped:",
+            (err as Error).message,
+          );
+        }
+      });
+    }
 
     return {
       simulationId,

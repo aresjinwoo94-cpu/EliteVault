@@ -28,7 +28,6 @@ import { MetaAdsOptimizer } from "./meta-ads-optimizer";
 import { MetaCampaignSimulator } from "./meta-campaign-simulator";
 import { NichePositionBar } from "./niche-position-bar";
 import { StrengthsIssuesMap } from "./strengths-issues-map";
-import { LockedMetaAdsPreview } from "./scale-locked-preview";
 import { FreeLockedCure } from "./free-locked-cure";
 import { FreeMetaPanel } from "./free-meta-panel";
 import { ShareButton } from "./share-button";
@@ -107,6 +106,18 @@ export function AnalysisView({
 }) {
   const [data, setData] = useState<Analysis>(initial);
   const router = useRouter();
+
+  // Fase 2 — pick up meta_ads when a server re-render (router.refresh() after a
+  // Pro Meta run) delivers it. The Ads Optimizer is computed asynchronously as
+  // part of the modeler run, so the initial client `data` has meta_ads=null;
+  // this syncs it in without disturbing the polled status.
+  useEffect(() => {
+    if (initial.meta_ads != null) {
+      setData((prev) =>
+        prev.meta_ads == null ? { ...prev, meta_ads: initial.meta_ads } : prev,
+      );
+    }
+  }, [initial.meta_ads]);
 
   // Track liveness across polls without re-creating the interval.
   // We keep the interval running on a stable [data.id] dep and read the
@@ -354,13 +365,18 @@ export function AnalysisView({
                   of results.
                 </div>
 
-                {/* Sub-block A — Ads Optimizer targets (Scale). Pro sees the
-                    locked preview with a Scale upsell. */}
-                {viewer.isScale && data.meta_ads != null && (
+                {/* Sub-block A — Ads Optimizer targets. The Meta block bundles
+                    the Optimizer with the Modeler as ONE unit: Scale gets it at
+                    audit time; Pro gets it computed as part of their monthly run
+                    (see run-meta-simulation.ts). So we show it whenever meta_ads
+                    exists, regardless of plan. Before a Pro user runs the block,
+                    meta_ads is null and the modeler form below is the entry
+                    point that produces both. */}
+                {data.meta_ads != null ? (
                   <MetaAdsOptimizer meta={data.meta_ads as never} />
-                )}
-                {viewer.isScale && data.meta_ads == null && <MetaAdsPending />}
-                {!viewer.isScale && <LockedMetaAdsPreview />}
+                ) : viewer.isScale ? (
+                  <MetaAdsPending />
+                ) : null}
 
                 {/* Sub-block B — Campaign Scenario Modeler (Pro 1/mo, Scale ∞) */}
                 <MetaCampaignSimulator
