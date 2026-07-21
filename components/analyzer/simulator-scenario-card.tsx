@@ -1,10 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Shield, Scale, Flame, AlertTriangle, Target, Lightbulb } from "lucide-react";
+import {
+  Shield,
+  Scale,
+  Flame,
+  AlertTriangle,
+  Target,
+  Lightbulb,
+  ChevronDown,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SimulatorChart } from "./simulator-chart";
+import { cn } from "@/lib/utils";
 import type { SimulationScenario } from "@/lib/supabase/types";
 
 /**
@@ -67,6 +77,7 @@ export function SimulatorScenarioCard({
   const meta = VARIANT_META[scenario.variant];
   const { Icon } = meta;
   const t = scenario.totals;
+  const [openDays, setOpenDays] = useState(false);
 
   return (
     <motion.div
@@ -182,6 +193,74 @@ export function SimulatorScenarioCard({
             </p>
             <SimulatorChart days={scenario.days} />
           </div>
+
+          {/* Day-by-day breakdown — collapsible accordion inside the card
+              (Fase 2 P0-1). Keeps the card scannable while the detail is one
+              click away. */}
+          {scenario.days?.length > 0 && (
+            <div className="mt-4 rounded-xl border border-white/[0.06] bg-white/[0.02]">
+              <button
+                type="button"
+                onClick={() => setOpenDays((v) => !v)}
+                aria-expanded={openDays}
+                className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left"
+              >
+                <span className="text-xs font-medium text-white/70">
+                  Day-by-day breakdown
+                </span>
+                <ChevronDown
+                  className={cn(
+                    "size-4 text-white/40 transition-transform",
+                    openDays && "rotate-180",
+                  )}
+                />
+              </button>
+              {openDays && (
+                <div className="overflow-x-auto px-2 pb-3">
+                  <table className="w-full min-w-[360px] border-collapse text-right text-[11px]">
+                    <thead>
+                      <tr className="text-white/40">
+                        <th className="px-2 py-1 text-left font-normal">Day</th>
+                        <th className="px-2 py-1 font-normal">Spend</th>
+                        <th className="px-2 py-1 font-normal">Revenue</th>
+                        <th className="px-2 py-1 font-normal">Sales</th>
+                        <th className="px-2 py-1 font-normal">ROAS</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {scenario.days.map((d) => (
+                        <tr
+                          key={d.day}
+                          className="border-t border-white/[0.04] text-white/75"
+                        >
+                          <td className="px-2 py-1 text-left text-white/50">
+                            {d.day}
+                          </td>
+                          <td className="px-2 py-1 tabular-nums">
+                            {fmtUsd(d.spend)}
+                          </td>
+                          <td className="px-2 py-1 tabular-nums">
+                            {fmtUsd(d.revenue)}
+                          </td>
+                          <td className="px-2 py-1 tabular-nums">
+                            {Math.round(d.purchases)}
+                          </td>
+                          <td
+                            className={cn(
+                              "px-2 py-1 tabular-nums",
+                              d.roas >= 1 ? "text-success" : "text-destructive",
+                            )}
+                          >
+                            {d.roas.toFixed(2)}x
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Risks */}
           <div className="mt-5">
