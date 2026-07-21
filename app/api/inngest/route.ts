@@ -14,11 +14,15 @@ import { activationFollowup } from "@/inngest/functions/activation-followup";
  * the audit fails/refunds. Cached stores return instantly so they slipped
  * through; cold/heavy URLs (e.g. a big Shopify product page) did not.
  *
- * 300s is the Vercel Pro maximum. On Hobby the platform clamps to its own max
- * (60s) — if audits still 504 there, the project needs Vercel Pro (or a
- * smaller capture; see lib/screenshot-core.ts).
+ * 60s is the Vercel HOBBY maximum, so this value is safe on every plan (a
+ * higher number would FAIL the build on Hobby). The default before this was
+ * far lower (~10-15s) — nowhere near enough for a vision-AI call plus its
+ * retries — which is why cold audits 504'd. A normal viewport screenshot
+ * (~2880x1800) is a single ~20-30s Gemini call, so 60s covers it with room
+ * for one retry. If the owner moves to Vercel Pro, bump this to 300 for
+ * heavier headroom.
  */
-export const maxDuration = 300;
+export const maxDuration = 60;
 export const runtime = "nodejs";
 
 export const { GET, POST, PUT } = serve({
