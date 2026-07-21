@@ -67,29 +67,37 @@ export function TopFixes({
                 <p className="text-sm text-white font-medium leading-tight">
                   {f.title}
                 </p>
-                {locked ? (
+                {/* Impact/effort detail: crisp when unlocked, real-but-BLURRED
+                    (blur-sm) when locked so the free user sees the shape of the
+                    content they're missing without being able to read it. */}
+                <div
+                  className={cn(
+                    "mt-1 flex items-center gap-2",
+                    locked && "select-none blur-sm pointer-events-none",
+                  )}
+                  aria-hidden={locked || undefined}
+                >
+                  <Badge
+                    variant={
+                      f.impact === "high"
+                        ? "danger"
+                        : f.impact === "medium"
+                          ? "warning"
+                          : "default"
+                    }
+                  >
+                    {f.impact} impact
+                  </Badge>
+                  <span className="text-[10px] text-white/30">·</span>
+                  <span className="text-[10px] text-white/50">
+                    Effort:{" "}
+                    {f.effort === "S" ? "<1h" : f.effort === "M" ? "1-4h" : ">4h"}
+                  </span>
+                </div>
+                {locked && (
                   <div className="mt-1 flex items-center gap-1.5 text-[10px] text-champagne-300/80">
                     <Lock className="size-3" />
                     Unlock impact &amp; how-to with Pro
-                  </div>
-                ) : (
-                  <div className="mt-1 flex items-center gap-2">
-                    <Badge
-                      variant={
-                        f.impact === "high"
-                          ? "danger"
-                          : f.impact === "medium"
-                            ? "warning"
-                            : "default"
-                      }
-                    >
-                      {f.impact} impact
-                    </Badge>
-                    <span className="text-[10px] text-white/30">·</span>
-                    <span className="text-[10px] text-white/50">
-                      Effort:{" "}
-                      {f.effort === "S" ? "<1h" : f.effort === "M" ? "1-4h" : ">4h"}
-                    </span>
                   </div>
                 )}
               </div>
