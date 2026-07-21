@@ -15,7 +15,12 @@ import {
  * Without this, killing the dev server mid-job leaves the row in "running"
  * indefinitely and the user's browser polls forever.
  */
-const STALE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
+// A full cold audit runs several sequential steps (screenshot capture,
+// quick-score, discovery, the vision-AI analyzer, save) and each can retry.
+// 5 minutes was too tight and refunded audits that were still legitimately
+// working; 8 gives headroom now that per-step time is unblocked via the
+// Inngest route's maxDuration.
+const STALE_THRESHOLD_MS = 8 * 60 * 1000; // 8 minutes
 
 export async function GET(
   _req: NextRequest,

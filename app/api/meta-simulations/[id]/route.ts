@@ -14,7 +14,10 @@ import {
  * forever. We do NOT refund anything here — simulations don't consume
  * analysis credits (bundled into the Scale subscription).
  */
-const STALE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
+// Raised from 5 → 8 min: the Meta run fans out 3 scenario calls AND (for a
+// Pro run) now also computes the Ads Optimizer, so it can legitimately take
+// longer. Per-step time is unblocked via the Inngest route's maxDuration.
+const STALE_THRESHOLD_MS = 8 * 60 * 1000; // 8 minutes
 
 export async function GET(
   _req: NextRequest,
