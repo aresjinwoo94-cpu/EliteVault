@@ -22,7 +22,7 @@ async function SignInInner({
       // v3.6.2 — default post-sign-in route is the analyzer, not the
       // dashboard. Users (especially returning ones) want to run an
       // analysis next, not stare at a summary page.
-      nextUrl={sp.next ?? "/app/library"}
+      nextUrl={sp.next ?? "/app/analyzer"}
       message={sp.message}
     />
   );

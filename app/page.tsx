@@ -219,14 +219,14 @@ export default async function HomePage() {
   // landing and drop them straight into the app. They explicitly chose
   // this product; making them re-scroll past the pitch every visit is
   // friction. Logged-out visitors still see the full landing.
-  // (Default in-app destination is the Library — same default as the
-  // post-login redirect; explicit `next` links still reach the analyzer.)
+  // (Default in-app destination is the Analyzer — same default as the
+  // post-login redirect; explicit `next` links still reach other pages.)
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (user) {
-    redirect("/app/library");
+    redirect("/app/analyzer");
   }
 
   const jsonLd = buildLandingJsonLd();

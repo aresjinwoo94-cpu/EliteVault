@@ -10,5 +10,5 @@ export default async function SignUpPage({
   const sp = await searchParams;
   // v3.6.2 — sign-up drops the user straight into the analyzer too;
   // dashboard would be empty for a brand-new account anyway.
-  return <AuthForm mode="sign-up" nextUrl={sp.next ?? "/app/library"} />;
+  return <AuthForm mode="sign-up" nextUrl={sp.next ?? "/app/analyzer"} />;
 }

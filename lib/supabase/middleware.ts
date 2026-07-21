@@ -123,7 +123,7 @@ export async function updateSession(request: NextRequest) {
     url.pathname =
       explicitNext && explicitNext.startsWith("/app")
         ? explicitNext
-        : "/app/library";
+        : "/app/analyzer";
     url.search = "";
     return redirectPreservingCookies(url);
   }
