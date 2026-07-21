@@ -10,7 +10,6 @@ import {
   Library as LibraryIcon,
   RefreshCw,
   Sparkles,
-  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +17,7 @@ import { Card } from "@/components/ui/card";
 import { ConversionGauges } from "./conversion-gauges";
 import { CategoryRadar } from "./category-radar";
 import { AnnotationsOverlay } from "./annotations-overlay";
-import { PersonaAside } from "./persona-aside";
+import { PersonaResponse } from "./persona-response";
 import { TopFixes } from "./top-fixes";
 // RewritePanel removed from v2.1 — Auto-Rewrite is no longer shown in the
 // analyzer; only Meta Ads Optimizer lives as the Scale-tier extra.
@@ -308,130 +307,38 @@ export function AnalysisView({
           className="space-y-6"
         >
             {/*
-              Fase 2 — Meta-first report ordering:
-                1. Score + annotated screenshot (the free hook)
-                2. META BLOCK — the protagonist (Free: modelable panel;
-                   Paid: the Ads Optimizer + Campaign Scenario Modeler)
-                3. Prioritized fixes
-                4. Buyer persona (degraded to a support card)
-                5. Everything else (niche position, strengths, radar, Library)
+              Report layout (restored to the original distribution per owner):
+                1. Score + gauges
+                2. Free-only modelable-ROAS panel (under the score)
+                3. Executive deck (niche position + strengths) — two columns
+                4. Library bridge
+                5. Two-column body: LEFT screenshot + persona · RIGHT category
+                   radar + prioritized fixes
+                6. Meta Ads tools (Optimizer + Campaign Scenario Modeler) AT THE
+                   END, full width.
             */}
 
-            {/* 1 — Score + gauges (the hook) */}
+            {/* 1 — Score + gauges */}
             <div className="grid lg:grid-cols-[1fr_360px] gap-6">
               <ScoreCard result={data.result} />
               <ConversionGauges scenarios={data.result.scenarios} />
             </div>
 
-            {/*
-              1b — Annotated screenshot, still part of the free hook.
-              NEVER fall back to mshots client-side: the server-side capture
-              already exhausted ScreenshotOne → Microlink → mshots with
-              placeholder detection. An empty string shows the overlay's
-              clean "screenshot unavailable" state.
-            */}
-            <AnnotationsOverlay
-              imageUrl={data.screenshot_url ?? ""}
-              annotations={data.result.annotations}
-            />
-
-            {/*
-              2 — THE META BLOCK. Second position, full width, impossible to
-              scroll past. Free users get the "modelable" panel (a real,
-              score-derived ROAS range + a blurred preview of the block);
-              Pro/Scale get the live block: Ads Optimizer targets (Scale) plus
-              the Campaign Scenario Modeler (Pro 1/mo, Scale unlimited).
-            */}
-            {viewer.isPaid ? (
-              <section className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-champagne-400/10 ring-1 ring-champagne-400/20">
-                    <TrendingUp className="size-4 text-champagne-300" />
-                  </div>
-                  <div>
-                    <h2 className="font-serif text-2xl md:text-3xl tracking-tight text-white">
-                      Your store, translated into Meta Ads numbers
-                    </h2>
-                    <p className="text-sm text-white/50">
-                      What this audit means when you put spend behind it.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Always-visible estimate disclaimer — part of the block,
-                    legible, not fine print in a footer. */}
-                <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-2.5 text-xs text-white/55">
-                  Estimates based on your audit, AOV and budget. Not guarantees
-                  of results.
-                </div>
-
-                {/* Sub-block A — Ads Optimizer targets. The Meta block bundles
-                    the Optimizer with the Modeler as ONE unit: Scale gets it at
-                    audit time; Pro gets it computed as part of their monthly run
-                    (see run-meta-simulation.ts). So we show it whenever meta_ads
-                    exists, regardless of plan. Before a Pro user runs the block,
-                    meta_ads is null and the modeler form below is the entry
-                    point that produces both. */}
-                {data.meta_ads != null ? (
-                  <MetaAdsOptimizer meta={data.meta_ads as never} />
-                ) : viewer.isScale ? (
-                  <MetaAdsPending />
-                ) : null}
-
-                {/* Sub-block B — Campaign Scenario Modeler (Pro 1/mo, Scale ∞) */}
-                <MetaCampaignSimulator
-                  analysisId={data.id}
-                  initial={initialSimulation ?? null}
-                  quota={{ limit: viewer.metaLimit, used: viewer.metaUsed }}
-                />
-              </section>
-            ) : (
+            {/* 2 — Free-only: modelable ROAS panel, anchored under the score.
+                Paid users skip it (they get the live Meta tools at the end). */}
+            {!viewer.isPaid && (
               <FreeMetaPanel score={data.result.score} niche={niche} />
             )}
 
-            {/*
-              3 — Prioritized fixes (punch-list). Paid users get every fix;
-              Free users get fix #1 unlocked + the rest title-visible/locked
-              with a counter + Pro CTA (P1-6).
-            */}
-            <TopFixes
-              fixes={data.result.top_fixes}
-              unlockedCount={viewer.isPaid ? undefined : 1}
-            />
-
-            {/*
-              4 — Buyer persona, DEGRADED to a support card (Fase 2 P1-4).
-              Still present (a landing-comparison differentiator and the most
-              shareable line the product makes) but no longer a full-width
-              section competing with the Meta block. On Free it's locked.
-            */}
-            {viewer.isPaid ? (
-              <PersonaAside
-                response={data.result.buyer_persona_response}
-                metaLinked={viewer.isScale && data.meta_ads != null}
-              />
-            ) : (
-              <FreeLockedCure
-                title="Buyer-persona reaction"
-                tagline="Hear exactly how your target buyer reacts to your store — what makes them hesitate, and whether they'd buy."
-              >
-                <PersonaAside response={data.result.buyer_persona_response} />
-              </FreeLockedCure>
-            )}
-
-            {/* 5 — Everything else: strategic view + detail + Library bridge */}
+            {/* 3 — Executive deck: where you stand + strengths vs issues */}
             <div className="grid lg:grid-cols-2 gap-6">
               <NichePositionBar score={data.result.score} />
               <StrengthsIssuesMap scores={data.result.category_scores} />
             </div>
 
-            <CategoryRadar scores={data.result.category_scores} />
-
             {/*
-              Analyzer → Library bridge. "So who's beating me, and what do they
-              do differently?" — one hop to the Library answers it. The reverse
-              link lives in the Library header, so the two pillars are always
-              one click apart in both directions.
+              4 — Analyzer → Library bridge. "So who's beating me, and what do
+              they do differently?" — one hop to the Library answers it.
             */}
             <Link
               href="/app/library"
@@ -455,6 +362,70 @@ export function AnalysisView({
                 <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
               </span>
             </Link>
+
+            {/*
+              5 — Two-column body. LEFT: annotated screenshot → buyer-persona
+              reaction. RIGHT: category breakdown (radar) → prioritized fixes.
+              On mobile both stack. NEVER fall back to mshots client-side: an
+              empty screenshot_url shows the overlay's clean unavailable state.
+            */}
+            <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
+              <div className="space-y-6 min-w-0">
+                <AnnotationsOverlay
+                  imageUrl={data.screenshot_url ?? ""}
+                  annotations={data.result.annotations}
+                />
+                {/* Buyer-persona: paid users see it; Free sees it blurred
+                    behind a Pro upgrade CTA (their real computed response). */}
+                {viewer.isPaid ? (
+                  <PersonaResponse
+                    response={data.result.buyer_persona_response}
+                  />
+                ) : (
+                  <FreeLockedCure
+                    title="Buyer-persona simulation"
+                    tagline="Hear exactly how your target buyer reacts to your store — what makes them hesitate, and whether they'd buy."
+                  >
+                    <PersonaResponse
+                      response={data.result.buyer_persona_response}
+                    />
+                  </FreeLockedCure>
+                )}
+              </div>
+
+              <div className="space-y-6 min-w-0">
+                <CategoryRadar scores={data.result.category_scores} />
+                {/* Prioritized fixes: paid users get every fix; Free gets fix
+                    #1 unlocked + the rest title-visible/blurred with a counter
+                    + Pro CTA (P1-6). */}
+                <TopFixes
+                  fixes={data.result.top_fixes}
+                  unlockedCount={viewer.isPaid ? undefined : 1}
+                />
+              </div>
+            </div>
+
+            {/*
+              6 — Meta Ads tools AT THE END (paid only). The Optimizer targets
+              and the 7-day Campaign Scenario Modeler. Scale has the Optimizer
+              from audit time; Pro's monthly run computes it alongside the
+              modeler (see run-meta-simulation.ts). Free users get the modelable
+              panel above instead.
+            */}
+            {viewer.canRunMeta && (
+              <div className="space-y-6">
+                {data.meta_ads != null ? (
+                  <MetaAdsOptimizer meta={data.meta_ads as never} />
+                ) : viewer.isScale ? (
+                  <MetaAdsPending />
+                ) : null}
+                <MetaCampaignSimulator
+                  analysisId={data.id}
+                  initial={initialSimulation ?? null}
+                  quota={{ limit: viewer.metaLimit, used: viewer.metaUsed }}
+                />
+              </div>
+            )}
         </motion.div>
       )}
     </div>
