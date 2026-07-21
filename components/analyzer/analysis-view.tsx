@@ -27,11 +27,8 @@ import { MetaAdsOptimizer } from "./meta-ads-optimizer";
 import { MetaCampaignSimulator } from "./meta-campaign-simulator";
 import { NichePositionBar } from "./niche-position-bar";
 import { StrengthsIssuesMap } from "./strengths-issues-map";
-import {
-  LockedMetaAdsPreview,
-  LockedSimulatorPreview,
-} from "./scale-locked-preview";
 import { FreeLockedCure } from "./free-locked-cure";
+import { FreeMetaPanel } from "./free-meta-panel";
 import { ShareButton } from "./share-button";
 import type {
   AnalysisResult,
@@ -85,6 +82,16 @@ interface ViewerCtx {
    * simulation) is rendered blurred behind a Pro upgrade CTA.
    */
   isPaid: boolean;
+  /**
+   * P1-7 — whether this plan can run the Meta Campaign Scenario Modeler.
+   * Pro (1/mo) and Scale (unlimited) can; Free cannot. `metaLimit` is the
+   * monthly cap (null = unlimited, Scale) and `metaUsed` is the count used
+   * this billing period — together they drive the "1 of 1 this month"
+   * counter and the Scale upsell once a Pro user consumes their run.
+   */
+  canRunMeta: boolean;
+  metaLimit: number | null;
+  metaUsed: number;
 }
 
 export function AnalysisView({
@@ -98,6 +105,18 @@ export function AnalysisView({
 }) {
   const [data, setData] = useState<Analysis>(initial);
   const router = useRouter();
+
+  // Fase 2 — pick up meta_ads when a server re-render (router.refresh() after a
+  // Pro Meta run) delivers it. The Ads Optimizer is computed asynchronously as
+  // part of the modeler run, so the initial client `data` has meta_ads=null;
+  // this syncs it in without disturbing the polled status.
+  useEffect(() => {
+    if (initial.meta_ads != null) {
+      setData((prev) =>
+        prev.meta_ads == null ? { ...prev, meta_ads: initial.meta_ads } : prev,
+      );
+    }
+  }, [initial.meta_ads]);
 
   // Track liveness across polls without re-creating the interval.
   // We keep the interval running on a stable [data.id] dep and read the
@@ -146,6 +165,19 @@ export function AnalysisView({
   const isDone = data.status === "succeeded";
   const isWorking = data.status === "queued" || data.status === "running";
   const isFailed = data.status === "failed" || data.status === "refunded";
+
+  // Niche for the free ROAS-range panel — inferred from the domain the same
+  // way the analyzer pipeline does (host's first label). Safe on null URLs
+  // (uploaded screenshots) → "ecommerce", which maps to the default band.
+  const niche = (() => {
+    try {
+      return data.url
+        ? new URL(data.url).hostname.replace(/^www\./, "").split(".")[0]
+        : "ecommerce";
+    } catch {
+      return "ecommerce";
+    }
+  })();
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
@@ -274,34 +306,39 @@ export function AnalysisView({
           transition={{ duration: 0.5 }}
           className="space-y-6"
         >
-            {/* Top stats row */}
+            {/*
+              Report layout (restored to the original distribution per owner):
+                1. Score + gauges
+                2. Free-only modelable-ROAS panel (under the score)
+                3. Executive deck (niche position + strengths) — two columns
+                4. Library bridge
+                5. Two-column body: LEFT screenshot + persona · RIGHT category
+                   radar + prioritized fixes
+                6. Meta Ads tools (Optimizer + Campaign Scenario Modeler) AT THE
+                   END, full width.
+            */}
+
+            {/* 1 — Score + gauges */}
             <div className="grid lg:grid-cols-[1fr_360px] gap-6">
               <ScoreCard result={data.result} />
               <ConversionGauges scenarios={data.result.scenarios} />
             </div>
 
-            {/*
-              v3.3.1 — Executive deck section. Two consulting-style
-              visualizations that summarize the audit at a glance:
-                • Where you stand (niche position bar)
-                • Strengths vs issues (3-bucket category split)
-              Sits between the score row and the detailed audit body, so
-              the operator gets the strategic view BEFORE diving into the
-              tactical findings. (Impact/Effort matrix was removed per
-              user feedback — TopFixes list already covers prioritisation.)
-            */}
+            {/* 2 — Free-only: modelable ROAS panel, anchored under the score.
+                Paid users skip it (they get the live Meta tools at the end). */}
+            {!viewer.isPaid && (
+              <FreeMetaPanel score={data.result.score} niche={niche} />
+            )}
+
+            {/* 3 — Executive deck: where you stand + strengths vs issues */}
             <div className="grid lg:grid-cols-2 gap-6">
               <NichePositionBar score={data.result.score} />
               <StrengthsIssuesMap scores={data.result.category_scores} />
             </div>
 
             {/*
-              Analyzer → Library bridge. The niche bar directly above just told
-              the operator where they stand against their niche; the natural next
-              question is "so who's beating me, and what do they do differently?".
-              One hop to the Library answers it. The reverse link (Library →
-              "Audit my store") lives in the Library header, so the product's two
-              pillars are always one click apart in both directions.
+              4 — Analyzer → Library bridge. "So who's beating me, and what do
+              they do differently?" — one hop to the Library answers it.
             */}
             <Link
               href="/app/library"
@@ -327,32 +364,19 @@ export function AnalysisView({
             </Link>
 
             {/*
-              Two-column body. LEFT column is the "primary content" stream —
-              screenshot → persona reaction → Meta Ads Optimizer (Scale).
-              RIGHT column is the dense side widgets — radar + top fixes.
-              On mobile both stack vertically.
+              5 — Two-column body. LEFT: annotated screenshot → buyer-persona
+              reaction. RIGHT: category breakdown (radar) → prioritized fixes.
+              On mobile both stack. NEVER fall back to mshots client-side: an
+              empty screenshot_url shows the overlay's clean unavailable state.
             */}
             <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
               <div className="space-y-6 min-w-0">
-                {/*
-                  NEVER fall back to mshots client-side here. The server-side
-                  capture already exhausted ScreenshotOne → Microlink → mshots
-                  with placeholder detection; if we got here without a stored
-                  screenshot_url it means none of them succeeded. Falling back
-                  to mshots in the browser just renders the "Generating
-                  Preview..." placeholder, which is what users were seeing
-                  before this fix. Passing an empty string makes the overlay
-                  show its clean "screenshot unavailable" state.
-                */}
                 <AnnotationsOverlay
                   imageUrl={data.screenshot_url ?? ""}
                   annotations={data.result.annotations}
                 />
-                {/*
-                  P0.2 — the buyer-persona simulation is part of the "cure".
-                  Paid users see it; Free users see it blurred behind a Pro
-                  upgrade CTA (their real, already-computed response).
-                */}
+                {/* Buyer-persona: paid users see it; Free sees it blurred
+                    behind a Pro upgrade CTA (their real computed response). */}
                 {viewer.isPaid ? (
                   <PersonaResponse
                     response={data.result.buyer_persona_response}
@@ -367,65 +391,41 @@ export function AnalysisView({
                     />
                   </FreeLockedCure>
                 )}
-                {viewer.isScale && data.meta_ads != null && (
-                  <MetaAdsOptimizer meta={data.meta_ads as never} />
-                )}
-                {viewer.isScale && data.meta_ads == null && (
-                  <MetaAdsPending />
-                )}
-                {/*
-                  v3.9.2 — Pro users see a locked preview of the Meta Ads
-                  Optimizer with a Scale upgrade CTA. Drives the Pro→Scale
-                  upgrade by making the feature tangible instead of just
-                  a checkbox on the pricing page.
-                */}
-                {!viewer.isScale && <LockedMetaAdsPreview />}
               </div>
 
               <div className="space-y-6 min-w-0">
                 <CategoryRadar scores={data.result.category_scores} />
-                {/*
-                  P0.2 — the prioritized fix list is the core of the "cure".
-                  Paid users get it; Free users see it blurred (their real
-                  fixes, count visible) behind a Pro upgrade CTA at the peak
-                  of desire.
-                */}
-                {viewer.isPaid ? (
-                  <TopFixes fixes={data.result.top_fixes} />
-                ) : (
-                  <FreeLockedCure
-                    title="Top fixes — ranked by leverage"
-                    tagline="The exact changes to make first, ordered by impact-per-hour. This is your action plan."
-                    count={
-                      data.result.top_fixes?.length
-                        ? `${data.result.top_fixes.length} fixes`
-                        : undefined
-                    }
-                  >
-                    <TopFixes fixes={data.result.top_fixes} />
-                  </FreeLockedCure>
-                )}
+                {/* Prioritized fixes: paid users get every fix; Free gets fix
+                    #1 unlocked + the rest title-visible/blurred with a counter
+                    + Pro CTA (P1-6). */}
+                <TopFixes
+                  fixes={data.result.top_fixes}
+                  unlockedCount={viewer.isPaid ? undefined : 1}
+                />
               </div>
             </div>
 
             {/*
-              v3.0 — Meta Campaign Scenario Modeler. Scale only, succeeded only.
-              Sits below the main audit body as its own dedicated section,
-              not in either column — the 3-card grid needs the full width.
-              The simulator manages its own state machine (empty → running
-              → results) internally; we just pass the initial DB row (or null).
+              6 — Meta Ads tools AT THE END (paid only). The Optimizer targets
+              and the 7-day Campaign Scenario Modeler. Scale has the Optimizer
+              from audit time; Pro's monthly run computes it alongside the
+              modeler (see run-meta-simulation.ts). Free users get the modelable
+              panel above instead.
             */}
-            {viewer.isScale && (
-              <MetaCampaignSimulator
-                analysisId={data.id}
-                initial={initialSimulation ?? null}
-              />
+            {viewer.canRunMeta && (
+              <div className="space-y-6">
+                {data.meta_ads != null ? (
+                  <MetaAdsOptimizer meta={data.meta_ads as never} />
+                ) : viewer.isScale ? (
+                  <MetaAdsPending />
+                ) : null}
+                <MetaCampaignSimulator
+                  analysisId={data.id}
+                  initial={initialSimulation ?? null}
+                  quota={{ limit: viewer.metaLimit, used: viewer.metaUsed }}
+                />
+              </div>
             )}
-            {/*
-              v3.9.2 — Pro users see a locked preview of the Campaign
-              Scenario Modeler. Same upsell pattern as Meta Ads above.
-            */}
-            {!viewer.isScale && <LockedSimulatorPreview />}
         </motion.div>
       )}
     </div>

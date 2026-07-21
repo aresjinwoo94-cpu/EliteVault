@@ -62,7 +62,7 @@ export const metadata: Metadata = {
 const FAQS = [
   {
     q: "Is EliteVault a free alternative to ConvertMate?",
-    a: "Yes — the diagnosis is free. Paste your store URL and EliteVault returns a conversion score and an annotated screenshot at no cost, with no credit card. The prioritized fix list, buyer-persona simulation and unlimited audits are on Pro ($19/mo); the 7-day Meta Ads scenario modeler is on Scale ($49/mo).",
+    a: "Yes — the diagnosis is free. Paste your store URL and EliteVault returns a conversion score, an annotated screenshot, your #1 fix unlocked and a modeled 7-day ROAS range, at no cost with no credit card. The rest of your fixes, the buyer-persona simulation, unlimited audits and 1 Meta projection/month are on Pro ($19/mo); unlimited projections and the REST API are on Scale ($49/mo).",
   },
   {
     q: "Do I need to install an app or code on my store?",

@@ -81,7 +81,7 @@ const CURATED: KbEntry[] = [
     id: "free",
     category: "product",
     q: "Is there a free plan?",
-    a: `Yes. Free includes one audit of your own store (score + annotated screenshot) and the curated library of winning stores. The full Analyzer needs Pro; the scenario modeler and REST API need Scale.`,
+    a: `Yes. Free includes one audit of your own store (score, annotated screenshot, your #1 fix unlocked and a modeled ROAS range) plus 3 curated winning stores with full metrics. Pro unlocks the rest of your fixes, unlimited audits and 1 Meta campaign projection/month; Scale adds unlimited projections and the REST API.`,
     keywords: ["free", "free plan", "free trial", "trial", "no card"],
   },
   // ── Legal / data ───────────────────────────────────────────────────────

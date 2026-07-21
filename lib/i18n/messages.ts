@@ -78,7 +78,7 @@ const en: Dict = {
   pricing: {
     heading: "Free diagnosis. Pay for the cure.",
     subheading:
-      "Audit your store free — score + annotated screenshot. Upgrade to Pro for the prioritized fixes and unlimited audits, Scale for the 7-day campaign modeler and volume.",
+      "Audit your store free — score, annotated screenshot and your #1 fix. Upgrade to Pro for the rest of your fixes, unlimited audits and 1 Meta projection/month; Scale for unlimited projections and volume.",
     ladderDiagnose: "Diagnose",
     ladderCure: "Cure",
     ladderVolume: "Volume",
@@ -91,13 +91,12 @@ const en: Dict = {
     billedYearly: "/mo billed yearly · save",
     ctaFree: "Get started",
     ctaStart: "Start",
-    launchPrice: "Launch price",
     stripeNote: "Secure checkout powered by Stripe · Cancel anytime · No hidden fees",
   },
   compare: {
     heading: "How EliteVault compares",
     subheading:
-      "Everything a $2k audit gives you — plus what nobody else combines.",
+      "Against the real CRO-audit tools — not analytics suites. Where we win, where we don't, and where a human agency still beats us.",
     colCapability: "Capability",
     colAgency: "CRO agency",
     youAreHere: "You are here",
@@ -108,17 +107,22 @@ const en: Dict = {
     rowImageSearch: "Image-similarity store search",
     rowMetaModeler: "Meta Ads campaign modeler (7-day, 3 scenarios)",
     rowNicheAware: "Niche-aware judgment (skincare ≠ supplements)",
+    rowShopify: "Native Shopify integration (auto-applies changes)",
+    rowImplements: "Runs A/B tests & implements the fixes for you",
     rowNoInstall: "No code install, pixel, or prior traffic needed",
     rowPrice: "Entry price",
     cellDays: "Days",
     cellManual: "Manual",
     cellPartial: "Partial",
-    cellNeedsScript: "Needs script",
-    cellNeedsData: "Needs data",
+    cellContinuous: "Continuous",
+    cellNeedsApp: "Needs app",
     cellPriceEv: "Free / $19",
-    cellPriceHotjar: "$$$",
-    cellPriceTw: "$$$$",
+    cellPriceConvertmate: "$$$",
+    cellPriceAudit: "Free / $$",
     cellPriceAgency: "$1.5k–2k per audit",
+    notDoTitle: "What EliteVault does NOT do",
+    notDoBody:
+      "It won't implement the changes for you, run live A/B tests, or replace your session analytics. EliteVault tells you exactly what to fix and why — you (or your dev) ship it. Need someone to do the work? A CRO agency or a Shopify-native tool like ConvertMate is the better fit.",
     footnote:
       "Comparison based on publicly available information as of July 2026; competitor features and pricing may change.",
     closingPre: "The only tool that both",
@@ -144,12 +148,13 @@ const en: Dict = {
     feature3Title: "Niche-aware judgment",
     feature3Body:
       "What works for skincare destroys conversion in supplements. The agent knows the difference.",
-    feature4Title: "Campaign Scenario Modeler (Scale)",
+    feature4Title: "Campaign Scenario Modeler",
     feature4Body:
-      "Project a 7-day Meta Ads campaign across 3 honest scenarios — conservative, balanced, aggressive — calibrated to your audit, AOV and budget. Estimates, not guarantees.",
+      "Project a 7-day Meta Ads campaign across 3 honest scenarios — conservative, balanced, aggressive — calibrated to your audit, AOV and budget. Included on Pro (1 projection/month), unlimited on Scale. Estimates, not guarantees.",
   },
   logoStrip: {
-    caption: "Brands modeled in the vault",
+    caption:
+      "We break down how these brands convert — they're not our customers.",
   },
   social: {
     heading: "These stores are crushing it.",
@@ -157,7 +162,11 @@ const en: Dict = {
       "Three winners straight from the EliteVault Library — real stores, real conversion metrics, tracked live.",
     libraryCtaLead: "Want the winners in your niche?",
     libraryCta: "Log in to browse the full Library",
-    convRate: "conv. rate",
+    convRate: "est. conv. rate",
+    convRateTip:
+      "Estimated from public traffic and on-site behavior signals — not official figures reported by the brand.",
+    estimateDisclaimer:
+      "Metrics estimated by modeling public traffic and behavior signals. Not figures reported by the brands themselves.",
     founderNote:
       "I built EliteVault because I was tired of guessing why a store wasn't converting and paying $2k for a consultant to tell me what an honest audit could in 60 seconds. So I made the diagnosis free — run it on your own store, see the exact score and the annotated screenshot, and only pay if you want the prioritized cure. No fake numbers, no dark patterns, cancel in two clicks.",
     badgeNoCard: "No credit card for your free audit",
@@ -245,7 +254,7 @@ const en: Dict = {
     heroBody:
       "Browse Shopify and DTC stores that are actually generating revenue right now — filter by niche, see full metrics, and find the winners structurally closest to yours with image-similarity search. Then audit your own store free.",
     heroCta: "Browse winning stores",
-    heroCaption: "9 winners free · no credit card",
+    heroCaption: "3 winners free · no credit card",
     whatH2: "What's inside the library",
     whatSub:
       "Not a Pinterest board of pretty stores — winners validated by real revenue signals.",
@@ -274,7 +283,7 @@ const en: Dict = {
     valueLink: "How to reverse-engineer any winning store",
     finalH2: "Find your winning stores",
     finalBody:
-      "Browse 9 hand-picked winners free, then unlock the full library and image-similarity search on Pro.",
+      "Browse 3 hand-picked winners free, then unlock the full library and image-similarity search on Pro.",
     finalCta: "Start free",
   },
   reviews: {
@@ -284,6 +293,9 @@ const en: Dict = {
     reviewsCount: "reviews",
     writeHeading: "Leave a review",
     writeSubheading: "Used EliteVault? Tell other founders what it showed you.",
+    pageSubheading:
+      "Ran an audit with EliteVault? Share your honest experience — it helps other ecommerce founders decide whether it's worth their time.",
+    closed: "Reviews are closed right now. Check back soon.",
     name: "Your name",
     namePlaceholder: "Jane from Acme",
     email: "Email (optional, private)",
@@ -309,7 +321,7 @@ const en: Dict = {
     badge2: "NO CREDIT CARD",
     heroH1: "Free website audit — your store's conversion score in 60 seconds",
     heroBody:
-      "EliteVault is an AI website analyzer built for ecommerce. Paste your URL and get an honest conversion score, an annotated screenshot of exactly what's costing you sales, and a punch-list of fixes ranked by impact — free, no card, in under a minute.",
+      "EliteVault is an AI website analyzer built for ecommerce. Paste your URL and get an honest conversion score, an annotated screenshot of exactly what's costing you sales, your #1 fix unlocked, and a modeled 7-day Meta Ads ROAS range for a store like yours — free, no card, in under a minute.",
     heroCta: "Audit my store free",
     heroCaption: "1 free analysis · cancel anytime",
     checksH2: "What the website analyzer checks",
@@ -429,7 +441,7 @@ const en: Dict = {
     honestyLink: "Why your Meta ads aren't converting",
     finalH2: "Know the math before you spend",
     finalBody:
-      "Start free with a store audit. The 7-day Meta Ads Campaign Scenario Modeler lives on the Scale plan.",
+      "Start free with a store audit — it now includes a modeled ROAS range for your store. The full 7-day Campaign Scenario Modeler is included on Pro (1/month) and unlimited on Scale.",
     finalCta: "Start free",
   },
 };
@@ -502,7 +514,7 @@ const es: Dict = {
   pricing: {
     heading: "Diagnóstico gratis. Paga por la cura.",
     subheading:
-      "Audita tu tienda gratis — puntuación + captura anotada. Pasa a Pro para los arreglos priorizados y auditorías ilimitadas, o a Scale para el modelador de campañas de 7 días y volumen.",
+      "Audita tu tienda gratis — puntuación, captura anotada y tu arreglo #1. Pasa a Pro para el resto de tus arreglos, auditorías ilimitadas y 1 proyección Meta/mes; a Scale para proyecciones ilimitadas y volumen.",
     ladderDiagnose: "Diagnostica",
     ladderCure: "Cura",
     ladderVolume: "Volumen",
@@ -515,13 +527,12 @@ const es: Dict = {
     billedYearly: "/mes facturado anual · ahorra",
     ctaFree: "Empezar gratis",
     ctaStart: "Empieza con",
-    launchPrice: "Precio de lanzamiento",
     stripeNote: "Pago seguro con Stripe · Cancela cuando quieras · Sin cargos ocultos",
   },
   compare: {
     heading: "Cómo se compara EliteVault",
     subheading:
-      "Todo lo que te da una auditoría de $2k — más lo que nadie más combina.",
+      "Contra las herramientas reales de auditoría CRO — no suites de analítica. Dónde ganamos, dónde no, y dónde una agencia humana todavía nos supera.",
     colCapability: "Capacidad",
     colAgency: "Agencia CRO",
     youAreHere: "Estás aquí",
@@ -532,17 +543,22 @@ const es: Dict = {
     rowImageSearch: "Búsqueda de tiendas por similitud de imagen",
     rowMetaModeler: "Modelador de campañas Meta Ads (7 días, 3 escenarios)",
     rowNicheAware: "Juicio consciente del nicho (skincare ≠ suplementos)",
+    rowShopify: "Integración nativa con Shopify (aplica los cambios sola)",
+    rowImplements: "Corre tests A/B e implementa los arreglos por ti",
     rowNoInstall: "Sin instalar código, píxel ni tráfico previo",
     rowPrice: "Precio de entrada",
     cellDays: "Días",
     cellManual: "Manual",
     cellPartial: "Parcial",
-    cellNeedsScript: "Requiere script",
-    cellNeedsData: "Requiere datos",
+    cellContinuous: "Continuo",
+    cellNeedsApp: "Requiere app",
     cellPriceEv: "Gratis / $19",
-    cellPriceHotjar: "$$$",
-    cellPriceTw: "$$$$",
+    cellPriceConvertmate: "$$$",
+    cellPriceAudit: "Gratis / $$",
     cellPriceAgency: "$1.5k–2k por auditoría",
+    notDoTitle: "Lo que EliteVault NO hace",
+    notDoBody:
+      "No implementa los cambios por ti, no corre tests A/B en vivo ni reemplaza tu analítica de sesiones. EliteVault te dice exactamente qué arreglar y por qué — tú (o tu dev) lo implementan. ¿Necesitas que alguien haga el trabajo? Una agencia CRO o una herramienta nativa de Shopify como ConvertMate encaja mejor.",
     footnote:
       "Comparación basada en información pública a julio de 2026; las funciones y precios de terceros pueden cambiar.",
     closingPre: "La única herramienta que",
@@ -568,12 +584,13 @@ const es: Dict = {
     feature3Title: "Criterio según tu nicho",
     feature3Body:
       "Lo que funciona en skincare destruye la conversión en suplementos. El agente sabe la diferencia.",
-    feature4Title: "Modelador de Escenarios de Campaña (Scale)",
+    feature4Title: "Modelador de Escenarios de Campaña",
     feature4Body:
-      "Proyecta una campaña de Meta Ads de 7 días en 3 escenarios honestos — conservador, equilibrado, agresivo — calibrados a tu auditoría, tu AOV y tu presupuesto. Estimaciones, no garantías.",
+      "Proyecta una campaña de Meta Ads de 7 días en 3 escenarios honestos — conservador, equilibrado, agresivo — calibrados a tu auditoría, tu AOV y tu presupuesto. Incluido en Pro (1 proyección/mes), ilimitado en Scale. Estimaciones, no garantías.",
   },
   logoStrip: {
-    caption: "Marcas modeladas en el vault",
+    caption:
+      "Estudiamos cómo convierten estas marcas — no son nuestros clientes.",
   },
   social: {
     heading: "Estas tiendas la rompieron.",
@@ -581,7 +598,11 @@ const es: Dict = {
       "Tres ganadoras directas del Library de EliteVault — tiendas reales, métricas de conversión reales, rastreadas en vivo.",
     libraryCtaLead: "¿Quieres ver las ganadoras de tu nicho?",
     libraryCta: "Entra al Library iniciando sesión",
-    convRate: "tasa de conv.",
+    convRate: "tasa conv. est.",
+    convRateTip:
+      "Estimado a partir de señales públicas de tráfico y comportamiento del sitio. No son datos oficiales de la marca.",
+    estimateDisclaimer:
+      "Métricas estimadas mediante modelado sobre señales públicas de tráfico y comportamiento. No son cifras reportadas por las marcas.",
     founderNote:
       "Creé EliteVault porque estaba cansado de adivinar por qué una tienda no convertía y de pagar $2k a un consultor para que me dijera lo que una auditoría honesta resolvía en 60 segundos. Así que hice el diagnóstico gratis: córrelo en tu propia tienda, mira el puntaje exacto y la captura anotada, y paga solo si quieres la solución priorizada. Sin números falsos, sin trucos sucios, cancela en dos clics.",
     badgeNoCard: "Sin tarjeta para tu auditoría gratis",
@@ -669,7 +690,7 @@ const es: Dict = {
     heroBody:
       "Explora tiendas de Shopify y DTC que de verdad están generando ingresos ahora mismo — filtra por nicho, mira métricas completas y encuentra las ganadoras más parecidas a la tuya con búsqueda por similitud de imagen. Luego audita tu propia tienda gratis.",
     heroCta: "Explorar tiendas ganadoras",
-    heroCaption: "9 ganadoras gratis · sin tarjeta",
+    heroCaption: "3 ganadoras gratis · sin tarjeta",
     whatH2: "Qué hay dentro de la librería",
     whatSub:
       "No un tablero de Pinterest de tiendas bonitas — ganadoras validadas por señales reales de ingresos.",
@@ -698,7 +719,7 @@ const es: Dict = {
     valueLink: "Cómo hacer ingeniería inversa de cualquier tienda ganadora",
     finalH2: "Encuentra tus tiendas ganadoras",
     finalBody:
-      "Explora 9 ganadoras seleccionadas gratis, y desbloquea la librería completa y la búsqueda por imagen en Pro.",
+      "Explora 3 ganadoras seleccionadas gratis, y desbloquea la librería completa y la búsqueda por imagen en Pro.",
     finalCta: "Empezar gratis",
   },
   reviews: {
@@ -708,6 +729,9 @@ const es: Dict = {
     reviewsCount: "reseñas",
     writeHeading: "Deja una reseña",
     writeSubheading: "¿Usaste EliteVault? Cuéntale a otros fundadores qué te mostró.",
+    pageSubheading:
+      "¿Auditaste tu tienda con EliteVault? Comparte tu experiencia honesta — ayuda a otros fundadores de ecommerce a decidir si vale la pena.",
+    closed: "Las reseñas están cerradas por ahora. Vuelve pronto.",
     name: "Tu nombre",
     namePlaceholder: "Ana de Acme",
     email: "Email (opcional, privado)",
@@ -733,7 +757,7 @@ const es: Dict = {
     badge2: "SIN TARJETA",
     heroH1: "Auditoría web gratis — el score de conversión de tu tienda en 60 segundos",
     heroBody:
-      "EliteVault es un analizador web con IA hecho para ecommerce. Pega tu URL y recibe un score de conversión honesto, una captura anotada de exactamente qué te está costando ventas y una lista de arreglos ordenados por impacto — gratis, sin tarjeta, en menos de un minuto.",
+      "EliteVault es un analizador web con IA hecho para ecommerce. Pega tu URL y recibe un score de conversión honesto, una captura anotada de exactamente qué te está costando ventas, tu arreglo #1 desbloqueado, y un rango modelado de ROAS a 7 días en Meta Ads para una tienda como la tuya — gratis, sin tarjeta, en menos de un minuto.",
     heroCta: "Audita mi tienda gratis",
     heroCaption: "1 análisis gratis · cancela cuando quieras",
     checksH2: "Qué revisa el analizador web",
@@ -853,7 +877,7 @@ const es: Dict = {
     honestyLink: "Por qué tus Meta ads no convierten",
     finalH2: "Conoce las cuentas antes de gastar",
     finalBody:
-      "Empieza gratis con una auditoría de tienda. El Modelador de Escenarios de Campaña de Meta Ads a 7 días vive en el plan Scale.",
+      "Empieza gratis con una auditoría de tienda — ahora incluye un rango modelado de ROAS para tu tienda. El Modelador de Escenarios de Campaña a 7 días completo viene incluido en Pro (1/mes) e ilimitado en Scale.",
     finalCta: "Empezar gratis",
   },
 };

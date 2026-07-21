@@ -5,34 +5,42 @@ import {
   getReviewStats,
 } from "@/lib/reviews/data";
 import { getT } from "@/lib/i18n/server";
-import { ReviewForm } from "./review-form";
 import type { PublicReview } from "@/lib/reviews/types";
 
 /**
- * Public reviews section. The owner controls everything from /app/owner, and
- * this component honors every switch — the way good review widgets should and
- * bad ones forget:
+ * Minimum number of APPROVED reviews before the testimonials section is
+ * allowed to appear on the landing. An empty (or near-empty) testimonials
+ * block reads as "nobody has used this" — worse than having no section at
+ * all — so we hide it entirely until there's genuine social proof.
  *
- *   • master OFF        → renders NOTHING (no heading, no form, no list).
- *   • list OFF / empty  → the list (and its summary) simply doesn't appear.
- *   • form OFF          → no form.
- *   • nothing to show   → the whole section (incl. heading) is removed,
- *                          never an empty "No reviews yet" shell.
+ * The "Leave a review" form no longer lives here: an empty form under a
+ * "What founders say" heading is exactly the credibility leak we're
+ * closing. The form moved to its own /review route (asked for post-audit,
+ * where it makes sense). This component is now READ-ONLY social proof.
+ */
+const MIN_REVIEWS_TO_SHOW = 3;
+
+/**
+ * Public reviews section (landing). The owner controls it from /app/owner
+ * and this component honors every switch:
+ *
+ *   • master OFF                → renders NOTHING.
+ *   • list OFF                  → renders NOTHING (the form is gone).
+ *   • fewer than 3 approved     → renders NOTHING (no empty-shell testimonials).
+ *   • 3+ approved reviews       → the read-only list + rating summary.
  */
 export async function Reviews() {
   const settings = await getReviewSettings();
-  if (!settings.enabled) return null;
+  if (!settings.enabled || !settings.show_list) return null;
 
   const [reviews, stats] = await Promise.all([
-    settings.show_list ? getPublicReviews(settings) : Promise.resolve([]),
-    settings.show_list ? getReviewStats() : Promise.resolve({ count: 0, average: 0 }),
+    getPublicReviews(settings),
+    getReviewStats(),
   ]);
 
-  const showList = settings.show_list && reviews.length > 0;
-  const showForm = settings.show_form;
-
-  // Nothing the owner wants public → no section at all (heading included).
-  if (!showList && !showForm) return null;
+  // Gate on real social proof: hide the whole section until we have at
+  // least MIN_REVIEWS_TO_SHOW approved reviews.
+  if (reviews.length < MIN_REVIEWS_TO_SHOW) return null;
 
   const { t } = await getT();
   const heading = settings.heading?.trim() || t("reviews.heading");
@@ -48,7 +56,7 @@ export async function Reviews() {
             </h2>
             <p className="mt-3 text-white/55 leading-relaxed">{subheading}</p>
           </div>
-          {showList && stats.count > 0 && (
+          {stats.count > 0 && (
             <div className="shrink-0">
               <div className="flex items-center gap-2">
                 <Stars value={Math.round(stats.average)} />
@@ -64,19 +72,11 @@ export async function Reviews() {
           )}
         </div>
 
-        {showList && (
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {reviews.map((r) => (
-              <ReviewCard key={r.id} review={r} />
-            ))}
-          </div>
-        )}
-
-        {showForm && (
-          <div className="mx-auto mt-12 max-w-2xl">
-            <ReviewForm />
-          </div>
-        )}
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {reviews.map((r) => (
+            <ReviewCard key={r.id} review={r} />
+          ))}
+        </div>
       </div>
     </section>
   );

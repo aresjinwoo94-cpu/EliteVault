@@ -4,24 +4,30 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { inngest } from "@/inngest/client";
-import { PLANS } from "@/lib/stripe/plans";
+import { assertQuota } from "@/lib/quota/guard";
 
 /**
  * Server action that kicks off a Meta Campaign Scenario Modeler run.
  *
- * Scale-only by design — gated server-side; the UI also hides the form
- * for Free/Pro but never trust the UI.
+ * Gating (P1-7 / Fase 2): the Meta block is available to Pro AND Scale,
+ * metered server-side by the unified quota guard — the UI counter is a
+ * convenience, never the enforcement point.
+ *   Free  → blocked (metaRunsPerMonth = 0)
+ *   Pro   → 1 run per billing period (the Pro→Scale bridge)
+ *   Scale → unlimited within its analyses quota
+ * The 2nd Pro attempt fails HERE (in the backend), returning code
+ * META_QUOTA_EXCEEDED — not merely a hidden button.
  *
  * Flow:
- *   1. Auth + plan check
- *   2. Validate the source analysis belongs to the user and succeeded
- *   3. Insert meta_simulations row (status=queued)
- *   4. Fire Inngest event meta-simulation/requested
- *   5. Return simulation id for the UI to poll
+ *   1. Auth
+ *   2. Meta quota check (assertQuota → metaRun)
+ *   3. Validate the source analysis belongs to the user and succeeded
+ *   4. Insert meta_simulations row (status=queued)
+ *   5. Fire Inngest event meta-simulation/requested
+ *   6. Return simulation id for the UI to poll
  *
  * We do NOT charge an analysis credit for this — it's bundled into the
- * Scale subscription. (If we later want to meter it, the row already
- * has the audit trail we need.)
+ * subscription and metered separately via meta_simulations row counts.
  */
 
 const COUNTRY_VALUES = [
@@ -60,7 +66,7 @@ const TriggerSimulationInput = z.object({
 
 export type TriggerSimulationResult =
   | { ok: true; simulationId: string }
-  | { ok: false; error: string };
+  | { ok: false; error: string; code?: string };
 
 export async function triggerSimulation(
   input: z.infer<typeof TriggerSimulationInput>,
@@ -79,21 +85,21 @@ export async function triggerSimulation(
     };
   }
 
-  // Plan gating
+  // Plan gating — server-enforced Meta quota (Free 0 / Pro 1 / Scale ∞).
+  // The 2nd Pro run fails right here, not just in the UI.
+  const quota = await assertQuota(user.id, "metaRun");
+  if (!quota.ok) {
+    return { ok: false, error: quota.reason, code: quota.code };
+  }
+
+  // Plan tier still needed for the Inngest event (the agent calibrates a
+  // few things per plan). Quota is already enforced above.
   const { data: profile } = await supabase
     .from("profiles")
     .select("plan")
     .eq("id", user.id)
     .single();
   if (!profile) return { ok: false, error: "Profile not found" };
-  const plan = PLANS[profile.plan];
-  if (!plan.unlocksScale) {
-    return {
-      ok: false,
-      error:
-        "The Campaign Scenario Modeler is a Scale-plan feature. Upgrade to project Meta Ads outcomes.",
-    };
-  }
 
   // Validate source analysis: must belong to user + have a result
   const { data: analysis, error: aErr } = await supabase

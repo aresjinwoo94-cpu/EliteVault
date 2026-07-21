@@ -95,30 +95,7 @@ export function Pricing() {
                 <p className="mt-1 text-sm text-white/40">{plan.tagline}</p>
               </div>
 
-              {/* Launch-price anchor — monthly only, visual only (Stripe
-                  still charges price.month). Framed as an introductory
-                  price, not a fake "before" price. The row is reserved on
-                  every card in month view so price baselines stay aligned. */}
-              {interval === "month" && (
-                <div className="mt-6 flex h-6 items-center gap-2">
-                  {plan.launchAnchor && (
-                    <>
-                      <span className="font-mono tabular-nums text-lg text-white/30 line-through decoration-white/30">
-                        {formatCurrency(plan.launchAnchor.month)}
-                      </span>
-                      <span className="rounded-full border border-champagne-400/30 bg-champagne-400/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-champagne-300">
-                        {t("pricing.launchPrice")}
-                      </span>
-                    </>
-                  )}
-                </div>
-              )}
-              <div
-                className={cn(
-                  "flex items-baseline gap-1",
-                  interval === "month" ? "mt-1" : "mt-6",
-                )}
-              >
+              <div className="mt-6 flex items-baseline gap-1">
                 <span className="font-mono tabular-nums text-5xl tracking-tight text-signal-300">
                   {plan.price[interval] === 0
                     ? t("pricing.priceFree")

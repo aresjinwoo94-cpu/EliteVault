@@ -85,7 +85,7 @@ const FAQS = [
   },
   {
     q: "Is the winning-stores library free?",
-    a: "The Free plan includes 9 hand-picked winning stores with full metrics and the community feed. Pro and Scale unlock the full library, unlimited entries and image-similarity search.",
+    a: "The Free plan includes 3 hand-picked winning stores with full metrics and the community feed. Pro and Scale unlock the full library, unlimited entries and image-similarity search.",
   },
   {
     q: "How is this different from a Shopify spy tool?",

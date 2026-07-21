@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Megaphone, Sparkles, Target, TrendingUp, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { nicheBenchmarks } from "@/lib/meta/niche-benchmarks";
 import type { MetaAdsRecommendation } from "@/lib/supabase/types";
 
 const FORMAT_LABEL: Record<string, string> = {
@@ -15,6 +16,8 @@ const FORMAT_LABEL: Record<string, string> = {
 
 export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
   const t = meta.targets;
+  // Niche reference bands so each target reads against its category median.
+  const bands = nicheBenchmarks(meta.niche);
   return (
     <Card className="p-6 md:p-7 relative overflow-hidden">
       <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-champagne-400/12 blur-3xl" />
@@ -39,31 +42,40 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
         </Badge>
       </div>
 
-      {/* Targets row */}
+      {/* Targets row. Each target shows its niche median band beneath it —
+          a raw number is meaningless without one. If we have no niche band for
+          a metric we DROP that metric rather than show a naked number. */}
       <div className="mt-6 grid grid-cols-2 md:grid-cols-5 gap-3">
         {(
           [
-            ["CPC", `$${t.cpc.toFixed(2)}`, "Max bid"],
-            ["CPM", `$${t.cpm.toFixed(2)}`, "Cost / 1k"],
-            ["CTR", `${(t.ctr * 100).toFixed(2)}%`, "Click rate"],
-            ["CVR", `${(t.cvr * 100).toFixed(2)}%`, "LP conv."],
-            ["ROAS", `${t.roas.toFixed(1)}x`, "Target return"],
+            ["CPC", `$${t.cpc.toFixed(2)}`, "Max bid", bands && `$${bands.cpc[0].toFixed(2)}–$${bands.cpc[1].toFixed(2)}`],
+            ["CPM", `$${t.cpm.toFixed(2)}`, "Cost / 1k", bands && `$${bands.cpm[0].toFixed(0)}–$${bands.cpm[1].toFixed(0)}`],
+            ["CTR", `${(t.ctr * 100).toFixed(2)}%`, "Click rate", bands && `${(bands.ctr[0] * 100).toFixed(1)}–${(bands.ctr[1] * 100).toFixed(1)}%`],
+            ["CVR", `${(t.cvr * 100).toFixed(2)}%`, "LP conv.", bands && `${(bands.cvr[0] * 100).toFixed(1)}–${(bands.cvr[1] * 100).toFixed(1)}%`],
+            ["ROAS", `${t.roas.toFixed(1)}x`, "Target return", bands && `${bands.roas[0].toFixed(1)}–${bands.roas[1].toFixed(1)}x`],
           ] as const
-        ).map(([label, val, sub]) => (
-          <motion.div
-            key={label}
-            initial={{ opacity: 0, y: 6 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-center"
-          >
-            <p className="text-[10px] uppercase tracking-widest text-white/40">
-              {label}
-            </p>
-            <p className="mt-1 font-mono tabular-nums text-xl tnum text-white">{val}</p>
-            <p className="mt-0.5 text-[10px] text-white/40">{sub}</p>
-          </motion.div>
-        ))}
+        )
+          .filter(([, , , band]) => band) // drop metrics with no niche band
+          .map(([label, val, sub, band]) => (
+            <motion.div
+              key={label}
+              initial={{ opacity: 0, y: 6 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-center"
+            >
+              <p className="text-[10px] uppercase tracking-widest text-white/40">
+                {label}
+              </p>
+              <p className="mt-1 font-mono tabular-nums text-xl tnum text-white">{val}</p>
+              <p className="mt-0.5 text-[10px] text-white/40">{sub}</p>
+              <p className="mt-1.5 border-t border-white/[0.06] pt-1.5 text-[9px] leading-tight text-white/45">
+                niche median
+                <br />
+                <span className="text-white/60">{band}</span>
+              </p>
+            </motion.div>
+          ))}
       </div>
 
       {/* Audience + Targeting */}

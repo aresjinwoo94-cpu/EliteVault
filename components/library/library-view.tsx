@@ -138,7 +138,7 @@ export function LibraryView({
           <p className="mt-2 text-sm text-white/55 max-w-2xl">
             {isPaid
               ? "Drop a screenshot of your own store and our AI finds its closest converting siblings. Or search by prompt across all niches."
-              : "Browse 9 hand-picked winners with full metrics. Upgrade to unlock 40+ more + AI image search + saved collections."}
+              : "Browse 3 hand-picked winners with full metrics. Upgrade to unlock 40+ more + AI image search + saved collections."}
           </p>
         </div>
 
@@ -200,7 +200,7 @@ export function LibraryView({
               placeholder={
                 isPaid
                   ? 'Try "minimal skincare with editorial type" or "subscription wellness brands"'
-                  : "Search the 9 preview winners…"
+                  : "Search the 3 preview winners…"
               }
               className="pl-10 h-11"
             />
@@ -328,11 +328,21 @@ export function LibraryView({
         )}
       </motion.div>
 
+      {/* Estimate disclaimer — the CTR/ROI/conv./traffic figures on every
+          card are modeled from public traffic and behavior signals, not
+          numbers the brands report. Say so once, plainly, under the grid. */}
+      {displayItems.length > 0 && (
+        <p className="text-center text-xs text-white/35 leading-relaxed">
+          Metrics are estimated by modeling public traffic and behavior signals.
+          They are not figures reported by the brands themselves.
+        </p>
+      )}
+
       {plan === "free" && (
         <div className="rounded-2xl border border-champagne-400/20 bg-gradient-to-br from-champagne-400/[0.05] to-signal-600/[0.05] p-6 text-center">
           <Lock className="mx-auto size-5 text-champagne-300" />
           <h3 className="mt-3 font-serif text-xl">
-            9 winners on Free — {stats.total - 9}+ more on Pro
+            3 winners on Free — {stats.total - 3}+ more on Pro
           </h3>
           <p className="mt-1 text-sm text-white/55 max-w-md mx-auto">
             Unlock metrics on every store, AI image-similarity search, and
