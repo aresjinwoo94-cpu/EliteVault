@@ -30,6 +30,7 @@ import { StrengthsIssuesMap } from "./strengths-issues-map";
 import { FreeLockedCure } from "./free-locked-cure";
 import { FreeMetaPanel } from "./free-meta-panel";
 import { NicheWinners } from "./niche-winners";
+import { AdReadinessCard } from "./ad-readiness";
 import { ShareButton } from "./share-button";
 import type {
   AnalysisResult,
@@ -353,6 +354,13 @@ export function AnalysisView({
             {!viewer.isPaid && (
               <FreeMetaPanel score={data.result.score} niche={niche} />
             )}
+
+            {/* 2b — Ad-readiness. Sits directly under the score because it
+                reframes it: the design total and "can this take paid traffic
+                today" are different questions, and the second is the one the
+                owner is about to spend money on. Renders nothing on audits
+                generated before the field existed. */}
+            <AdReadinessCard data={data.result.ad_readiness} />
 
             {/* 3 — Executive deck: where you stand + strengths vs issues */}
             <div className="grid lg:grid-cols-2 gap-6">

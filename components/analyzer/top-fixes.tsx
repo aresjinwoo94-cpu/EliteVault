@@ -12,6 +12,11 @@ interface Fix {
   title: string;
   impact: "high" | "medium" | "low";
   effort: "S" | "M" | "L";
+  /**
+   * Business reason this fix matters. Optional: audits generated before the
+   * field existed simply don't have it, and the row renders as it always did.
+   */
+  why?: string | null;
 }
 
 /**
@@ -52,7 +57,7 @@ export function TopFixes({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
               className={cn(
-                "flex items-center gap-3 rounded-xl border p-3.5 transition-colors",
+                "flex items-start gap-3 rounded-xl border p-3.5 transition-colors",
                 locked
                   ? "border-white/[0.04] bg-white/[0.015]"
                   : "border-white/[0.04] bg-white/[0.02] hover:border-white/[0.1]",
@@ -70,9 +75,24 @@ export function TopFixes({
                 {/* Impact/effort detail: crisp when unlocked, real-but-BLURRED
                     (blur-sm) when locked so the free user sees the shape of the
                     content they're missing without being able to read it. */}
+                {/* The WHY — the business reason, in the owner's terms. This
+                    is the difference between a checklist and an argument they
+                    can act on, so it's part of the paid "cure": blurred for
+                    locked rows exactly like the impact/effort detail. */}
+                {f.why?.trim() && (
+                  <p
+                    className={cn(
+                      "mt-1.5 text-xs leading-relaxed text-white/55",
+                      locked && "select-none blur-sm pointer-events-none",
+                    )}
+                    aria-hidden={locked || undefined}
+                  >
+                    {f.why}
+                  </p>
+                )}
                 <div
                   className={cn(
-                    "mt-1 flex items-center gap-2",
+                    "mt-1.5 flex items-center gap-2",
                     locked && "select-none blur-sm pointer-events-none",
                   )}
                   aria-hidden={locked || undefined}
@@ -102,9 +122,9 @@ export function TopFixes({
                 )}
               </div>
               {locked ? (
-                <Lock className="size-4 text-white/20" />
+                <Lock className="mt-0.5 size-4 shrink-0 text-white/20" />
               ) : (
-                <ArrowUpRight className="size-4 text-white/20" />
+                <ArrowUpRight className="mt-0.5 size-4 shrink-0 text-white/20" />
               )}
             </motion.li>
           );

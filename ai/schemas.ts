@@ -54,6 +54,43 @@ export const TopFixSchema = z.object({
   title: z.string().min(3).max(120),
   impact: z.enum(["high", "medium", "low"]),
   effort: z.enum(["S", "M", "L"]),
+  /**
+   * The BUSINESS reason this fix matters — "cold Meta traffic can't tell what
+   * you sell in 2 seconds, so they bounce before the offer lands", not "best
+   * practice says heroes should be clear". A fix without a why is a checklist
+   * item; with one it's an argument the owner can act on (and the difference
+   * between this and a free audit tool).
+   *
+   * Optional in the schema so audits stored before this field existed still
+   * validate and render.
+   */
+  why: z.string().max(280).optional(),
+});
+
+/**
+ * "Can this page take paid traffic yet?" — the read a media buyer actually
+ * wants before spending money, separate from the general design score.
+ *
+ * Optional: pre-existing analyses don't have it, and a model that omits it
+ * must not fail the whole audit.
+ */
+export const AdReadinessSchema = z.object({
+  /** ready = send traffic; almost = fix the blockers first; not_ready = don't. */
+  verdict: z.enum(["ready", "almost", "not_ready"]),
+  /** 0-100, judged ONLY on fitness for cold paid traffic. */
+  score: z.number().min(0).max(100),
+  /** One line on what decides it. */
+  summary: z.string().min(10).max(400),
+  /** What to fix BEFORE spending, highest-leverage first. */
+  blockers: z
+    .array(
+      z.object({
+        title: z.string().min(3).max(120),
+        why: z.string().max(280),
+      }),
+    )
+    .max(5)
+    .optional(),
 });
 
 /**
@@ -76,6 +113,7 @@ export const AnalysisResultSchema = z.object({
   annotations: z.array(AnnotationSchema).max(30),
   summary: z.string().min(10).max(2000),
   top_fixes: z.array(TopFixSchema).max(12),
+  ad_readiness: AdReadinessSchema.optional(),
 });
 export type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
 
@@ -164,9 +202,33 @@ export const ANALYSIS_TOOL_SCHEMA = {
           title: { type: "string" },
           impact: { type: "string", enum: ["high", "medium", "low"] },
           effort: { type: "string", enum: ["S", "M", "L"] },
+          // Required HERE (the contract for new generations) but optional in
+          // the Zod schema, so older stored audits still validate.
+          why: { type: "string" },
         },
-        required: ["title", "impact", "effort"],
+        required: ["title", "impact", "effort", "why"],
       },
+    },
+    ad_readiness: {
+      type: "object",
+      properties: {
+        verdict: { type: "string", enum: ["ready", "almost", "not_ready"] },
+        score: { type: "number", minimum: 0, maximum: 100 },
+        summary: { type: "string" },
+        blockers: {
+          type: "array",
+          maxItems: 3,
+          items: {
+            type: "object",
+            properties: {
+              title: { type: "string" },
+              why: { type: "string" },
+            },
+            required: ["title", "why"],
+          },
+        },
+      },
+      required: ["verdict", "score", "summary", "blockers"],
     },
   },
   required: [
@@ -177,6 +239,7 @@ export const ANALYSIS_TOOL_SCHEMA = {
     "annotations",
     "summary",
     "top_fixes",
+    "ad_readiness",
   ],
 } as const;
 

@@ -68,7 +68,28 @@ export interface AnalysisResult {
   };
   annotations: Annotation[];
   summary: string;
-  top_fixes: { title: string; impact: "high" | "medium" | "low"; effort: "S" | "M" | "L" }[];
+  top_fixes: {
+    title: string;
+    impact: "high" | "medium" | "low";
+    effort: "S" | "M" | "L";
+    /** Business reason the fix matters. Absent on audits stored before v3.4. */
+    why?: string;
+  }[];
+  /**
+   * "Can this page take cold paid traffic today?" — the media-buyer read,
+   * scored separately from the design/CRO total. Optional: audits stored
+   * before v3.4 don't have it, so every consumer must handle its absence.
+   */
+  ad_readiness?: AdReadiness;
+}
+
+export interface AdReadiness {
+  verdict: "ready" | "almost" | "not_ready";
+  /** 0..100, judged ONLY on fitness for cold paid traffic. */
+  score: number;
+  summary: string;
+  /** What to fix BEFORE spending. Empty/absent when the verdict is "ready". */
+  blockers?: { title: string; why: string }[];
 }
 
 export interface RewriteResult {
