@@ -15,7 +15,7 @@ A production-ready Next.js 15 SaaS built with Claude (Anthropic), Stripe, Supaba
 - **Intelligent Search** — text prompts + image-similarity search, AI re-ranked.
 - **Community feed** — publish audits, browse what other founders are tearing apart, **Compare Mode** for 2-3 side-by-side.
 - **REST API** (Scale) — bearer-token endpoints for embedding the Analyzer into your stack.
-- **3 plans** — Free / Pro $19 / Scale $49 with Stripe Checkout + Customer Portal.
+- **3 plans** — Free / Pro $19 / Scale $29 with Stripe Checkout + Customer Portal.
 
 ## 🧱 Stack
 

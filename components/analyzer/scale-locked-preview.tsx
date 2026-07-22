@@ -211,7 +211,7 @@ function LockWrapper({
                 >
                   <Button variant="primary" size="lg">
                     <Sparkles className="size-4" />
-                    Unlock for $49 / mo
+                    Unlock for $29 / mo
                     <ArrowRight className="size-4" />
                   </Button>
                 </Link>

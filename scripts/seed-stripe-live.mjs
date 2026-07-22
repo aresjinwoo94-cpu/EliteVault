@@ -34,23 +34,40 @@ const stripe = new Stripe(liveKey, {
 });
 
 async function ensurePrice(opts) {
+  const wantAmount = opts.amount * 100;
   const existing = await stripe.prices.list({
     lookup_keys: [opts.lookupKey],
     expand: ["data.product"],
     limit: 1,
   });
-  if (existing.data[0]) {
-    console.log(`  ✓ ${opts.lookupKey} already exists → ${existing.data[0].id}`);
-    return existing.data[0].id;
+  const found = existing.data[0];
+  if (found && found.unit_amount === wantAmount) {
+    console.log(`  ✓ ${opts.lookupKey} already exists → ${found.id}`);
+    return found.id;
   }
 
-  // Reuse product if any (Stripe products can have multiple prices)
-  let product = (
-    await stripe.products.search({
-      query: `name:'${opts.productName}'`,
-      limit: 1,
-    })
-  ).data[0];
+  // Stripe prices are immutable: to change an amount we must create a NEW
+  // price and atomically transfer the lookup_key onto it (transfer_lookup_key).
+  // The old price is left inactive but existing subscriptions keep it.
+  const transferLookupKey = Boolean(found);
+  if (found) {
+    console.log(
+      `  ⟳ ${opts.lookupKey} amount changed (${found.unit_amount} → ${wantAmount}); creating new price`,
+    );
+  }
+
+  // Reuse product — prefer the one attached to the existing price, then fall
+  // back to name search / create so we don't spawn a duplicate product.
+  let product =
+    (found?.product && typeof found.product !== "string"
+      ? found.product
+      : undefined) ??
+    (
+      await stripe.products.search({
+        query: `name:'${opts.productName}'`,
+        limit: 1,
+      })
+    ).data[0];
   if (!product) {
     product = await stripe.products.create({
       name: opts.productName,
@@ -60,9 +77,10 @@ async function ensurePrice(opts) {
   }
   const price = await stripe.prices.create({
     product: product.id,
-    unit_amount: opts.amount * 100,
+    unit_amount: wantAmount,
     currency: "usd",
     lookup_key: opts.lookupKey,
+    transfer_lookup_key: transferLookupKey,
     recurring: { interval: opts.interval },
   });
   console.log(`  + ${opts.lookupKey} → ${price.id}`);
@@ -95,7 +113,7 @@ const scaleMonthly = await ensurePrice({
     "Everything in Pro + Meta Campaign Scenario Modeler, " +
     "Meta Ads Optimizer, and REST API access.",
   lookupKey: "elitevault_scale_monthly",
-  amount: 49,
+  amount: 29,
   interval: "month",
 });
 const scaleYearly = await ensurePrice({
@@ -104,7 +122,7 @@ const scaleYearly = await ensurePrice({
     "Everything in Pro + Meta Campaign Scenario Modeler, " +
     "Meta Ads Optimizer, and REST API access.",
   lookupKey: "elitevault_scale_yearly",
-  amount: 499,
+  amount: 278,
   interval: "year",
 });
 
