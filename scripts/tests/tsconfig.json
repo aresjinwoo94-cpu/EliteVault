@@ -1,0 +1,14 @@
+{
+  // Test-only resolution. Identical to the app's tsconfig except that
+  // `server-only` — which Next resolves internally and which therefore isn't
+  // in node_modules — maps to a local no-op so a plain `node --test` run can
+  // import server modules. Never used by `next build`.
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "../..",
+    "paths": {
+      "@/*": ["./*"],
+      "server-only": ["./scripts/tests/stubs/server-only.ts"]
+    }
+  }
+}
