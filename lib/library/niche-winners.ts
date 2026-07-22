@@ -207,39 +207,38 @@ export async function getNicheWinners(
   const empty: NicheWinnersResult = { niche, nicheLabel, winners: [] };
   try {
     const service = createSupabaseServiceClient();
+    const related = RELATED_NICHES[niche] ?? [];
 
-    // Exact-niche winners.
-    const { data: exactData } = await service
+    // ONE round-trip for the exact niche AND its related fills — this runs on
+    // the analyzer result render, so it stays a single cheap query.
+    const { data } = await service
       .from("winning_sites")
       .select(SELECT_COLS)
-      .eq("niche", niche)
-      .limit(24);
-    const exact = (Array.isArray(exactData) ? (exactData as unknown as WinningRow[]) : [])
-      .slice()
-      .sort(rank);
+      .in("niche", [niche, ...related])
+      .limit(60);
+    const rows = Array.isArray(data) ? (data as unknown as WinningRow[]) : [];
 
-    const winners: NicheWinner[] = exact.slice(0, 3).map((r) => toWinner(r, true));
+    // Exact-niche winners first, ranked by Meta momentum.
+    const winners: NicheWinner[] = rows
+      .filter((r) => r.niche === niche)
+      .sort(rank)
+      .slice(0, 3)
+      .map((r) => toWinner(r, true));
 
-    // Backfill from related niches when we have fewer than 3.
+    // Backfill from related niches, honoring the RELATED_NICHES priority.
     if (winners.length < 3) {
-      const related = RELATED_NICHES[niche] ?? [];
       const seen = new Set(winners.map((w) => w.domain));
-      for (const rel of related) {
+      const fills = rows
+        .filter((r) => r.niche !== niche)
+        .sort(
+          (a, b) =>
+            related.indexOf(a.niche) - related.indexOf(b.niche) || rank(a, b),
+        );
+      for (const row of fills) {
         if (winners.length >= 3) break;
-        const { data: relData } = await service
-          .from("winning_sites")
-          .select(SELECT_COLS)
-          .eq("niche", rel)
-          .limit(24);
-        const fills = (Array.isArray(relData) ? (relData as unknown as WinningRow[]) : [])
-          .slice()
-          .sort(rank);
-        for (const row of fills) {
-          if (winners.length >= 3) break;
-          if (seen.has(row.domain)) continue;
-          seen.add(row.domain);
-          winners.push(toWinner(row, false));
-        }
+        if (seen.has(row.domain)) continue;
+        seen.add(row.domain);
+        winners.push(toWinner(row, false));
       }
     }
 

@@ -30,6 +30,16 @@ import { createHash } from "node:crypto";
 const VIEWPORT_W = 1440;
 const VIEWPORT_H = 900;
 
+/**
+ * Default height cap (px) for full-page captures — ~9 viewports at 900px.
+ * See `fullPageMaxHeight` on captureWithScreenshotOne for why this exists
+ * (it's the fix for the 60s-per-step 504 on tall pages).
+ */
+const DEFAULT_FULL_PAGE_MAX_H = (() => {
+  const raw = Number(process.env.SCREENSHOT_FULL_PAGE_MAX_HEIGHT);
+  return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 8000;
+})();
+
 // Empirically, real screenshots at 1440x900 are 80KB-2MB. The mshots
 // "Generating Preview..." placeholder is ~16-22KB. Anything under this
 // threshold is almost certainly a placeholder or a corrupt download.
@@ -164,6 +174,26 @@ export async function captureWithScreenshotOne(
      * (measured: bearaby/daily-harvest thumbs were a blank modal overlay).
      */
     blockBannersByHeuristics?: boolean;
+    /**
+     * Hard cap (px) on the height of a FULL-PAGE capture. Ignored unless
+     * `fullPage` is on.
+     *
+     * Uncapped full-page shots come back ~10-20k tall (infinite-scroll and
+     * long PDPs are the worst offenders) at several MB. That single image is
+     * then re-fetched, base64'd (+33%) and pushed through the vision model —
+     * where it dominates the audit's latency. On Vercel Hobby the Inngest
+     * route is capped at 60s PER STEP (app/api/inngest/route.ts), so a tall
+     * page pushed `run-analyzer-agent` past the ceiling and Vercel answered
+     * 504 → Inngest retried → the audit refunded. That's the
+     * "Your server returned HTTP 504 before the SDK responded" failure.
+     *
+     * DEFAULT_FULL_PAGE_MAX_H keeps the whole conversion funnel (hero, social
+     * proof, product, reviews, FAQ, footer sit well inside it) while cutting
+     * the pathological tails, so the audit gets faster WITHOUT losing the
+     * context it grades. Override per-caller, or globally via
+     * SCREENSHOT_FULL_PAGE_MAX_HEIGHT.
+     */
+    fullPageMaxHeight?: number;
   } = {},
 ): Promise<{
   base64: string;
@@ -178,6 +208,14 @@ export async function captureWithScreenshotOne(
     format: "jpg",
     image_quality: "92",
     full_page: String(opts.fullPage ?? true),
+    // Only meaningful for full-page captures; omitted otherwise.
+    ...((opts.fullPage ?? true)
+      ? {
+          full_page_max_height: String(
+            opts.fullPageMaxHeight ?? DEFAULT_FULL_PAGE_MAX_H,
+          ),
+        }
+      : {}),
     block_ads: "true",
     block_cookie_banners: "true",
     ...(opts.blockBannersByHeuristics
