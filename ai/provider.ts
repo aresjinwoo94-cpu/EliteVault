@@ -37,6 +37,19 @@ export interface GenerateOptions {
   /** If true, prefers the cheaper/faster model variant. */
   fast?: boolean;
   signal?: AbortSignal;
+  /**
+   * Absolute epoch-ms instant by which this call must be finished.
+   *
+   * Providers own retry/back-off ladders (429 key rotation, 503 back-off,
+   * empty-response retries) that are individually sensible but can add up to
+   * far more than the serverless step they run inside — which is how the
+   * analyzer ended up being killed mid-step with a 504 instead of failing
+   * cleanly. With a deadline the provider skips any wait it can't afford and
+   * throws DeadlineExceededError first. See lib/deadline.ts.
+   *
+   * Omit it and providers behave exactly as before (unbounded).
+   */
+  deadlineAt?: number;
 }
 
 /**

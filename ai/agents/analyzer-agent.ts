@@ -7,6 +7,16 @@ import {
 } from "@/ai/schemas";
 import { ANALYZER_SYSTEM, buildAnalyzerUserMessage } from "@/ai/prompts";
 import type { BuyerPersona } from "@/lib/supabase/types";
+import { deadlineAt, isDeadlineError } from "@/lib/deadline";
+
+/**
+ * Sampling temperature for the audit. Low by design — see the comment at the
+ * call site. Tunable without a deploy via ANALYZER_TEMPERATURE.
+ */
+const ANALYZER_TEMPERATURE = (() => {
+  const raw = Number(process.env.ANALYZER_TEMPERATURE);
+  return Number.isFinite(raw) && raw >= 0 && raw <= 1 ? raw : 0.2;
+})();
 
 export interface SiteInfo {
   title: string | null;
@@ -62,6 +72,14 @@ export async function runAnalyzerAgent(opts: {
    */
   fast?: boolean;
   signal?: AbortSignal;
+  /**
+   * Absolute epoch-ms instant this audit must be done by (see lib/deadline.ts).
+   * Bounds the provider's internal retry ladders AND decides whether a
+   * fallback attempt is worth starting — the vision call is the longest step
+   * in the pipeline, so it's the one that used to run into the platform's 60s
+   * ceiling and 504.
+   */
+  deadlineAt?: number;
 }): Promise<AnalysisResult> {
   // Route by tier (free/fast vs paid) and optionally fall back to the other
   // provider on a hard failure. Defaults preserve the previous single-provider
@@ -107,15 +125,24 @@ export async function runAnalyzerAgent(opts: {
   };
   const generateOpts = {
     system: ANALYZER_SYSTEM,
-    temperature: 0.4,
+    // Low temperature on purpose. The same store re-audited must not swing 15
+    // points between runs — inconsistent scores destroy trust in the number
+    // faster than a slightly duller phrasing costs us. Override with
+    // ANALYZER_TEMPERATURE if the copy ever reads too flat.
+    temperature: ANALYZER_TEMPERATURE,
     // Full audit JSON can be 5-8k chars — give the model headroom so it
     // doesn't truncate mid-string (which broke schema validation before).
     maxTokens: 8192,
     // P1.1 — free audits run on the cheap/fast model tier.
     fast: opts.fast,
     signal: opts.signal,
+    deadlineAt: opts.deadlineAt,
     parts,
   };
+
+  const dl = deadlineAt(opts.deadlineAt ?? Number.MAX_SAFE_INTEGER);
+  /** Below this there's no room for another full vision call. */
+  const MIN_ATTEMPT_MS = 12_000;
 
   let raw: unknown;
   try {
@@ -123,6 +150,9 @@ export async function runAnalyzerAgent(opts: {
   } catch (err) {
     // Don't fall back on a user-initiated cancel — that's not a provider fault.
     if (opts.signal?.aborted || !fallback) throw err;
+    // Nor when we ran out of time: a second attempt would be cut off by the
+    // platform (a 504 Inngest can't retry cleanly) instead of failing here.
+    if (isDeadlineError(err) || !dl.has(MIN_ATTEMPT_MS)) throw err;
     console.warn(
       `[analyzer] provider "${primary.name}" failed (${
         (err as Error).message
@@ -131,16 +161,50 @@ export async function runAnalyzerAgent(opts: {
     raw = await fallback.generateStructured<unknown>(tool, generateOpts);
   }
 
-  const parsed = AnalysisResultSchema.safeParse(raw);
+  let parsed = AnalysisResultSchema.safeParse(raw);
+
+  // ── One repair pass on invalid output ──────────────────────────────────
+  // A malformed generation used to fail the whole audit and refund the credit,
+  // even though the model is usually one field away from valid. We hand the
+  // exact validation errors back and ask for a corrected object — but only if
+  // the budget can absorb another call.
+  if (!parsed.success && dl.has(MIN_ATTEMPT_MS)) {
+    const issues = formatIssues(parsed.error.issues);
+    console.warn(`[analyzer] schema mismatch — repair pass. ${issues}`);
+    try {
+      const repaired = await primary.generateStructured<unknown>(tool, {
+        ...generateOpts,
+        parts: [
+          ...parts,
+          {
+            text:
+              "Your previous submission FAILED validation and was rejected. " +
+              `Problems: ${issues}. ` +
+              "Resubmit the COMPLETE audit with every required field present " +
+              "and every value inside its stated range. Change nothing else.",
+          } as never,
+        ],
+      });
+      const second = AnalysisResultSchema.safeParse(repaired);
+      if (second.success) parsed = second;
+    } catch (err) {
+      console.warn("[analyzer] repair pass failed:", (err as Error).message);
+    }
+  }
+
   if (!parsed.success) {
     console.error("[analyzer] schema mismatch", parsed.error.flatten());
     throw new Error(
       "Analyzer: tool output failed validation — " +
-        parsed.error.issues
-          .slice(0, 5)
-          .map((i) => `${i.path.join(".")}: ${i.message}`)
-          .join("; "),
+        formatIssues(parsed.error.issues),
     );
   }
   return parsed.data;
+}
+
+function formatIssues(issues: { path: (string | number)[]; message: string }[]) {
+  return issues
+    .slice(0, 5)
+    .map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`)
+    .join("; ");
 }

@@ -28,6 +28,11 @@ import type { NicheWinner } from "@/lib/library/niche-winners";
  * Matches the analyzer's card system (dark theme, champagne/signal accents).
  */
 
+/** True only for a real, finite, positive number — no NaN, no "undefined". */
+function usable(n: unknown): n is number {
+  return typeof n === "number" && Number.isFinite(n) && n > 0;
+}
+
 function AdsBadge({ n }: { n: number }) {
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success ring-1 ring-success/20">
@@ -49,6 +54,11 @@ function RevenueSignal({ low, high }: { low: number; high: number }) {
 }
 
 function WinnerRow({ w }: { w: NicheWinner }) {
+  // Rows arrive from Library data that can be partially seeded. Anything we
+  // can't state honestly is hidden, never rendered as "undefined"/"NaN".
+  const title = w.title?.trim() || w.domain;
+  const showAds = usable(w.activeAds);
+  const showRevenue = usable(w.revenue?.low) && usable(w.revenue?.high);
   return (
     <div className="flex items-start gap-3 rounded-xl border border-white/[0.05] bg-white/[0.02] p-3 transition-colors hover:border-signal-500/20 hover:bg-white/[0.03]">
       {/* Favicon (public favicon service — no data leaves with it). */}
@@ -70,14 +80,16 @@ function WinnerRow({ w }: { w: NicheWinner }) {
             rel="noopener nofollow"
             className="truncate text-sm font-medium text-white transition-colors hover:text-signal-200"
           >
-            {w.title}
+            {title}
           </a>
           <ExternalLink className="size-3 shrink-0 text-white/30" />
         </div>
         {/* Momentum + revenue signals */}
         <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-          {w.activeAds != null && <AdsBadge n={w.activeAds} />}
-          {w.revenue && <RevenueSignal low={w.revenue.low} high={w.revenue.high} />}
+          {showAds && <AdsBadge n={w.activeAds as number} />}
+          {showRevenue && w.revenue && (
+            <RevenueSignal low={w.revenue.low} high={w.revenue.high} />
+          )}
         </div>
         {/* Niche match */}
         <p className="mt-1.5 text-[10px] uppercase tracking-wider text-white/35">
@@ -122,14 +134,14 @@ function Header({ nicheLabel }: { nicheLabel: string }) {
         </p>
       </div>
       <Badge variant="default" className="shrink-0">
-        {nicheLabel}
+        {nicheLabel?.trim() || "Your niche"}
       </Badge>
     </div>
   );
 }
 
 export function NicheWinners({
-  nicheLabel,
+  nicheLabel = "Your niche",
   winners = [],
   locked = false,
   lockedCount = 3,
@@ -139,9 +151,16 @@ export function NicheWinners({
   locked?: boolean;
   lockedCount?: number;
 }) {
+  // Drop anything unrenderable BEFORE deciding whether the card exists, so a
+  // list of three half-seeded rows hides the module instead of showing three
+  // empty ones.
+  const rows = (Array.isArray(winners) ? winners : []).filter(
+    (w) => w && typeof w.domain === "string" && w.domain.trim().length > 0,
+  );
+
   // Unlocked (Pro/Scale) but nothing to show → render nothing (the server
   // already hides this case, but guard here too so we never show an empty card).
-  if (!locked && winners.length === 0) return null;
+  if (!locked && rows.length === 0) return null;
 
   return (
     <motion.div
@@ -162,7 +181,11 @@ export function NicheWinners({
                 aria-hidden
                 className="space-y-2 filter blur-[5px] opacity-70 select-none pointer-events-none"
               >
-                {Array.from({ length: Math.max(1, Math.min(3, lockedCount)) }).map(
+                {/* Guarded: a NaN count would render zero ghost rows, i.e. a
+                    lock overlay floating over nothing. */}
+                {Array.from({
+                  length: usable(lockedCount) ? Math.min(3, lockedCount) : 3,
+                }).map(
                   (_, i) => (
                     <GhostRow key={i} />
                   ),
@@ -197,7 +220,7 @@ export function NicheWinners({
           ) : (
             <>
               <div className="space-y-2">
-                {winners.map((w) => (
+                {rows.map((w) => (
                   <WinnerRow key={w.domain} w={w} />
                 ))}
               </div>

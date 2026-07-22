@@ -129,6 +129,11 @@ function num(v: unknown): number | null {
   return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : null;
 }
 
+/** Non-empty string or null — keeps `undefined`/"" out of the rendered card. */
+function str(v: unknown): string | null {
+  return typeof v === "string" && v.trim() ? v.trim() : null;
+}
+
 /**
  * Resolve the analyzed store to a canonical Library niche slug (or null when
  * nothing matches). Deterministic keyword scan over the domain + audit summary
@@ -169,12 +174,23 @@ function estRevenue(
   };
 }
 
-function toWinner(row: WinningRow, exactMatch: boolean): NicheWinner {
+/**
+ * Row → view model, or null when the row can't be rendered honestly.
+ *
+ * A Library row is seeded data that can be partially filled (a store added by
+ * the discovery agent before its metrics job ran). Rendering one of those
+ * yields "undefined" in the card or a link to nowhere, so we drop the row
+ * instead — the module shows fewer winners rather than broken ones.
+ */
+function toWinner(row: WinningRow, exactMatch: boolean): NicheWinner | null {
+  const domain = str(row?.domain);
+  const url = str(row?.url);
+  if (!domain || !url) return null;
   return {
-    title: row.title,
-    domain: row.domain,
-    url: row.url,
-    nicheLabel: NICHE_LABELS[row.niche]?.label ?? row.niche,
+    title: str(row.title) ?? domain,
+    domain,
+    url,
+    nicheLabel: NICHE_LABELS[row.niche]?.label ?? str(row.niche) ?? "Ecommerce",
     exactMatch,
     activeAds: num(row.ad_signals?.active_ads),
     revenue: estRevenue(row.niche, row.metrics),
@@ -211,19 +227,27 @@ export async function getNicheWinners(
 
     // ONE round-trip for the exact niche AND its related fills — this runs on
     // the analyzer result render, so it stays a single cheap query.
-    const { data } = await service
+    const { data, error } = await service
       .from("winning_sites")
       .select(SELECT_COLS)
       .in("niche", [niche, ...related])
       .limit(60);
-    const rows = Array.isArray(data) ? (data as unknown as WinningRow[]) : [];
+    // A Supabase error arrives as a VALUE, not a throw (renamed column, RLS
+    // change, table missing). Silently treating that as "no data" is right
+    // here — the module hides — but it must still be visible in the logs.
+    if (error) {
+      console.warn("[niche-winners] query error:", error.message);
+      return empty;
+    }
+    const rows = (Array.isArray(data) ? data : []) as unknown as WinningRow[];
 
     // Exact-niche winners first, ranked by Meta momentum.
     const winners: NicheWinner[] = rows
-      .filter((r) => r.niche === niche)
+      .filter((r) => r?.niche === niche)
       .sort(rank)
       .slice(0, 3)
-      .map((r) => toWinner(r, true));
+      .map((r) => toWinner(r, true))
+      .filter((w): w is NicheWinner => w !== null);
 
     // Backfill from related niches, honoring the RELATED_NICHES priority.
     if (winners.length < 3) {
@@ -236,9 +260,10 @@ export async function getNicheWinners(
         );
       for (const row of fills) {
         if (winners.length >= 3) break;
-        if (seen.has(row.domain)) continue;
-        seen.add(row.domain);
-        winners.push(toWinner(row, false));
+        const fill = toWinner(row, false);
+        if (!fill || seen.has(fill.domain)) continue;
+        seen.add(fill.domain);
+        winners.push(fill);
       }
     }
 
@@ -247,4 +272,71 @@ export async function getNicheWinners(
     console.warn("[niche-winners] fetch failed:", (err as Error).message);
     return empty;
   }
+}
+
+/** What the analyzer page hands to the <NicheWinners> card. */
+export interface NicheWinnersModule {
+  nicheLabel: string;
+  locked: boolean;
+  winners: NicheWinner[];
+  lockedCount: number;
+}
+
+/**
+ * Build the "Winners in your niche" module for an analyzed store — the single
+ * entry point the analyzer page should use.
+ *
+ * # This module is an ENRICHMENT, never a blocker
+ * The audit the user paid a credit for is the score, the annotated screenshot
+ * and the fixes. This card is a bonus on top. So every failure mode here —
+ * niche undetectable, Library empty for that niche, a schema change, the
+ * service client failing to construct because an env var is missing — resolves
+ * to `null`, which the page renders as "nothing". It can never take down the
+ * report around it.
+ *
+ * `Promise.allSettled` (rather than a bare try/catch) is what guarantees that
+ * even a synchronous throw while *constructing* the promise is contained.
+ *
+ * # Free users
+ * The real rows never leave the server for a Free viewer: we return `locked`
+ * plus a row COUNT, and the client renders blurred skeletons. Gating in the
+ * component alone would ship the data in the RSC payload, where anyone can
+ * read it.
+ */
+export async function loadNicheWinnersModule(input: {
+  status: string;
+  url: string | null;
+  summary?: string | null;
+  isPaid: boolean;
+}): Promise<NicheWinnersModule | null> {
+  // Nothing to enrich until the audit itself succeeded.
+  if (input.status !== "succeeded") return null;
+
+  const [settled] = await Promise.allSettled([
+    (async () => {
+      const niche = resolveNiche({ url: input.url, summary: input.summary });
+      if (!niche) return null;
+      const data = await getNicheWinners(niche);
+      if (data.winners.length === 0) return null;
+      return input.isPaid
+        ? {
+            nicheLabel: data.nicheLabel,
+            locked: false,
+            winners: data.winners,
+            lockedCount: data.winners.length,
+          }
+        : {
+            nicheLabel: data.nicheLabel,
+            locked: true,
+            winners: [] as NicheWinner[], // real data withheld from Free clients
+            lockedCount: Math.min(3, data.winners.length),
+          };
+    })(),
+  ]);
+
+  if (settled.status === "rejected") {
+    console.warn("[niche-winners] module skipped:", settled.reason);
+    return null;
+  }
+  return settled.value;
 }

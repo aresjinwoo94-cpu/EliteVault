@@ -6,6 +6,7 @@ import type {
   StructuredCall,
 } from "../provider";
 import { recordUsage } from "@/lib/usage/meter";
+import { deadlineAt } from "@/lib/deadline";
 
 // maxRetries: the SDK retries transient failures (429 rate-limit, 529
 // overloaded, 500/503, connection/timeouts) with exponential backoff and
@@ -46,6 +47,13 @@ async function generateStructured<T>(
         },
   );
 
+  // The SDK's own maxRetries ladder (exponential back-off + Retry-After) is
+  // unaware of the serverless step it runs inside, so bound the whole thing:
+  // the signal aborts every remaining retry the moment the budget is gone.
+  // Without `deadlineAt` this is an infinite budget — unchanged behaviour.
+  const dl = deadlineAt(opts.deadlineAt ?? Number.MAX_SAFE_INTEGER);
+  const signal = dl.signal({ parent: opts.signal });
+
   const response = await client.messages.create(
     {
       model: opts.fast ? MODEL_FAST : MODEL,
@@ -62,7 +70,7 @@ async function generateStructured<T>(
       tool_choice: { type: "tool", name: tool.name },
       messages: [{ role: "user", content }],
     },
-    opts.signal ? { signal: opts.signal } : undefined,
+    { signal },
   );
 
   const toolUse = response.content.find(

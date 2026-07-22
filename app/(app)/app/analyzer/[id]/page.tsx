@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AnalysisView } from "@/components/analyzer/analysis-view";
 import { PLANS } from "@/lib/stripe/plans";
 import { getMetaRunUsage } from "@/lib/quota/guard";
-import { resolveNiche, getNicheWinners } from "@/lib/library/niche-winners";
+import { loadNicheWinnersModule } from "@/lib/library/niche-winners";
 
 export const dynamic = "force-dynamic";
 
@@ -103,42 +103,18 @@ export default async function AnalysisPage({
     metaUsage = usage;
   }
 
-  // Change 3 — "Winners in your niche" module. Detect the analyzed store's
-  // niche (reusing the Library taxonomy) and pull the top 3 winners for it.
-  // Pro/Scale get the real stores; Free gets a locked teaser where the real
-  // data NEVER leaves the server (we send only a blurred-row count).
+  // Change 3 — "Winners in your niche". A pure enrichment: loadNicheWinnersModule
+  // resolves to null on ANY failure (no niche, empty Library, DB error) so the
+  // report always renders without it. Free viewers get `locked` and a row
+  // count — the real stores never enter this page's payload.
   const isPaid = (profile?.plan ?? "free") !== "free";
   const analysisResult = analysis.result as { summary?: string } | null;
-  let nicheWinners: {
-    nicheLabel: string;
-    locked: boolean;
-    winners: Awaited<ReturnType<typeof getNicheWinners>>["winners"];
-    lockedCount: number;
-  } | null = null;
-  if (analysis.status === "succeeded") {
-    const niche = resolveNiche({
-      url: analysis.url,
-      summary: analysisResult?.summary ?? null,
-    });
-    if (niche) {
-      const data = await getNicheWinners(niche);
-      if (data.winners.length > 0) {
-        nicheWinners = isPaid
-          ? {
-              nicheLabel: data.nicheLabel,
-              locked: false,
-              winners: data.winners,
-              lockedCount: data.winners.length,
-            }
-          : {
-              nicheLabel: data.nicheLabel,
-              locked: true,
-              winners: [], // real data withheld from Free clients
-              lockedCount: Math.min(3, data.winners.length),
-            };
-      }
-    }
-  }
+  const nicheWinners = await loadNicheWinnersModule({
+    status: analysis.status,
+    url: analysis.url,
+    summary: analysisResult?.summary ?? null,
+    isPaid,
+  });
 
   return (
     <AnalysisView

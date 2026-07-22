@@ -15,6 +15,25 @@ import { runMetaAdsOptimizerAgent } from "@/ai/agents/meta-ads-optimizer-agent";
 // /ai/agents for future on-demand routes ("regenerate hero") but not
 // auto-run on every analysis.
 import type { BuyerPersona } from "@/lib/supabase/types";
+import { startDeadline, isDeadlineError } from "@/lib/deadline";
+
+/**
+ * How many audits may run at once, globally.
+ *
+ * The ceiling that actually matters isn't ours — it's the free tiers we sit
+ * on: Gemini is 15 RPM per key and ScreenshotOne's free plan is 100 captures a
+ * month. Left unbounded, a burst of users doesn't fail *some* audits, it fails
+ * *most* of them: every run 429s at once and they all refund together. Inngest
+ * queues the excess instead, so a burst turns into a slightly longer wait
+ * rather than a wave of failures.
+ *
+ * Raise ANALYZER_CONCURRENCY as the key pool grows (the Gemini provider
+ * rotates GEMINI_API_KEY_2..10, so headroom scales with keys configured).
+ */
+const GLOBAL_CONCURRENCY = (() => {
+  const raw = Number(process.env.ANALYZER_CONCURRENCY);
+  return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 5;
+})();
 
 /**
  * How many ADDITIONAL product-page screenshots to capture per audit.
@@ -63,6 +82,13 @@ export const analyzeWebsite = inngest.createFunction(
     id: "analyze-website",
     name: "Analyze website",
     retries: 2,
+    // Queue rather than fail under load. The per-user key stops one person
+    // (or a stuck client re-submitting) from occupying the whole pool; the
+    // global limit protects the shared free-tier quotas above.
+    concurrency: [
+      { limit: GLOBAL_CONCURRENCY },
+      { key: "event.data.userId", limit: 1 },
+    ],
     onFailure: async ({ event, error }) => {
       const service = createSupabaseServiceClient();
       const data = (event as unknown as {
@@ -121,6 +147,11 @@ export const analyzeWebsite = inngest.createFunction(
     // save-screenshot step); steps that need the bytes fetch them via
     // urlToBase64() so nothing large is ever a persisted step output.
     const screenshot = await step.run("capture-screenshot", async () => {
+      // Every step below opens its own budget. It has to expire BEFORE the
+      // route's maxDuration, otherwise Vercel kills the request mid-step and
+      // Inngest only sees "your server returned HTTP 504" — an opaque failure
+      // that loses the work and refunds the audit. See lib/deadline.ts.
+      const dl = startDeadline();
       const extOf = (m: "image/png" | "image/jpeg") =>
         m === "image/png" ? "png" : "jpg";
 
@@ -184,53 +215,76 @@ export const analyzeWebsite = inngest.createFunction(
           );
         }
       }
-      const shot = await captureScreenshot(url);
+      // Leave room for the upload + DB writes that follow inside this step —
+      // a capture that used the whole budget would 504 on the upload instead.
+      const UPLOAD_RESERVE_MS = 12_000;
+      const shot = await captureScreenshot(url, {
+        budgetMs: Math.max(5_000, dl.remaining() - UPLOAD_RESERVE_MS),
+      });
       return uploadAndUrl(shot.base64, shot.mediaType);
     });
 
-    // P1.2 — instant teaser score. Runs as soon as we have the screenshot,
-    // well before the full audit (and the extra-page captures) finish, so
-    // the analyzing screen can show a real number in a few seconds. Pure
-    // best-effort: never throws, never blocks the audit.
-    await step.run("quick-score", async () => {
-      let preview = null;
-      try {
-        const base64 = await urlToBase64(screenshot.publicUrl);
-        preview = await runQuickScore({
-          screenshotBase64: base64,
-          mediaType: screenshot.mediaType,
-          url,
-        });
-      } catch (err) {
-        console.warn("[analyzer] quick-score skipped:", (err as Error).message);
-      }
-      if (preview) {
-        await (
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          service.from("analyses") as any
-        )
-          .update({
-            preview_score: preview.score,
-            preview_summary: preview.headline,
-          })
-          .eq("id", analysisId);
-      }
-      return preview;
-    });
+    // P1.2 — instant teaser score, and v2.2 site discovery.
+    //
+    // These two are INDEPENDENT of each other: the teaser reads the screenshot
+    // we already have, discovery fetches the site's HTML. They used to run one
+    // after the other, so the user waited through the sum (~5s + ~10s) for no
+    // reason. Promise.all makes Inngest run both steps in parallel and the
+    // audit starts at whichever finishes last — the wait becomes the max, not
+    // the sum. Both stay best-effort: neither can fail the audit.
+    const [, discovery] = await Promise.all([
+      step.run("quick-score", async () => {
+        const dl = startDeadline();
+        let preview = null;
+        try {
+          const base64 = await urlToBase64(screenshot.publicUrl);
+          preview = await runQuickScore({
+            screenshotBase64: base64,
+            mediaType: screenshot.mediaType,
+            url,
+            deadlineAt: dl.at,
+          });
+        } catch (err) {
+          console.warn(
+            "[analyzer] quick-score skipped:",
+            (err as Error).message,
+          );
+        }
+        if (preview) {
+          await (
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            service.from("analyses") as any
+          )
+            .update({
+              preview_score: preview.score,
+              preview_summary: preview.headline,
+            })
+            .eq("id", analysisId);
+        }
+        return preview;
+      }),
+
+      step.run("discover-site", async () => {
+        if (!url) return null;
+        try {
+          return await discoverSite(url);
+        } catch (err) {
+          console.warn("[analyzer] discovery skipped:", (err as Error).message);
+          return null;
+        }
+      }),
+    ]);
 
     const niche = await step.run("infer-niche", async () => {
-      const host = url ? new URL(url).hostname.replace("www.", "") : "ecommerce";
-      return host.split(".")[0];
-    });
-
-    // v2.2: discover product URLs + prices to enrich the audit context.
-    const discovery = await step.run("discover-site", async () => {
-      if (!url) return null;
+      // A malformed URL is not a reason to fail an audit that already has its
+      // screenshot — fall back to a generic label.
       try {
-        return await discoverSite(url);
-      } catch (err) {
-        console.warn("[analyzer] discovery skipped:", (err as Error).message);
-        return null;
+        const host = url
+          ? new URL(url).hostname.replace("www.", "")
+          : "ecommerce";
+        return host.split(".")[0] || "ecommerce";
+      } catch {
+        return "ecommerce";
       }
     });
 
@@ -296,6 +350,12 @@ export const analyzeWebsite = inngest.createFunction(
     // capture-screenshot, so the old separate save-screenshot step is gone.)
 
     const result = await step.run("run-analyzer-agent", async () => {
+      // The longest step in the pipeline, and the one that used to run into
+      // the platform ceiling: the vision call plus the provider's own 429/503
+      // retry ladders could add up to well over 60s. The budget now bounds all
+      // of it (see ai/providers/gemini.ts) so we fail cleanly — and retryably —
+      // instead of being cut off with a 504.
+      const dl = startDeadline();
       // Pull the image bytes HERE as local vars — never returned/persisted —
       // so a large screenshot can't blow Inngest's step-output size limit.
       const primaryBase64 = await urlToBase64(screenshot.publicUrl);
@@ -325,6 +385,7 @@ export const analyzeWebsite = inngest.createFunction(
         persona: persona as BuyerPersona | null,
         // P1.1 — free audits run on the cheap/fast model tier.
         fast,
+        deadlineAt: dl.at,
         // v2.2: multi-image input — homepage + 1-2 product pages. The model
         // now reasons across multiple views of the store at once, with the
         // homepage as the *primary* one for annotation positioning.
@@ -360,8 +421,10 @@ export const analyzeWebsite = inngest.createFunction(
     let metaAds = null;
     if (runRewrite) {
       metaAds = await step.run("run-meta-ads-agent", async () => {
+        const dl = startDeadline();
         try {
           return await runMetaAdsOptimizerAgent({
+            deadlineAt: dl.at,
             url: url ?? "",
             score: result.score,
             summary: result.summary,
@@ -446,6 +509,18 @@ function humanizeError(err: unknown): string {
       : typeof err === "string"
         ? err
         : JSON.stringify(err);
+
+  // Ran out of the per-step wall-clock budget (lib/deadline.ts). This is the
+  // clean, honest version of what used to surface as an opaque 504.
+  if (isDeadlineError(err) || /step budget exhausted/i.test(raw)) {
+    return "This store took longer to audit than one run allows — usually a very tall page or a slow AI provider. Try again in a minute; your credit was refunded.";
+  }
+
+  // The platform cut a step off before we could (belt and braces — the step
+  // budgets should mean users never see this).
+  if (/HTTP 504|FUNCTION_INVOCATION_TIMEOUT|before the SDK responded/i.test(raw)) {
+    return "The audit timed out mid-run. Try again — your credit was refunded. If it keeps happening on the same store, upload a screenshot instead.";
+  }
 
   // Gemini quota / 429
   if (/RESOURCE_EXHAUSTED|429|quota/i.test(raw)) {

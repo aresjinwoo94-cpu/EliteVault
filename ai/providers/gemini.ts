@@ -6,6 +6,7 @@ import type {
   StructuredCall,
 } from "../provider";
 import { recordUsage } from "@/lib/usage/meter";
+import { DeadlineExceededError, deadlineAt } from "@/lib/deadline";
 
 // Defaults target the BEST models still covered by Google's free tier:
 //   MODEL      → paid audits. gemini-3.5-flash is the strongest free-tier
@@ -182,6 +183,18 @@ async function generateStructured<T>(
     },
   ];
 
+  // ── Wall-clock budget ────────────────────────────────────────────────────
+  //
+  // Everything below (key rotation, 503 back-off, empty retries, cooldown
+  // wait, model fallback) is bounded by this. Without it the ladders below can
+  // sleep well past the 60s Inngest-step ceiling on Vercel, which surfaces as
+  // "Your server returned HTTP 504 before the SDK responded" and refunds the
+  // audit. With no `deadlineAt` the deadline is effectively infinite, so the
+  // behaviour is unchanged for callers that don't opt in.
+  const dl = deadlineAt(opts.deadlineAt ?? Number.MAX_SAFE_INTEGER);
+  /** Below this there's no point starting another model call. */
+  const MIN_CALL_MS = 8_000;
+
   const callWithKey = (keyIdx: number, model: string) =>
     CLIENTS[keyIdx].models.generateContent({
       model,
@@ -192,7 +205,9 @@ async function generateStructured<T>(
         maxOutputTokens: opts.maxTokens ?? 8192,
         responseMimeType: "application/json",
         responseSchema: toGeminiSchema(tool.schema),
-        abortSignal: opts.signal,
+        // Abort as soon as the budget is gone (or the caller cancels) so a
+        // hanging generation can't run into the platform timeout.
+        abortSignal: dl.signal({ parent: opts.signal }),
       } as never,
     });
 
@@ -214,6 +229,11 @@ async function generateStructured<T>(
     let last429: unknown = null;
 
     while (attemptedKeys < KEYS.length) {
+      // Don't start a call we can't finish — a call cut off by the platform
+      // costs the same time and tells us nothing.
+      if (!dl.has(MIN_CALL_MS)) {
+        throw new DeadlineExceededError(`gemini ${model} (key rotation)`);
+      }
       const idx = pickAvailableKey();
       if (idx === null) break; // all keys on cooldown; fall through to wait path
 
@@ -227,12 +247,17 @@ async function generateStructured<T>(
           const response = await callWithKey(idx, model);
           const text = extractText(response);
           if (!text) {
-            if (localEmptyAttempts < MAX_EMPTY_RETRIES) {
+            // Only retry if the back-off AND another full call still fit in
+            // the budget; otherwise fail now with the real reason.
+            if (
+              localEmptyAttempts < MAX_EMPTY_RETRIES &&
+              dl.has(RETRY_EMPTY_BACKOFF_MS + MIN_CALL_MS) &&
+              (await dl.sleep(RETRY_EMPTY_BACKOFF_MS))
+            ) {
               localEmptyAttempts++;
               console.warn(
-                `[gemini] ${model} key #${idx + 1} returned empty — retry ${localEmptyAttempts}/${MAX_EMPTY_RETRIES} in ${RETRY_EMPTY_BACKOFF_MS / 1000}s`,
+                `[gemini] ${model} key #${idx + 1} returned empty — retry ${localEmptyAttempts}/${MAX_EMPTY_RETRIES} after ${RETRY_EMPTY_BACKOFF_MS / 1000}s`,
               );
-              await new Promise((r) => setTimeout(r, RETRY_EMPTY_BACKOFF_MS));
               continue; // retry same key
             }
             throw new Error("Gemini: empty response");
@@ -249,12 +274,16 @@ async function generateStructured<T>(
             last429 = err;
             break; // exit inner loop, try next key
           }
-          if (is503(raw) && local503Attempts < MAX_503_RETRIES) {
+          if (
+            is503(raw) &&
+            local503Attempts < MAX_503_RETRIES &&
+            dl.has(RETRY_503_BACKOFF_MS + MIN_CALL_MS) &&
+            (await dl.sleep(RETRY_503_BACKOFF_MS))
+          ) {
             local503Attempts++;
             console.warn(
-              `[gemini] ${model} key #${idx + 1} got 503 (Google overload) — retry ${local503Attempts}/${MAX_503_RETRIES} in ${RETRY_503_BACKOFF_MS / 1000}s`,
+              `[gemini] ${model} key #${idx + 1} got 503 (Google overload) — retry ${local503Attempts}/${MAX_503_RETRIES} after ${RETRY_503_BACKOFF_MS / 1000}s`,
             );
-            await new Promise((r) => setTimeout(r, RETRY_503_BACKOFF_MS));
             continue; // retry same key
           }
           // Anything else (bad request, schema mismatch, exhausted 503
@@ -268,10 +297,20 @@ async function generateStructured<T>(
     const best = shortestCooldownKey();
     if (best) {
       const sleepMs = Math.min(best.waitMs + 2000, 70_000);
+      // This wait alone used to be able to blow the whole step (up to 70s vs a
+      // 60s ceiling). If it doesn't fit, surface the 429 immediately: Inngest
+      // retries the step with a fresh budget minutes later, which recovers the
+      // quota far more reliably than sleeping through the timeout.
+      if (!dl.has(sleepMs + MIN_CALL_MS)) {
+        console.warn(
+          `[gemini] all ${KEYS.length} keys on cooldown and only ${(dl.remaining() / 1000).toFixed(1)}s of budget left — failing fast for a clean retry`,
+        );
+        throw last429 ?? new DeadlineExceededError(`gemini ${model} (cooldown)`);
+      }
       console.warn(
         `[gemini] all ${KEYS.length} keys on cooldown — waiting ${(sleepMs / 1000).toFixed(1)}s for key #${best.idx + 1} to recover`,
       );
-      await new Promise((r) => setTimeout(r, sleepMs));
+      await dl.sleep(sleepMs);
       try {
         cooldownUntil.delete(best.idx);
         const response = await callWithKey(best.idx, model);
@@ -308,6 +347,9 @@ async function generateStructured<T>(
     } catch (err) {
       lastErr = err;
       const raw = errMsg(err);
+      // Out of budget → don't start the fallback model. It would be cut off
+      // mid-flight, turning a clean retryable failure into a 504.
+      if (!dl.has(MIN_CALL_MS)) throw err;
       const recoverable =
         is429(raw) ||
         /empty response|all keys exhausted|not found|not available|unsupported|billing|permission|INVALID_ARGUMENT|FAILED_PRECONDITION/i.test(

@@ -33,6 +33,8 @@ export async function runQuickScore(opts: {
   mediaType: "image/png" | "image/jpeg" | "image/webp";
   url?: string;
   signal?: AbortSignal;
+  /** Epoch-ms budget ceiling — see lib/deadline.ts. */
+  deadlineAt?: number;
 }): Promise<{ score: number; headline: string } | null> {
   try {
     const provider = await getProvider();
@@ -51,6 +53,9 @@ export async function runQuickScore(opts: {
         maxTokens: 256,
         fast: true,
         signal: opts.signal,
+        // The teaser must never be the reason a step runs long: it's a nice-to
+        // -have that renders while the real audit works.
+        deadlineAt: opts.deadlineAt,
         parts: [
           { mediaType: opts.mediaType, base64: opts.screenshotBase64 },
           {

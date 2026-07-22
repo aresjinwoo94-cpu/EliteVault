@@ -174,6 +174,8 @@ export async function runMetaAdsOptimizerAgent(opts: {
     platform: string | null;
   } | null;
   signal?: AbortSignal;
+  /** Epoch-ms budget ceiling — see lib/deadline.ts. */
+  deadlineAt?: number;
 }): Promise<MetaAdsRecommendation> {
   const provider = await getProvider();
   const raw = await provider.generateStructured<unknown>(
@@ -187,6 +189,7 @@ export async function runMetaAdsOptimizerAgent(opts: {
       temperature: 0.5,
       maxTokens: 4096,
       signal: opts.signal,
+      deadlineAt: opts.deadlineAt,
       parts: [
         {
           text: [
