@@ -9,15 +9,27 @@ import { normalizeUrl } from "@/lib/utils";
 import { BuyerPersonaSchema } from "@/ai/schemas";
 import { PLANS } from "@/lib/stripe/plans";
 import { assertQuota } from "@/lib/quota/guard";
+import { findReusableAnalysis } from "@/lib/analysis/reuse";
 
 const CreateAnalysisInput = z.object({
   url: z.string().min(3).optional(),
   screenshotUrl: z.string().url().optional(),
   persona: BuyerPersonaSchema.optional(),
+  /** Skip the reuse check and run a genuinely fresh audit. */
+  force: z.boolean().optional(),
 });
 
 export type CreateAnalysisResult =
-  | { ok: true; id: string }
+  | {
+      ok: true;
+      id: string;
+      /**
+       * True when we handed back an audit the user already had (a duplicate
+       * submit, or a repeat of the same store within the reuse window) instead
+       * of charging a credit and queueing another job. The UI can say so.
+       */
+      reused?: boolean;
+    }
   | { ok: false; error: string };
 
 export async function createAnalysis(
@@ -37,6 +49,17 @@ export async function createAnalysis(
     return { ok: false, error: "Provide a URL or upload a screenshot" };
   }
   const url = parsed.data.url ? normalizeUrl(parsed.data.url) : null;
+
+  // Idempotency — BEFORE the credit is touched. A double-submit or a repeat of
+  // the same store should open the audit the user already has, not deduct a
+  // second credit and queue a duplicate job behind the first. See
+  // lib/analysis/reuse.ts for the (deliberately narrow) reuse window.
+  const reusable = await findReusableAnalysis(supabase, user.id, url, {
+    force: parsed.data.force,
+  });
+  if (reusable) {
+    return { ok: true, id: reusable.id, reused: true };
+  }
 
   // Plan gating + credit accounting
   const { data: profile } = await supabase

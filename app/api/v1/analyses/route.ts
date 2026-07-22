@@ -5,6 +5,7 @@ import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { assertQuota } from "@/lib/quota/guard";
 import { inngest } from "@/inngest/client";
 import { normalizeUrl } from "@/lib/utils";
+import { findReusableAnalysis } from "@/lib/analysis/reuse";
 import { BuyerPersonaSchema } from "@/ai/schemas";
 
 /**
@@ -22,6 +23,8 @@ export async function POST(req: NextRequest) {
     url: z.string().min(3),
     persona: BuyerPersonaSchema.optional(),
     run_rewrite: z.boolean().default(true),
+    /** Bypass the reuse check and force a fresh audit. */
+    force: z.boolean().optional(),
   });
   let parsed;
   try {
@@ -38,6 +41,24 @@ export async function POST(req: NextRequest) {
   const url = normalizeUrl(parsed.data.url);
 
   const service = createSupabaseServiceClient();
+
+  // Idempotency — a script that retries on a timeout (or loops over a list
+  // with duplicates) must not burn a credit per attempt. Same rules as the
+  // in-app action; see lib/analysis/reuse.ts.
+  const reusable = await findReusableAnalysis(service, auth.userId, url, {
+    force: parsed.data.force,
+  });
+  if (reusable) {
+    return NextResponse.json(
+      {
+        id: reusable.id,
+        status: reusable.status,
+        reused: true,
+        check_at: `/api/v1/analyses/${reusable.id}`,
+      },
+      { status: 200 },
+    );
+  }
 
   // Unified server-side quota gate (backed by profiles.credits).
   const { data: profile } = await service

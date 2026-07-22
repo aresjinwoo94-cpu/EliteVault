@@ -61,6 +61,12 @@ export function AnalyzerLauncher({
         toast.error(res.error);
         return;
       }
+      // We handed back an audit this user already had (duplicate submit, or
+      // the same store again within the reuse window) — say so, otherwise the
+      // instant result reads like a bug. No credit was charged.
+      if (res.reused) {
+        toast.success("Opening your recent audit of this store — no credit used.");
+      }
       // PostHog: the activation event. Funnel = signup → analyzer_run →
       // checkout_started → plan_upgraded. The first three answer the
       // question "do users get value before being asked to pay?"

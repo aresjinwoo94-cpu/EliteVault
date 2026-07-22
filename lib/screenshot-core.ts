@@ -37,7 +37,15 @@ const VIEWPORT_H = 900;
  */
 const DEFAULT_FULL_PAGE_MAX_H = (() => {
   const raw = Number(process.env.SCREENSHOT_FULL_PAGE_MAX_HEIGHT);
-  return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 8000;
+  // 6000px at a 1440 viewport is ~6.5 screens: hero, social proof, product,
+  // reviews, FAQ and footer all sit inside it on a normal store. Height is
+  // what the vision call is billed and timed on — the image is split into
+  // tiles, so every extra 1000px is more tokens AND more wall-clock on the
+  // step that was already the slowest. Lowered from 8000 for that reason; the
+  // audit reads the same page, just without the long empty tail of
+  // infinite-scroll and mega-footer pages. Raise via
+  // SCREENSHOT_FULL_PAGE_MAX_HEIGHT if a niche genuinely needs it.
+  return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 6000;
 })();
 
 /**
