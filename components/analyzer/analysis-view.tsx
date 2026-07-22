@@ -29,12 +29,22 @@ import { NichePositionBar } from "./niche-position-bar";
 import { StrengthsIssuesMap } from "./strengths-issues-map";
 import { FreeLockedCure } from "./free-locked-cure";
 import { FreeMetaPanel } from "./free-meta-panel";
+import { NicheWinners } from "./niche-winners";
 import { ShareButton } from "./share-button";
 import type {
   AnalysisResult,
   RewriteResult,
   SimulationScenario,
 } from "@/lib/supabase/types";
+import type { NicheWinner } from "@/lib/library/niche-winners";
+
+/** Serializable payload for the "Winners in your niche" module (Change 3). */
+interface NicheWinnersData {
+  nicheLabel: string;
+  locked: boolean;
+  winners: NicheWinner[];
+  lockedCount: number;
+}
 
 type Simulation = {
   id: string;
@@ -98,10 +108,12 @@ export function AnalysisView({
   initial,
   viewer,
   initialSimulation,
+  nicheWinners,
 }: {
   initial: Analysis;
   viewer: ViewerCtx;
   initialSimulation?: Simulation | null;
+  nicheWinners?: NicheWinnersData | null;
 }) {
   const [data, setData] = useState<Analysis>(initial);
   const router = useRouter();
@@ -318,10 +330,22 @@ export function AnalysisView({
                    END, full width.
             */}
 
-            {/* 1 — Score + gauges */}
+            {/* 1 — Score + gauges. The right column leads with the "Winners in
+                your niche" module (Change 3) — the most prominent slot, right
+                above the estimated conversion rate. */}
             <div className="grid lg:grid-cols-[1fr_360px] gap-6">
               <ScoreCard result={data.result} />
-              <ConversionGauges scenarios={data.result.scenarios} />
+              <div className="space-y-6">
+                {nicheWinners && (
+                  <NicheWinners
+                    nicheLabel={nicheWinners.nicheLabel}
+                    winners={nicheWinners.winners}
+                    locked={nicheWinners.locked}
+                    lockedCount={nicheWinners.lockedCount}
+                  />
+                )}
+                <ConversionGauges scenarios={data.result.scenarios} />
+              </div>
             </div>
 
             {/* 2 — Free-only: modelable ROAS panel, anchored under the score.
