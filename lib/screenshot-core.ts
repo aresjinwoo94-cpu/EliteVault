@@ -30,6 +30,30 @@ import { createHash } from "node:crypto";
 const VIEWPORT_W = 1440;
 const VIEWPORT_H = 900;
 
+/**
+ * Default height cap (px) for full-page captures — ~9 viewports at 900px.
+ * See `fullPageMaxHeight` on captureWithScreenshotOne for why this exists
+ * (it's the fix for the 60s-per-step 504 on tall pages).
+ */
+const DEFAULT_FULL_PAGE_MAX_H = (() => {
+  const raw = Number(process.env.SCREENSHOT_FULL_PAGE_MAX_HEIGHT);
+  return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 8000;
+})();
+
+/**
+ * Hard ceiling (ms) for the WHOLE provider chain in captureScreenshot.
+ *
+ * The Inngest step that calls it dies at 60s on Vercel Hobby, so this must
+ * leave room for the upload + DB write that follow inside the same step.
+ * 45s does; the chain used to be able to run ~100s+. Tune with
+ * SCREENSHOT_BUDGET_MS (raise it if you move to Vercel Pro and bump
+ * maxDuration in app/api/inngest/route.ts).
+ */
+const DEFAULT_CAPTURE_BUDGET_MS = (() => {
+  const raw = Number(process.env.SCREENSHOT_BUDGET_MS);
+  return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 45_000;
+})();
+
 // Empirically, real screenshots at 1440x900 are 80KB-2MB. The mshots
 // "Generating Preview..." placeholder is ~16-22KB. Anything under this
 // threshold is almost certainly a placeholder or a corrupt download.
@@ -69,12 +93,36 @@ export function flipWww(url: string): string | null {
   }
 }
 
-/** Public entry point — tries providers in order until one succeeds. */
-export async function captureScreenshot(url: string): Promise<{
+/**
+ * Public entry point — tries providers in order until one succeeds, within a
+ * HARD total time budget.
+ *
+ * Why the budget exists: this runs inside the Inngest `capture-screenshot`
+ * step, and on Vercel Hobby a step is killed at 60s (app/api/inngest/route.ts),
+ * which surfaces as "Your server returned HTTP 504 before the SDK responded"
+ * and refunds the audit. The provider chain could far exceed that on its own —
+ * measured on a bot-blocking store: ScreenshotOne refused twice (~2s), then
+ * mshots burned 55s across its retry ladder and still returned only
+ * placeholders. Fixed per-provider timeouts couldn't prevent it because they
+ * don't know how much time the earlier providers already spent.
+ *
+ * Now every provider gets only the time that's actually LEFT. If the budget
+ * runs out we throw the normal "All screenshot providers failed" error, which
+ * humanizeError() turns into the honest "this site blocks automated capture —
+ * upload a screenshot" message. A clean refund at ~45s beats a 504 at 60s+.
+ */
+export async function captureScreenshot(
+  url: string,
+  opts: { budgetMs?: number } = {},
+): Promise<{
   base64: string;
   mediaType: "image/png" | "image/jpeg";
 }> {
   const errors: string[] = [];
+  const deadline = Date.now() + (opts.budgetMs ?? DEFAULT_CAPTURE_BUDGET_MS);
+  const remaining = () => deadline - Date.now();
+  /** Don't start a provider that can't plausibly finish. */
+  const MIN_USEFUL_MS = 5_000;
 
   // Provider 1: ScreenshotOne (paid, best quality)
   if (process.env.SCREENSHOTONE_ACCESS_KEY) {
@@ -86,8 +134,11 @@ export async function captureScreenshot(url: string): Promise<{
     // non-2xx, not a timeout.
     const alt = flipWww(url);
     for (const candidate of alt ? [url, alt] : [url]) {
+      if (remaining() < MIN_USEFUL_MS) break;
       try {
-        return await captureWithScreenshotOne(candidate);
+        return await captureWithScreenshotOne(candidate, {
+          timeoutMs: Math.min(30_000, remaining()),
+        });
       } catch (err) {
         const msg = (err as Error).message;
         console.warn(`[screenshot] ScreenshotOne failed (${candidate}): ${msg}`);
@@ -97,22 +148,33 @@ export async function captureScreenshot(url: string): Promise<{
     }
   }
 
-  // Provider 2: Microlink (free 50/day, server-side rendering)
-  try {
-    return await captureWithMicrolink(url);
-  } catch (err) {
-    const msg = (err as Error).message;
-    console.warn(`[screenshot] Microlink failed: ${msg}`);
-    errors.push(`Microlink: ${msg}`);
+  // Provider 2: Microlink (free 50/day without a key — set MICROLINK_API_KEY
+  // to stop this tier from being the bottleneck). Measured: captures stores
+  // that refuse ScreenshotOne in ~8s, so it's the one that actually rescues
+  // bot-blocked sites.
+  if (remaining() >= MIN_USEFUL_MS) {
+    try {
+      return await captureWithMicrolink(url, remaining());
+    } catch (err) {
+      const msg = (err as Error).message;
+      console.warn(`[screenshot] Microlink failed: ${msg}`);
+      errors.push(`Microlink: ${msg}`);
+    }
+  } else {
+    errors.push("Microlink: skipped (out of time budget)");
   }
 
   // Provider 3: mshots with aggressive placeholder detection
-  try {
-    return await captureWithMshots(url);
-  } catch (err) {
-    const msg = (err as Error).message;
-    console.warn(`[screenshot] mshots failed: ${msg}`);
-    errors.push(`mshots: ${msg}`);
+  if (remaining() >= MIN_USEFUL_MS) {
+    try {
+      return await captureWithMshots(url, remaining());
+    } catch (err) {
+      const msg = (err as Error).message;
+      console.warn(`[screenshot] mshots failed: ${msg}`);
+      errors.push(`mshots: ${msg}`);
+    }
+  } else {
+    errors.push("mshots: skipped (out of time budget)");
   }
 
   throw new Error(
@@ -164,6 +226,26 @@ export async function captureWithScreenshotOne(
      * (measured: bearaby/daily-harvest thumbs were a blank modal overlay).
      */
     blockBannersByHeuristics?: boolean;
+    /**
+     * Hard cap (px) on the height of a FULL-PAGE capture. Ignored unless
+     * `fullPage` is on.
+     *
+     * Uncapped full-page shots come back ~10-20k tall (infinite-scroll and
+     * long PDPs are the worst offenders) at several MB. That single image is
+     * then re-fetched, base64'd (+33%) and pushed through the vision model —
+     * where it dominates the audit's latency. On Vercel Hobby the Inngest
+     * route is capped at 60s PER STEP (app/api/inngest/route.ts), so a tall
+     * page pushed `run-analyzer-agent` past the ceiling and Vercel answered
+     * 504 → Inngest retried → the audit refunded. That's the
+     * "Your server returned HTTP 504 before the SDK responded" failure.
+     *
+     * DEFAULT_FULL_PAGE_MAX_H keeps the whole conversion funnel (hero, social
+     * proof, product, reviews, FAQ, footer sit well inside it) while cutting
+     * the pathological tails, so the audit gets faster WITHOUT losing the
+     * context it grades. Override per-caller, or globally via
+     * SCREENSHOT_FULL_PAGE_MAX_HEIGHT.
+     */
+    fullPageMaxHeight?: number;
   } = {},
 ): Promise<{
   base64: string;
@@ -178,6 +260,14 @@ export async function captureWithScreenshotOne(
     format: "jpg",
     image_quality: "92",
     full_page: String(opts.fullPage ?? true),
+    // Only meaningful for full-page captures; omitted otherwise.
+    ...((opts.fullPage ?? true)
+      ? {
+          full_page_max_height: String(
+            opts.fullPageMaxHeight ?? DEFAULT_FULL_PAGE_MAX_H,
+          ),
+        }
+      : {}),
     block_ads: "true",
     block_cookie_banners: "true",
     ...(opts.blockBannersByHeuristics
@@ -203,10 +293,14 @@ export async function captureWithScreenshotOne(
   return { base64: buf.toString("base64"), mediaType: "image/jpeg" };
 }
 
-async function captureWithMicrolink(url: string): Promise<{
+async function captureWithMicrolink(
+  url: string,
+  budgetMs = 45_000,
+): Promise<{
   base64: string;
   mediaType: "image/jpeg" | "image/png";
 }> {
+  const deadline = Date.now() + budgetMs;
   // Microlink renders the page server-side via Puppeteer and returns a
   // hosted screenshot URL. We then fetch the binary.
   //
@@ -226,9 +320,12 @@ async function captureWithMicrolink(url: string): Promise<{
     headers["x-api-key"] = process.env.MICROLINK_API_KEY;
   }
 
+  // Reserve a slice of the budget for the image fetch that follows.
   const metaRes = await fetch(apiUrl.toString(), {
     headers,
-    signal: AbortSignal.timeout(45_000),
+    signal: AbortSignal.timeout(
+      Math.max(1_000, Math.min(45_000, deadline - Date.now() - 5_000)),
+    ),
   });
   if (!metaRes.ok) {
     throw new Error(`Microlink HTTP ${metaRes.status}`);
@@ -244,7 +341,9 @@ async function captureWithMicrolink(url: string): Promise<{
 
   // Fetch the actual image binary
   const imgRes = await fetch(metaJson.data.screenshot.url, {
-    signal: AbortSignal.timeout(15_000),
+    signal: AbortSignal.timeout(
+      Math.max(1_000, Math.min(15_000, deadline - Date.now())),
+    ),
   });
   if (!imgRes.ok) {
     throw new Error(`Image fetch HTTP ${imgRes.status}`);
@@ -260,7 +359,10 @@ async function captureWithMicrolink(url: string): Promise<{
   };
 }
 
-async function captureWithMshots(url: string): Promise<{
+async function captureWithMshots(
+  url: string,
+  budgetMs = 55_000,
+): Promise<{
   base64: string;
   mediaType: "image/png" | "image/jpeg";
 }> {
@@ -268,17 +370,32 @@ async function captureWithMshots(url: string): Promise<{
   // subsequent requests return the cached real shot after ~10-30 seconds.
   // We retry with widening delays so we don't give up before mshots had
   // a fair chance to render.
+  //
+  // The full ladder is ~55s of sleeping alone, which on its own can blow the
+  // Inngest step's 60s ceiling when the earlier providers already spent time.
+  // So every wait and every fetch is clamped to the budget LEFT, and we stop
+  // as soon as it's gone instead of running the ladder to completion.
   const mshotUrl = `https://s.wordpress.com/mshots/v1/${encodeURIComponent(url)}?w=${VIEWPORT_W}&h=${VIEWPORT_H}`;
   const delaysMs = [0, 4000, 7000, 10_000, 14_000, 18_000];
+  const deadline = Date.now() + budgetMs;
   let lastBuf: Buffer | null = null;
+  let attempts = 0;
 
   for (let i = 0; i < delaysMs.length; i++) {
+    // Need room for the wait plus a meaningful fetch afterwards.
+    if (deadline - Date.now() < delaysMs[i] + 3_000) {
+      console.warn(`[mshots] stopping at attempt ${i + 1}: out of time budget`);
+      break;
+    }
     if (delaysMs[i] > 0) {
       await new Promise((r) => setTimeout(r, delaysMs[i]));
     }
+    attempts++;
     try {
       const res = await fetch(mshotUrl, {
-        signal: AbortSignal.timeout(20_000),
+        signal: AbortSignal.timeout(
+          Math.max(1_000, Math.min(20_000, deadline - Date.now())),
+        ),
         // No-cache so we don't get the CDN serving us the same placeholder
         cache: "no-store",
       });
@@ -307,10 +424,10 @@ async function captureWithMshots(url: string): Promise<{
 
   if (lastBuf && lastBuf.length > 0) {
     throw new Error(
-      `mshots only returned placeholder after ${delaysMs.length} attempts — this site is either Cloudflare-protected or too slow to render. Try uploading a screenshot manually.`,
+      `mshots only returned placeholder after ${attempts} attempts — this site is either Cloudflare-protected or too slow to render. Try uploading a screenshot manually.`,
     );
   }
   throw new Error(
-    `mshots returned no usable response after ${delaysMs.length} attempts.`,
+    `mshots returned no usable response after ${attempts} attempts.`,
   );
 }

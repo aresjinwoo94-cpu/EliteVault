@@ -129,7 +129,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     tagline: "For brands hunting outsized ROI",
     description:
       "Diagnosis + cure + crystal ball. Project a 7-day Meta Ads campaign across 3 scenarios before you spend a dollar. Plus Meta Ads optimizer targets and REST API.",
-    price: { month: 49, year: 499 },
+    price: { month: 29, year: 278 },
     stripePriceIds: {
       month: process.env.STRIPE_PRICE_SCALE_MONTHLY,
       year: process.env.STRIPE_PRICE_SCALE_YEARLY,

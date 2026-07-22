@@ -47,7 +47,6 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 import { Hero } from "@/components/marketing/hero";
-import { LogoStrip } from "@/components/marketing/logo-strip";
 import { FeaturesShowcase } from "@/components/marketing/features-showcase";
 import { ComparisonTable } from "@/components/marketing/comparison-table";
 import { AnalyzerDemo } from "@/components/marketing/analyzer-demo";
@@ -58,65 +57,7 @@ import { Pricing } from "@/components/marketing/pricing";
 import { FAQ } from "@/components/marketing/faq";
 import { Footer } from "@/components/marketing/footer";
 import { PLANS } from "@/lib/stripe/plans";
-import {
-  createSupabaseServerClient,
-  createSupabaseServiceClient,
-} from "@/lib/supabase/server";
-import type { FeaturedStore } from "@/components/marketing/social-proof";
-
-/**
- * Fetch 3 real winning stores from the Library for the social-proof
- * section — replaces the old "illustrative" cards with entries a
- * logged-in user actually sees. Only stores with self-hosted thumbnails
- * qualify (mshots URLs can render blank), ranked featured-first then by
- * real conv_rate. Fails soft: on any error the section renders without
- * cards rather than breaking the landing.
- */
-async function getFeaturedStores(): Promise<FeaturedStore[]> {
-  try {
-    const service = createSupabaseServiceClient();
-    const { data } = await service
-      .from("winning_sites")
-      .select("title, niche, thumbnail_url, metrics, is_featured")
-      .like("thumbnail_url", "%/storage/v1/object/public/%")
-      .limit(24);
-    if (!Array.isArray(data)) return [];
-    return (
-      (data as unknown as {
-        title: string;
-        niche: string;
-        thumbnail_url: string;
-        metrics: { conv_rate?: number } | null;
-        is_featured: boolean;
-      }[])
-        .map((row) => ({
-          title: row.title,
-          niche: row.niche,
-          // Supabase image transform: ~85% lighter than the raw capture.
-          thumbnailUrl: `${row.thumbnail_url.replace(
-            "/storage/v1/object/public/",
-            "/storage/v1/render/image/public/",
-          )}?width=800&quality=70`,
-          convRate:
-            typeof row.metrics?.conv_rate === "number"
-              ? row.metrics.conv_rate
-              : null,
-          featured: row.is_featured,
-        }))
-        .sort(
-          (a, b) =>
-            Number(b.featured) - Number(a.featured) ||
-            (b.convRate ?? 0) - (a.convRate ?? 0),
-        )
-        .slice(0, 3)
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        .map(({ featured, ...store }) => store)
-    );
-  } catch (err) {
-    console.warn("[landing] featured stores fetch failed:", (err as Error).message);
-    return [];
-  }
-}
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 /**
  * Landing-page JSON-LD structured data.
@@ -230,7 +171,6 @@ export default async function HomePage() {
   }
 
   const jsonLd = buildLandingJsonLd();
-  const featuredStores = await getFeaturedStores();
   return (
     <>
       {/*
@@ -250,13 +190,12 @@ export default async function HomePage() {
       <MarketingNav />
       <main className="relative">
         <Hero />
-        <LogoStrip />
         <AnalyzerDemo />
         <TwoPaths />
         <FeaturesShowcase />
         <ComparisonTable />
         <Reviews />
-        <SocialProof stores={featuredStores} />
+        <SocialProof />
         <Pricing />
         <FAQ />
       </main>

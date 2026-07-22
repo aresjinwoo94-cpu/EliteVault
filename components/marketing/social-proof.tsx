@@ -24,19 +24,26 @@ import { useT } from "@/components/i18n/locale-provider";
 const ease = [0.22, 1, 0.36, 1] as const;
 
 /**
- * Social proof — 3 REAL winning stores from the Library + founder note +
- * trust badges.
+ * Social proof — founder note + trust badges. (Public landing.)
  *
- * The old version showed "illustrative" audit cards (Gymshark 91, …) with
- * a demonstrative-scores disclaimer. It now renders real Library entries
- * (fetched server-side in app/page.tsx and passed in as props), so the
- * numbers are the same conversion metrics a logged-in user sees — no
- * disclaimer needed. CTA routes to sign-in with next=/app/library.
+ * The library showcase (3 real named stores + their conversion metrics) is
+ * gated OFF behind SHOW_LIBRARY_SHOWCASE. Naming real brands that are NOT
+ * customers and attaching conversion figures to them on the public landing
+ * is a legal/reputation risk, so it's disabled until real user reviews take
+ * its place. Genuine testimonials already have a home: the <Reviews /> section
+ * (owner-controlled, auto-hidden until there are 3+ approved reviews).
  *
  * The founder identity is the SINGLE source of truth in lib/company.ts
  * (gap #9) — update it there and every surface (here, About, JSON-LD)
  * stays consistent.
  */
+
+/**
+ * Master switch for the "FROM THE LIBRARY · REAL STORES" showcase. Keep FALSE
+ * on the public landing (no named-brand cards). Flip to true only if the cards
+ * ever show stores that are genuinely EliteVault customers / opted-in.
+ */
+const SHOW_LIBRARY_SHOWCASE = false;
 
 const FOUNDER = COMPANY.founder;
 
@@ -61,6 +68,10 @@ export function SocialProof({ stores = [] }: { stores?: FeaturedStore[] }) {
   return (
     <section className="relative py-20 md:py-28">
       <div className="container max-w-6xl">
+        {/* Library showcase (named stores + conversion metrics) — gated OFF on
+            the public landing. See SHOW_LIBRARY_SHOWCASE above. */}
+        {SHOW_LIBRARY_SHOWCASE && (
+        <>
         {/* Section heading */}
         <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
           <DataPill items={["FROM THE LIBRARY", "REAL STORES"]} />
@@ -150,6 +161,8 @@ export function SocialProof({ stores = [] }: { stores?: FeaturedStore[] }) {
             <ArrowRight className="size-4" />
           </Link>
         </div>
+        </>
+        )}
 
         {/* Founder note */}
         <motion.div

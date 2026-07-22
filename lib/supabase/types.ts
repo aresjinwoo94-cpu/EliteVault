@@ -315,6 +315,11 @@ export interface Database {
           metrics: Record<string, unknown>;
           tags: string[];
           embedding: number[] | null;
+          /** Cached public Meta Ad Library signals (momentum proxy). */
+          ad_signals: AdSignals | null;
+          ad_signals_updated_at: string | null;
+          /** Part of the Free-tier 3×3 preview set. */
+          is_preselected: boolean;
           added_by_ai: boolean;
           is_featured: boolean;
           created_at: string;
