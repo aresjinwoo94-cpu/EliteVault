@@ -39,7 +39,10 @@ interface Candidate {
   domain: string;
   title: string;
   description: string | null;
+  /** Canonical Library slug — always one of NICHE_LABELS, never the agent's free text. */
   niche: string;
+  /** The agent's finer-grained label (e.g. "Baby Apparel"), kept for reference. */
+  subNiche: string | null;
   tags: string[];
   metrics: Record<string, number> | null;
   activeAds: number | null;
@@ -92,6 +95,7 @@ async function fromMeta(niche: string, known: Set<string>): Promise<Candidate[]>
       title: a.name || domain,
       description: null,
       niche,
+      subNiche: null,
       tags: [niche],
       metrics: null,
       activeAds: a.ads,
@@ -128,7 +132,15 @@ async function fromAgent(
       domain,
       title: c.title,
       description: c.description,
-      niche: c.niche || niche,
+      // Pin the niche to the canonical slug we asked the agent for. The agent
+      // sometimes answers with a finer label ("Baby Apparel") instead of the
+      // slug; trusting it drops the store outside the taxonomy and out of the
+      // niche pages + analyzer module. Its label is preserved in sub_niche.
+      niche,
+      subNiche:
+        typeof c.niche === "string" && c.niche.trim() && c.niche !== niche
+          ? c.niche.trim()
+          : null,
       tags: c.tags ?? [niche],
       metrics: c.metrics,
       activeAds: c.ad_signals?.active_ads ?? null,
@@ -187,6 +199,7 @@ for (const niche of niches) {
       title: c.title,
       description: c.description,
       niche: c.niche,
+      sub_niche: c.subNiche,
       tags: c.tags,
       metrics: c.metrics ?? {},
       // Legacy NOT NULL column: the verify/thumbs jobs replace this with a real
