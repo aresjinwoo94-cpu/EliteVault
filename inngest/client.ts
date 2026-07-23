@@ -46,6 +46,16 @@ type Events = {
       force?: boolean;
     };
   };
+  // Library — manual trigger to refresh liveness + momentum on demand (the
+  // same function also runs on a weekly cron). Optional fields let an operator
+  // tune the chunk sizes for a targeted or heavier run.
+  "library/refresh.requested": {
+    data: {
+      verifyChunk?: number;
+      momentumChunk?: number;
+      maxChunks?: number;
+    };
+  };
   // Phase 5 — fired the first time a user gets a successful audit. Kicks off
   // the delayed activation follow-up email.
   "activation/first-value": {
