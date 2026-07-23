@@ -14,24 +14,11 @@ import { createSupabaseServiceClient } from "@/lib/supabase/server";
  * threshold simply don't get a page (404) until the Library grows.
  */
 
-export const MIN_STORES = 3;
-
-/** Human labels + keyword phrasing per niche slug (DB `winning_sites.niche`). */
-export const NICHE_LABELS: Record<string, { label: string; plural: string }> = {
-  home: { label: "Home & Living", plural: "home & living brands" },
-  apparel: { label: "Apparel", plural: "apparel brands" },
-  beverage: { label: "Beverage", plural: "beverage brands" },
-  skincare: { label: "Skincare", plural: "skincare brands" },
-  accessories: { label: "Accessories", plural: "accessories brands" },
-  beauty: { label: "Beauty", plural: "beauty brands" },
-  footwear: { label: "Footwear", plural: "footwear brands" },
-  fitness: { label: "Fitness", plural: "fitness brands" },
-  wellness: { label: "Wellness", plural: "wellness brands" },
-  eyewear: { label: "Eyewear", plural: "eyewear brands" },
-  baby: { label: "Baby", plural: "baby brands" },
-  pet: { label: "Pet", plural: "pet brands" },
-  grooming: { label: "Grooming", plural: "grooming brands" },
-};
+// The taxonomy itself lives in lib/library/niches.ts, which is free of
+// `server-only` so the CLI jobs in scripts/library/ can share it. Re-exported
+// here so every existing `from "@/lib/library/niche-pages"` import is unchanged.
+import { NICHE_LABELS, MIN_STORES } from "@/lib/library/niches";
+export { NICHE_LABELS, MIN_STORES };
 
 export interface NicheStore {
   title: string;
