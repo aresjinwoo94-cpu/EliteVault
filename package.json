@@ -15,7 +15,11 @@
     "db:migrate": "node scripts/db-migrate.mjs",
     "inngest:dev": "npx inngest-cli@latest dev",
     "library:expand": "tsx scripts/expand-library.ts",
-    "library:thumbs": "tsx scripts/snapshot-library-thumbnails.mts"
+    "library:thumbs": "tsx scripts/snapshot-library-thumbnails.mts",
+    "library:discover": "tsx scripts/library/discover.mts",
+    "library:verify": "tsx scripts/library/verify.mts",
+    "library:momentum": "tsx scripts/library/momentum.mts",
+    "library:audit": "tsx scripts/library/audit.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
