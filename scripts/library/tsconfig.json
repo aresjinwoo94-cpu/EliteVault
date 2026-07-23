@@ -1,0 +1,19 @@
+{
+  // Resolution for the Library CLI jobs. Identical to the app's tsconfig except
+  // that `server-only` — which Next resolves internally and which therefore
+  // isn't in node_modules — maps to the same no-op stub the tests use.
+  //
+  // Without this, any job that reaches a module marked `server-only` (the
+  // discovery agent, for one) dies with MODULE_NOT_FOUND. The jobs ARE
+  // server-side, so the marker has nothing to enforce here.
+  //
+  // Never used by `next build`.
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "../..",
+    "paths": {
+      "@/*": ["./*"],
+      "server-only": ["./scripts/tests/stubs/server-only.ts"]
+    }
+  }
+}

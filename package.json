@@ -16,10 +16,10 @@
     "inngest:dev": "npx inngest-cli@latest dev",
     "library:expand": "tsx scripts/expand-library.ts",
     "library:thumbs": "tsx scripts/snapshot-library-thumbnails.mts",
-    "library:discover": "tsx scripts/library/discover.mts",
-    "library:verify": "tsx scripts/library/verify.mts",
-    "library:momentum": "tsx scripts/library/momentum.mts",
-    "library:audit": "tsx scripts/library/audit.mts"
+    "library:discover": "tsx --tsconfig scripts/library/tsconfig.json scripts/library/discover.mts",
+    "library:verify": "tsx --tsconfig scripts/library/tsconfig.json scripts/library/verify.mts",
+    "library:momentum": "tsx --tsconfig scripts/library/tsconfig.json scripts/library/momentum.mts",
+    "library:audit": "tsx --tsconfig scripts/library/tsconfig.json scripts/library/audit.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
