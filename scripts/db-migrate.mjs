@@ -54,7 +54,11 @@ const arg = process.argv[2];
 const files = arg
   ? [arg]
   : readdirSync("supabase/migrations")
-      .filter((f) => f.endsWith(".sql"))
+      // Rollbacks live in supabase/rollbacks/ and are never picked up by the
+      // no-arg run. This filter is belt-and-braces: a `*_rollback.sql` that
+      // ever lands in supabase/migrations/ would otherwise sort right after
+      // the migration it undoes and silently revert it on the next deploy.
+      .filter((f) => f.endsWith(".sql") && !f.includes("_rollback"))
       .sort()
       .map((f) => join("supabase/migrations", f));
 
