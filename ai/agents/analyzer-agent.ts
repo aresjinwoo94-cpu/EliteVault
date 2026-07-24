@@ -130,9 +130,15 @@ export async function runAnalyzerAgent(opts: {
     // faster than a slightly duller phrasing costs us. Override with
     // ANALYZER_TEMPERATURE if the copy ever reads too flat.
     temperature: ANALYZER_TEMPERATURE,
-    // Full audit JSON can be 5-8k chars — give the model headroom so it
-    // doesn't truncate mid-string (which broke schema validation before).
-    maxTokens: 8192,
+    // Headroom against truncation. 8192 was NOT enough: a content-rich store
+    // (many annotations + fixes + the persona reaction) overshot it and came
+    // back as half-written JSON, which failed the audit and refunded the
+    // credit. The provider now widens the ceiling and retries on truncation,
+    // but that costs the user another full model call — so start high enough
+    // that the common case never needs it. Output tokens are only billed for
+    // what's actually generated, so a bigger ceiling costs nothing when the
+    // report is short.
+    maxTokens: 16384,
     // P1.1 — free audits run on the cheap/fast model tier.
     fast: opts.fast,
     signal: opts.signal,

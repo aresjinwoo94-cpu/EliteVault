@@ -195,14 +195,16 @@ async function generateStructured<T>(
   /** Below this there's no point starting another model call. */
   const MIN_CALL_MS = 8_000;
 
-  const callWithKey = (keyIdx: number, model: string) =>
+  const baseMaxTokens = opts.maxTokens ?? 8192;
+
+  const callWithKey = (keyIdx: number, model: string, maxOutputTokens: number) =>
     CLIENTS[keyIdx].models.generateContent({
       model,
       contents,
       config: {
         systemInstruction: opts.system,
         temperature: opts.temperature ?? 0.4,
-        maxOutputTokens: opts.maxTokens ?? 8192,
+        maxOutputTokens,
         responseMimeType: "application/json",
         responseSchema: toGeminiSchema(tool.schema),
         // Abort as soon as the budget is gone (or the caller cancels) so a
@@ -221,6 +223,12 @@ async function generateStructured<T>(
   // (e.g. a site whose capture was still warming). Retry before failing.
   const MAX_EMPTY_RETRIES = 2;
   const RETRY_EMPTY_BACKOFF_MS = 1_500;
+  // A response cut off at the token ceiling is unparseable JSON. Retrying with
+  // the SAME ceiling would just truncate again, so we widen it. One retry is
+  // enough in practice: the analyzer's report overshoots 8k by a little, not
+  // by 2x. Capped so a runaway generation can't eat the whole time budget.
+  const MAX_TRUNCATION_RETRIES = 1;
+  const TRUNCATION_TOKEN_CAP = 32_768;
 
   // Run the full key-rotation + retry pipeline against ONE model.
   const runWithModel = async (model: string): Promise<T> => {
@@ -241,10 +249,12 @@ async function generateStructured<T>(
 
       let local503Attempts = 0;
       let localEmptyAttempts = 0;
+      let localTruncationAttempts = 0;
+      let maxTokensForCall = baseMaxTokens;
       // Inner loop just for 503 / empty-response retries on this same key
       while (true) {
         try {
-          const response = await callWithKey(idx, model);
+          const response = await callWithKey(idx, model, maxTokensForCall);
           const text = extractText(response);
           if (!text) {
             // Only retry if the back-off AND another full call still fit in
@@ -261,6 +271,28 @@ async function generateStructured<T>(
               continue; // retry same key
             }
             throw new Error("Gemini: empty response");
+          }
+          // Cut off at the token ceiling → the JSON is half-written. Widen the
+          // ceiling and try once more rather than handing JSON.parse a broken
+          // object (which surfaced to the user as "response was not valid
+          // JSON" and refunded a perfectly good audit).
+          if (isTruncated(response)) {
+            const wider = Math.min(maxTokensForCall * 2, TRUNCATION_TOKEN_CAP);
+            if (
+              localTruncationAttempts < MAX_TRUNCATION_RETRIES &&
+              wider > maxTokensForCall &&
+              dl.has(MIN_CALL_MS)
+            ) {
+              localTruncationAttempts++;
+              console.warn(
+                `[gemini] ${model} key #${idx + 1} hit the ${maxTokensForCall}-token ceiling — retrying at ${wider}`,
+              );
+              maxTokensForCall = wider;
+              continue; // retry same key with room to finish
+            }
+            throw new Error(
+              `Gemini: response truncated at the ${maxTokensForCall}-token ceiling`,
+            );
           }
           reportUsage(response, Boolean(opts.fast));
           return parseJsonText<T>(text);
@@ -313,9 +345,22 @@ async function generateStructured<T>(
       await dl.sleep(sleepMs);
       try {
         cooldownUntil.delete(best.idx);
-        const response = await callWithKey(best.idx, model);
+        // Last-chance call after waiting out a cooldown: go straight to the
+        // wider ceiling. There's no budget left for a truncation retry here,
+        // and an over-provisioned ceiling costs nothing when unused (output
+        // tokens are billed as generated).
+        const response = await callWithKey(
+          best.idx,
+          model,
+          Math.min(baseMaxTokens * 2, TRUNCATION_TOKEN_CAP),
+        );
         const text = extractText(response);
         if (!text) throw new Error("Gemini: empty response after cooldown wait");
+        if (isTruncated(response)) {
+          throw new Error(
+            "Gemini: response truncated at the token ceiling (after cooldown wait)",
+          );
+        }
         reportUsage(response, Boolean(opts.fast));
         return parseJsonText<T>(text);
       } catch (err) {
@@ -417,6 +462,29 @@ function reportUsage(response: unknown, fast: boolean): void {
     outputTokens: u?.candidatesTokenCount ?? 0,
     totalTokens: u?.totalTokenCount ?? 0,
   });
+}
+
+/**
+ * Why the generation stopped. "MAX_TOKENS" means the model was cut off
+ * mid-sentence — with responseMimeType json that yields a HALF-WRITTEN object,
+ * which JSON.parse rejects with a misleading "Expected ',' or '}'" complaint.
+ *
+ * Not checking this was silently turning "the report was slightly too long"
+ * into a failed, refunded audit.
+ */
+export function extractFinishReason(response: unknown): string | null {
+  // Defensive on purpose: this runs on the audit's critical path, so a null or
+  // unexpectedly-shaped response must return "no reason", never throw.
+  if (!response || typeof response !== "object") return null;
+  const c = (response as { candidates?: Array<{ finishReason?: string }> })
+    .candidates?.[0];
+  return typeof c?.finishReason === "string" ? c.finishReason : null;
+}
+
+/** True when the response was cut off by the output-token ceiling. */
+export function isTruncated(response: unknown): boolean {
+  const reason = extractFinishReason(response);
+  return reason === "MAX_TOKENS" || reason === "LENGTH";
 }
 
 function extractText(response: {
