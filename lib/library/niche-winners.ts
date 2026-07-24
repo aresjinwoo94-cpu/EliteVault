@@ -432,8 +432,10 @@ export interface NicheWinnersModule {
  * Apply freemium gating to a fetched result. Pure — no I/O — so the rule that
  * decides what a Free client receives is directly testable.
  *
- * Pro/Scale get every winner. Free gets ONE REAL winner plus a COUNT of what's
- * hidden: enough to prove the data exists, not enough to skip the upgrade.
+ * Pro/Scale get every winner. Free sees the module fully LOCKED — a blurred
+ * teaser with an upgrade CTA, the same treatment as the Meta Ads Optimizer.
+ * NONE of the real store data is sent to a Free client (winners: []), so there
+ * is nothing to read in the RSC payload; only a row COUNT crosses the wire.
  */
 export function gateWinners(
   data: NicheWinnersResult,
@@ -455,8 +457,8 @@ export function gateWinners(
   return {
     nicheLabel: data.nicheLabel,
     locked: true,
-    winners: winners.slice(0, 1),
-    lockedCount: Math.max(0, Math.min(3, winners.length) - 1),
+    winners: [], // real data withheld entirely from Free clients
+    lockedCount: Math.min(3, winners.length),
     scope,
   };
 }

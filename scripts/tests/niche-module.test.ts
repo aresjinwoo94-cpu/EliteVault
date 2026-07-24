@@ -113,20 +113,18 @@ test("Pro/Scale receive all three winners, unlocked", () => {
   assert.equal(mod.lockedCount, 0);
 });
 
-test("Free receives exactly one real winner plus a locked COUNT", () => {
+test("Free is fully locked — no real winners, just a COUNT", () => {
   const mod = gateWinners(three, false);
   assert.ok(mod);
   assert.equal(mod.locked, true);
-  assert.equal(mod.winners.length, 1, "the aha is previewed, not paywalled");
-  assert.equal(mod.winners[0].domain, "a.com");
-  assert.equal(mod.lockedCount, 2);
+  assert.equal(mod.winners.length, 0, "Free receives no real rows at all");
+  assert.equal(mod.lockedCount, 3);
 });
 
-test("the locked rows' data never leaves the server for a Free viewer", () => {
+test("NONE of the store data leaves the server for a Free viewer", () => {
   const mod = gateWinners(three, false);
   const payload = JSON.stringify(mod);
-  assert.ok(payload.includes("a.com"), "the visible winner IS sent");
-  for (const hidden of ["b.com", "c.com"]) {
+  for (const hidden of ["a.com", "b.com", "c.com"]) {
     assert.ok(
       !payload.includes(hidden),
       `${hidden} must not appear anywhere in the Free payload`,
@@ -134,12 +132,12 @@ test("the locked rows' data never leaves the server for a Free viewer", () => {
   }
 });
 
-test("a single winner leaves nothing to lock (no empty lock overlay)", () => {
+test("a single winner still locks cleanly for Free (count 1)", () => {
   const one = { ...three, winners: [winner("a.com")] };
   const mod = gateWinners(one, false);
   assert.ok(mod);
-  assert.equal(mod.winners.length, 1);
-  assert.equal(mod.lockedCount, 0);
+  assert.equal(mod.winners.length, 0);
+  assert.equal(mod.lockedCount, 1);
 });
 
 test("an empty winner list produces no module at all", () => {

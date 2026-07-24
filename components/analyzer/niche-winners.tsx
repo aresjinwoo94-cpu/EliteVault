@@ -191,14 +191,14 @@ function Header({
 }
 
 /**
- * The Free upsell, shown UNDER the one real winner and over the blurred rest.
- * In-context: it appears at the moment the user has just seen that the data is
- * real, which is where an upgrade prompt actually converts.
+ * The Free teaser: the whole module locked — blurred skeleton rows with an
+ * upgrade CTA over them, the same treatment as the Meta Ads Optimizer. No real
+ * store data reaches a Free client, so this renders from a COUNT alone.
  */
 function LockedRows({ count }: { count: number }) {
-  const rows = usable(count) ? Math.min(3, Math.round(count)) : 2;
+  const rows = usable(count) ? Math.min(3, Math.round(count)) : 3;
   return (
-    <div className="relative mt-2">
+    <div className="relative">
       <div
         aria-hidden
         className="pointer-events-none select-none space-y-2 opacity-70 blur-[5px] filter"
@@ -214,11 +214,11 @@ function LockedRows({ count }: { count: number }) {
             <Lock className="size-4 text-champagne-300" />
           </div>
           <p className="mt-2.5 text-sm font-medium text-white">
-            Unlock all {rows + 1} winners
+            {rows === 1 ? "Unlock the winner in your niche" : `Unlock all ${rows} winners in your niche`}
           </p>
           <p className="mt-1 max-w-[16rem] text-xs leading-relaxed text-white/55">
-            See every store outspending you right now — and the exact ads
-            they&apos;re running.
+            See every store outspending you right now — their estimated revenue
+            and the exact ads they&apos;re running.
           </p>
           <Link href="/app/checkout?plan=pro&interval=month" className="mt-3">
             <Button variant="primary" size="sm">
@@ -252,10 +252,11 @@ export function NicheWinners({
     (w) => w && typeof w.domain === "string" && w.domain.trim().length > 0,
   );
 
-  // Nothing real to show → render nothing. A lock overlay floating over pure
-  // skeletons is a worse experience than no module at all, and the server
-  // already hides this case.
-  if (rows.length === 0) return null;
+  // Paid but nothing real to show → render nothing (the server already hides
+  // this). Free is different: it NEVER receives real rows, so it renders the
+  // locked teaser from the count alone.
+  if (!locked && rows.length === 0) return null;
+  if (locked && lockedCount <= 0) return null;
 
   return (
     <motion.div
@@ -269,18 +270,23 @@ export function NicheWinners({
         <div className="relative">
           <Header nicheLabel={nicheLabel} scope={scope} />
 
-          {/* Real winners: all 3 on Pro/Scale, the top 1 on Free. */}
-          <div className="space-y-2">
-            {rows.map((w) => (
-              <WinnerRow key={w.domain} w={w} />
-            ))}
-          </div>
-
-          {locked && lockedCount > 0 && <LockedRows count={lockedCount} />}
+          {locked ? (
+            // Free — fully locked teaser, no real data on the client.
+            <LockedRows count={lockedCount} />
+          ) : (
+            // Pro/Scale — the real winners.
+            <div className="space-y-2">
+              {rows.map((w) => (
+                <WinnerRow key={w.domain} w={w} />
+              ))}
+            </div>
+          )}
 
           <div className="mt-3 flex items-center justify-between gap-2">
             <p className="text-[10px] leading-snug text-white/35">
-              Estimated from public signals. Not figures reported by the brands.
+              {locked
+                ? "Real stores, live Meta ad counts and estimated revenue — on Pro."
+                : "Estimated from public signals. Not figures reported by the brands."}
             </p>
             <Link
               href="/app/library"
