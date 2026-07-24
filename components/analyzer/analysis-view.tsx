@@ -333,43 +333,85 @@ export function AnalysisView({
                    END, full width.
             */}
 
-            {/* 1 — Score + gauges. The right column leads with the "Winners in
-                your niche" module (Change 3) — the most prominent slot, right
-                above the estimated conversion rate. */}
-            <div className="grid lg:grid-cols-[1fr_360px] gap-6">
-              <ScoreCard result={data.result} />
-              <div className="space-y-6">
-                {nicheWinners && (
-                  <NicheWinners
-                    nicheLabel={nicheWinners.nicheLabel}
-                    winners={nicheWinners.winners}
-                    locked={nicheWinners.locked}
-                    lockedCount={nicheWinners.lockedCount}
-                    scope={nicheWinners.scope ?? "niche"}
-                  />
-                )}
-                <ConversionGauges scenarios={data.result.scenarios} />
-              </div>
-            </div>
+            {/*
+              1-3 — Header block.
 
-            {/* 2 — Free-only: modelable ROAS panel, anchored under the score.
-                Paid users skip it (they get the live Meta tools at the end). */}
-            {!viewer.isPaid && (
-              <FreeMetaPanel score={data.result.score} niche={niche} />
-            )}
+              With the "Winners in your niche" module present it's a [main |
+              sticky rail] layout; without it, a plain full-width stack (no
+              empty 360px gutter). The cards are defined once and placed by
+              either branch.
 
-            {/* 2b — Ad-readiness. Sits directly under the score because it
-                reframes it: the design total and "can this take paid traffic
-                today" are different questions, and the second is the one the
-                owner is about to spend money on. Renders nothing on audits
-                generated before the field existed. */}
-            <AdReadinessCard data={data.result.ad_readiness} />
+              The rail holds ONLY the winners module — the Pro hook, sole hero
+              of its column. The left is deliberately the LONGER column (score,
+              conversion scenarios, ad-readiness, executive deck), so the short
+              sticky rail beside it never dictates the row height and never
+              leaves the big empty gap that a tall module in a short row caused.
 
-            {/* 3 — Executive deck: where you stand + strengths vs issues */}
-            <div className="grid lg:grid-cols-2 gap-6">
-              <NichePositionBar score={data.result.score} />
-              <StrengthsIssuesMap scores={data.result.category_scores} />
-            </div>
+              Mobile ordering matters: the spec needs score → winners → gauges
+              → rest so the hook is never buried. Two nested columns would emit
+              the whole left column before the right, pushing winners down. So
+              on mobile the wrappers collapse (`contents`) and the cards become
+              one ordered flex flow; at `lg` the wrappers become the two grid
+              columns and `order` stops applying.
+            */}
+            {(() => {
+              const scoreCard = <ScoreCard result={data.result} />;
+              const gauges = <ConversionGauges scenarios={data.result.scenarios} />;
+              // Free-only modelable ROAS panel; paid users get live Meta tools later.
+              const freePanel = !viewer.isPaid ? (
+                <FreeMetaPanel score={data.result.score} niche={niche} />
+              ) : null;
+              // Ad-readiness reframes the score around paid traffic; renders
+              // nothing on audits from before the field existed.
+              const adReadiness = <AdReadinessCard data={data.result.ad_readiness} />;
+              const deck = (
+                <div className="grid md:grid-cols-2 gap-6">
+                  <NichePositionBar score={data.result.score} />
+                  <StrengthsIssuesMap scores={data.result.category_scores} />
+                </div>
+              );
+              const winnersCard = nicheWinners ? (
+                <NicheWinners
+                  nicheLabel={nicheWinners.nicheLabel}
+                  winners={nicheWinners.winners}
+                  locked={nicheWinners.locked}
+                  lockedCount={nicheWinners.lockedCount}
+                  scope={nicheWinners.scope ?? "niche"}
+                />
+              ) : null;
+
+              // No module → a plain full-width stack (avoids an empty gutter).
+              if (!winnersCard) {
+                return (
+                  <div className="space-y-6">
+                    {scoreCard}
+                    {gauges}
+                    {freePanel}
+                    {adReadiness}
+                    {deck}
+                  </div>
+                );
+              }
+
+              return (
+                <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
+                  {/* LEFT — the main flow (the longer column). */}
+                  <div className="contents lg:block lg:space-y-6 lg:min-w-0">
+                    <div className="order-1">{scoreCard}</div>
+                    <div className="order-3">{gauges}</div>
+                    {freePanel && <div className="order-4">{freePanel}</div>}
+                    <div className="order-5">{adReadiness}</div>
+                    <div className="order-6">{deck}</div>
+                  </div>
+
+                  {/* RIGHT — sticky rail: the winners module alone. On mobile it
+                      drops in right after the score (order-2). */}
+                  <div className="contents lg:block lg:sticky lg:top-6 lg:self-start">
+                    <div className="order-2">{winnersCard}</div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/*
               4 — Analyzer → Library bridge. "So who's beating me, and what do
