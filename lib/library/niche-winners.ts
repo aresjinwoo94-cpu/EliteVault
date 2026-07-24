@@ -167,6 +167,32 @@ export function resolveNiche(input: {
   return null;
 }
 
+/** Small stable hash of a string → non-negative int, for seeded selection. */
+function hashSeed(seed: string): number {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+/**
+ * Pick `count` items from a ranked pool, rotated by a per-store seed.
+ *
+ * Without this, two stores in the same niche saw the identical top 3 — the
+ * module read as canned. Rotating a window over the top pool gives each
+ * analyzed store a different (still high-momentum) trio, and it's deterministic
+ * per seed so re-auditing the same store shows the same winners. When the pool
+ * is only as big as `count` there's nothing to vary, so it just returns it.
+ */
+export function seededWindow<T>(pool: T[], count: number, seed: string): T[] {
+  if (pool.length <= count) return pool.slice(0, count);
+  const start = hashSeed(seed) % pool.length;
+  const out: T[] = [];
+  for (let i = 0; i < pool.length && out.length < count; i++) {
+    out.push(pool[(start + i) % pool.length]);
+  }
+  return out;
+}
+
 /** Active-ads count, preferring the precomputed column over the legacy blob. */
 function adsOf(row: WinningRow): number | null {
   return num(row.active_ads_count) ?? num(row.ad_signals?.active_ads);
@@ -244,7 +270,10 @@ const LEGACY_COLS = "url, domain, title, niche, metrics, ad_signals, is_featured
  */
 export async function getNicheWinners(
   niche: string,
+  opts: { seed?: string; exclude?: string | null } = {},
 ): Promise<NicheWinnersResult> {
+  const seed = opts.seed?.trim() || niche;
+  const exclude = opts.exclude?.trim() || null;
   const nicheLabel = NICHE_LABELS[niche]?.label ?? niche;
   const empty: NicheWinnersResult = { niche, nicheLabel, winners: [] };
   try {
@@ -288,18 +317,28 @@ export async function getNicheWinners(
       rows = (Array.isArray(full.data) ? full.data : []) as unknown as WinningRow[];
     }
 
-    // Exact-niche winners first, ranked by momentum.
-    const winners: NicheWinner[] = rows
+    // Never surface the store the user just analyzed as its own "competitor".
+    const usable = exclude
+      ? rows.filter((r) => normalizeDomain(r?.domain ?? r?.url) !== exclude)
+      : rows;
+
+    // Exact-niche pool, ranked by momentum. Take a WINDOW of the top pool
+    // (rotated per store) rather than the strict top 3, so different stores in
+    // the same niche don't all see the identical trio.
+    const exactPool = usable
       .filter((r) => r?.niche === niche)
       .sort(rank)
-      .slice(0, 3)
+      .slice(0, 7)
       .map((r) => toWinner(r, niche))
       .filter((w): w is NicheWinner => w !== null);
 
-    // Backfill from related niches, honoring the RELATED_NICHES priority.
+    const winners: NicheWinner[] = seededWindow(exactPool, 3, seed);
+
+    // Backfill from related niches when the exact niche is too shallow to fill
+    // three, honoring the RELATED_NICHES priority.
     if (winners.length < 3) {
       const seen = new Set(winners.map((w) => w.domain));
-      const fills = rows
+      const fills = usable
         .filter((r) => r.niche !== niche)
         .sort(
           (a, b) =>
@@ -333,7 +372,11 @@ export async function getNicheWinners(
  * So when we can't name the niche, we still show the most active stores we
  * have — labelled honestly as ecommerce-wide, with NO niche-match claim.
  */
-export async function getTopWinners(): Promise<NicheWinner[]> {
+export async function getTopWinners(
+  opts: { seed?: string; exclude?: string | null } = {},
+): Promise<NicheWinner[]> {
+  const seed = opts.seed?.trim() || "global";
+  const exclude = opts.exclude?.trim() || null;
   try {
     const service = createSupabaseServiceClient();
     const { data, error } = await service
@@ -348,18 +391,21 @@ export async function getTopWinners(): Promise<NicheWinner[]> {
       return [];
     }
     const rows = (Array.isArray(data) ? data : []) as unknown as WinningRow[];
-    const out: NicheWinner[] = [];
+    // Build a top pool, then rotate a per-store window over it so unclassified
+    // stores don't all see the identical global trio.
+    const pool: NicheWinner[] = [];
     const seen = new Set<string>();
     for (const row of rows.sort(rank)) {
-      if (out.length >= 3) break;
+      if (pool.length >= 8) break;
+      if (exclude && normalizeDomain(row?.domain ?? row?.url) === exclude) continue;
       // "" as the detected niche → exactMatch false and a 0 match score, which
       // the card renders as "no match claim" rather than a made-up percentage.
       const w = toWinner(row, "");
       if (!w || seen.has(w.domain)) continue;
       seen.add(w.domain);
-      out.push({ ...w, exactMatch: false, matchPct: 0 });
+      pool.push({ ...w, exactMatch: false, matchPct: 0 });
     }
-    return out;
+    return seededWindow(pool, 3, seed);
   } catch (err) {
     console.warn("[niche-winners] global fetch failed:", (err as Error).message);
     return [];
@@ -445,13 +491,19 @@ export async function loadNicheWinnersModule(input: {
   // Nothing to enrich until the audit itself succeeded.
   if (input.status !== "succeeded") return null;
 
+  // The analyzed store's own domain — used both to VARY which winners each
+  // store sees (so two stores in a niche don't get the identical trio) and to
+  // keep the store from being shown as its own competitor.
+  const ownDomain = normalizeDomain(input.url);
+  const seed = ownDomain ?? input.url ?? "";
+
   const [settled] = await Promise.allSettled([
     (async () => {
       const niche = resolveNiche({ url: input.url, summary: input.summary });
 
       // Preferred path: the store's actual niche.
       if (niche) {
-        const data = await getNicheWinners(niche);
+        const data = await getNicheWinners(niche, { seed, exclude: ownDomain });
         if (data.winners.length > 0) {
           return gateWinners(data, input.isPaid, "niche");
         }
@@ -462,7 +514,7 @@ export async function loadNicheWinnersModule(input: {
       // its niche has no published stores yet. Show the Library's top
       // performers instead of hiding the module — labelled ecommerce-wide,
       // with no niche-match claim. An honest broader card beats no card.
-      const top = await getTopWinners();
+      const top = await getTopWinners({ seed, exclude: ownDomain });
       return gateWinners(
         { niche: "", nicheLabel: "Across ecommerce", winners: top },
         input.isPaid,

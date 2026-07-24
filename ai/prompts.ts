@@ -85,6 +85,10 @@ Severity reflects revenue impact: "high" = costing them sales right now.
 For each annotation, "message" explains what's wrong in <20 words. "fix"
 explains what to do in <30 words, as a verb-first imperative.
 
+Return the 5-8 HIGHEST-impact annotations — never more than 8. More than that
+buries the ones that matter and makes the report slow to produce. Pick the
+issues actually costing sales, not every nitpick.
+
 # Buyer-persona simulation
 Speak in the persona's actual voice. Use first person. Be specific —
 "that beige hero looks like a 2014 wedding invitation" is better than

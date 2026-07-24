@@ -512,7 +512,16 @@ function humanizeError(err: unknown): string {
 
   // Ran out of the per-step wall-clock budget (lib/deadline.ts). This is the
   // clean, honest version of what used to surface as an opaque 504.
-  if (isDeadlineError(err) || /step budget exhausted/i.test(raw)) {
+  //
+  // "aborted" is the same thing seen from the other side: when the budget's
+  // AbortController fires mid-generation, the SDK throws a raw
+  // "This operation was aborted" DOMException that isn't a DeadlineExceededError
+  // — so match it here rather than let it reach the user verbatim.
+  if (
+    isDeadlineError(err) ||
+    /step budget exhausted/i.test(raw) ||
+    /operation was aborted|AbortError|signal is aborted/i.test(raw)
+  ) {
     return "This store took longer to audit than one run allows — usually a very tall page or a slow AI provider. Try again in a minute; your credit was refunded.";
   }
 

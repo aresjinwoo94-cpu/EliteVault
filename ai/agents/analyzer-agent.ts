@@ -130,15 +130,14 @@ export async function runAnalyzerAgent(opts: {
     // faster than a slightly duller phrasing costs us. Override with
     // ANALYZER_TEMPERATURE if the copy ever reads too flat.
     temperature: ANALYZER_TEMPERATURE,
-    // Headroom against truncation. 8192 was NOT enough: a content-rich store
-    // (many annotations + fixes + the persona reaction) overshot it and came
-    // back as half-written JSON, which failed the audit and refunded the
-    // credit. The provider now widens the ceiling and retries on truncation,
-    // but that costs the user another full model call — so start high enough
-    // that the common case never needs it. Output tokens are only billed for
-    // what's actually generated, so a bigger ceiling costs nothing when the
-    // report is short.
-    maxTokens: 16384,
+    // The binding constraint here is TIME, not tokens: flash generates at
+    // ~100-200 tok/s and the step budget is ~50s (Vercel's 60s ceiling), so
+    // anything past ~8k tokens simply can't finish before the deadline aborts
+    // the call ("This operation was aborted"). Raising this to 16384 traded
+    // truncation for timeouts. The real fix is bounding OUTPUT size (capped
+    // annotation/fix counts in the prompt + schema) so a rich store still fits
+    // under 8192 — which both avoids truncation and finishes in time.
+    maxTokens: 8192,
     // P1.1 — free audits run on the cheap/fast model tier.
     fast: opts.fast,
     signal: opts.signal,

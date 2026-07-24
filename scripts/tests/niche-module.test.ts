@@ -4,6 +4,7 @@ import {
   resolveNiche,
   loadNicheWinnersModule,
   gateWinners,
+  seededWindow,
   type NicheWinner,
   type NicheWinnersResult,
 } from "../../lib/library/niche-winners";
@@ -144,6 +145,41 @@ test("a single winner leaves nothing to lock (no empty lock overlay)", () => {
 test("an empty winner list produces no module at all", () => {
   assert.equal(gateWinners({ ...three, winners: [] }, true), null);
   assert.equal(gateWinners({ ...three, winners: [] }, false), null);
+});
+
+// ── Per-store variety (seededWindow) ──────────────────────────────────────
+// Two stores in the same niche used to see the identical top 3, which read as
+// canned. A per-store window over the top pool fixes it — deterministically.
+
+test("seededWindow gives different stores different windows over the pool", () => {
+  const pool = ["a", "b", "c", "d", "e", "f", "g"];
+  const s1 = seededWindow(pool, 3, "storeone.com");
+  const s2 = seededWindow(pool, 3, "another-shop.io");
+  assert.equal(s1.length, 3);
+  assert.equal(s2.length, 3);
+  assert.notDeepEqual(s1, s2, "distinct seeds should not always collide");
+});
+
+test("seededWindow is deterministic — the same store always gets the same trio", () => {
+  const pool = ["a", "b", "c", "d", "e", "f", "g"];
+  assert.deepEqual(
+    seededWindow(pool, 3, "urbanwear.co"),
+    seededWindow(pool, 3, "urbanwear.co"),
+  );
+});
+
+test("seededWindow returns everything (no throw) when the pool can't fill", () => {
+  assert.deepEqual(seededWindow(["a", "b"], 3, "x"), ["a", "b"]);
+  assert.deepEqual(seededWindow([], 3, "x"), []);
+});
+
+test("seededWindow always returns `count` distinct items from a big enough pool", () => {
+  const pool = ["a", "b", "c", "d", "e", "f", "g"];
+  for (const seed of ["one", "two", "three", "four", "five"]) {
+    const w = seededWindow(pool, 3, seed);
+    assert.equal(w.length, 3, seed);
+    assert.equal(new Set(w).size, 3, `no repeats for ${seed}`);
+  }
 });
 
 test("the module is skipped entirely until the audit itself succeeded", async () => {

@@ -334,25 +334,22 @@ export function AnalysisView({
             */}
 
             {/*
-              1-3 — Header block.
+              1-3 — Header block, then full-width sections.
 
-              With the "Winners in your niche" module present it's a [main |
-              sticky rail] layout; without it, a plain full-width stack (no
-              empty 360px gutter). The cards are defined once and placed by
-              either branch.
+              HEADER ROW pairs the score + conversion scenarios (left) with the
+              winners module (right). Those two stacks are close in height
+              (~score+gauges ≈ winners), so the columns balance and neither
+              leaves a big gap — the problem the earlier "score alone | tall
+              winners" row had. NOT sticky: a sticky rail pinned on scroll and
+              felt stuck coming back up, so it just scrolls with the page.
 
-              The rail holds ONLY the winners module — the Pro hook, sole hero
-              of its column. The left is deliberately the LONGER column (score,
-              conversion scenarios, ad-readiness, executive deck), so the short
-              sticky rail beside it never dictates the row height and never
-              leaves the big empty gap that a tall module in a short row caused.
+              Everything after the header (free panel, ad-readiness, executive
+              deck) is full width again — its original distribution.
 
-              Mobile ordering matters: the spec needs score → winners → gauges
-              → rest so the hook is never buried. Two nested columns would emit
-              the whole left column before the right, pushing winners down. So
-              on mobile the wrappers collapse (`contents`) and the cards become
-              one ordered flex flow; at `lg` the wrappers become the two grid
-              columns and `order` stops applying.
+              Mobile ordering (spec): score → winners → gauges → rest. In the
+              header row the wrappers collapse to `contents` so the three cards
+              become one ordered flex flow; at `lg` they resolve back into the
+              two grid columns and `order` stops applying.
             */}
             {(() => {
               const scoreCard = <ScoreCard result={data.result} />;
@@ -380,36 +377,34 @@ export function AnalysisView({
                 />
               ) : null;
 
-              // No module → a plain full-width stack (avoids an empty gutter).
-              if (!winnersCard) {
-                return (
-                  <div className="space-y-6">
-                    {scoreCard}
-                    {gauges}
-                    {freePanel}
-                    {adReadiness}
-                    {deck}
-                  </div>
-                );
-              }
-
               return (
-                <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
-                  {/* LEFT — the main flow (the longer column). */}
-                  <div className="contents lg:block lg:space-y-6 lg:min-w-0">
-                    <div className="order-1">{scoreCard}</div>
-                    <div className="order-3">{gauges}</div>
-                    {freePanel && <div className="order-4">{freePanel}</div>}
-                    <div className="order-5">{adReadiness}</div>
-                    <div className="order-6">{deck}</div>
-                  </div>
+                <>
+                  {/* HEADER ROW */}
+                  {winnersCard ? (
+                    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
+                      {/* LEFT — score + conversion scenarios (the numbers) */}
+                      <div className="contents lg:block lg:space-y-6 lg:min-w-0">
+                        <div className="order-1">{scoreCard}</div>
+                        <div className="order-3">{gauges}</div>
+                      </div>
+                      {/* RIGHT — winners module, roughly the same height */}
+                      <div className="contents lg:block">
+                        <div className="order-2">{winnersCard}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    // No module → score + gauges full width, no empty gutter.
+                    <div className="space-y-6">
+                      {scoreCard}
+                      {gauges}
+                    </div>
+                  )}
 
-                  {/* RIGHT — sticky rail: the winners module alone. On mobile it
-                      drops in right after the score (order-2). */}
-                  <div className="contents lg:block lg:sticky lg:top-6 lg:self-start">
-                    <div className="order-2">{winnersCard}</div>
-                  </div>
-                </div>
+                  {/* FULL-WIDTH SECTIONS */}
+                  {freePanel}
+                  {adReadiness}
+                  {deck}
+                </>
               );
             })()}
 

@@ -174,7 +174,7 @@ export const ANALYSIS_TOOL_SCHEMA = {
     },
     annotations: {
       type: "array",
-      maxItems: 20,
+      maxItems: 8,
       items: {
         type: "object",
         properties: {
