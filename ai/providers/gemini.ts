@@ -18,6 +18,10 @@ import { DeadlineExceededError, deadlineAt } from "@/lib/deadline";
 // once the project has billing enabled.
 const MODEL = process.env.GEMINI_MODEL ?? "gemini-3.5-flash";
 const MODEL_FAST = process.env.GEMINI_MODEL_FAST ?? "gemini-3.1-flash-lite";
+// Stable, generally-available last-resort model. The 3.x models above are
+// newer and capacity-constrained (they 503 under load); this GA model is a
+// higher-capacity backend that completes the audit when they're all busy.
+const MODEL_STABLE = process.env.GEMINI_MODEL_STABLE ?? "gemini-2.5-flash";
 
 // ─── Multi-key rotation pool ────────────────────────────────────────────────
 //
@@ -377,14 +381,25 @@ async function generateStructured<T>(
     throw last429 ?? new Error("Gemini: all keys exhausted");
   };
 
-  // The premium model (e.g. gemini-2.5-pro) often isn't usable on the
-  // free-tier keys this app runs on — it 429s on quota or needs billing,
-  // which surfaced as "empty response" / refunded audits for PAID users.
-  // Try the configured model, then fall back to the fast model so the audit
-  // still completes. Free audits already run on MODEL_FAST (nothing to add).
+  // Model chain: try each in turn, falling back on a recoverable failure
+  // (429 quota, 503 overload, …) so the audit still completes.
+  //
+  // The last rung is a STABLE, generally-available model (gemini-2.5-flash by
+  // default). The 3.x-family models this app runs on are newer and
+  // capacity-constrained, so both the premium AND fast 3.x models can be
+  // overloaded (503) at the same moment — which is exactly what refunded the
+  // owner's audits. A GA model is a different, much higher-capacity backend
+  // that rarely 503s, so it's the safety net that lets the audit finish when
+  // the new models are all busy. Same API key, no extra cost.
   const primaryModel = opts.fast ? MODEL_FAST : MODEL;
-  const modelChain =
-    primaryModel === MODEL_FAST ? [primaryModel] : [primaryModel, MODEL_FAST];
+  const modelChain = [
+    ...new Set(
+      (primaryModel === MODEL_FAST
+        ? [primaryModel, MODEL_STABLE]
+        : [primaryModel, MODEL_FAST, MODEL_STABLE]
+      ).filter(Boolean),
+    ),
+  ];
 
   let lastErr: unknown = null;
   for (let mi = 0; mi < modelChain.length; mi++) {
