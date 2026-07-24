@@ -45,6 +45,8 @@ interface NicheWinnersData {
   locked: boolean;
   winners: NicheWinner[];
   lockedCount: number;
+  /** "global" when the store's niche couldn't be classified — see the card. */
+  scope?: "niche" | "global";
 }
 
 type Simulation = {
@@ -343,6 +345,7 @@ export function AnalysisView({
                     winners={nicheWinners.winners}
                     locked={nicheWinners.locked}
                     lockedCount={nicheWinners.lockedCount}
+                    scope={nicheWinners.scope ?? "niche"}
                   />
                 )}
                 <ConversionGauges scenarios={data.result.scenarios} />

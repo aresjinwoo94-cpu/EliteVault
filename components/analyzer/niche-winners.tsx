@@ -160,13 +160,23 @@ function GhostRow() {
   );
 }
 
-function Header({ nicheLabel }: { nicheLabel: string }) {
+function Header({
+  nicheLabel,
+  scope,
+}: {
+  nicheLabel: string;
+  scope: "niche" | "global";
+}) {
   return (
     <div className="mb-4 flex items-start justify-between gap-3">
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <Flame className="size-4 text-champagne-300" />
-          <h3 className="font-medium text-white">Winners in your niche</h3>
+          {/* Never claim a niche match we don't have — when the store couldn't
+              be classified these are the Library's top performers, full stop. */}
+          <h3 className="font-medium text-white">
+            {scope === "niche" ? "Winners in your niche" : "Top converting stores"}
+          </h3>
         </div>
         <p className="mt-1 inline-flex items-center gap-1.5 text-[11px] text-success">
           <Radio className="size-3" />
@@ -204,7 +214,7 @@ function LockedRows({ count }: { count: number }) {
             <Lock className="size-4 text-champagne-300" />
           </div>
           <p className="mt-2.5 text-sm font-medium text-white">
-            Unlock all {rows + 1} winners in your niche
+            Unlock all {rows + 1} winners
           </p>
           <p className="mt-1 max-w-[16rem] text-xs leading-relaxed text-white/55">
             See every store outspending you right now — and the exact ads
@@ -228,11 +238,13 @@ export function NicheWinners({
   winners = [],
   locked = false,
   lockedCount = 0,
+  scope = "niche",
 }: {
   nicheLabel: string;
   winners?: NicheWinner[];
   locked?: boolean;
   lockedCount?: number;
+  scope?: "niche" | "global";
 }) {
   // Drop anything unrenderable BEFORE deciding whether the card exists, so a
   // list of half-seeded rows hides the module instead of showing empty ones.
@@ -255,7 +267,7 @@ export function NicheWinners({
         <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full bg-champagne-400/12 blur-3xl" />
 
         <div className="relative">
-          <Header nicheLabel={nicheLabel} />
+          <Header nicheLabel={nicheLabel} scope={scope} />
 
           {/* Real winners: all 3 on Pro/Scale, the top 1 on Free. */}
           <div className="space-y-2">

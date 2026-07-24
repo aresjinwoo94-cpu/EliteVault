@@ -321,6 +321,51 @@ export async function getNicheWinners(
   }
 }
 
+/**
+ * Top winners across the WHOLE Library, ranked by momentum.
+ *
+ * The fallback that keeps the module from disappearing. Niche detection is
+ * inherently lossy — the audit summary is about conversion problems, not about
+ * what the store sells, so plenty of real stores can't be classified from it.
+ * Returning nothing in that case made the module invisible on most audits,
+ * which defeats its entire purpose: it is the hook that sells Pro.
+ *
+ * So when we can't name the niche, we still show the most active stores we
+ * have — labelled honestly as ecommerce-wide, with NO niche-match claim.
+ */
+export async function getTopWinners(): Promise<NicheWinner[]> {
+  try {
+    const service = createSupabaseServiceClient();
+    const { data, error } = await service
+      .from("winning_sites")
+      .select(FULL_COLS)
+      .eq("status", "published")
+      .eq("is_live", true)
+      .order("momentum_score", { ascending: false, nullsFirst: false })
+      .limit(12);
+    if (error) {
+      console.warn(`[niche-winners] global query error: ${error.message}`);
+      return [];
+    }
+    const rows = (Array.isArray(data) ? data : []) as unknown as WinningRow[];
+    const out: NicheWinner[] = [];
+    const seen = new Set<string>();
+    for (const row of rows.sort(rank)) {
+      if (out.length >= 3) break;
+      // "" as the detected niche → exactMatch false and a 0 match score, which
+      // the card renders as "no match claim" rather than a made-up percentage.
+      const w = toWinner(row, "");
+      if (!w || seen.has(w.domain)) continue;
+      seen.add(w.domain);
+      out.push({ ...w, exactMatch: false, matchPct: 0 });
+    }
+    return out;
+  } catch (err) {
+    console.warn("[niche-winners] global fetch failed:", (err as Error).message);
+    return [];
+  }
+}
+
 /** What the analyzer page hands to the <NicheWinners> card. */
 export interface NicheWinnersModule {
   nicheLabel: string;
@@ -328,6 +373,13 @@ export interface NicheWinnersModule {
   winners: NicheWinner[];
   /** How many rows are hidden behind the paywall (Free only). */
   lockedCount: number;
+  /**
+   * "niche" when these are the detected niche's winners; "global" when we
+   * couldn't classify the store and fell back to the Library's top performers.
+   * The card changes its wording accordingly — it must never claim a niche
+   * match it doesn't have.
+   */
+  scope: "niche" | "global";
 }
 
 /**
@@ -340,6 +392,7 @@ export interface NicheWinnersModule {
 export function gateWinners(
   data: NicheWinnersResult,
   isPaid: boolean,
+  scope: "niche" | "global" = "niche",
 ): NicheWinnersModule | null {
   const winners = Array.isArray(data?.winners) ? data.winners : [];
   if (winners.length === 0) return null;
@@ -350,6 +403,7 @@ export function gateWinners(
       locked: false,
       winners: winners.slice(0, 3),
       lockedCount: 0,
+      scope,
     };
   }
   return {
@@ -357,6 +411,7 @@ export function gateWinners(
     locked: true,
     winners: winners.slice(0, 1),
     lockedCount: Math.max(0, Math.min(3, winners.length) - 1),
+    scope,
   };
 }
 
@@ -393,9 +448,26 @@ export async function loadNicheWinnersModule(input: {
   const [settled] = await Promise.allSettled([
     (async () => {
       const niche = resolveNiche({ url: input.url, summary: input.summary });
-      if (!niche) return null;
-      const data = await getNicheWinners(niche);
-      return gateWinners(data, input.isPaid);
+
+      // Preferred path: the store's actual niche.
+      if (niche) {
+        const data = await getNicheWinners(niche);
+        if (data.winners.length > 0) {
+          return gateWinners(data, input.isPaid, "niche");
+        }
+      }
+
+      // Fallback: we couldn't classify the store (the audit summary describes
+      // conversion problems, not the product category, so this is common) or
+      // its niche has no published stores yet. Show the Library's top
+      // performers instead of hiding the module — labelled ecommerce-wide,
+      // with no niche-match claim. An honest broader card beats no card.
+      const top = await getTopWinners();
+      return gateWinners(
+        { niche: "", nicheLabel: "Across ecommerce", winners: top },
+        input.isPaid,
+        "global",
+      );
     })(),
   ]);
 
