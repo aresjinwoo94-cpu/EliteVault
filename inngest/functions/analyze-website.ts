@@ -544,6 +544,13 @@ function humanizeError(err: unknown): string {
     return "Claude is overloaded right now. Try again in a few minutes — your credit was refunded.";
   }
 
+  // Gemini 503 — Google's model is temporarily overloaded ("high demand").
+  // Server-side and transient; the provider already retries and falls back to
+  // the fast model, so reaching here means Google was broadly overloaded.
+  if (/"code"\s*:\s*503|UNAVAILABLE|high demand|model is (currently )?overloaded/i.test(raw)) {
+    return "The AI provider is overloaded right now — this is temporary and on their side. Try again in a minute; your credit was refunded.";
+  }
+
   // Screenshot service — all providers exhausted
   if (/All screenshot providers failed/i.test(raw)) {
     return "We couldn't capture this site (it likely blocks automated screenshots, e.g. Cloudflare or anti-bot). Try uploading a screenshot manually, or pick a different URL. Your credit was refunded.";

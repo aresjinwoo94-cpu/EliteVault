@@ -215,9 +215,12 @@ async function generateStructured<T>(
 
   // Google 503 ("model experiencing high demand") is server-side, not
   // key-side — rotating keys won't help because they all hit the same
-  // backend. We retry the SAME key with a short backoff before giving up.
-  const MAX_503_RETRIES = 2;
-  const RETRY_503_BACKOFF_MS = 8_000;
+  // backend. We retry the SAME model once with a short backoff, then let the
+  // caller fall back to the DIFFERENT fast model (a separate backend that's
+  // rarely overloaded at the same moment). Keeping this short matters: a long
+  // same-model backoff just delays the fallback that's more likely to work.
+  const MAX_503_RETRIES = 1;
+  const RETRY_503_BACKOFF_MS = 4_000;
   // Flash models occasionally return an empty candidate — transient, or a
   // blank/placeholder screenshot that briefly gave the model nothing to read
   // (e.g. a site whose capture was still warming). Retry before failing.
@@ -397,6 +400,13 @@ async function generateStructured<T>(
       if (!dl.has(MIN_CALL_MS)) throw err;
       const recoverable =
         is429(raw) ||
+        // 503 "model is overloaded" is the single most common reason a premium
+        // audit fails on Google's side. It was NOT in this list, so an
+        // overloaded gemini-3.5-flash threw straight to the user instead of
+        // falling back to the fast model — which is a DIFFERENT backend and is
+        // rarely overloaded at the same moment. This one omission is what
+        // surfaced the raw 503 to the owner.
+        is503(raw) ||
         /empty response|all keys exhausted|not found|not available|unsupported|billing|permission|INVALID_ARGUMENT|FAILED_PRECONDITION/i.test(
           raw,
         );
@@ -436,7 +446,7 @@ function is429(raw: string): boolean {
  * key issue. Best handled with a short backoff retry on the same key
  * (rotating keys would just hit the same overloaded backend).
  */
-function is503(raw: string): boolean {
+export function is503(raw: string): boolean {
   return /"code"\s*:\s*503|UNAVAILABLE|high demand|model is currently/i.test(raw);
 }
 

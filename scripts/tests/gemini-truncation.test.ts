@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { isTruncated, extractFinishReason } from "../../ai/providers/gemini";
+import { isTruncated, extractFinishReason, is503 } from "../../ai/providers/gemini";
 
 /**
  * Regression: a real Scale-plan audit failed with
@@ -34,6 +34,17 @@ test("detection never throws on a shape we didn't expect", () => {
     assert.doesNotThrow(() => isTruncated(weird));
     assert.equal(isTruncated(weird), false, JSON.stringify(weird));
   }
+});
+
+test("is503 recognizes Google's overload response (so the model chain falls back)", () => {
+  // The exact shape the owner saw surface to the UI.
+  const raw = '{"error":{"code":503,"message":"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.","status":"UNAVAILABLE"}}';
+  assert.equal(is503(raw), true);
+  assert.equal(is503("UNAVAILABLE"), true);
+  assert.equal(is503('{"code": 503}'), true);
+  // Not a 503.
+  assert.equal(is503('{"error":{"code":429}}'), false);
+  assert.equal(is503("everything fine"), false);
 });
 
 test("extractFinishReason returns the reason, or null when absent", () => {
