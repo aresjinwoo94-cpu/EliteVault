@@ -66,6 +66,17 @@ type Events = {
       plan?: string | null;
     };
   };
+  // Part 2 — fired when a user opens a subscription checkout, to drive the
+  // abandoned-checkout recovery sequence if they don't complete payment.
+  "checkout/started": {
+    data: {
+      sessionId: string;
+      userId: string;
+      email: string;
+      plan: "pro" | "scale";
+      interval: "month" | "year";
+    };
+  };
 };
 
 export const inngest = new Inngest({
