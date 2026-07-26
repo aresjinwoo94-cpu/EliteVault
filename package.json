@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "test": "tsx --tsconfig scripts/tests/tsconfig.json --conditions=react-server --experimental-test-module-mocks --test \"scripts/tests/*.test.?(m)ts\"",
     "typecheck": "tsc --noEmit",
+    "seo:check-env": "node scripts/check-seo-env.mjs",
     "stripe:listen": "stripe listen --forward-to localhost:3000/api/stripe/webhook",
     "stripe:seed": "tsx scripts/seed-stripe.ts",
     "db:seed": "tsx scripts/seed-db.ts",
