@@ -27,3 +27,24 @@ export const FAQ_ITEMS: FaqItem[] = [
     a: "No. Your URLs, screenshots and audits are private to your account. We don't train models on customer data, and we don't share screenshots with third parties.",
   },
 ];
+
+/**
+ * Build a schema.org FAQPage object from the shared FAQ items. Use on any
+ * page that actually RENDERS these questions (Google requires the FAQ content
+ * to be visible on the page carrying the markup). Reused by /pricing and
+ * /support so their structured data never drifts from what's on screen.
+ */
+export function faqPageJsonLd(items: FaqItem[] = FAQ_ITEMS) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.a,
+      },
+    })),
+  };
+}
