@@ -102,33 +102,50 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // Programmatic niche pages (/winning-shopify-stores/[niche]) — one per
-  // Library niche with enough stores. Fails soft to [] on DB errors.
-  const nicheEntries: MetadataRoute.Sitemap = (
-    await getQualifyingNiches()
-  ).map((n) => ({
-    url: `${baseUrl}/winning-shopify-stores/${n.slug}`,
-    lastModified: now,
-    changeFrequency: "weekly" as const,
-    priority: 0.7,
-  }));
+  // Library niche with enough stores. Each dynamic source is isolated in its
+  // own try/catch: if getQualifyingNiches() throws (DB down, RPC changed),
+  // this block degrades to [] instead of taking the WHOLE sitemap to a 500 —
+  // which would leave Google unable to read even the static money pages (the
+  // "only the home is indexed" symptom).
+  let nicheEntries: MetadataRoute.Sitemap = [];
+  try {
+    nicheEntries = (await getQualifyingNiches()).map((n) => ({
+      url: `${baseUrl}/winning-shopify-stores/${n.slug}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    }));
+  } catch (err) {
+    console.warn("[sitemap] niche pages fetch failed:", (err as Error).message);
+  }
 
-  // Blog — the organic-search content surface. Index + each guide.
-  const blogEntries: MetadataRoute.Sitemap = [
+  // Blog — the organic-search content surface. Index + each guide. allPosts()
+  // is in-memory today, but isolate it too so a future data-backed source can
+  // never sink the static routes. The /blog index is a static route, so it
+  // lives in staticEntries above; here we only add the per-post URLs.
+  let blogEntries: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/blog`,
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.8,
     },
-    ...allPosts().map(
-      (p): MetadataRoute.Sitemap[number] => ({
-        url: `${baseUrl}/blog/${p.slug}`,
-        lastModified: new Date(`${p.updated ?? p.date}T00:00:00Z`),
-        changeFrequency: "monthly",
-        priority: 0.7,
-      }),
-    ),
   ];
+  try {
+    blogEntries = [
+      ...blogEntries,
+      ...allPosts().map(
+        (p): MetadataRoute.Sitemap[number] => ({
+          url: `${baseUrl}/blog/${p.slug}`,
+          lastModified: new Date(`${p.updated ?? p.date}T00:00:00Z`),
+          changeFrequency: "monthly",
+          priority: 0.7,
+        }),
+      ),
+    ];
+  } catch (err) {
+    console.warn("[sitemap] blog posts fetch failed:", (err as Error).message);
+  }
 
   // NOTE: community audits live under /app/community/* which robots.txt
   // disallows (the whole /app/* dashboard is crawler-blocked). Listing them
