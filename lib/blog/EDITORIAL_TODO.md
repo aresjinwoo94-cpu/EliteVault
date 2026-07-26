@@ -25,24 +25,36 @@ authority.
 7. `best free shopify audit tools 2026` — NEW. Listicle intent; also pursue
    inclusion in *other* sites' "best audit tools" listicles (see manual steps).
 
-## Existing posts — CTA / opening-answer check
+## Existing posts — CTA / opening-answer audit (done, per brief §1.2)
 
-The brief asks that every post (a) answers its target question in the first
-~200 words and (b) links to the Analyzer (CTA). A grep pass found analyzer /
-`free-website-audit` CTAs present across the 7 current posts:
+The brief asks to confirm that every post (a) answers its target question in
+the first ~200 words and (b) links to the Analyzer (CTA), and to **note**
+(not rewrite) any that don't. Full read-through of all 7 posts in `posts.ts`:
 
-- free-website-audit-tools
-- reverse-engineer-winning-shopify-stores
-- ecommerce-store-audit-vs-consultant
-- why-meta-ads-arent-converting
-- how-to-increase-shopify-conversion-rate
-- good-conversion-rate-for-shopify
-- why-your-shopify-store-isnt-converting
+| Post | Opens with answer (~200w)? | Analyzer CTA? | Link used |
+|------|:---:|:---:|------|
+| free-website-audit-tools | ✅ | ✅ | `/free-website-audit` |
+| reverse-engineer-winning-shopify-stores | ✅ | ✅ | `/#analyzer` |
+| ecommerce-store-audit-vs-consultant | ✅ | ❌ **gap** | none (only a `/blog/...` internal link) |
+| why-meta-ads-arent-converting | ✅ | ⚠️ **weak** | `/#pricing` only — names the analyzer but doesn't link it |
+| how-to-increase-shopify-conversion-rate | ✅ | ✅ | `/sign-up?next=/app/analyzer` + `/pricing` |
+| good-conversion-rate-for-shopify | ✅ | ✅ | `/sign-up?next=/app/analyzer` |
+| why-your-shopify-store-isnt-converting | ✅ | ✅ | `/sign-up?next=/app/analyzer` |
 
-**TODO (Ariel, manual):** do a read-through to confirm each post *opens* with
-the answer in the first ~200 words (not just somewhere mid-article). If any
-buries the answer, note it here and fix — do not let Claude Code rewrite post
-copy without your explicit OK.
+### Action items (need Ariel's OK — do NOT let Claude Code rewrite copy)
+
+1. **`ecommerce-store-audit-vs-consultant`** — the whole post sells the AI
+   audit but never links to it. Add a CTA to the analyzer (e.g.
+   `/sign-up?next=/app/analyzer` or `/free-website-audit`), ideally in the
+   "What a 60-second AI audit actually returns" section or the closing math
+   paragraph. Highest-priority fix: this is a warm-intent post leaking its CTA.
+2. **`why-meta-ads-arent-converting`** — names "EliteVault's analyzer" in the
+   final section but only links `/#pricing`. Add a direct analyzer link on the
+   "Diagnose the store like a cold visitor" paragraph so the CTA matches the
+   copy.
+
+All 7 open with their answer in the first ~200 words — no opening-answer fixes
+needed.
 
 > Note: the brief mentioned "9 posts"; the repo currently has **7** in
 > `posts.ts`. Two of the queued NEW topics above would bring it back toward 9.
