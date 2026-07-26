@@ -13,6 +13,8 @@ export async function sendEmail(opts: {
   to: string;
   subject: string;
   html: string;
+  /** Plain-text alternative. Multipart (html+text) improves deliverability. */
+  text?: string;
   from?: string;
   /** Extra SMTP headers, forwarded to Resend (e.g. List-Unsubscribe). */
   headers?: Record<string, string>;
@@ -40,6 +42,7 @@ export async function sendEmail(opts: {
         to: opts.to,
         subject: opts.subject,
         html: opts.html,
+        ...(opts.text ? { text: opts.text } : {}),
         ...(opts.headers ? { headers: opts.headers } : {}),
       }),
     });

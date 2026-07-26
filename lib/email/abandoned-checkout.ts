@@ -30,7 +30,7 @@ export function buildAbandonedCheckout(opts: {
   unsubscribeUrl: string;
   step: AbandonedCheckoutStep;
   appUrl: string;
-}): { subject: string; html: string } {
+}): { subject: string; html: string; text: string } {
   const { plan, price, recoveryUrl, unsubscribeUrl, step } = opts;
   const planLabel = plan === "pro" ? "Pro" : "Scale";
 
@@ -155,5 +155,31 @@ export function buildAbandonedCheckout(opts: {
   </body>
 </html>`;
 
-  return { subject: copy.subject, html };
+  // Plain-text alternative — a multipart (html + text) email is materially
+  // less likely to be flagged as spam than HTML-only.
+  const text = [
+    copy.headline,
+    "",
+    copy.body,
+    "",
+    `Complete your ${planLabel} upgrade: ${recoveryUrl}`,
+    ...(showDetails
+      ? [
+          "",
+          `What ${planLabel} unlocks:`,
+          "• Unlimited audits on any store URL",
+          "• Ranked, prioritized fixes — not a punch-list",
+          "• +9 hand-picked winning stores in your niche",
+          "• 7-day Meta Ads scenario modeler",
+          "",
+          `$${price}/mo · cancel anytime · no card charged until you confirm`,
+        ]
+      : []),
+    "",
+    "—",
+    "You're receiving this because you started a checkout at elitevaultapp.com.",
+    `Unsubscribe: ${unsubscribeUrl}`,
+  ].join("\n");
+
+  return { subject: copy.subject, html, text };
 }

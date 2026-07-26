@@ -96,7 +96,7 @@ async function sendRecoveryStep(
   const unsubscribeUrl = buildUnsubscribeUrl(sessionId, appUrl);
   const price = PLANS[plan]?.price.month ?? 0;
 
-  const { subject, html } = buildAbandonedCheckout({
+  const { subject, html, text } = buildAbandonedCheckout({
     plan,
     price,
     recoveryUrl,
@@ -108,7 +108,13 @@ async function sendRecoveryStep(
     to: email,
     subject,
     html,
-    headers: { "List-Unsubscribe": `<${unsubscribeUrl}>` },
+    text,
+    headers: {
+      "List-Unsubscribe": `<${unsubscribeUrl}>`,
+      // RFC 8058 one-click unsubscribe — Gmail/Yahoo bulk-sender compliance,
+      // which also helps inbox placement. Our route handles POST.
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
   });
 
   if (sent.ok) {

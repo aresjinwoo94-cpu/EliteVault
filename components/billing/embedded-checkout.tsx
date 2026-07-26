@@ -30,9 +30,23 @@ import posthog from "posthog-js";
  *      which does eager sync + sends them onward.
  */
 
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "",
-);
+const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "";
+// Only build a Stripe instance when we actually have a key — loadStripe("")
+// rejects deep inside Stripe.js and surfaces as a blank/broken iframe with no
+// explanation. We guard on the key below and show a real message instead.
+const stripePromise = PUBLISHABLE_KEY ? loadStripe(PUBLISHABLE_KEY) : null;
+
+// Test vs live mode of a key / client_secret, or null if unrecognized.
+function pkMode(k: string): "live" | "test" | null {
+  if (k.startsWith("pk_live_")) return "live";
+  if (k.startsWith("pk_test_")) return "test";
+  return null;
+}
+function csMode(cs: string): "live" | "test" | null {
+  if (cs.startsWith("cs_live_")) return "live";
+  if (cs.startsWith("cs_test_")) return "test";
+  return null;
+}
 
 export function EmbeddedCheckoutForm({
   plan,
@@ -80,10 +94,28 @@ export function EmbeddedCheckoutForm({
     };
   }, [plan, interval]);
 
-  if (error) {
+  // Config guards — turn a silent blank/broken iframe into a precise message.
+  // (1) No publishable key baked into the build. NEXT_PUBLIC_* is inlined at
+  //     BUILD time, so this also means "set it in Vercel AND redeploy".
+  let configError: string | null = null;
+  if (!PUBLISHABLE_KEY) {
+    configError =
+      "Stripe publishable key is missing. Set NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY in the environment and redeploy (it's baked in at build time).";
+  } else if (clientSecret) {
+    // (2) Mode mismatch — e.g. a pk_test_ key trying to mount a cs_live_
+    //     session. Stripe.js silently refuses to render in this case.
+    const km = pkMode(PUBLISHABLE_KEY);
+    const sm = csMode(clientSecret);
+    if (km && sm && km !== sm) {
+      configError = `Stripe mode mismatch: your publishable key is ${km} mode but the checkout session is ${sm} mode. Set NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY to your pk_${sm}_… key (matching STRIPE_SECRET_KEY) and redeploy.`;
+    }
+  }
+
+  const shownError = error ?? configError;
+  if (shownError) {
     return (
       <div className="rounded-2xl border border-destructive/30 bg-destructive/[0.04] p-6 text-center">
-        <p className="text-sm text-destructive">{error}</p>
+        <p className="text-sm text-destructive">{shownError}</p>
         <button
           onClick={() => router.push("/app/billing")}
           className="mt-4 text-xs text-white/55 hover:text-white"
