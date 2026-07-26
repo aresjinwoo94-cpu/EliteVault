@@ -144,7 +144,10 @@ export const checkoutRecovery = inngest.createFunction(
     });
 
     // Step 1 — ~1h after checkout opened.
-    await step.sleep("wait-step-1", "1h");
+    // ⚠️ TEMP TEST (revert to "1h"): shortened to 60s so a live checkout test
+    // delivers email #1 within a minute instead of an hour. REVERT BEFORE
+    // TREATING AS FINAL — 60s is far too aggressive for real abandoners.
+    await step.sleep("wait-step-1", "60s");
     const s1 = await step.run("check-and-send-1", () => sendRecoveryStep(data, 1));
     if (s1.stop) return s1;
 
