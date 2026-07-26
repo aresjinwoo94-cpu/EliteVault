@@ -57,7 +57,27 @@ export function EmbeddedCheckoutForm({
 }) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [stripeBlocked, setStripeBlocked] = useState(false);
   const router = useRouter();
+
+  // Detect when Stripe.js itself can't load — loadStripe rejects (or resolves
+  // null) if js.stripe.com is unreachable, which is almost always a client-side
+  // ad blocker / privacy extension / VPN / firewall (net::ERR_CONNECTION_RESET),
+  // not our config. Without this the payment panel just sits blank forever.
+  useEffect(() => {
+    if (!stripePromise) return;
+    let cancelled = false;
+    stripePromise
+      .then((s) => {
+        if (!cancelled && !s) setStripeBlocked(true);
+      })
+      .catch(() => {
+        if (!cancelled) setStripeBlocked(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -98,7 +118,10 @@ export function EmbeddedCheckoutForm({
   // (1) No publishable key baked into the build. NEXT_PUBLIC_* is inlined at
   //     BUILD time, so this also means "set it in Vercel AND redeploy".
   let configError: string | null = null;
-  if (!PUBLISHABLE_KEY) {
+  if (stripeBlocked) {
+    configError =
+      "Couldn't load Stripe's payment library (js.stripe.com). This is almost always an ad blocker, privacy extension (uBlock, Brave Shields, Ghostery), VPN, or firewall/antivirus on your device blocking Stripe. Disable it for this site, or try an incognito window or a different browser/network.";
+  } else if (!PUBLISHABLE_KEY) {
     configError =
       "Stripe publishable key is missing. Set NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY in the environment and redeploy (it's baked in at build time).";
   } else if (clientSecret) {
