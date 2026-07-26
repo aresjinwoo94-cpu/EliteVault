@@ -16,7 +16,7 @@
  *   BG_OUTER  #070D0B → #f6f6f4     CARD      #0B1512 → #ffffff
  *   BORDER    #16211D → #ececec     HEADING   #FFFFFF → #111827
  *   BODY_TEXT #9FB3AC → #4b5563     MUTED     #5C726B → #9ca3af
- *   ACCENT    #17E5A6 → #2DD4BF     BTN_TEXT  #04120D → #0A0A0F
+ *   ACCENT    #5AE7D0 → #2DD4BF     BTN_TEXT  #04120D → #0A0A0F
  * and drop the dark meta color-scheme. Nothing else needs to change.
  * ─────────────────────────────────────────────────────────────────────────────
  */
@@ -68,7 +68,7 @@ export function buildAbandonedCheckout(opts: {
   ]
     .map(
       (f) =>
-        `<tr><td style="padding:6px 0;color:#17E5A6;font-size:13px;width:18px;vertical-align:top;">&#9670;</td><td style="padding:6px 0;color:#C9D9D3;font-size:14px;line-height:1.5;">${f}</td></tr>`,
+        `<tr><td style="padding:6px 0;color:#5AE7D0;font-size:13px;width:18px;vertical-align:top;">&#9670;</td><td style="padding:6px 0;color:#C9D9D3;font-size:14px;line-height:1.5;">${f}</td></tr>`,
     )
     .join("");
 
@@ -77,7 +77,7 @@ export function buildAbandonedCheckout(opts: {
             <tr><td style="padding:24px 32px 0 32px;"><div style="height:1px;background-color:#16211D;"></div></td></tr>
             <tr>
               <td style="padding:20px 32px 4px 32px;">
-                <p style="margin:0 0 12px 0;color:#17E5A6;font-size:11px;font-weight:700;letter-spacing:1.5px;">WHAT ${planLabel.toUpperCase()} UNLOCKS</p>
+                <p style="margin:0 0 12px 0;color:#5AE7D0;font-size:11px;font-weight:700;letter-spacing:1.5px;">WHAT ${planLabel.toUpperCase()} UNLOCKS</p>
               </td>
             </tr>
             <tr>
@@ -88,7 +88,7 @@ export function buildAbandonedCheckout(opts: {
             <tr>
               <td style="padding:20px 32px 4px 32px;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0E1B16;border:1px solid #16332A;border-radius:10px;">
-                  <tr><td style="padding:14px 16px;color:#9FB3AC;font-size:13px;line-height:1.5;"><span style="color:#17E5A6;font-weight:700;">$${price}/mo</span> &nbsp;&middot;&nbsp; cancel anytime &nbsp;&middot;&nbsp; no card charged until you confirm</td></tr>
+                  <tr><td style="padding:14px 16px;color:#9FB3AC;font-size:13px;line-height:1.5;"><span style="color:#5AE7D0;font-weight:700;">$${price}/mo</span> &nbsp;&middot;&nbsp; cancel anytime &nbsp;&middot;&nbsp; no card charged until you confirm</td></tr>
                 </table>
               </td>
             </tr>`
@@ -110,7 +110,7 @@ export function buildAbandonedCheckout(opts: {
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#0B1512;border:1px solid #16211D;border-radius:16px;overflow:hidden;">
             <tr>
               <td style="padding:32px 32px 8px 32px;">
-                <span style="display:inline-block;vertical-align:middle;width:22px;height:22px;background-color:#17E5A6;border-radius:5px;transform:rotate(45deg);"></span>
+                <span style="display:inline-block;vertical-align:middle;width:22px;height:22px;background-color:#5AE7D0;border-radius:5px;transform:rotate(45deg);"></span>
                 <span style="display:inline-block;vertical-align:middle;margin-left:10px;color:#EAF6F1;font-size:18px;font-weight:700;letter-spacing:-0.2px;">EliteVault</span>
               </td>
             </tr>
@@ -128,7 +128,7 @@ export function buildAbandonedCheckout(opts: {
               <td style="padding:24px 32px 8px 32px;">
                 <table role="presentation" cellpadding="0" cellspacing="0">
                   <tr>
-                    <td align="center" bgcolor="#17E5A6" style="border-radius:10px;">
+                    <td align="center" bgcolor="#5AE7D0" style="border-radius:10px;">
                       <a href="${recoveryUrl}" style="display:inline-block;padding:14px 26px;color:#04120D;font-size:15px;font-weight:700;text-decoration:none;">Complete my ${planLabel} upgrade &rarr;</a>
                     </td>
                   </tr>
@@ -138,7 +138,7 @@ export function buildAbandonedCheckout(opts: {
             <tr>
               <td style="padding:8px 32px 4px 32px;">
                 <p style="margin:0;color:#5C726B;font-size:12px;line-height:1.5;">Or paste this link into your browser:</p>
-                <a href="${recoveryUrl}" style="color:#17E5A6;font-size:12px;word-break:break-all;">${recoveryUrl}</a>
+                <a href="${recoveryUrl}" style="color:#5AE7D0;font-size:12px;word-break:break-all;">${recoveryUrl}</a>
               </td>
             </tr>${detailsBlock}
             <tr>
