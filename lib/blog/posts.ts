@@ -226,7 +226,7 @@ export const BLOG_POSTS: BlogPost[] = [
 </ul>
 <div class="callout"><h3>Honesty check</h3><p>AI won't replace a great consultant for hands-on implementation, bespoke brand strategy, or untangling a messy backend. But for the <em>diagnosis</em> — the expensive, commoditized part — it now matches a senior first pass. Pay humans for the cure, not the X-ray.</p></div>
 <h2>The math that ends the debate</h2>
-<p>A consultant audit: $1,500–$2,000, one store, one moment in time, 5–10 business days turnaround. An AI audit: under a minute, re-runnable every time you change something, free for your first run. When you can re-audit after every iteration instead of once a quarter, you don't just save money — you compound improvements faster than a consultant cadence ever allowed. (Not sure what "good" even looks like? See <a href="/blog/good-conversion-rate-for-shopify">what's a good conversion rate for Shopify</a>.)</p>
+<p>A consultant audit: $1,500–$2,000, one store, one moment in time, 5–10 business days turnaround. An AI audit: under a minute, re-runnable every time you change something, and <a href="/free-website-audit">free on your first run</a>. When you can re-audit after every iteration instead of once a quarter, you don't just save money — you compound improvements faster than a consultant cadence ever allowed. (Not sure what "good" even looks like? See <a href="/blog/good-conversion-rate-for-shopify">what's a good conversion rate for Shopify</a>.)</p>
 <p>That's the real reason this stings for the audit-as-a-service crowd. It's not that AI is cheaper. It's that it removes the artificial scarcity their whole pricing depended on.</p>
 `.trim(),
     faqs: [
@@ -293,7 +293,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>The fix order is almost always backwards from what founders do: <strong>audit the store first, then scale the ads.</strong> A store that converts cold traffic turns mediocre ads into profit. A store that doesn't turns great ads into expensive lessons. (More on the usual culprits in <a href="/blog/why-your-shopify-store-isnt-converting">why your store isn't converting</a>.)</p>
 <h2>Diagnose the store like a cold visitor would</h2>
 <p>You can't see your own store objectively — you've visited it a thousand times. The move is to look at it through the eyes of the exact person your ad just sent: a skeptical stranger, on a phone, with their thumb already hovering over "back."</p>
-<p>That's what EliteVault's analyzer does. Paste your URL and it reacts like a cold buyer — annotated screenshot of every leak, a buyer-persona reaction in their own voice, and a punch-list ranked by impact. And before you scale spend, the <a href="/#pricing">Campaign Scenario Modeler</a> projects a 7-day Meta campaign across conservative, balanced and aggressive cases based on your AOV and budget — so you know whether the math even works before you fund it.</p>
+<p>That's what <a href="/free-website-audit">EliteVault's free analyzer</a> does. Paste your URL and it reacts like a cold buyer — annotated screenshot of every leak, a buyer-persona reaction in their own voice, and a punch-list ranked by impact. And before you scale spend, the <a href="/#pricing">Campaign Scenario Modeler</a> projects a 7-day Meta campaign across conservative, balanced and aggressive cases based on your AOV and budget — so you know whether the math even works before you fund it.</p>
 `.trim(),
     faqs: [
       {

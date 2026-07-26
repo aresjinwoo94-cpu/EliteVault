@@ -35,26 +35,22 @@ the first ~200 words and (b) links to the Analyzer (CTA), and to **note**
 |------|:---:|:---:|------|
 | free-website-audit-tools | ✅ | ✅ | `/free-website-audit` |
 | reverse-engineer-winning-shopify-stores | ✅ | ✅ | `/#analyzer` |
-| ecommerce-store-audit-vs-consultant | ✅ | ❌ **gap** | none (only a `/blog/...` internal link) |
-| why-meta-ads-arent-converting | ✅ | ⚠️ **weak** | `/#pricing` only — names the analyzer but doesn't link it |
+| ecommerce-store-audit-vs-consultant | ✅ | ✅ (fixed) | `/free-website-audit` added in the closing paragraph |
+| why-meta-ads-arent-converting | ✅ | ✅ (fixed) | `/free-website-audit` added (analyzer now linked, `/#pricing` kept for the modeler) |
 | how-to-increase-shopify-conversion-rate | ✅ | ✅ | `/sign-up?next=/app/analyzer` + `/pricing` |
 | good-conversion-rate-for-shopify | ✅ | ✅ | `/sign-up?next=/app/analyzer` |
 | why-your-shopify-store-isnt-converting | ✅ | ✅ | `/sign-up?next=/app/analyzer` |
 
-### Action items (need Ariel's OK — do NOT let Claude Code rewrite copy)
+### Action items — DONE
 
-1. **`ecommerce-store-audit-vs-consultant`** — the whole post sells the AI
-   audit but never links to it. Add a CTA to the analyzer (e.g.
-   `/sign-up?next=/app/analyzer` or `/free-website-audit`), ideally in the
-   "What a 60-second AI audit actually returns" section or the closing math
-   paragraph. Highest-priority fix: this is a warm-intent post leaking its CTA.
-2. **`why-meta-ads-arent-converting`** — names "EliteVault's analyzer" in the
-   final section but only links `/#pricing`. Add a direct analyzer link on the
-   "Diagnose the store like a cold visitor" paragraph so the CTA matches the
-   copy.
+1. ~~**`ecommerce-store-audit-vs-consultant`** — no analyzer CTA.~~ Fixed: added
+   a `/free-website-audit` link in the closing "math" paragraph.
+2. ~~**`why-meta-ads-arent-converting`** — only linked `/#pricing`.~~ Fixed: the
+   "EliteVault's free analyzer" mention now links `/free-website-audit`; the
+   `/#pricing` modeler link stays.
 
-All 7 open with their answer in the first ~200 words — no opening-answer fixes
-needed.
+All 7 posts now open with their answer in the first ~200 words AND link to the
+analyzer. No outstanding blog CTA/opening work.
 
 > Note: the brief mentioned "9 posts"; the repo currently has **7** in
 > `posts.ts`. Two of the queued NEW topics above would bring it back toward 9.
