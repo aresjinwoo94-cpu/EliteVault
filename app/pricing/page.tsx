@@ -4,6 +4,7 @@ import { Pricing } from "@/components/marketing/pricing";
 import { FAQ } from "@/components/marketing/faq";
 import { Footer } from "@/components/marketing/footer";
 import { PLANS } from "@/lib/stripe/plans";
+import { faqPageJsonLd } from "@/lib/content/faq";
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
@@ -58,11 +59,19 @@ export default function PricingPage() {
     })),
   };
 
+  // FAQPage — the <FAQ /> section below renders these same questions on this
+  // page, so the markup is backed by visible content (Google's requirement).
+  const faqJsonLd = faqPageJsonLd();
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       <MarketingNav />
       <main className="pt-32 pb-8">

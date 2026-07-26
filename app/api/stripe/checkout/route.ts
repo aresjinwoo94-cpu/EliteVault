@@ -4,6 +4,7 @@ import { stripe } from "@/lib/stripe/server";
 import { getCheckoutPriceId } from "@/lib/stripe/plans";
 import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server";
 import { absoluteUrl } from "@/lib/utils";
+import { inngest } from "@/inngest/client";
 
 const Body = z.object({
   plan: z.enum(["pro", "scale"]),
@@ -170,6 +171,28 @@ async function handleCheckout(req: NextRequest) {
     },
     metadata: { supabase_user_id: user.id, plan },
   });
+
+  // Abandoned-checkout recovery (Part 2). Additive and best-effort: emit a
+  // `checkout/started` event so the Inngest sequence can email the user if they
+  // don't complete payment. Gated by CHECKOUT_RECOVERY_ENABLED (default off).
+  // Wrapped so a failed emit NEVER breaks the checkout — the outer catch-all
+  // would turn it into a 500 and block the upgrade.
+  if (process.env.CHECKOUT_RECOVERY_ENABLED === "true") {
+    try {
+      await inngest.send({
+        name: "checkout/started",
+        data: {
+          sessionId: session.id,
+          userId: user.id,
+          email: profile?.email ?? user.email ?? "",
+          plan,
+          interval,
+        },
+      });
+    } catch (err) {
+      console.error("[stripe/checkout] recovery emit failed:", err);
+    }
+  }
 
   return NextResponse.json({ client_secret: session.client_secret });
 }

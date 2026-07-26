@@ -13,7 +13,7 @@ import { MarketingNav } from "@/components/marketing/nav";
 import { Footer } from "@/components/marketing/footer";
 import { PLANS } from "@/lib/stripe/plans";
 import type { PlanTier } from "@/lib/supabase/types";
-import { FAQ_ITEMS } from "@/lib/content/faq";
+import { FAQ_ITEMS, faqPageJsonLd } from "@/lib/content/faq";
 import { COMPANY } from "@/lib/company";
 
 export const metadata: Metadata = {
@@ -47,8 +47,16 @@ function Section({
 }
 
 export default function SupportPage() {
+  // FAQPage — the Help center renders FAQ_ITEMS below, so the structured data
+  // is backed by visible on-page content (Google's requirement for FAQ rich
+  // results). Same shared source as the marketing FAQ, so answers never drift.
+  const faqJsonLd = faqPageJsonLd();
   return (
     <div className="min-h-screen flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <MarketingNav />
       <main className="flex-1">
         <div className="container max-w-3xl py-24 md:py-32">

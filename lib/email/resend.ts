@@ -14,6 +14,8 @@ export async function sendEmail(opts: {
   subject: string;
   html: string;
   from?: string;
+  /** Extra SMTP headers, forwarded to Resend (e.g. List-Unsubscribe). */
+  headers?: Record<string, string>;
 }): Promise<{ ok: boolean; id?: string; error?: string }> {
   const key = process.env.RESEND_API_KEY;
   const from =
@@ -38,6 +40,7 @@ export async function sendEmail(opts: {
         to: opts.to,
         subject: opts.subject,
         html: opts.html,
+        ...(opts.headers ? { headers: opts.headers } : {}),
       }),
     });
     if (!res.ok) {

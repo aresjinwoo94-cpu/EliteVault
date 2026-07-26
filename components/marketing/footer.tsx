@@ -19,7 +19,10 @@ export function Footer() {
             <LanguageToggle className="mt-4" />
           </div>
           <nav className="grid grid-cols-2 md:flex gap-x-8 gap-y-2 text-sm text-white/50">
-            <Link href="/#pricing" className="hover:text-white">
+            {/* Point at the dedicated /pricing money landing (it carries the
+                SoftwareApplication + offers JSON-LD) rather than the home
+                anchor, so the page gets a descriptive-anchor internal link. */}
+            <Link href="/pricing" className="hover:text-white">
               {t("footer.pricing")}
             </Link>
             <Link href="/#faq" className="hover:text-white">
