@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { PlanCard } from "@/components/billing/plan-card";
 import { PortalButton } from "@/components/billing/portal-button";
+import { SubscriptionActions } from "@/components/billing/subscription-actions";
 import { PLANS, planFromPriceId } from "@/lib/stripe/plans";
 
 export const metadata = { title: "Billing" };
@@ -195,7 +196,18 @@ export default async function BillingPage({
               </p>
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 justify-end">
+            {!!sub &&
+              (sub.status === "active" || sub.status === "trialing") && (
+                <SubscriptionActions
+                  cancelAtPeriodEnd={!!sub.cancel_at_period_end}
+                  periodEndLabel={
+                    sub.current_period_end
+                      ? new Date(sub.current_period_end).toLocaleDateString()
+                      : null
+                  }
+                />
+              )}
             {profile?.stripe_customer_id && (
               <PortalButton variant="outline">
                 Manage in Stripe
