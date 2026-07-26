@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { resolveStripeCustomerId } from "@/lib/stripe/customer";
 import { absoluteUrl } from "@/lib/utils";
 
 /**
@@ -32,21 +33,28 @@ export async function POST() {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("stripe_customer_id")
+      .select("stripe_customer_id, email")
       .eq("id", user.id)
       .single();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const customerId = (profile as any)?.stripe_customer_id as
-      | string
-      | null
-      | undefined;
+    const p = profile as {
+      stripe_customer_id?: string | null;
+      email?: string | null;
+    } | null;
+
+    // Auto-heal a stale/missing customer id (Test→Live footgun) instead of
+    // hard-failing with stale_customer — mirrors the checkout route.
+    const customerId = await resolveStripeCustomerId({
+      userId: user.id,
+      email: p?.email ?? user.email ?? null,
+      storedId: p?.stripe_customer_id ?? null,
+    });
     if (!customerId) {
       return NextResponse.json(
         {
           error: "no_customer",
           detail:
-            "No Stripe customer yet — start a fresh checkout from the pricing page.",
+            "No billing record found for your account. Start a checkout from the pricing page to set up your subscription.",
         },
         { status: 400 },
       );
@@ -76,6 +84,20 @@ export async function POST() {
           error: "stale_customer",
           detail:
             "Your billing record needs to be refreshed. Start a fresh checkout from the pricing page — your plan will be re-attached.",
+        },
+        { status: 409 },
+      );
+    }
+
+    // The Customer Portal must be activated once in the Stripe Dashboard
+    // (Settings → Billing → Customer portal) per mode. Until then Stripe
+    // throws this — surface it clearly instead of a raw 500.
+    if (/configuration/i.test(stripeMessage ?? msg)) {
+      return NextResponse.json(
+        {
+          error: "portal_not_configured",
+          detail:
+            "The Stripe Customer Portal isn't set up yet. Activate it in Stripe → Settings → Billing → Customer portal (in Live mode).",
         },
         { status: 409 },
       );
