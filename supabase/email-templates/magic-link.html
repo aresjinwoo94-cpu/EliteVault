@@ -1,24 +1,21 @@
 <!doctype html>
 <!--
-  EliteVault — Magic Link email template (v3.9)
-  ────────────────────────────────────────────────────────────────────
-  Paste this HTML into:
-    Supabase Dashboard → Authentication → Email Templates → Magic Link
+  EliteVault — Magic Link email template (v4.1)
+  Paste into: Supabase → Authentication → Email Templates → Magic Link
+  Subject:  Your EliteVault sign-in code: {{ .Token }}
+            (the {{ .Token }} makes each subject unique so Gmail does NOT thread
+             sign-in emails — the newest one always shows separately at the top,
+             so you click the right, working button. If your Supabase version
+             renders the subject literally, fall back to: Your EliteVault sign-in link)
 
-  Subject line suggestion:
-    Your EliteVault sign-in link
-
-  Variables Supabase substitutes at send time:
-    {{ .ConfirmationURL }}  — the magic-link URL the user clicks
-    {{ .Email }}             — recipient address (optional, we don't show it)
-
-  Email-client constraints we work around:
-    • Gmail strips <style> blocks → all critical styling is INLINE
-    • Outlook on Windows ignores CSS gradients → we use solid #D4AF37 gold
-    • Dark-mode clients sometimes invert backgrounds → we lock with
-      `background-color` + `color` together on every block
-    • Buttons get clipped if not in a <table> — the CTA is a 3-cell table
-    • Max width 600px (industry standard)
+  Notes:
+  • The button ({{ .ConfirmationURL }}) is the primary method and is substituted
+    with the real URL in SENT emails (the dashboard PREVIEW shows it literally —
+    that's normal, not a bug).
+  • Supabase invalidates the PREVIOUS magic link when a new one is requested, so
+    only the MOST RECENT email works. The 6-digit {{ .Token }} code below is a
+    reliable fallback: type it on the "check your email" screen — it never
+    depends on clicking the correct link.
 -->
 <html lang="en">
   <head>
@@ -32,7 +29,7 @@
     style="
       margin: 0;
       padding: 0;
-      background-color: #050507;
+      background-color: #06060a;
       color: #ffffff;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
         Helvetica, Arial, sans-serif;
@@ -48,10 +45,10 @@
         overflow: hidden;
         font-size: 1px;
         line-height: 1px;
-        color: #050507;
+        color: #06060a;
       "
     >
-      Tap the button to sign into EliteVault — your AI ecommerce auditor.
+      Tap the button or use code {{ .Token }} to sign into EliteVault.
     </div>
 
     <table
@@ -60,7 +57,7 @@
       cellspacing="0"
       border="0"
       width="100%"
-      style="background-color: #050507"
+      style="background-color: #06060a"
     >
       <tr>
         <td align="center" style="padding: 32px 16px">
@@ -75,18 +72,18 @@
               width: 100%;
               max-width: 600px;
               background-color: #0a0a0f;
-              border: 1px solid rgba(255, 255, 255, 0.05);
+              border: 1px solid rgba(255, 255, 255, 0.06);
               border-radius: 16px;
               overflow: hidden;
             "
           >
-            <!-- Top gold accent bar -->
+            <!-- Top teal accent bar -->
             <tr>
               <td
                 height="3"
                 style="
                   height: 3px;
-                  background-color: #d4af37;
+                  background-color: #2dd4bf;
                   line-height: 3px;
                   font-size: 0;
                 "
@@ -105,7 +102,7 @@
                   border="0"
                 >
                   <tr>
-                    <!-- Diamond mark in gold -->
+                    <!-- Vault diamond mark in teal -->
                     <td style="vertical-align: middle">
                       <table
                         role="presentation"
@@ -115,23 +112,22 @@
                       >
                         <tr>
                           <td
-                            width="32"
-                            height="32"
+                            width="34"
+                            height="34"
                             align="center"
                             style="
-                              width: 32px;
-                              height: 32px;
-                              background-color: #d4af37;
-                              border-radius: 8px;
-                              color: #0a0a0f;
-                              font-family: 'Georgia', serif;
-                              font-size: 18px;
-                              font-weight: 700;
-                              line-height: 32px;
+                              width: 34px;
+                              height: 34px;
+                              background-color: #0c1f1d;
+                              border: 1px solid rgba(45, 212, 191, 0.35);
+                              border-radius: 9px;
+                              color: #2dd4bf;
+                              font-size: 17px;
+                              line-height: 34px;
                               text-align: center;
                             "
                           >
-                            ◆
+                            &#9670;
                           </td>
                         </tr>
                       </table>
@@ -195,9 +191,9 @@
                   <tr>
                     <td
                       align="center"
-                      bgcolor="#D4AF37"
+                      bgcolor="#2DD4BF"
                       style="
-                        background-color: #d4af37;
+                        background-color: #2dd4bf;
                         border-radius: 10px;
                         padding: 0;
                       "
@@ -208,7 +204,7 @@
                         style="
                           display: inline-block;
                           padding: 14px 32px;
-                          color: #0a0a0f;
+                          color: #06060a;
                           font-family: -apple-system, BlinkMacSystemFont,
                             'Segoe UI', Roboto, sans-serif;
                           font-size: 15px;
@@ -233,12 +229,70 @@
                   <a
                     href="{{ .ConfirmationURL }}"
                     style="
-                      color: rgba(212, 175, 55, 0.7);
+                      color: rgba(45, 212, 191, 0.85);
                       word-break: break-all;
                       text-decoration: underline;
                     "
                     >{{ .ConfirmationURL }}</a
                   >
+                </p>
+              </td>
+            </tr>
+
+            <!-- 6-digit code fallback — the reliable path. Type it on the
+                 "check your email" screen; never depends on clicking a link. -->
+            <tr>
+              <td style="padding: 20px 40px 0 40px" align="left">
+                <table
+                  role="presentation"
+                  cellpadding="0"
+                  cellspacing="0"
+                  border="0"
+                  width="100%"
+                  style="
+                    background-color: rgba(45, 212, 191, 0.05);
+                    border: 1px solid rgba(45, 212, 191, 0.2);
+                    border-radius: 10px;
+                  "
+                >
+                  <tr>
+                    <td style="padding: 16px 18px" align="center">
+                      <p
+                        style="
+                          margin: 0 0 8px 0;
+                          color: rgba(255, 255, 255, 0.55);
+                          font-size: 12px;
+                          letter-spacing: 0.08em;
+                          text-transform: uppercase;
+                        "
+                      >
+                        Or enter this code on the sign-in screen
+                      </p>
+                      <p
+                        style="
+                          margin: 0;
+                          color: #2dd4bf;
+                          font-family: 'Courier New', Courier, monospace;
+                          font-size: 30px;
+                          font-weight: 700;
+                          letter-spacing: 8px;
+                        "
+                      >
+                        {{ .Token }}
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+                <p
+                  style="
+                    margin: 10px 0 0 0;
+                    color: rgba(255, 255, 255, 0.3);
+                    font-size: 12px;
+                    line-height: 1.5;
+                  "
+                >
+                  Always open your most recent EliteVault email — older links and
+                  codes stop working.
                 </p>
               </td>
             </tr>
@@ -265,7 +319,7 @@
                 <p
                   style="
                     margin: 0 0 16px 0;
-                    color: rgba(212, 175, 55, 0.8);
+                    color: rgba(45, 212, 191, 0.9);
                     font-size: 11px;
                     font-weight: 600;
                     letter-spacing: 0.12em;
@@ -296,12 +350,12 @@
                             width="24"
                             style="
                               vertical-align: top;
-                              color: #d4af37;
+                              color: #2dd4bf;
                               font-size: 16px;
                               line-height: 22px;
                             "
                           >
-                            ◆
+                            &#9670;
                           </td>
                           <td style="vertical-align: top; padding-left: 8px">
                             <p
@@ -347,12 +401,12 @@
                             width="24"
                             style="
                               vertical-align: top;
-                              color: #d4af37;
+                              color: #2dd4bf;
                               font-size: 16px;
                               line-height: 22px;
                             "
                           >
-                            ◆
+                            &#9670;
                           </td>
                           <td style="vertical-align: top; padding-left: 8px">
                             <p
@@ -374,7 +428,7 @@
                                 line-height: 1.5;
                               "
                             >
-                              50+ DTC brands actually generating revenue right
+                              45+ DTC brands actually generating revenue right
                               now. Search by prompt or screenshot.
                             </p>
                           </td>
@@ -397,12 +451,12 @@
                             width="24"
                             style="
                               vertical-align: top;
-                              color: #d4af37;
+                              color: #2dd4bf;
                               font-size: 16px;
                               line-height: 22px;
                             "
                           >
-                            ◆
+                            &#9670;
                           </td>
                           <td style="vertical-align: top; padding-left: 8px">
                             <p
@@ -446,8 +500,8 @@
                   border="0"
                   width="100%"
                   style="
-                    background-color: rgba(212, 175, 55, 0.04);
-                    border: 1px solid rgba(212, 175, 55, 0.18);
+                    background-color: rgba(45, 212, 191, 0.05);
+                    border: 1px solid rgba(45, 212, 191, 0.2);
                     border-radius: 10px;
                   "
                 >
@@ -461,11 +515,12 @@
                           line-height: 1.5;
                         "
                       >
-                        Start free with 9 hand-picked winners. Pro
-                        <strong style="color: #d4af37">$19/mo</strong> unlocks
-                        the analyzer. Scale
-                        <strong style="color: #d4af37">$49/mo</strong> adds
-                        the scenario modeler &amp; API.
+                        Start free with one audit of your own store + 9
+                        hand-picked winners. Pro
+                        <strong style="color: #2dd4bf">$19/mo</strong> unlocks
+                        unlimited audits &amp; your prioritized fixes. Scale
+                        <strong style="color: #2dd4bf">$29/mo</strong> adds the
+                        7-day Meta Ads modeler &amp; API.
                       </p>
                     </td>
                   </tr>
