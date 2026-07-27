@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import type { EmailOtpType } from "@supabase/supabase-js";
 
 // v3.9.1 — edge runtime kills cold-start latency on the auth callback.
 // Node functions on Vercel can cold-start at 500-1000ms; edge starts
@@ -30,6 +31,13 @@ export const runtime = "edge";
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
+  // Token-hash flow (Supabase SSR recommended for email links). Unlike the
+  // PKCE `code`, a token_hash is self-contained — it doesn't depend on the
+  // single code-verifier cookie that a newer sign-in request overwrites, so
+  // an earlier email's link keeps working. Activated by pointing the Supabase
+  // magic-link email template at ...?token_hash={{ .TokenHash }}&type=email.
+  const tokenHash = searchParams.get("token_hash");
+  const otpType = searchParams.get("type") as EmailOtpType | null;
   const errParam = searchParams.get("error");
   const errDesc = searchParams.get("error_description");
   // Only accept SAME-ORIGIN relative paths for `next`. Without this guard,
@@ -79,7 +87,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if (!code) {
+  if (!code && !(tokenHash && otpType)) {
     return NextResponse.redirect(
       `${origin}/sign-in?message=${encodeURIComponent(
         "Missing authorization code. Try signing in again.",
@@ -117,24 +125,36 @@ export async function GET(request: NextRequest) {
     },
   );
 
-  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+  // Prefer the token-hash flow when present (self-contained, survives a newer
+  // sign-in request); otherwise fall back to the PKCE code exchange. Keeping
+  // both means older `code` links AND newer token_hash links both work — a
+  // safe, no-flag-day migration.
+  const { data, error } =
+    tokenHash && otpType
+      ? await supabase.auth.verifyOtp({ type: otpType, token_hash: tokenHash })
+      : await supabase.auth.exchangeCodeForSession(code!);
 
   console.log("[auth/callback] exchange result", {
+    flow: tokenHash ? "token_hash" : "pkce",
     ok: !error,
     error: error?.message ?? null,
     userId: data?.user?.id ?? null,
-    sessionExpiresAt: data?.session?.expires_at ?? null,
     cookiesWritten,
     cookieNamesWritten,
     redirectTo: `${origin}${next}`,
   });
 
   if (error) {
-    console.error("[auth callback] exchange failed:", error);
+    console.error("[auth callback] verify failed:", error.message);
+    // Used/expired links are the common case (single-use OTP, or an older
+    // email clicked after a newer link was requested). Give a clear recovery
+    // message instead of a raw error, and keep `next` so the fresh link lands
+    // back where they intended.
+    const msg = /expired|invalid|not found|used|otp/i.test(error.message)
+      ? "That sign-in link has already been used or expired. Enter your email to get a fresh one — always open the most recent EliteVault email."
+      : `Sign-in failed: ${error.message}`;
     return NextResponse.redirect(
-      `${origin}/sign-in?message=${encodeURIComponent(
-        `Sign-in failed: ${error.message}`,
-      )}`,
+      `${origin}/sign-in?next=${encodeURIComponent(next)}&message=${encodeURIComponent(msg)}`,
     );
   }
 
