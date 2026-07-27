@@ -13,6 +13,7 @@ import {
   sendMagicLink,
   signInWithPassword,
   signUpWithPassword,
+  verifyEmailOtp,
   type AuthState,
 } from "@/app/actions/auth";
 
@@ -266,6 +267,12 @@ function MagicLinkForm({ nextUrl }: { nextUrl: string }) {
         <p className="mt-4 text-[11px] text-white/35">
           {t("auth.checkEmailHelper")}
         </p>
+
+        {/* Code entry — the reliable path. The link in an OLDER email stops
+            working once a newer link is requested (Supabase invalidates it),
+            so instead of hunting for the right email to click, paste the
+            6-digit code from the most recent email. */}
+        <OtpVerifyForm email={email} nextUrl={nextUrl} />
       </motion.div>
     );
   }
@@ -314,6 +321,62 @@ function MagicLinkForm({ nextUrl }: { nextUrl: string }) {
         {t("auth.magicHelper")}
       </p>
     </motion.form>
+  );
+}
+
+// ─── OTP code verification (reliable alternative to clicking the link) ────
+
+function OtpVerifyForm({
+  email,
+  nextUrl,
+}: {
+  email: string;
+  nextUrl: string;
+}) {
+  const router = useRouter();
+  const [state, formAction, isPending] = useActionState<AuthState, FormData>(
+    verifyEmailOtp,
+    { status: "idle" },
+  );
+
+  useEffect(() => {
+    if (state.status === "success" && state.redirectTo) {
+      router.replace(state.redirectTo);
+      router.refresh();
+    }
+  }, [state, router]);
+
+  return (
+    <form action={formAction} method="post" className="mt-5 pt-4 border-t border-white/[0.06] text-left">
+      <input type="hidden" name="next" value={nextUrl} />
+      <input type="hidden" name="email" value={email} />
+      <Label htmlFor="otp-code" className="text-white/60">
+        Or paste the 6-digit code from the email
+      </Label>
+      <div className="mt-1.5 flex gap-2">
+        <Input
+          id="otp-code"
+          name="token"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          pattern="[0-9]*"
+          maxLength={6}
+          placeholder="123456"
+          required
+          disabled={isPending}
+          className="tracking-[0.4em] text-center font-mono"
+        />
+        <Button type="submit" size="lg" disabled={isPending}>
+          {isPending ? "Verifying…" : "Verify"}
+        </Button>
+      </div>
+      {state.status === "error" && (
+        <p className="mt-2 text-xs text-destructive">{state.message}</p>
+      )}
+      <p className="mt-2 text-[11px] text-white/35">
+        Always use the most recent email — older codes and links stop working.
+      </p>
+    </form>
   );
 }
 

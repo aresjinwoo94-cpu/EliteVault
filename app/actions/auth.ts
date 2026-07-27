@@ -148,6 +148,54 @@ export async function sendMagicLink(
   };
 }
 
+/**
+ * Verify the 6-digit code from the magic-link email (OTP).
+ *
+ * Robust alternative to clicking the link: Supabase invalidates the previous
+ * magic-link token when a new one is requested, so an older email's LINK stops
+ * working — but the user can always read the code off the most recent email and
+ * type it here. No link-staleness, no Gmail-threading confusion, no email
+ * link-prefetch consuming the token. Server action, so the session cookies it
+ * sets propagate to the browser.
+ *
+ * Requires the Supabase "Magic Link" email template to include {{ .Token }}.
+ */
+export async function verifyEmailOtp(
+  _prev: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const token = String(formData.get("token") ?? "").replace(/\s/g, "");
+  const next = String(formData.get("next") ?? DEFAULT_POST_AUTH_ROUTE);
+
+  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    return { status: "error", message: "Please enter a valid email." };
+  }
+  if (!/^\d{6}$/.test(token)) {
+    return {
+      status: "error",
+      message: "Enter the 6-digit code from your most recent email.",
+    };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: "email",
+  });
+
+  if (error) {
+    return {
+      status: "error",
+      message:
+        "That code is invalid or expired. Use the code from your most recent email, or resend a new link.",
+    };
+  }
+
+  return { status: "success", message: "Signed in", redirectTo: next };
+}
+
 /** Kept for compatibility — if Google OAuth gets enabled later. */
 export async function signInWithGoogle(formData: FormData) {
   const next = String(formData.get("next") ?? DEFAULT_POST_AUTH_ROUTE);
