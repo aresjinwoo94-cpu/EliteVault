@@ -41,10 +41,16 @@ export function OwnerMonitor() {
       return new Promise((resolve, reject) => {
         if ((window as any).Chart) return resolve((window as any).Chart);
         const s = document.createElement("script");
-        s.src = "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js";
+        // Self-hosted (same-origin) — the old CDN could hang behind an
+        // ad-blocker / offline and gate the WHOLE dashboard ("Cargando…"
+        // forever). Local + a hard timeout means charts never block the data.
+        s.src = "/vendor/chart.umd.min.js";
         s.onload = () => resolve((window as any).Chart);
         s.onerror = () => reject(new Error("No se pudo cargar Chart.js"));
         document.head.appendChild(s);
+        setTimeout(() => {
+          if (!(window as any).Chart) reject(new Error("Chart.js timeout"));
+        }, 6000);
       });
     }
 
@@ -64,6 +70,7 @@ export function OwnerMonitor() {
     }
 
     function drawSpark(id: string, data: number[], color: string) {
+      if (!Chart()) return;
       const ctx = $(id) as HTMLCanvasElement | null; if (!ctx) return;
       if (charts[id]) charts[id].destroy();
       charts[id] = new (Chart())(ctx, {
@@ -107,7 +114,16 @@ export function OwnerMonitor() {
     async function renderRevenueChart() {
       const t = theme(); const ctx = $("evm-revchart") as HTMLCanvasElement | null; if (!ctx) return;
       const s = await api("revenue-series", { range: currentRange });
+      // §3 — clean empty state when there's no money in the range (rather than
+      // a chart with a negative "-USD 0" axis).
+      const hasData = s.some((p: any) => (p.revenue || 0) > 0 || (p.orders || 0) > 0);
+      const emptyEl = $("evm-revchart-empty");
+      if (emptyEl) (emptyEl as HTMLElement).style.display = hasData ? "none" : "flex";
+      ctx.style.display = hasData ? "block" : "none";
+      if (!hasData) { if (charts.rev) { charts.rev.destroy(); charts.rev = null; } return; }
+      if (!Chart()) return;
       if (charts.rev) charts.rev.destroy();
+      const maxRev = Math.max(1, ...s.map((p: any) => p.revenue || 0));
       charts.rev = new (Chart())(ctx, {
         data: { labels: s.map((p: any) => p.t), datasets: [
           { type: "bar", label: "Suscripciones", data: s.map((p: any) => p.orders), yAxisID: "y1", backgroundColor: t.accent2 + "55", borderRadius: 4, maxBarThickness: 16, order: 2 },
@@ -115,23 +131,42 @@ export function OwnerMonitor() {
         ] },
         options: { responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
           plugins: { legend: { labels: { color: t.text, usePointStyle: true, boxWidth: 8 } }, tooltip: { callbacks: { label: (c: any) => (c.dataset.label === "Ingresos" ? "  Ingresos: " + fmtMoney(c.parsed.y) : "  Suscripciones: " + fmtNum(c.parsed.y)) } } },
-          scales: { x: { grid: { color: t.grid }, ticks: { color: t.text, maxRotation: 0, autoSkip: true, maxTicksLimit: 12 } }, y: { position: "left", grid: { color: t.grid }, ticks: { color: t.text, callback: (v: any) => fmtMoney(v) } }, y1: { position: "right", grid: { display: false }, ticks: { color: t.text } } } },
+          // Revenue/orders are never negative → axes start at 0 with integer ticks.
+          scales: { x: { grid: { color: t.grid }, ticks: { color: t.text, maxRotation: 0, autoSkip: true, maxTicksLimit: 12 } }, y: { position: "left", beginAtZero: true, min: 0, suggestedMax: Math.ceil(maxRev * 1.2), grid: { color: t.grid }, ticks: { color: t.text, precision: 0, callback: (v: any) => fmtMoney(v) } }, y1: { position: "right", beginAtZero: true, min: 0, grid: { display: false }, ticks: { color: t.text, precision: 0 } } } },
       });
     }
 
     async function renderFunnel() {
       const box = $("evm-funnel"); if (!box) return;
       const data = await api("funnel", { range: currentRange });
-      if (!data.length) { box.innerHTML = '<div class="empty">Sin datos.</div>'; return; }
+      if (!data.length) { box.innerHTML = '<div class="empty">Sin datos en este rango.</div>'; return; }
       const max = data[0].count || 1;
-      let worstIdx = -1, worstDrop = -1;
-      for (let i = 1; i < data.length; i++) { const drop = data[i - 1].count ? (1 - data[i].count / data[i - 1].count) * 100 : 0; if (drop > worstDrop) { worstDrop = drop; worstIdx = i; } }
+      // "Mayor fuga" = the biggest step-over-step DECREASE (increases ignored).
+      let worstIdx = -1, worstDrop = 0;
+      for (let i = 1; i < data.length; i++) {
+        const prev = data[i - 1].count;
+        const drop = prev ? (1 - data[i].count / prev) * 100 : 0;
+        if (drop > worstDrop) { worstDrop = drop; worstIdx = i; }
+      }
       box.innerHTML = data.map((step: any, i: number) => {
         const width = Math.max(8, (step.count / max) * 100);
-        const prev = i ? data[i - 1].count : null; const dropPct = prev ? (1 - step.count / prev) * 100 : 0; const rate = ((step.count / max) * 100).toFixed(1);
-        const leak = i === worstIdx ? " leak" : "";
-        return `<div><div class="funnel-bar-track"><div class="funnel-bar" style="width:${width}%">${fmtNum(step.count)}</div></div><div class="funnel-meta"><span class="stage">${esc(step.stage)}</span>${i ? `<span class="drop${leak}">▼ ${dropPct.toFixed(1)}% caída${i === worstIdx ? " · mayor fuga" : ""}</span>` : `<span class="rate">100% (entrada)</span>`}<span class="rate">${rate}%</span></div></div>`;
-      }).join("");
+        const prev = i ? data[i - 1].count : null;
+        const rate = ((step.count / max) * 100).toFixed(1);
+        let meta: string;
+        if (!i) {
+          meta = `<span class="rate">100% (entrada)</span>`;
+        } else {
+          // Signed change vs previous stage: + went up, − dropped. Never "▼ -X%".
+          const change = prev ? (step.count / prev - 1) * 100 : 0;
+          if (change >= 0) {
+            meta = `<span class="drop up">▲ +${change.toFixed(1)}% vs etapa previa</span>`;
+          } else {
+            const leak = i === worstIdx ? " leak" : "";
+            meta = `<span class="drop${leak}">▼ ${Math.abs(change).toFixed(1)}% caída${i === worstIdx ? " · mayor fuga" : ""}</span>`;
+          }
+        }
+        return `<div><div class="funnel-bar-track"><div class="funnel-bar" style="width:${width}%">${fmtNum(step.count)}</div></div><div class="funnel-meta"><span class="stage">${esc(step.stage)}</span>${meta}<span class="rate">${rate}%</span></div></div>`;
+      }).join("") + `<div class="funnel-note">Cada etapa proviene de una fuente independiente (Stripe + Supabase); no es un embudo estrictamente secuencial, así que una etapa posterior puede superar a otra.</div>`;
     }
 
     const followed = new Set<string>();
@@ -156,7 +191,7 @@ export function OwnerMonitor() {
       ($("evm-live-top") as HTMLElement).textContent = fmtNum(live.count);
       setTag("evm-tag-live", live.source);
       const sb = $("evm-sessions");
-      if (sb) sb.innerHTML = (live.sessions || []).map((s: any) => `<tr><td>${esc(s.country)}</td><td class="muted">${esc(s.city)}</td><td class="muted">${esc(s.device)}</td><td class="muted mono">${esc(s.page)}</td><td class="mono">${durStr(s.durationSec)}</td></tr>`).join("") || `<tr><td colspan="5"><div class="empty">Sin sesiones activas.</div></td></tr>`;
+      if (sb) sb.innerHTML = (live.sessions || []).map((s: any) => `<tr><td>${esc(s.country)}${s.internal ? ' <span class="tag amber">tú</span>' : ""}</td><td class="muted">${esc(s.city)}</td><td class="muted">${esc(s.device)}</td><td class="muted mono">${esc(s.page)}</td><td class="mono">${durStr(s.durationSec)}</td></tr>`).join("") || `<tr><td colspan="5"><div class="empty">Sin sesiones activas ahora mismo.</div></td></tr>`;
       const byC: Record<string, number> = {}; (live.sessions || []).forEach((s: any) => (byC[s.country] = (byC[s.country] || 0) + 1));
       const arr = Object.entries(byC).map(([k, v]) => ({ name: k, value: v })).sort((a, b) => b.value - a.value);
       const max = Math.max(1, ...arr.map((a) => a.value));
@@ -165,6 +200,7 @@ export function OwnerMonitor() {
     }
 
     function donut(id: string, data: any[], colors: string[], fmt: (v: any) => string) {
+      if (!Chart()) return;
       const t = theme(); const ctx = $(id) as HTMLCanvasElement | null; if (!ctx) return;
       if (charts[id]) charts[id].destroy();
       charts[id] = new (Chart())(ctx, {
@@ -178,10 +214,22 @@ export function OwnerMonitor() {
       const d = await api("demographics", { range: currentRange });
       const max = Math.max(1, ...d.countries.map((c: any) => c.value));
       const dc = $("evm-demo-country");
-      if (dc) dc.innerHTML = d.countries.map((c: any) => `<div class="country-row"><span>${esc(c.name.split(" ")[0])}</span><div style="display:flex;flex-direction:column;gap:3px"><div style="display:flex;justify-content:space-between;font-size:12px"><span class="muted">${esc(c.name.split(" ").slice(1).join(" "))}</span><span class="money">${fmtMoney(c.value)}</span></div><div class="country-bar-track"><div class="country-bar" style="width:${(c.value / max) * 100}%"></div></div></div><span></span></div>`).join("");
-      donut("evm-devices", d.devices, [t.accent, t.accent2, t.amber], (v) => fmtNum(v));
-      donut("evm-sources", d.sources, [t.accent, t.accent2, t.green, t.amber, t.purple, t.red], (v) => fmtNum(v));
-      donut("evm-newret", d.newVsReturning, [t.accent2, t.text], (v) => fmtNum(v));
+      if (dc) dc.innerHTML = d.countries.length
+        ? d.countries.map((c: any) => `<div class="country-row"><span>${esc(c.name.split(" ")[0])}</span><div style="display:flex;flex-direction:column;gap:3px"><div style="display:flex;justify-content:space-between;font-size:12px"><span class="muted">${esc(c.name.split(" ").slice(1).join(" "))}</span><span class="money">${fmtMoney(c.value)}</span></div><div class="country-bar-track"><div class="country-bar" style="width:${(c.value / max) * 100}%"></div></div></div><span></span></div>`).join("")
+        : '<div class="empty">Sin cargos en este rango.</div>';
+      const toggleChart = (canvasId: string, emptyId: string, has: boolean) => {
+        const c = $(canvasId), e = $(emptyId);
+        if (c) (c as HTMLElement).style.display = has ? "block" : "none";
+        if (e) (e as HTMLElement).style.display = has ? "none" : "flex";
+      };
+      const sum = (arr: any[]) => arr.reduce((a, x) => a + (x.value || 0), 0);
+      const devHas = sum(d.devices) > 0, srcHas = sum(d.sources) > 0, nrHas = sum(d.newVsReturning) > 0;
+      toggleChart("evm-devices", "evm-devices-empty", devHas);
+      toggleChart("evm-sources", "evm-sources-empty", srcHas);
+      toggleChart("evm-newret", "evm-newret-empty", nrHas);
+      if (devHas) donut("evm-devices", d.devices, [t.accent, t.accent2, t.amber], (v) => fmtNum(v));
+      if (srcHas) donut("evm-sources", d.sources, [t.accent, t.accent2, t.green, t.amber, t.purple, t.red], (v) => fmtNum(v));
+      if (nrHas) donut("evm-newret", d.newVsReturning, [t.accent2, t.text], (v) => fmtNum(v));
       setTag("evm-tag-dev", d.source); setTag("evm-tag-src", d.source); setTag("evm-tag-nr", d.source);
     }
 
@@ -193,7 +241,10 @@ export function OwnerMonitor() {
     function renderLiveTick() { tick++; runRenders([renderLive, renderOrders]); stamp(); }
 
     (async () => {
-      try { await loadChart(); } catch (e: any) { setDataState("err", e.message); return; }
+      // Charts are OPTIONAL — if the (self-hosted) lib fails to load, the KPIs,
+      // tables, funnel and live sections still render with real data. §1: the
+      // dashboard must never hang on "Cargando…".
+      try { await loadChart(); } catch { /* proceed without charts */ }
       if (disposed) return;
       document.querySelectorAll(".evm .range-group button").forEach((btn) => ((btn as HTMLElement).onclick = () => {
         document.querySelectorAll(".evm .range-group button").forEach((b) => b.classList.remove("active"));
@@ -234,6 +285,13 @@ export function OwnerMonitor() {
         <div className="card kpi"><span className="label">Distribución de planes</span><span className="value" id="evm-plansplit" style={{ fontSize: 15, fontWeight: 700 }}>—</span></div>
       </div>
 
+      {/* §8 — "En vivo" first: it's what the owner wants to watch. */}
+      <div className="sec-title">En vivo · quién está en el sitio ahora</div>
+      <div className="row-2b" style={{ marginTop: 0 }}>
+        <div className="card"><div className="sec-title">Visitantes en tiempo real <span className="tag" id="evm-tag-live">real</span></div><div className="live-counter"><span className="big" id="evm-live-big">0</span><span className="muted">sesiones activas<br />ahora mismo</span></div><div className="country-list" id="evm-live-country" /></div>
+        <div className="card"><div className="sec-title">Sesiones activas <span className="muted" style={{ fontSize: 11, textTransform: "none", letterSpacing: 0 }}>· la duración incrementa en vivo</span></div><div className="table-scroll"><table><thead><tr><th>País</th><th>Ciudad</th><th>Dispositivo</th><th>Página</th><th>Duración</th></tr></thead><tbody id="evm-sessions" /></table></div></div>
+      </div>
+
       <div className="sec-title">Resumen del periodo</div>
       <div className="kpi-row">
         <div className="card kpi"><span className="label">Ingresos (Stripe)</span><span className="value" id="evm-rev">—</span><span className="delta" id="evm-rev-d" /><canvas className="spark" id="evm-spark-rev" width={100} height={42} /></div>
@@ -243,7 +301,7 @@ export function OwnerMonitor() {
       </div>
 
       <div className="row-2">
-        <div className="card"><div className="sec-title">Ingresos en el tiempo</div><div className="chart-box"><canvas id="evm-revchart" /></div></div>
+        <div className="card"><div className="sec-title">Ingresos en el tiempo</div><div className="chart-box"><canvas id="evm-revchart" /><div id="evm-revchart-empty" className="chart-empty">Sin ingresos en este rango.</div></div></div>
         <div className="card"><div className="sec-title">Embudo de conversión <span className="tag">PRIORITARIO</span></div><div className="funnel" id="evm-funnel" /></div>
       </div>
 
@@ -257,25 +315,20 @@ export function OwnerMonitor() {
         <div className="table-scroll"><table><thead><tr><th>ID</th><th>Cliente</th><th>Plan</th><th>Valor/mes</th><th>País</th><th>Hace</th></tr></thead><tbody id="evm-orders" /></table></div>
       </div>
 
-      <div className="row-2b">
-        <div className="card"><div className="sec-title">Visitantes en tiempo real <span className="tag amber" id="evm-tag-live">demo</span></div><div className="live-counter"><span className="big" id="evm-live-big">0</span><span className="muted">sesiones activas<br />ahora mismo</span></div><div className="country-list" id="evm-live-country" /></div>
-        <div className="card"><div className="sec-title">Sesiones activas</div><div className="table-scroll"><table><thead><tr><th>País</th><th>Ciudad</th><th>Dispositivo</th><th>Página</th><th>Duración</th></tr></thead><tbody id="evm-sessions" /></table></div></div>
-      </div>
-
       <div className="sec-title">Demografía y tráfico</div>
       <div className="demo-grid">
         <div className="card"><div className="sec-title">Top países (por ingresos · Stripe)</div><div className="country-list" id="evm-demo-country" /></div>
-        <div className="card"><div className="sec-title">Dispositivos <span className="tag amber" id="evm-tag-dev">demo</span></div><div className="chart-box sm"><canvas id="evm-devices" /></div></div>
-        <div className="card"><div className="sec-title">Fuentes de tráfico <span className="tag amber" id="evm-tag-src">demo</span></div><div className="chart-box sm"><canvas id="evm-sources" /></div></div>
-        <div className="card"><div className="sec-title">Nuevos vs recurrentes <span className="tag amber" id="evm-tag-nr">demo</span></div><div className="chart-box sm"><canvas id="evm-newret" /></div></div>
+        <div className="card"><div className="sec-title">Dispositivos <span className="tag" id="evm-tag-dev">real</span></div><div className="chart-box sm"><canvas id="evm-devices" /><div id="evm-devices-empty" className="chart-empty">Sin tráfico en este rango.</div></div></div>
+        <div className="card"><div className="sec-title">Fuentes de tráfico <span className="tag" id="evm-tag-src">real</span></div><div className="chart-box sm"><canvas id="evm-sources" /><div id="evm-sources-empty" className="chart-empty">Sin tráfico en este rango.</div></div></div>
+        <div className="card"><div className="sec-title">Nuevos vs recurrentes <span className="tag" id="evm-tag-nr">real</span></div><div className="chart-box sm"><canvas id="evm-newret" /><div id="evm-newret-empty" className="chart-empty">Sin tráfico en este rango.</div></div></div>
       </div>
     </div>
   );
 }
 
 const CSS = `
-.evm { --bg:#0a0e17; --bg-card:#131b2c; --bg-hover:#1a2236; --border:#1f2937; --border-soft:#1a2233; --text:#e6edf6; --text-dim:#8b97ad; --text-faint:#5b6679; --accent:#6366f1; --accent-2:#22d3ee; --green:#34d399; --red:#f87171; --amber:#fbbf24; --purple:#a78bfa; --grid:rgba(255,255,255,0.05);
-  background:var(--bg); color:var(--text); padding:20px; min-height:100%; font-size:14px; }
+.evm { --bg:#0a0a0f; --bg-card:#101019; --bg-hover:#16161f; --border:rgba(255,255,255,0.08); --border-soft:rgba(255,255,255,0.05); --text:#e6edf6; --text-dim:#8b97ad; --text-faint:#5b6679; --accent:#2dd4bf; --accent-2:#22d3ee; --green:#34d399; --red:#f87171; --amber:#fbbf24; --purple:#6366f1; --grad-brand:linear-gradient(90deg,#34d399,#22d3ee,#6366f1); --grid:rgba(255,255,255,0.05);
+  background:var(--bg); color:var(--text); padding:20px; min-height:100%; font-size:14px; font-variant-numeric:tabular-nums; }
 .evm * { box-sizing:border-box; }
 .evm .topbar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
 .evm .title { font-weight:800; font-size:18px; }
@@ -284,7 +337,7 @@ const CSS = `
 .evm .refr { font-size:12px; color:var(--text-faint); }
 .evm .range-group { display:flex; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:3px; }
 .evm .range-group button { border:0; background:transparent; color:var(--text-dim); padding:6px 12px; border-radius:7px; cursor:pointer; font-size:13px; font-weight:600; }
-.evm .range-group button.active { background:var(--accent); color:#fff; }
+.evm .range-group button.active { background:var(--accent); color:#06060a; }
 .evm .badge { display:flex; align-items:center; gap:8px; background:var(--bg-card); border:1px solid var(--border); padding:6px 12px; border-radius:10px; font-size:13px; font-weight:600; }
 .evm .live-dot { width:9px; height:9px; border-radius:50%; background:var(--green); animation:evpulse 1.6s infinite; }
 @keyframes evpulse { 0%{box-shadow:0 0 0 0 rgba(52,211,153,.6)} 70%{box-shadow:0 0 0 8px rgba(52,211,153,0)} 100%{box-shadow:0 0 0 0 rgba(52,211,153,0)} }
@@ -292,9 +345,10 @@ const CSS = `
 .evm .sdot.ok { background:var(--green); } .evm .sdot.err { background:var(--red); }
 .evm .notice { border:1px solid var(--border); background:var(--bg-card); border-radius:12px; padding:12px 16px; font-size:13px; color:var(--text-dim); margin-bottom:18px; }
 .evm .notice b { color:var(--text); }
-.evm .card { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:18px; }
+.evm .card { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:18px; transition:border-color .22s cubic-bezier(.22,1,.36,1), box-shadow .22s cubic-bezier(.22,1,.36,1); }
+.evm .card:hover { border-color:rgba(45,212,191,.30); box-shadow:0 0 24px rgba(45,212,191,.10); }
 .evm .sec-title { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-dim); margin-bottom:12px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-.evm .tag { font-size:10px; background:var(--accent); color:#fff; padding:2px 7px; border-radius:6px; }
+.evm .tag { font-size:10px; background:var(--accent); color:#06060a; padding:2px 7px; border-radius:6px; font-weight:700; }
 .evm .tag.amber { background:var(--amber); color:#1a1a1a; }
 .evm .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:22px; }
 .evm .kpi { position:relative; overflow:hidden; display:flex; flex-direction:column; gap:6px; }
@@ -310,9 +364,11 @@ const CSS = `
 .evm .card + .card { margin-top:22px; }
 .evm .funnel { display:flex; flex-direction:column; gap:8px; }
 .evm .funnel-bar-track { background:var(--bg-hover); border-radius:8px; overflow:hidden; height:40px; }
-.evm .funnel-bar { height:100%; border-radius:8px; background:linear-gradient(90deg,var(--accent),var(--accent-2)); display:flex; align-items:center; padding:0 12px; color:#fff; font-weight:700; white-space:nowrap; min-width:fit-content; }
+.evm .funnel-bar { height:100%; border-radius:8px; background:var(--grad-brand); display:flex; align-items:center; padding:0 12px; color:#06060a; font-weight:700; white-space:nowrap; min-width:fit-content; }
 .evm .funnel-meta { display:flex; justify-content:space-between; gap:8px; font-size:12px; margin:6px 2px 2px; }
-.evm .funnel-meta .stage { color:var(--text); font-weight:600; } .evm .funnel-meta .drop { color:var(--red); font-weight:700; } .evm .funnel-meta .drop.leak { background:rgba(248,113,113,.15); padding:1px 8px; border-radius:6px; } .evm .funnel-meta .rate { color:var(--text-dim); }
+.evm .funnel-meta .stage { color:var(--text); font-weight:600; } .evm .funnel-meta .drop { color:var(--red); font-weight:700; } .evm .funnel-meta .drop.up { color:var(--green); } .evm .funnel-meta .drop.leak { background:rgba(248,113,113,.15); padding:1px 8px; border-radius:6px; } .evm .funnel-meta .rate { color:var(--text-dim); }
+.evm .funnel-note { font-size:11px; color:var(--text-faint); margin-top:8px; line-height:1.45; }
+.evm .chart-empty { display:none; position:absolute; inset:0; align-items:center; justify-content:center; text-align:center; color:var(--text-faint); font-size:13px; padding:12px; }
 .evm .table-scroll { overflow-x:auto; }
 .evm table { width:100%; border-collapse:collapse; font-size:13px; }
 .evm th { text-align:left; padding:9px 12px; color:var(--text-dim); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid var(--border); }
@@ -327,7 +383,8 @@ const CSS = `
 .evm .country-list { display:flex; flex-direction:column; gap:9px; }
 .evm .country-row { display:grid; grid-template-columns:28px 1fr auto; align-items:center; gap:10px; font-size:13px; }
 .evm .country-bar-track { background:var(--bg-hover); height:8px; border-radius:999px; overflow:hidden; }
-.evm .country-bar { height:100%; background:linear-gradient(90deg,var(--accent-2),var(--accent)); border-radius:999px; }
+.evm .country-bar { height:100%; background:var(--grad-brand); border-radius:999px; }
 .evm .empty { text-align:center; color:var(--text-faint); padding:26px 12px; font-size:13px; }
 @media (max-width:1100px){ .evm .kpi-row{grid-template-columns:repeat(2,1fr)} .evm .row-2,.evm .row-2b,.evm .demo-grid{grid-template-columns:1fr} }
+@media (prefers-reduced-motion:reduce){ .evm .live-dot{ animation:none } .evm .card{ transition:none } }
 `;

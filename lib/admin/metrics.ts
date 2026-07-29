@@ -195,7 +195,7 @@ async function chargesByCountry(b: Bounds) {
 
 /* Tráfico SIEMPRE real: viene de PostHog o de la analítica first-party (page_views).
    Sin datos → ceros reales / listas vacías, NUNCA números inventados. */
-const EMPTY_LIVE = { count: 0, sessions: [] as Array<{ id: string; country: string; city: string; device: string; page: string; durationSec: number }>, source: "firstparty" as const };
+const EMPTY_LIVE = { count: 0, sessions: [] as Array<{ id: string; country: string; city: string; device: string; page: string; durationSec: number; internal: boolean }>, source: "firstparty" as const };
 const EMPTY_DEMOGRAPHICS = { devices: [] as Array<{ name: string; value: number }>, sources: [] as Array<{ name: string; value: number }>, newVsReturning: [] as Array<{ name: string; value: number }>, source: "firstparty" as const };
 
 /* ============================================================================
@@ -263,16 +263,35 @@ export async function getRecentSubscriptions() {
     const rows = (subs ?? []) as Array<{ id: string; user_id: string; plan: PlanTier; created_at: string }>;
     const ids = rows.map((s) => s.user_id);
     const emailById: Record<string, string> = {};
+    const custById: Record<string, string> = {};
     if (ids.length) {
-      const { data: profs } = await supa.from("profiles").select("id, email").in("id", ids);
-      for (const p of (profs ?? []) as Array<{ id: string; email: string }>) emailById[p.id] = p.email;
+      const { data: profs } = await supa
+        .from("profiles")
+        .select("id, email, stripe_customer_id")
+        .in("id", ids);
+      for (const p of (profs ?? []) as Array<{ id: string; email: string; stripe_customer_id: string | null }>) {
+        emailById[p.id] = p.email;
+        if (p.stripe_customer_id) custById[p.id] = p.stripe_customer_id;
+      }
     }
+    // §5 — resolve each customer's country from Stripe (best-effort, parallel).
+    const countryByUser: Record<string, string> = {};
+    await Promise.all(
+      Object.entries(custById).map(async ([uid, cid]) => {
+        try {
+          const c = await stripe.customers.retrieve(cid);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const cc = (c as any)?.address?.country || (c as any)?.shipping?.address?.country || null;
+          if (cc) countryByUser[uid] = cc;
+        } catch { /* ignore */ }
+      }),
+    );
     return rows.map((s) => ({
       id: s.id.slice(0, 14),
       customer: emailById[s.user_id] || s.user_id.slice(0, 8),
       plan: planLabel(s.plan),
       value: planValue(s.plan),
-      country: "—",
+      country: countryByUser[s.user_id] ? countryLabel(countryByUser[s.user_id]) : "—",
       time: minutesSince(s.created_at),
     }));
   } catch { return []; }
@@ -296,7 +315,9 @@ export async function getDemographics(range: Range) {
   }
   const countries = await chargesByCountry(b);
   return {
-    countries: countries.length ? countries : [{ name: "Sin cargos en el rango", value: 1 }],
+    // §5 — empty array when there are no charges (the client shows a clean
+    // empty state); NEVER a phantom "value:1" bar.
+    countries,
     devices: traffic.devices,
     sources: traffic.sources,
     newVsReturning: traffic.newVsReturning,

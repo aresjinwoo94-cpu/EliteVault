@@ -39,20 +39,47 @@ export async function fpHasAnyData(): Promise<boolean> {
   } catch { return false; }
 }
 
+const ACTIVE_WINDOW_MS = 45000; // a session is "live" if seen in the last 45s
+
+type LiveSession = { id: string; country: string; city: string; device: string; page: string; durationSec: number; internal: boolean };
+
+/**
+ * Live visitors + session duration, from the `sessions` table (heartbeat).
+ * A session is active when last_seen_at is within the last ~45s. DURATION =
+ * last_seen_at − started_at. Internal (owner) sessions are INCLUDED and flagged
+ * so the owner can see tracking works — public metrics exclude internal
+ * elsewhere (page_views). Returns empty on error / missing table.
+ */
 export async function fpLiveVisitors() {
-  const now = Date.now();
-  const rows = await fetchRange(now - 15 * 60000, now + 60000, 500);
-  const fiveMinAgo = now - 5 * 60000;
-  const liveAnon = new Set(rows.filter((r) => Date.parse(r.created_at) >= fiveMinAgo).map((r) => r.anon_id));
-  const seen = new Set<string>();
-  const sessions: Array<{ id: string; country: string; city: string; device: string; page: string; durationSec: number }> = [];
-  for (const r of rows) {
-    if (seen.has(r.anon_id)) continue;
-    seen.add(r.anon_id);
-    sessions.push({ id: r.anon_id.slice(0, 8), country: flag(r.country), city: r.city || "—", device: r.device || "—", page: r.path || "/", durationSec: 0 });
-    if (sessions.length >= 9) break;
+  const empty = { count: 0, sessions: [] as LiveSession[], source: "firstparty" as const };
+  try {
+    const supa = createSupabaseServiceClient();
+    const cutoff = iso(Date.now() - ACTIVE_WINDOW_MS);
+    const { data, error } = await supa
+      .from("sessions")
+      .select("session_id, country, city, device, path, started_at, last_seen_at, is_internal")
+      .gte("last_seen_at", cutoff)
+      .order("last_seen_at", { ascending: false })
+      .limit(50);
+    if (error || !Array.isArray(data)) return empty;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rows = data as any[];
+    const sessions: LiveSession[] = rows.slice(0, 12).map((r) => {
+      const durMs = Date.parse(r.last_seen_at) - Date.parse(r.started_at);
+      return {
+        id: String(r.session_id).slice(0, 8),
+        country: flag(r.country),
+        city: r.city || "—",
+        device: r.device || "—",
+        page: r.path || "/",
+        durationSec: Number.isFinite(durMs) ? Math.max(0, Math.round(durMs / 1000)) : 0,
+        internal: !!r.is_internal,
+      };
+    });
+    return { count: rows.length, sessions, source: "firstparty" as const };
+  } catch {
+    return empty;
   }
-  return { count: liveAnon.size, sessions, source: "firstparty" as const };
 }
 
 export async function fpVisits(gteMs: number, lteMs: number): Promise<number> {
