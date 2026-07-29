@@ -43,7 +43,7 @@ export function TwoPaths() {
   ];
 
   return (
-    <section className="py-24 md:py-32">
+    <section className="section-y">
       <div className="container max-w-6xl">
         <div className="max-w-2xl">
           <DataPill items={[t("twoPaths.pill1"), t("twoPaths.pill2")]} />
@@ -55,7 +55,7 @@ export function TwoPaths() {
           </p>
         </div>
 
-        <div className="mt-12 grid gap-4 md:grid-cols-2">
+        <div className="mt-10 grid gap-4 md:grid-cols-2">
           {cards.map((c, i) => {
             // The brand is mono-teal (champagne-*/gold-* are legacy keys that
             // resolve to the SAME teal as signal-*), so the two paths can't be
@@ -69,7 +69,7 @@ export function TwoPaths() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-80px" }}
                 transition={{ duration: 0.55, delay: i * 0.08, ease }}
-                className="group relative flex flex-col rounded-2xl border border-white/[0.06] bg-card p-7 shadow-card transition-colors hover:border-white/[0.12]"
+                className="group glow-card relative flex flex-col rounded-2xl border border-white/[0.06] bg-card p-7 shadow-card"
               >
                 <div
                   className={

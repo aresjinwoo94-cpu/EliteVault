@@ -90,7 +90,13 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["var(--font-geist)", "system-ui", "sans-serif"],
-        serif: ["var(--font-serif)", "Georgia", "serif"],
+        // Display role — General Sans (a distinctive sans, NOT a serif). The
+        // `serif` key name is kept only so existing `font-serif` heading
+        // classes keep resolving; it renders General Sans with a sans fallback,
+        // so nothing on the page is ever a serif. `display` is the semantic
+        // alias to reach for in new code.
+        serif: ["var(--font-display)", "var(--font-geist)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "var(--font-geist)", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "monospace"],
       },
       keyframes: {
@@ -143,6 +149,35 @@ const config: Config = {
           "0%,100%": { opacity: "0.18" },
           "50%": { opacity: "0.4" },
         },
+        // ── "The Scan" motion system (landing brief §5) — one language of
+        // hairlines + brand gradient + glow, all GPU-only (transform/opacity).
+        // Ambient glow bloom that breathes behind the hero mockup.
+        "glow-bloom": {
+          "0%,100%": { opacity: "0.22", transform: "translate3d(0,0,0) scale(1)" },
+          "50%": { opacity: "0.4", transform: "translate3d(0,-2%,0) scale(1.08)" },
+        },
+        // Slow drift for the hairline grid backdrop (kept tiny — ambient).
+        "grid-drift": {
+          "0%": { transform: "translate3d(0,0,0)" },
+          "100%": { transform: "translate3d(0,-40px,0)" },
+        },
+        // Horizontal scan beam that sweeps top→bottom of the scanner field.
+        "scan-beam": {
+          "0%": { transform: "translateY(-20%)", opacity: "0" },
+          "12%": { opacity: "0.5" },
+          "88%": { opacity: "0.5" },
+          "100%": { transform: "translateY(120%)", opacity: "0" },
+        },
+        // Reticle / corner-bracket subtle breathing (opacity only).
+        "reticle-breathe": {
+          "0%,100%": { opacity: "0.22" },
+          "50%": { opacity: "0.36" },
+        },
+        // Pin-drop for annotation markers (scale 0.8→1 + fade).
+        "pin-drop": {
+          "0%": { opacity: "0", transform: "scale(0.8)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -156,6 +191,12 @@ const config: Config = {
         "aurora-drift-2": "aurora-drift-2 22s ease-in-out infinite",
         "scan-sweep": "scan-sweep 7.5s cubic-bezier(0.4,0,0.2,1) infinite",
         "node-pulse": "node-pulse 4s ease-in-out infinite",
+        // "The Scan" system
+        "glow-bloom": "glow-bloom 9s ease-in-out infinite",
+        "grid-drift": "grid-drift 20s linear infinite alternate",
+        "scan-beam": "scan-beam 5.5s ease-in-out infinite",
+        "reticle-breathe": "reticle-breathe 4.5s ease-in-out infinite",
+        "pin-drop": "pin-drop 0.5s cubic-bezier(0.22,1,0.36,1) both",
       },
       backgroundImage: {
         // KEYS kept (grid-fade / gold-shine) so existing classes keep working,
@@ -166,6 +207,14 @@ const config: Config = {
           "radial-gradient(circle at center, rgba(45,212,191,0.07) 0, transparent 60%)",
         "gold-shine":
           "linear-gradient(90deg, transparent, rgba(45,212,191,0.5), transparent)",
+        // Brand gradient (landing brief §5) — emerald → cyan → indigo. Cold,
+        // analytic, "projected light". Used RATIONED: scan-line, hairline
+        // brackets, score-ring / progress fills, the rotating rectangle stroke.
+        // Never as a flat background behind text.
+        "grad-brand":
+          "linear-gradient(120deg, #34D399 0%, #22D3EE 50%, #6366F1 100%)",
+        "grad-brand-soft":
+          "radial-gradient(circle at 50% 40%, rgba(52,211,153,0.28) 0%, rgba(34,211,238,0.16) 40%, transparent 70%)",
       },
       boxShadow: {
         // `gold` / `gold-lg` keys kept for `shadow-gold` consumers; color teal.

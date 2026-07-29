@@ -10,17 +10,19 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        // Hover-glow hierarchy (ronda-3 §2): `.glow-cta` = strong halo + teal
+        // ring + slight lift, only on hover/focus (no permanent shadow). The
+        // secondary tiers use `.glow-secondary` = soft halo + ring, no lift.
         primary:
-          "bg-champagne-400 text-obsidian-900 hover:bg-champagne-300 shadow-gold hover:shadow-gold-lg",
+          "bg-champagne-400 text-obsidian-900 hover:bg-champagne-300 glow-cta",
         secondary:
-          "bg-white/[0.04] text-white hover:bg-white/[0.08] border border-white/10",
-        ghost: "text-white/80 hover:bg-white/[0.06] hover:text-white",
+          "bg-white/[0.04] text-white hover:bg-white/[0.08] border border-white/10 glow-secondary",
+        ghost: "text-white/80 hover:bg-white/[0.06] hover:text-white glow-secondary",
         outline:
-          "border border-white/15 bg-transparent text-white hover:bg-white/[0.04] hover:border-white/25",
-        // Secondary teal action — deliberately quieter than `primary` (gold
-        // + glow) so the two never compete as equal CTAs in one view. Tinted
-        // fill + hairline, no glow; glow is rationed to the primary action.
-        ai: "bg-signal-500/[0.12] text-signal-300 border border-signal-400/25 hover:bg-signal-500/[0.18] hover:border-signal-400/40",
+          "border border-white/15 bg-transparent text-white hover:bg-white/[0.04] glow-secondary",
+        // Secondary teal action — deliberately quieter than `primary` so the
+        // two never compete as equal CTAs in one view.
+        ai: "bg-signal-500/[0.12] text-signal-300 border border-signal-400/25 hover:bg-signal-500/[0.18] glow-secondary",
         destructive:
           "bg-destructive/90 text-white hover:bg-destructive shadow-[0_0_24px_-8px_rgba(239,68,68,0.5)]",
         link: "text-champagne-400 underline-offset-4 hover:underline",

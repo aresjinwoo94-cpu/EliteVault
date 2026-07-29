@@ -3,6 +3,7 @@ import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import {
   DEFAULT_REVIEW_SETTINGS,
   type AdminReview,
+  type MyReview,
   type PublicReview,
   type ReviewSettings,
 } from "./types";
@@ -56,8 +57,11 @@ export async function getPublicReviews(
     const svc = createSupabaseServiceClient();
     const { data, error } = await svc
       .from("reviews")
-      .select("id, author_name, rating, title, body, featured, created_at")
+      .select("id, author_name, rating, title, body, store_name, featured, created_at")
       .eq("status", "approved")
+      // Only rows the author consented to publish (default true for legacy
+      // testimonials; the signed-in form requires an explicit checkbox).
+      .eq("consent_public", true)
       .gte("rating", settings.min_rating)
       .order("featured", { ascending: false })
       .order("created_at", { ascending: false })
@@ -70,6 +74,7 @@ export async function getPublicReviews(
       rating: Number(r.rating ?? 5),
       title: r.title ?? null,
       body: String(r.body ?? ""),
+      store_name: r.store_name ?? null,
       featured: !!r.featured,
       created_at: String(r.created_at ?? ""),
     }));
@@ -113,7 +118,7 @@ export async function getAllReviewsForOwner(): Promise<AdminReview[]> {
     const { data, error } = await svc
       .from("reviews")
       .select(
-        "id, author_name, author_email, rating, title, body, featured, status, created_at, approved_at",
+        "id, author_name, author_email, rating, title, body, store_name, store_url, featured, status, created_at, approved_at",
       )
       .order("created_at", { ascending: false })
       .limit(500);
@@ -126,6 +131,8 @@ export async function getAllReviewsForOwner(): Promise<AdminReview[]> {
       rating: Number(r.rating ?? 5),
       title: r.title ?? null,
       body: String(r.body ?? ""),
+      store_name: r.store_name ?? null,
+      store_url: r.store_url ?? null,
       featured: !!r.featured,
       status: (r.status ?? "pending") as AdminReview["status"],
       created_at: String(r.created_at ?? ""),
@@ -133,6 +140,38 @@ export async function getAllReviewsForOwner(): Promise<AdminReview[]> {
     }));
   } catch {
     return [];
+  }
+}
+
+/**
+ * The signed-in user's OWN review (any status), for prefill / edit / delete on
+ * the submission page. Returns null if they have none. Server-only; the caller
+ * passes the authenticated user id.
+ */
+export async function getMyReview(userId: string): Promise<MyReview | null> {
+  if (!userId) return null;
+  try {
+    const svc = createSupabaseServiceClient();
+    const { data, error } = await svc
+      .from("reviews")
+      .select("id, rating, body, author_name, store_name, store_url, status, created_at")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (error || !data) return null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const r = data as any;
+    return {
+      id: String(r.id),
+      rating: Number(r.rating ?? 5),
+      body: String(r.body ?? ""),
+      display_name: String(r.author_name ?? ""),
+      store_name: r.store_name ?? null,
+      store_url: r.store_url ?? null,
+      status: (r.status ?? "pending") as MyReview["status"],
+      created_at: String(r.created_at ?? ""),
+    };
+  } catch {
+    return null;
   }
 }
 

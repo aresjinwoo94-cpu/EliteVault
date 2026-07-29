@@ -10,6 +10,7 @@ import {
   Sparkles,
   RotateCcw,
   Mail,
+  X,
   AlertTriangle,
 } from "lucide-react";
 import {
@@ -165,6 +166,9 @@ export function OwnerReviews({
                 moderate(() => setReviewStatus(r.id, "approved"), r.id)
               }
               onHide={() => moderate(() => setReviewStatus(r.id, "hidden"), r.id)}
+              onReject={() =>
+                moderate(() => setReviewStatus(r.id, "rejected"), r.id)
+              }
               onPending={() =>
                 moderate(() => setReviewStatus(r.id, "pending"), r.id)
               }
@@ -192,6 +196,7 @@ function ReviewRow({
   busy,
   onApprove,
   onHide,
+  onReject,
   onPending,
   onFeature,
   onDelete,
@@ -200,6 +205,7 @@ function ReviewRow({
   busy: boolean;
   onApprove: () => void;
   onHide: () => void;
+  onReject: () => void;
   onPending: () => void;
   onFeature: () => void;
   onDelete: () => void;
@@ -208,6 +214,7 @@ function ReviewRow({
     approved: { label: "Pública", cls: "border-success/30 bg-success/[0.08] text-success" },
     pending: { label: "Por aprobar", cls: "border-warning/30 bg-warning/[0.08] text-warning" },
     hidden: { label: "Oculta", cls: "border-white/15 bg-white/[0.04] text-white/45" },
+    rejected: { label: "Rechazada", cls: "border-destructive/30 bg-destructive/[0.06] text-destructive" },
   }[review.status];
 
   return (
@@ -249,6 +256,19 @@ function ReviewRow({
       <p className="mt-1 text-sm text-white/60 leading-relaxed">{review.body}</p>
       <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-white/40">
         <span>— {review.author_name}</span>
+        {review.store_name && (
+          <span className="text-white/55">{review.store_name}</span>
+        )}
+        {review.store_url && (
+          <a
+            href={/^https?:\/\//.test(review.store_url) ? review.store_url : `https://${review.store_url}`}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            className="text-signal-300 hover:text-signal-200"
+          >
+            {review.store_url}
+          </a>
+        )}
         {review.author_email && (
           <a
             href={`mailto:${review.author_email}`}
@@ -269,6 +289,11 @@ function ReviewRow({
         {review.status !== "hidden" && (
           <Action onClick={onHide} icon={EyeOff}>
             Ocultar
+          </Action>
+        )}
+        {review.status !== "rejected" && (
+          <Action onClick={onReject} icon={X} className="text-destructive">
+            Rechazar
           </Action>
         )}
         {review.status !== "pending" && (

@@ -10,7 +10,7 @@ import { useT } from "@/components/i18n/locale-provider";
 export function FAQ() {
   const { t } = useT();
   return (
-    <section id="faq" className="py-24 md:py-32 border-t border-white/[0.04]">
+    <section id="faq" className="section-y border-t border-white/[0.04]">
       <div className="container max-w-3xl">
         <h2 className="text-center font-serif text-4xl md:text-5xl tracking-tight">
           {t("faq.heading")}
@@ -30,7 +30,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   return (
     <div
       className={cn(
-        "rounded-xl border border-white/[0.06] bg-card/40 transition-colors",
+        "glow-card rounded-xl border border-white/[0.06] bg-card/40",
         open && "border-white/[0.12]",
       )}
     >
@@ -38,7 +38,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center justify-between px-5 py-4 text-left"
       >
-        <span className="text-base font-medium">{q}</span>
+        <span className="font-serif text-base">{q}</span>
         <ChevronDown
           className={cn(
             "size-4 text-white/40 transition-transform",

@@ -90,7 +90,7 @@ export function ComparisonTable() {
   ];
 
   return (
-    <section id="compare" className="relative py-20 md:py-28 border-t border-white/[0.04]">
+    <section id="compare" className="section-y relative border-t border-white/[0.04]">
       <div className="container max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 12 }}

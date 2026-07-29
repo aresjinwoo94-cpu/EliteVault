@@ -18,7 +18,7 @@ export function Footer() {
             </p>
             <LanguageToggle className="mt-4" />
           </div>
-          <nav className="grid grid-cols-2 md:flex gap-x-8 gap-y-2 text-sm text-white/50">
+          <nav className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm text-white/50 sm:grid-cols-3 lg:grid-cols-4">
             {/* Point at the dedicated /pricing money landing (it carries the
                 SoftwareApplication + offers JSON-LD) rather than the home
                 anchor, so the page gets a descriptive-anchor internal link. */}
