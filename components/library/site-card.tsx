@@ -87,11 +87,32 @@ export function SiteCard({
 
       <div className="relative aspect-[4/3] overflow-hidden bg-obsidian-900">
         {imgFailed || !src ? (
-          <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-obsidian-800 to-obsidian-900">
+          // Branded placeholder (landing-images-fix §4) — a dignified fallback
+          // for any store still without a real image: subtle brand-gradient
+          // bloom + the initial in a gradient ring + the niche. Not a bare letter.
+          <div className="absolute inset-0 grid place-items-center overflow-hidden bg-gradient-to-br from-obsidian-800 to-obsidian-900">
             <div className="absolute inset-0 bg-dot-grid opacity-20" />
-            <span className="relative font-serif text-4xl text-white/25">
-              {site.domain.replace(/^www\./, "").charAt(0).toUpperCase()}
-            </span>
+            <div
+              aria-hidden
+              className="absolute -inset-10 opacity-40"
+              style={{
+                background:
+                  "radial-gradient(circle at 50% 45%, rgba(52,211,153,0.18) 0%, rgba(34,211,238,0.10) 40%, transparent 70%)",
+              }}
+            />
+            <div className="relative flex flex-col items-center gap-2.5">
+              <span
+                className="grid size-14 place-items-center rounded-2xl p-[1.5px]"
+                style={{ background: "var(--grad-brand)" }}
+              >
+                <span className="grid size-full place-items-center rounded-2xl bg-obsidian-900 font-serif text-2xl text-white">
+                  {site.domain.replace(/^www\./, "").charAt(0).toUpperCase()}
+                </span>
+              </span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/45">
+                {site.niche}
+              </span>
+            </div>
           </div>
         ) : (
           /* eslint-disable-next-line @next/next/no-img-element */

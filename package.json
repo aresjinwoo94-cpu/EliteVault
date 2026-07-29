@@ -17,6 +17,7 @@
     "inngest:dev": "npx inngest-cli@latest dev",
     "library:expand": "tsx scripts/expand-library.ts",
     "library:thumbs": "tsx scripts/snapshot-library-thumbnails.mts",
+    "library:backfill": "tsx scripts/backfill-library-images.mts",
     "library:discover": "tsx --tsconfig scripts/library/tsconfig.json scripts/library/discover.mts",
     "library:verify": "tsx --tsconfig scripts/library/tsconfig.json scripts/library/verify.mts",
     "library:momentum": "tsx --tsconfig scripts/library/tsconfig.json scripts/library/momentum.mts",
