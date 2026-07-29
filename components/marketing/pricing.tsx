@@ -18,7 +18,7 @@ export function Pricing() {
   const [interval, setInterval] = useState<Interval>("month");
 
   return (
-    <section id="pricing" className="py-24 md:py-32 border-t border-white/[0.04]">
+    <section id="pricing" className="section-y border-t border-white/[0.04]">
       <div className="container max-w-6xl">
         <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
           <DataPill items={["PRICING", "FREE DIAGNOSIS"]} />
@@ -51,7 +51,10 @@ export function Pricing() {
                 key={i}
                 onClick={() => setInterval(i)}
                 className={cn(
-                  "px-4 py-1.5 text-sm rounded-full transition-all",
+                  // `transition-all` is kept so the active-state fill still
+                  // animates; the hover glow (chip tier) rides the same
+                  // transition and never overrides the selected state.
+                  "px-4 py-1.5 text-sm rounded-full transition-all hover:shadow-[0_0_12px_rgba(45,212,191,0.16)]",
                   interval === i
                     ? "bg-champagne-400 text-obsidian-900 font-medium"
                     : "text-white/60 hover:text-white",
@@ -75,7 +78,7 @@ export function Pricing() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
               className={cn(
-                "relative rounded-2xl border bg-card shadow-card p-7 flex flex-col",
+                "glow-card relative rounded-2xl border bg-card shadow-card p-7 flex flex-col",
                 plan.highlight
                   ? "border-champagne-400/30"
                   : "border-white/[0.06]",
@@ -91,7 +94,7 @@ export function Pricing() {
               )}
 
               <div>
-                <h3 className="text-xl font-medium tracking-tight">{plan.name}</h3>
+                <h3 className="font-serif text-xl tracking-tight">{plan.name}</h3>
                 <p className="mt-1 text-sm text-white/40">{plan.tagline}</p>
               </div>
 

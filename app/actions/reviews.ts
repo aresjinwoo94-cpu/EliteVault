@@ -2,7 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import {
+  createSupabaseServiceClient,
+  createSupabaseServerClient,
+} from "@/lib/supabase/server";
 import { getOwner } from "@/lib/admin/guard";
 import { getReviewSettings } from "@/lib/reviews/data";
 import { sendEmail } from "@/lib/email/resend";
@@ -112,6 +115,160 @@ export async function submitReview(
   return { ok: true, pending: status === "pending" };
 }
 
+// ── Signed-in users: submit / edit / delete THEIR OWN review ────────────────
+
+const UserSubmitInput = z.object({
+  rating: z.coerce.number().int().min(1, "Pick a rating").max(5),
+  body: z
+    .string()
+    .trim()
+    .min(20, "Tell us a little more (20+ characters)")
+    .max(500, "Keep it under 500 characters"),
+  display_name: z.string().trim().min(2, "Please enter a name").max(60),
+  store_name: z.string().trim().max(80).optional().or(z.literal("")),
+  store_url: z.string().trim().max(200).optional().or(z.literal("")),
+  // Required to publish — the checkbox must be checked.
+  consent_public: z.literal(true, {
+    errorMap: () => ({ message: "Please allow us to show your review publicly." }),
+  }),
+});
+
+export type UserReviewResult =
+  | { ok: true; pending: boolean }
+  | { ok: false; error: string };
+
+/**
+ * Submit (or edit-in-place) the signed-in user's review. Auth is required and
+ * the review is tied to their user_id — one review per account (enforced by a
+ * unique index + upsert). Any edit resets it to `pending` for re-moderation
+ * (unless the owner enabled auto-approve). Body is stored as plain text and
+ * rendered via React (auto-escaped), so no HTML can execute.
+ */
+export async function submitUserReview(
+  input: z.infer<typeof UserSubmitInput>,
+): Promise<UserReviewResult> {
+  const parsed = UserSubmitInput.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid review" };
+  }
+
+  // Auth gate — only signed-in users may submit.
+  let userId: string | null = null;
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    userId = user?.id ?? null;
+  } catch {
+    userId = null;
+  }
+  if (!userId) return { ok: false, error: "Please sign in to leave a review." };
+
+  const settings = await getReviewSettings();
+  if (!settings.enabled || !settings.show_form) {
+    return { ok: false, error: "Reviews are not open right now." };
+  }
+
+  const status = settings.auto_approve ? "approved" : "pending";
+  const d = parsed.data;
+  const row = {
+    user_id: userId,
+    author_name: d.display_name,
+    rating: d.rating,
+    body: d.body,
+    store_name: d.store_name?.trim() || null,
+    store_url: d.store_url?.trim() || null,
+    consent_public: true,
+    status,
+    approved_at: status === "approved" ? new Date().toISOString() : null,
+    source: "app",
+  };
+
+  try {
+    const svc = createSupabaseServiceClient();
+    // Rate-limit / anti-spam: exactly one review per user. Update in place if
+    // they already have one, otherwise insert.
+    const { data: existing } = await svc
+      .from("reviews")
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (existing && (existing as { id?: string }).id) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (svc.from("reviews") as any)
+        .update(row)
+        .eq("user_id", userId);
+      if (error) return { ok: false, error: "Could not save your review." };
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (svc.from("reviews") as any).insert(row);
+      if (error) return { ok: false, error: "Could not save your review." };
+    }
+  } catch {
+    return { ok: false, error: "Could not save your review." };
+  }
+
+  // Best-effort owner notification (never blocks the submission).
+  try {
+    const to = ownerNotifyEmail();
+    if (to) {
+      const stars = "★".repeat(d.rating) + "☆".repeat(5 - d.rating);
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
+      await sendEmail({
+        to,
+        subject: `New review (${d.rating}/5) from ${d.display_name}${status === "pending" ? " — needs approval" : ""}`,
+        html: `<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;color:#14141B">
+          <h2 style="margin:0 0 4px">New EliteVault review</h2>
+          <p style="color:#6b7280;margin:0 0 16px">${status === "pending" ? "Pending your approval." : "Auto-approved and live."}</p>
+          <div style="border:1px solid #e5e7eb;border-radius:12px;padding:16px">
+            <div style="font-size:18px;color:#d4a017">${stars} <span style="color:#6b7280;font-size:13px">(${d.rating}/5)</span></div>
+            <p style="margin:6px 0;white-space:pre-wrap">${escapeHtml(d.body)}</p>
+            <p style="color:#6b7280;font-size:13px;margin:10px 0 0">— ${escapeHtml(d.display_name)}${d.store_name ? ` · ${escapeHtml(d.store_name)}` : ""}</p>
+          </div>
+          <p style="margin:18px 0 0"><a href="${appUrl}/app/owner" style="color:#0d9488">Manage reviews →</a></p>
+        </div>`,
+      });
+    }
+  } catch {
+    // ignore — non-critical
+  }
+
+  revalidatePath("/");
+  revalidatePath("/app/review");
+  revalidatePath("/app/owner");
+  return { ok: true, pending: status === "pending" };
+}
+
+/** Delete the signed-in user's OWN review (they can remove it at any time). */
+export async function deleteMyReview(): Promise<{ ok: boolean; error?: string }> {
+  let userId: string | null = null;
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    userId = user?.id ?? null;
+  } catch {
+    userId = null;
+  }
+  if (!userId) return { ok: false, error: "Please sign in." };
+
+  try {
+    const svc = createSupabaseServiceClient();
+    // Ownership is enforced by the user_id filter — a user can only ever
+    // delete their own row.
+    const { error } = await svc.from("reviews").delete().eq("user_id", userId);
+    if (error) return { ok: false, error: "Could not delete your review." };
+  } catch {
+    return { ok: false, error: "Could not delete your review." };
+  }
+  revalidatePath("/");
+  revalidatePath("/app/review");
+  revalidatePath("/app/owner");
+  return { ok: true };
+}
+
 // ── Owner-only: moderation + settings ───────────────────────────────────────
 
 async function assertOwner() {
@@ -156,7 +313,7 @@ export async function updateReviewSettings(
 
 export async function setReviewStatus(
   id: string,
-  status: "pending" | "approved" | "hidden",
+  status: "pending" | "approved" | "hidden" | "rejected",
 ): Promise<{ ok: boolean; error?: string }> {
   await assertOwner();
   try {

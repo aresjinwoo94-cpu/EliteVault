@@ -1,10 +1,16 @@
-/** Public-facing review shape (no private fields like author_email). */
+/** Moderation lifecycle. 'rejected' = declined by owner (never shown);
+ *  'hidden' = kept but not currently public. Both are non-public. */
+export type ReviewStatus = "pending" | "approved" | "hidden" | "rejected";
+
+/** Public-facing review shape (no private fields — never `author_email`,
+ *  `user_id`, `store_url`, etc.). `author_name` is the chosen display name. */
 export interface PublicReview {
   id: string;
   author_name: string;
   rating: number;
   title: string | null;
   body: string;
+  store_name: string | null;
   featured: boolean;
   created_at: string;
 }
@@ -12,8 +18,21 @@ export interface PublicReview {
 /** Full review row as the owner sees it (includes private + moderation data). */
 export interface AdminReview extends PublicReview {
   author_email: string | null;
-  status: "pending" | "approved" | "hidden";
+  store_url: string | null;
+  status: ReviewStatus;
   approved_at: string | null;
+}
+
+/** The signed-in author's own review (for prefill / edit / delete). */
+export interface MyReview {
+  id: string;
+  rating: number;
+  body: string;
+  display_name: string;
+  store_name: string | null;
+  store_url: string | null;
+  status: ReviewStatus;
+  created_at: string;
 }
 
 export interface ReviewSettings {

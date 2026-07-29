@@ -25,6 +25,11 @@ export const COMPANY = {
     name: "Ariel Jiménez",
     role: "Founder, EliteVault",
     initials: "AJ",
+    // Real founder photo for the landing founder note (landing brief §4·8).
+    // Drop a square image at this path (e.g. /founder.jpg) and the note
+    // renders the photo instead of the monogram — NO code change needed.
+    // Real founder photo provided by the owner (public/founder.jpg, 512×512).
+    photoUrl: "/founder.jpg",
   },
 
   // Verifiable profiles. Empty values are ignored (filtered out).

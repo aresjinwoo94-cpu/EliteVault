@@ -27,7 +27,7 @@ export function DataPill({
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-2 rounded-full bg-obsidian-950/80 px-3.5 py-1.5",
+        "glow-chip inline-flex items-center gap-2 rounded-full bg-obsidian-950/80 px-3.5 py-1.5",
         "font-mono text-[11px] tracking-[0.18em] uppercase",
         isGold
           ? "border border-champagne-400/25 text-champagne-300 shadow-gold"

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Library, Scan, Sparkles } from "lucide-react";
+import { ArrowRight, Library, Scan, Sparkles, Star } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -231,6 +231,26 @@ export default async function OverviewPage() {
           </div>
         )}
       </section>
+
+      {/* Leave-a-review entry point — the dashboard CTA (round 5). Routes to
+          the signed-in review form. */}
+      <Link href="/app/review" className="group block">
+        <div className="glow-card flex items-center justify-between gap-4 rounded-2xl border border-white/[0.06] bg-white/[0.015] p-5 md:p-6">
+          <div className="flex items-start gap-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-signal-600/10 ring-1 ring-signal-500/20">
+              <Star className="size-5 fill-signal-400 text-signal-400" />
+            </div>
+            <div>
+              <p className="font-medium text-white">Leave a review</p>
+              <p className="mt-0.5 text-sm text-white/55">
+                Used EliteVault to audit your store? Tell other founders what it
+                showed you — approved reviews appear on the homepage.
+              </p>
+            </div>
+          </div>
+          <ArrowRight className="size-5 shrink-0 text-signal-300 transition-transform group-hover:translate-x-1" />
+        </div>
+      </Link>
     </div>
   );
 }

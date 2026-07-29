@@ -47,6 +47,8 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 import { Hero } from "@/components/marketing/hero";
+import { SocialStrip } from "@/components/marketing/social-strip";
+import { ScanDivider } from "@/components/marketing/scan-field";
 import { FeaturesShowcase } from "@/components/marketing/features-showcase";
 import { ComparisonTable } from "@/components/marketing/comparison-table";
 import { AnalyzerDemo } from "@/components/marketing/analyzer-demo";
@@ -190,12 +192,16 @@ export default async function HomePage() {
       <MarketingNav />
       <main className="relative">
         <Hero />
+        <SocialStrip />
         <AnalyzerDemo />
+        <ScanDivider />
         <TwoPaths />
         <FeaturesShowcase />
         <ComparisonTable />
-        <Reviews />
         <SocialProof />
+        {/* Social proof at the point of maximum conversion — the founder note,
+            then real approved reviews, immediately before Pricing. */}
+        <Reviews />
         <Pricing />
         <FAQ />
       </main>

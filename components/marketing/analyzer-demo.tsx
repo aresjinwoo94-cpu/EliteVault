@@ -41,7 +41,7 @@ export function AnalyzerDemo() {
   return (
     <section
       id="analyzer"
-      className="relative overflow-hidden py-24 md:py-36"
+      className="section-y relative overflow-hidden"
     >
       <AnalyzerBg />
       <div className="container relative max-w-6xl">
@@ -50,7 +50,7 @@ export function AnalyzerDemo() {
           so the demo panel stays legible; the teaser video is a 2:1 UI
           recording that needs the width.
         */}
-        <div className="grid lg:grid-cols-[2fr_3fr] gap-12 lg:gap-16 items-center">
+        <div className="grid lg:grid-cols-[2fr_3fr] gap-10 lg:gap-14 items-center">
           <div>
             <motion.div
               initial={{ opacity: 0, y: 12 }}
@@ -83,7 +83,7 @@ export function AnalyzerDemo() {
                     <s.icon className="size-4 text-signal-300" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-white">{t(s.titleKey)}</h3>
+                    <h3 className="font-serif text-white">{t(s.titleKey)}</h3>
                     <p className="mt-1 text-sm text-white/50 leading-relaxed">
                       {t(s.bodyKey)}
                     </p>

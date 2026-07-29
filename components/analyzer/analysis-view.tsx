@@ -23,6 +23,7 @@ import { TopFixes } from "./top-fixes";
 // analyzer; only Meta Ads Optimizer lives as the Scale-tier extra.
 import { AnalyzingState } from "./analyzing-state";
 import { PublishCallout } from "@/components/community/publish-callout";
+import { ReviewPrompt } from "@/components/reviews/review-prompt";
 import { MetaAdsOptimizer } from "./meta-ads-optimizer";
 import { MetaCampaignSimulator } from "./meta-campaign-simulator";
 import { NichePositionBar } from "./niche-position-bar";
@@ -239,6 +240,10 @@ export function AnalysisView({
           publishedSlug={viewer.publishedSlug}
         />
       )}
+
+      {/* Post-audit satisfaction moment — subtle, dismissible "leave a review"
+          nudge. Shows only after the audit succeeds. */}
+      {isDone && <ReviewPrompt />}
 
       {/* No AnimatePresence around isWorking — infinite child animations in
           AnalyzingState would block the exit transition and stall the UI

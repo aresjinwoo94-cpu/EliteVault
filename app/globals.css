@@ -52,6 +52,49 @@
 @layer base {
   :root {
     color-scheme: dark;
+
+    /* ── Type roles. The three faces are defined by next/font on <html>:
+       --font-display (General Sans / display, weights 500·600), --font-geist
+       (Rubik / body) and --font-mono (JetBrains Mono). `--font-body` is a
+       semantic alias for the body face; there is no serif anywhere. */
+    --font-body: var(--font-geist), system-ui, sans-serif;
+
+    /* ── "The Scan" motion system (landing brief §5) ─────────────────────
+       Brand gradient (emerald → cyan → indigo) + eases + durations. Single
+       source of truth; every scan primitive reads these. */
+    --grad-brand: linear-gradient(120deg, #34d399 0%, #22d3ee 50%, #6366f1 100%);
+    --ease-reveal: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-ambient: ease-in-out;
+    --dur-scan: 5.5s;
+    --dur-reveal: 0.6s;
+    --dur-count: 1.2s;
+
+    /* ── Hover-glow system (ronda-3 §2) — one teal language, intensity varies
+       by element type. Consumed by the `.glow-*` utilities below and by the
+       Button variants. */
+    --glow-ring: 0 0 0 1px rgba(45, 212, 191, 0.55); /* teal border */
+    --glow-soft: 0 0 24px rgba(45, 212, 191, 0.18); /* soft halo */
+    --glow-strong: 0 0 32px rgba(45, 212, 191, 0.3); /* strong halo */
+    --hover-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --hover-dur: 220ms;
+
+    /* ── Vertical spacing scale (landing brief §4) — 8·16·24·32·48·64·96·120.
+       `--section-y` centralizes the section rhythm so the whole landing
+       shares one cadence (and it can be dialed in ONE place). */
+    --space-2: 0.5rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-12: 3rem;
+    --space-16: 4rem;
+    --space-24: 6rem;
+    --space-30: 7.5rem;
+    --section-y: 3.5rem; /* mobile — was ~96px, now 56px (−≈40%) */
+  }
+  @media (min-width: 768px) {
+    :root {
+      --section-y: 6.25rem; /* desktop — was ~150px, now 100px (−≈33%) */
+    }
   }
 
   html,
@@ -193,12 +236,16 @@
     inset: -1px;
     border-radius: inherit;
     padding: 1px;
+    /* Rotating rectangle stroke — now painted with the brand gradient
+       (emerald → cyan → indigo) so it speaks the same "Scan" language as the
+       new hero scanner field and score ring (landing brief §5 · §6). */
     background: conic-gradient(
       from var(--angle, 0deg),
-      transparent 30%,
-      #5eead4 50%,
-      #2dd4bf 70%,
-      transparent 90%
+      transparent 25%,
+      #34d399 42%,
+      #22d3ee 55%,
+      #6366f1 68%,
+      transparent 85%
     );
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
@@ -251,19 +298,22 @@
    surfaces that use it land in later phases. One coherent, fluid scale on
    the serif display face with tight optical tracking. */
 .text-display {
-  font-family: var(--font-serif), Georgia, serif;
+  font-family: var(--font-display);
+  font-weight: 600;
   font-size: clamp(2.75rem, 1.6rem + 4.2vw, 5.5rem);
   line-height: 1.02;
   letter-spacing: -0.02em;
 }
 .text-h1 {
-  font-family: var(--font-serif), Georgia, serif;
+  font-family: var(--font-display);
+  font-weight: 600;
   font-size: clamp(2rem, 1.3rem + 2.4vw, 3.25rem);
   line-height: 1.06;
   letter-spacing: -0.02em;
 }
 .text-h2 {
-  font-family: var(--font-serif), Georgia, serif;
+  font-family: var(--font-display);
+  font-weight: 600;
   font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.25rem);
   line-height: 1.12;
   letter-spacing: -0.015em;
@@ -274,15 +324,188 @@
   letter-spacing: -0.01em;
 }
 
-/* Consistent vertical section rhythm (≈80px → 112px). */
+/* Consistent vertical section rhythm — driven by the single --section-y token
+   (landing brief §4) so the whole landing breathes on one reduced cadence. */
 .section-y {
-  padding-top: 5rem;
-  padding-bottom: 5rem;
+  padding-top: var(--section-y);
+  padding-bottom: var(--section-y);
 }
-@media (min-width: 768px) {
-  .section-y {
-    padding-top: 7rem;
-    padding-bottom: 7rem;
+/* Half-step for sections that sit tight against a neighbour (e.g. a stats
+   strip directly under the hero) — keeps the ritmo uniform, not ad-hoc. */
+.section-y-sm {
+  padding-top: calc(var(--section-y) * 0.6);
+  padding-bottom: calc(var(--section-y) * 0.6);
+}
+
+/* ── Hero headline (landing brief §3). General Sans display, tight optical
+   tracking, capped so the question falls in ~2 clean lines and never blows
+   up to the old oversized size. */
+.hero-h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 1.5rem + 3.4vw, 3.5rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  max-width: 15ch;
+}
+
+/* Display headings (ronda-4). Every `font-serif` heading now renders the
+   General Sans display face with an INTENTIONAL weight + negative tracking —
+   never the flat 400 default. Plain CSS after @tailwind utilities so it wins
+   over the utility that only sets font-family. (The `serif` name is legacy;
+   the face is a sans — there is no serif on the page.) */
+.font-serif {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* ── "The Scan" primitives (landing brief §5). All motion is wrapped so it
+   only runs under prefers-reduced-motion: no-preference; the reduced state
+   is the static final frame (faint grid, no sweeps, no breathing). Only
+   transform/opacity animate — compositor-thread only, never layout. */
+
+/* Hairline grid backdrop — brand accent at ~5% opacity. */
+.scan-grid {
+  background-image:
+    linear-gradient(rgba(94, 234, 212, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(94, 234, 212, 0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+/* Glow bloom — diffuse brand-gradient halo for negative space (never behind
+   text). Uses the radial soft gradient token. */
+.scan-bloom {
+  background: var(--grad-brand-soft, radial-gradient(circle, rgba(52,211,153,0.25), transparent 70%));
+  filter: blur(8px);
+}
+
+/* A 1–2px scan beam painted with the brand gradient. */
+.scan-beam-line {
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(52, 211, 153, 0.5) 20%,
+    rgba(34, 211, 238, 0.75) 50%,
+    rgba(99, 102, 241, 0.5) 80%,
+    transparent
+  );
+}
+
+/* Hairline corner brackets drawn with the brand gradient (masked border).
+   Motion is applied at the call-site via Tailwind's `motion-safe:animate-*`
+   utilities (glow-bloom / grid-drift / scan-beam / reticle-breathe), which
+   already resolve to `@media (prefers-reduced-motion: no-preference)` and
+   guarantee the keyframes ship. */
+.scan-bracket {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid transparent;
+  border-image: var(--grad-brand) 1;
+  opacity: 0.3;
+}
+
+/* ── Hover-glow system (ronda-3 §2) ────────────────────────────────────────
+   One coherent teal language across the landing; intensity scales with the
+   element's role. Defined as plain CSS AFTER @tailwind utilities so these
+   hover/focus rules win over any `hover:border-*` / `hover:shadow-*` utility
+   on the same element. Only transform / box-shadow / border-color transition
+   (compositor-friendly). `:focus-visible` mirrors hover for keyboard users;
+   `prefers-reduced-motion` drops the lift + light sweep, keeping the instant
+   border-color/glow so the affordance stays accessible. */
+
+/* Cards / diagrams — discreet (the "More than a checklist tool" reference). */
+.glow-card {
+  transition:
+    transform var(--hover-dur) var(--hover-ease),
+    box-shadow var(--hover-dur) var(--hover-ease),
+    border-color var(--hover-dur) var(--hover-ease);
+}
+.glow-card:hover,
+.glow-card:focus-visible,
+.glow-card:focus-within {
+  border-color: rgba(45, 212, 191, 0.4);
+  box-shadow: var(--glow-soft);
+}
+
+/* Optional crossing light sweep for premium cards (needs overflow-hidden). */
+.glow-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.07) 50%,
+    transparent 65%
+  );
+  transform: translateX(-130%);
+  opacity: 0;
+  transition:
+    transform 620ms var(--hover-ease),
+    opacity 300ms var(--hover-ease);
+}
+.glow-sheen:hover::after,
+.glow-sheen:focus-within::after {
+  transform: translateX(130%);
+  opacity: 1;
+}
+
+/* CTA primary — the most marked: strong halo + teal ring + slight lift. */
+.glow-cta {
+  transition:
+    transform var(--hover-dur) var(--hover-ease),
+    box-shadow var(--hover-dur) var(--hover-ease);
+}
+.glow-cta:hover,
+.glow-cta:focus-visible {
+  box-shadow: var(--glow-strong), var(--glow-ring);
+  transform: translateY(-1px);
+}
+
+/* Secondary button / outline — medium: soft halo + teal ring, no lift. */
+.glow-secondary {
+  transition:
+    box-shadow var(--hover-dur) var(--hover-ease),
+    border-color var(--hover-dur) var(--hover-ease);
+}
+.glow-secondary:hover,
+.glow-secondary:focus-visible {
+  box-shadow: var(--glow-soft), var(--glow-ring);
+  border-color: rgba(45, 212, 191, 0.4);
+}
+
+/* Chips / tabs — minimal: teal border + micro-glow, no movement. */
+.glow-chip {
+  transition:
+    box-shadow var(--hover-dur) var(--hover-ease),
+    border-color var(--hover-dur) var(--hover-ease);
+}
+.glow-chip:hover,
+.glow-chip:focus-visible {
+  border-color: rgba(45, 212, 191, 0.5);
+  box-shadow: 0 0 12px rgba(45, 212, 191, 0.14);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Keep the instant border-color/glow; drop lift + sweep. */
+  .glow-card,
+  .glow-chip,
+  .glow-secondary {
+    transition: border-color var(--hover-dur) var(--hover-ease);
+  }
+  .glow-cta {
+    transition: box-shadow var(--hover-dur) var(--hover-ease);
+  }
+  .glow-cta:hover,
+  .glow-cta:focus-visible {
+    transform: none;
+  }
+  .glow-sheen::after {
+    display: none;
   }
 }
 
@@ -305,7 +528,8 @@
   margin: 0 0 1.25rem;
 }
 .article-prose h2 {
-  font-family: var(--font-serif), Georgia, serif;
+  font-family: var(--font-display);
+  font-weight: 600;
   color: #fff;
   font-size: clamp(1.5rem, 1.1rem + 1vw, 1.875rem);
   line-height: 1.2;

@@ -66,7 +66,7 @@ const TRUST_BADGES: { icon: typeof ShieldCheck; key: string; labelKey: string }[
 export function SocialProof({ stores = [] }: { stores?: FeaturedStore[] }) {
   const { t } = useT();
   return (
-    <section className="relative py-20 md:py-28">
+    <section className="section-y relative">
       <div className="container max-w-6xl">
         {/* Library showcase (named stores + conversion metrics) — gated OFF on
             the public landing. See SHOW_LIBRARY_SHOWCASE above. */}
@@ -175,11 +175,29 @@ export function SocialProof({ stores = [] }: { stores?: FeaturedStore[] }) {
           <Card className="p-7 md:p-9">
             <div className="flex flex-col md:flex-row gap-6 md:items-start">
               <div className="flex items-center gap-4 md:flex-col md:items-center md:text-center shrink-0">
-                <div className="flex size-14 items-center justify-center rounded-full bg-signal-600/10 ring-1 ring-signal-500/20 font-serif text-lg text-signal-200">
-                  {FOUNDER.initials}
-                </div>
+                {/* Real photo when the owner provides one (COMPANY.founder.photoUrl);
+                    otherwise a refined monogram framed by the brand gradient.
+                    We never fabricate a real person's face. */}
+                {FOUNDER.photoUrl ? (
+                  <span className="rounded-full p-[2px]" style={{ background: "var(--grad-brand)" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={FOUNDER.photoUrl}
+                      alt={FOUNDER.name}
+                      width={64}
+                      height={64}
+                      className="size-16 rounded-full object-cover"
+                    />
+                  </span>
+                ) : (
+                  <span className="rounded-full p-[1.5px]" style={{ background: "var(--grad-brand)" }}>
+                    <span className="flex size-16 items-center justify-center rounded-full bg-obsidian-900 font-serif text-xl text-white">
+                      {FOUNDER.initials}
+                    </span>
+                  </span>
+                )}
                 <div className="md:mt-2">
-                  <p className="text-sm font-medium text-white">
+                  <p className="font-serif text-base text-white">
                     {FOUNDER.name}
                   </p>
                   <p className="text-xs text-white/45">{FOUNDER.role}</p>

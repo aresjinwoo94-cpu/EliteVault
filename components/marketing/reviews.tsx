@@ -1,4 +1,5 @@
 import { Star } from "lucide-react";
+import { DataPill } from "@/components/ui/data-pill";
 import {
   getReviewSettings,
   getPublicReviews,
@@ -6,6 +7,10 @@ import {
 } from "@/lib/reviews/data";
 import { getT } from "@/lib/i18n/server";
 import type { PublicReview } from "@/lib/reviews/types";
+
+/** Minimum approved sample before the credibility aggregate (avg + count) is
+ *  shown — below this it's not a meaningful statistic (landing brief §5). */
+const MIN_FOR_AGGREGATE = 5;
 
 /**
  * Minimum number of APPROVED reviews before the testimonials section is
@@ -47,16 +52,18 @@ export async function Reviews() {
   const subheading = settings.subheading?.trim() || t("reviews.subheading");
 
   return (
-    <section id="reviews" className="relative py-24 md:py-28">
+    <section id="reviews" className="section-y relative">
       <div className="container max-w-5xl">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="max-w-2xl">
-            <h2 className="font-serif text-3xl md:text-4xl tracking-tight">
+            <DataPill items={[t("reviews.pill1"), t("reviews.pill2")]} />
+            <h2 className="mt-5 font-serif text-3xl md:text-4xl tracking-tight">
               {heading}
             </h2>
             <p className="mt-3 text-white/55 leading-relaxed">{subheading}</p>
           </div>
-          {stats.count > 0 && (
+          {/* Credibility aggregate — only once there's a real sample (≥5). */}
+          {stats.count >= MIN_FOR_AGGREGATE && (
             <div className="shrink-0">
               <div className="flex items-center gap-2">
                 <Stars value={Math.round(stats.average)} />
@@ -65,7 +72,7 @@ export async function Reviews() {
                 </span>
                 <span className="text-sm text-white/45">{t("reviews.outOf5")}</span>
               </div>
-              <p className="mt-1 text-right text-xs text-white/40">
+              <p className="mt-1 text-right font-mono text-xs tabular-nums text-white/40">
                 {stats.count} {t("reviews.reviewsCount")}
               </p>
             </div>
@@ -83,9 +90,20 @@ export async function Reviews() {
 }
 
 function ReviewCard({ review }: { review: PublicReview }) {
+  // Locale-stable short date (mono) — avoids server/client hydration drift.
+  const date = review.created_at
+    ? new Date(review.created_at).toISOString().slice(0, 10)
+    : "";
   return (
-    <div className="flex flex-col rounded-2xl border border-white/[0.06] bg-card p-5 shadow-card">
-      <Stars value={review.rating} />
+    <div className="glow-card flex flex-col rounded-2xl border border-white/[0.06] bg-card p-5 shadow-card">
+      <div className="flex items-center justify-between">
+        <Stars value={review.rating} />
+        {date && (
+          <span className="font-mono text-[11px] tabular-nums text-white/30">
+            {date}
+          </span>
+        )}
+      </div>
       {review.title && (
         <p className="mt-3 font-medium text-white leading-snug">{review.title}</p>
       )}
@@ -94,6 +112,9 @@ function ReviewCard({ review }: { review: PublicReview }) {
       </p>
       <p className="mt-4 text-xs font-medium text-white/45">
         — {review.author_name}
+        {review.store_name && (
+          <span className="text-white/30"> · {review.store_name}</span>
+        )}
       </p>
     </div>
   );
