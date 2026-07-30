@@ -38,6 +38,11 @@ for (const [k, v] of Object.entries(env)) process.env[k] = v;
 const args = process.argv.slice(2);
 const dryRun = args.includes("--dry-run");
 const ogOnly = args.includes("--og-only");
+// --screenshot: skip og:image, capture a real homepage screenshot (used to
+// REPLACE logo/dark/blank og:images with a proper store shot).
+// --force: process rows even if already self-hosted (needed to re-capture).
+const screenshotMode = args.includes("--screenshot");
+const force = args.includes("--force");
 const limitIdx = args.indexOf("--limit");
 const limit = limitIdx !== -1 ? Number(args[limitIdx + 1]) : Infinity;
 const onlyIdx = args.indexOf("--only");
@@ -53,6 +58,26 @@ const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36";
 
 const { createClient } = await import("@supabase/supabase-js");
+const sharp = (await import("sharp")).default;
+
+/**
+ * Reject BLANK captures (solid white/dark screenshots from a provider that
+ * failed to render) — a size check isn't enough (a blank 22KB PNG passes).
+ * A real store thumbnail has visual variance; a blank is near-uniform.
+ */
+async function isBlank(buf: Buffer): Promise<boolean> {
+  try {
+    const stats = await sharp(buf).stats();
+    // Mean per-channel standard deviation across the image. Near-solid colours
+    // (blank/error pages) sit well under ~10; real screenshots are far higher.
+    const avgStdev =
+      stats.channels.reduce((a, c) => a + c.stdev, 0) / (stats.channels.length || 1);
+    return avgStdev < 10;
+  } catch {
+    return false; // if we can't analyze it, don't wrongly discard it
+  }
+}
+
 const svc = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -135,6 +160,8 @@ async function downloadImage(
   const buf = Buffer.from(await res.arrayBuffer());
   // Guard against 1x1 tracking pixels / empty responses.
   if (buf.length < 3000) return null;
+  // Guard against blank/solid-colour images (failed provider renders).
+  if (await isBlank(buf)) return null;
   return { buf, ext, contentType: ct };
 }
 
@@ -165,6 +192,17 @@ async function uploadAndSet(
   return publicUrl;
 }
 
+/** No real image available → set thumbnail_url to '' so the card renders the
+ *  branded placeholder, and delete the superseded (e.g. blank) storage object. */
+async function clearImage(site: { id: string; thumbnail_url: string | null }): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (svc.from("winning_sites") as any).update({ thumbnail_url: "" }).eq("id", site.id);
+  if (isSelfHosted(site.thumbnail_url)) {
+    const oldPath = site.thumbnail_url!.split(`/storage/v1/object/public/${BUCKET}/`)[1];
+    if (oldPath) await svc.storage.from(BUCKET).remove([decodeURIComponent(oldPath)]).catch(() => {});
+  }
+}
+
 // Optional screenshot fallback (strict single provider — same as the snapshotter).
 let captureScreenshot: ((url: string, opts: any) => Promise<{ base64: string; mediaType: string }>) | null = null;
 let flipWww: ((u: string) => string | null) | null = null;
@@ -175,26 +213,54 @@ if (!ogOnly && process.env.SCREENSHOTONE_ACCESS_KEY) {
 }
 const SHOT_OPTS = { timeoutMs: 60000, fullPage: false, deviceScaleFactor: 1, blockBannersByHeuristics: true } as const;
 
-async function screenshot(url: string): Promise<{ buf: Buffer; ext: string; contentType: string } | null> {
-  if (!captureScreenshot) return null;
-  const tryOne = async (u: string) => {
-    const shot = await captureScreenshot!(u, SHOT_OPTS);
-    const ext = shot.mediaType === "image/png" ? "png" : "jpg";
-    return { buf: Buffer.from(shot.base64, "base64"), ext, contentType: shot.mediaType };
-  };
+/** Microlink screenshot — different infra than ScreenshotOne, so it captures
+ *  several stores that bot-block ScreenshotOne (returns non-2xx there). */
+async function microlinkShot(
+  url: string,
+): Promise<{ buf: Buffer; ext: string; contentType: string } | null> {
   try {
-    return await tryOne(url);
+    const api = `https://api.microlink.io/?url=${encodeURIComponent(
+      url,
+    )}&screenshot=true&meta=false&viewport.width=1280&viewport.height=900&screenshot.type=jpeg&waitUntil=networkidle2`;
+    const res = await fetchWithTimeout(api, 60000, "application/json");
+    if (!res.ok) return null;
+    const json = (await res.json()) as {
+      status?: string;
+      data?: { screenshot?: { url?: string } };
+    };
+    const shotUrl = json?.data?.screenshot?.url;
+    if (json.status !== "success" || !shotUrl) return null;
+    return await downloadImage(shotUrl);
   } catch {
-    const alt = flipWww?.(url);
-    if (alt) {
-      try {
-        return await tryOne(alt);
-      } catch {
-        /* fall through */
-      }
-    }
     return null;
   }
+}
+
+async function screenshot(url: string): Promise<{ buf: Buffer; ext: string; contentType: string } | null> {
+  // 1) ScreenshotOne (+ flipped www host).
+  if (captureScreenshot) {
+    const tryOne = async (u: string) => {
+      const shot = await captureScreenshot!(u, SHOT_OPTS);
+      const buf = Buffer.from(shot.base64, "base64");
+      if (await isBlank(buf)) throw new Error("blank capture");
+      const ext = shot.mediaType === "image/png" ? "png" : "jpg";
+      return { buf, ext, contentType: shot.mediaType };
+    };
+    try {
+      return await tryOne(url);
+    } catch {
+      const alt = flipWww?.(url);
+      if (alt) {
+        try {
+          return await tryOne(alt);
+        } catch {
+          /* fall through to Microlink */
+        }
+      }
+    }
+  }
+  // 2) Microlink fallback (captures bot-blockers ScreenshotOne can't).
+  return await microlinkShot(url);
 }
 
 // ── Run ─────────────────────────────────────────────────────────────────────
@@ -209,7 +275,7 @@ if (error) {
 type Site = { id: string; url: string; domain: string; thumbnail_url: string | null };
 const sites = (rows ?? []) as Site[];
 const scoped = only ? sites.filter((s) => only.has(s.domain.toLowerCase())) : sites;
-const pending = scoped.filter((s) => !isSelfHosted(s.thumbnail_url));
+const pending = force ? scoped : scoped.filter((s) => !isSelfHosted(s.thumbnail_url));
 const todo = pending.slice(0, limit);
 
 console.log(
@@ -229,19 +295,27 @@ for (const [i, site] of todo.entries()) {
   const home = `https://${site.domain.replace(/^www\./, "")}`;
 
   if (dryRun) {
-    const og = await findOgImage(home);
-    console.log(`${label} ${og ? "og:image → " + og.slice(0, 70) : "no og:image (would try screenshot)"}`);
+    if (screenshotMode) {
+      console.log(`${label} would capture homepage screenshot (og:image skipped)`);
+    } else {
+      const og = await findOgImage(home);
+      console.log(`${label} ${og ? "og:image → " + og.slice(0, 70) : "no og:image (would try screenshot)"}`);
+    }
     continue;
   }
 
   try {
-    // 1) og:image / twitter:image
     let img: { buf: Buffer; ext: string; contentType: string } | null = null;
-    const og = await findOgImage(home);
-    if (og) img = await downloadImage(og);
-    let via = og && img ? "og:image" : "";
+    let via = "";
 
-    // 2) screenshot fallback
+    // 1) og:image / twitter:image (skipped in --screenshot mode).
+    if (!screenshotMode) {
+      const og = await findOgImage(home);
+      if (og) img = await downloadImage(og);
+      if (og && img) via = "og:image";
+    }
+
+    // 2) real homepage screenshot (ScreenshotOne → Microlink).
     if (!img) {
       img = await screenshot(site.url);
       if (img) via = "screenshot";
@@ -249,7 +323,15 @@ for (const [i, site] of todo.entries()) {
 
     if (!img) {
       failures.push(site.domain);
-      console.error(`${label} ✗ no og:image, no screenshot — needs manual upload`);
+      // If re-capturing (force) and the row currently holds a superseded/blank
+      // self-hosted object, clear it to the branded placeholder rather than
+      // leaving a blank frozen in.
+      if (force && isSelfHosted(site.thumbnail_url)) {
+        await clearImage(site);
+        console.error(`${label} ✗ no real image — cleared to branded placeholder`);
+      } else {
+        console.error(`${label} ✗ no og:image, no screenshot — needs manual upload`);
+      }
     } else {
       const publicUrl = await uploadAndSet(site, img.buf, img.ext, img.contentType);
       console.log(`${label} ✓ (${via}, ${Math.round(img.buf.length / 1024)}KB) ${publicUrl.slice(-40)}`);
