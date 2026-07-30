@@ -143,6 +143,34 @@ async function findOgImage(homeUrl: string): Promise<string | null> {
   return null;
 }
 
+/** First product image from a Shopify store's public /products.json — a clean,
+ *  real product shot, the best card thumbnail for an ecommerce store (beats a
+ *  logo og:image, and needs no headless capture). */
+async function findShopifyProductImage(domain: string): Promise<string | null> {
+  const bare = domain.replace(/^www\./, "");
+  for (const host of [bare, "www." + bare]) {
+    try {
+      const res = await fetchWithTimeout(
+        `https://${host}/products.json?limit=8`,
+        15000,
+        "application/json",
+      );
+      if (!res.ok) continue;
+      if (!(res.headers.get("content-type") || "").includes("json")) continue;
+      const j = (await res.json()) as {
+        products?: Array<{ images?: Array<{ src?: string }> }>;
+      };
+      for (const p of j.products || []) {
+        const src = p.images?.[0]?.src;
+        if (src) return src.replace(/&amp;/g, "&");
+      }
+    } catch {
+      /* try next host */
+    }
+  }
+  return null;
+}
+
 /** Download an image URL → {buffer, ext} if it's a real, non-trivial image. */
 async function downloadImage(
   imgUrl: string,
@@ -190,6 +218,28 @@ async function uploadAndSet(
     if (oldPath) await svc.storage.from(BUCKET).remove([decodeURIComponent(oldPath)]).catch(() => {});
   }
   return publicUrl;
+}
+
+/**
+ * Crop a raster image (product photo / og:image) to the card's 4:3 window,
+ * centered on the most salient region (the product). The SiteCard uses
+ * `object-cover object-top`, which is right for tall full-page SCREENSHOTS but
+ * wrong for a product-on-white shot (it would show the empty top margin). By
+ * storing an already-4:3 image, the card shows the whole product. Screenshots
+ * are left tall on purpose (their hero is at the top).
+ */
+async function toCard(buf: Buffer): Promise<{ buf: Buffer; ext: string; contentType: string }> {
+  // `contain` on white shows the WHOLE product centered (catalog look), so the
+  // card never crops into it. A little padding around it via `contain` +
+  // extend keeps it from touching the edges.
+  const out = await sharp(buf)
+    .flatten({ background: "#ffffff" }) // composite transparency onto white
+    // Center-crop to the card's 4:3 so the product fills the frame (the card's
+    // object-top then shows it whole, since the stored image is already 4:3).
+    .resize(1000, 750, { fit: "cover", position: "center", withoutEnlargement: false })
+    .jpeg({ quality: 84 })
+    .toBuffer();
+  return { buf: out, ext: "jpg", contentType: "image/jpeg" };
 }
 
 /** No real image available → set thumbnail_url to '' so the card renders the
@@ -308,14 +358,21 @@ for (const [i, site] of todo.entries()) {
     let img: { buf: Buffer; ext: string; contentType: string } | null = null;
     let via = "";
 
-    // 1) og:image / twitter:image (skipped in --screenshot mode).
     if (!screenshotMode) {
-      const og = await findOgImage(home);
-      if (og) img = await downloadImage(og);
-      if (og && img) via = "og:image";
+      // 1) Shopify product image — the best card shot for an ecommerce store.
+      const prod = await findShopifyProductImage(site.domain);
+      if (prod) img = await downloadImage(prod);
+      if (prod && img) { img = await toCard(img.buf); via = "product"; }
+
+      // 2) og:image / twitter:image.
+      if (!img) {
+        const og = await findOgImage(home);
+        if (og) img = await downloadImage(og);
+        if (og && img) { img = await toCard(img.buf); via = "og:image"; }
+      }
     }
 
-    // 2) real homepage screenshot (ScreenshotOne → Microlink).
+    // 3) real homepage screenshot (ScreenshotOne → Microlink).
     if (!img) {
       img = await screenshot(site.url);
       if (img) via = "screenshot";
