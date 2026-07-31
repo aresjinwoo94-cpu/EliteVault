@@ -8,15 +8,21 @@ import type {
 import { recordUsage } from "@/lib/usage/meter";
 import { DeadlineExceededError, deadlineAt } from "@/lib/deadline";
 
-// Defaults target the BEST models still covered by Google's free tier:
-//   MODEL      → paid audits. gemini-3.5-flash is the strongest free-tier
-//                vision model; far better reasoning than any *-flash-lite.
-//   MODEL_FAST → free audits + the fallback rung of the model chain below.
-//                flash-lite has the highest RPM, so it absorbs bursts.
-// If MODEL hits its (lower) free-tier RPM, the chain degrades to MODEL_FAST
-// instead of failing the audit. Switch to gemini-2.5-pro / gemini-3.1-pro
-// once the project has billing enabled.
-const MODEL = process.env.GEMINI_MODEL ?? "gemini-3.5-flash";
+// Defaults target RELIABILITY on Google's free tier, because on Vercel Hobby a
+// step has a hard 60s ceiling and an overloaded model can't recover inside it:
+//   MODEL      → paid audits. gemini-2.5-flash — a GENERALLY-AVAILABLE,
+//                high-capacity backend that rarely 503s. The newer 3.x-family
+//                models reason a little better but are capacity-constrained and
+//                503 under load; when they do, their retry/back-off ladder eats
+//                the whole 60s step and the audit REFUNDS instead of completing
+//                (exactly the "took longer to audit / slow AI provider" failure
+//                owners saw). A completed audit on a slightly-older flagship
+//                beats a refunded one on the newest. Opt back into the cutting-
+//                edge model any time with GEMINI_MODEL=gemini-3.5-flash — best
+//                once the project has billing enabled (higher capacity, no 503s).
+//   MODEL_FAST → free audits + a fallback rung. flash-lite has the highest RPM,
+//                so it absorbs bursts.
+const MODEL = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
 const MODEL_FAST = process.env.GEMINI_MODEL_FAST ?? "gemini-3.1-flash-lite";
 // Stable, generally-available last-resort model. The 3.x models above are
 // newer and capacity-constrained (they 503 under load); this GA model is a
