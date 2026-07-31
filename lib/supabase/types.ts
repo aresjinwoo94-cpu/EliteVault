@@ -310,6 +310,8 @@ export interface Database {
           result: unknown;
           rewrite: unknown;
           meta_ads: unknown;
+          // Growth Map cache (migration 0021) — see lib/growth-map/types.ts.
+          growth_map: unknown;
           is_published: boolean;
           published_at: string | null;
           error: string | null;

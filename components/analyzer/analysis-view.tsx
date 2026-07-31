@@ -33,6 +33,7 @@ import { FreeMetaPanel } from "./free-meta-panel";
 import { NicheWinners } from "./niche-winners";
 import { AdReadinessCard } from "./ad-readiness";
 import { ShareButton } from "./share-button";
+import { GrowthMap } from "./growth-map/growth-map";
 import type {
   AnalysisResult,
   RewriteResult,
@@ -327,6 +328,20 @@ export function AnalysisView({
           className="space-y-6"
         >
             {/*
+              THE GROWTH MAP — hero, at the very top of the result (spec §9).
+              Additive: it reads `data.result` (already computed) and never
+              touches the analyzer's scoring or the sections below it. Free sees
+              the map + their rank + the current-node diagnosis; the escape
+              route (nodes ahead) is gated to Pro.
+            */}
+            <GrowthMap
+              analysisId={data.id}
+              result={data.result}
+              url={data.url}
+              isPaid={viewer.isPaid}
+            />
+
+            {/*
               Report layout (restored to the original distribution per owner):
                 1. Score + gauges
                 2. Free-only modelable-ROAS panel (under the score)
@@ -570,7 +585,10 @@ function ScoreCard({ result }: { result: AnalysisResult }) {
           </Badge>
         </div>
       </div>
-      <p className="mt-6 text-sm text-white/65 leading-relaxed">
+      {/* Spec §9 — the Growth Map now carries the headline diagnosis, so the
+          long executive summary is clamped here to recover space (reversible;
+          the full text is still in the DOM). */}
+      <p className="mt-6 text-sm text-white/65 leading-relaxed line-clamp-5">
         {result.summary}
       </p>
     </Card>
