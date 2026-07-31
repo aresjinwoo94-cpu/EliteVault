@@ -37,15 +37,29 @@ const VIEWPORT_H = 900;
  */
 const DEFAULT_FULL_PAGE_MAX_H = (() => {
   const raw = Number(process.env.SCREENSHOT_FULL_PAGE_MAX_HEIGHT);
-  // 6000px at a 1440 viewport is ~6.5 screens: hero, social proof, product,
-  // reviews, FAQ and footer all sit inside it on a normal store. Height is
-  // what the vision call is billed and timed on — the image is split into
-  // tiles, so every extra 1000px is more tokens AND more wall-clock on the
-  // step that was already the slowest. Lowered from 8000 for that reason; the
-  // audit reads the same page, just without the long empty tail of
-  // infinite-scroll and mega-footer pages. Raise via
-  // SCREENSHOT_FULL_PAGE_MAX_HEIGHT if a niche genuinely needs it.
-  return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 6000;
+  // 4500px at a 1440 viewport is ~5 screens: hero, social proof, product,
+  // reviews and the start of the FAQ/footer all sit inside it on a normal
+  // store. Height is what the vision call is billed and TIMED on — the image
+  // is split into tiles, so every extra 1000px is more tokens AND more
+  // wall-clock on the slowest step. On Vercel Hobby the step dies at 60s, and
+  // very tall Shopify PRODUCT pages (long description + gallery + reviews +
+  // related products) pushed the vision call past that ceiling and refunded
+  // the audit. Lowered 8000 → 6000 → 4500 for that reason; the model still
+  // reads the whole funnel, and the discovery step already supplies the text
+  // of the long tail. Raise via SCREENSHOT_FULL_PAGE_MAX_HEIGHT (e.g. on
+  // Vercel Pro with a higher maxDuration) if a niche genuinely needs it.
+  return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 4500;
+})();
+
+/**
+ * JPEG quality for captures. Lower = smaller base64 = faster upload AND a
+ * faster/cheaper vision call (less to transfer and tokenize), at a visual cost
+ * the audit doesn't care about. 82 is still clean for CRO reading; drop it
+ * further via SCREENSHOT_IMAGE_QUALITY only if tall pages still time out.
+ */
+const IMAGE_QUALITY = (() => {
+  const raw = Number(process.env.SCREENSHOT_IMAGE_QUALITY);
+  return Number.isFinite(raw) && raw >= 40 && raw <= 100 ? Math.round(raw) : 82;
 })();
 
 /**
@@ -266,7 +280,7 @@ export async function captureWithScreenshotOne(
     viewport_height: String(VIEWPORT_H),
     device_scale_factor: String(opts.deviceScaleFactor ?? 1),
     format: "jpg",
-    image_quality: "92",
+    image_quality: String(IMAGE_QUALITY),
     full_page: String(opts.fullPage ?? true),
     // Only meaningful for full-page captures; omitted otherwise.
     ...((opts.fullPage ?? true)
