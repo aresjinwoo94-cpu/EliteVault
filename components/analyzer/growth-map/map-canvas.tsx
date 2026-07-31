@@ -3,121 +3,119 @@
 import { RANKS, type RankKey } from "@/lib/growth-map/ranks";
 
 /**
- * The Growth Map canvas (spec v2). Pure SVG, visual-only — interaction (the
- * per-node popovers, spec §7) lives in an HTML overlay in growth-map.tsx, which
- * positions itself from the exported NODE_POS. Ported from the self-contained
- * web-artifacts-builder prototype.
+ * The Growth Map canvas (v3). Pure SVG, visual-only — interaction (the per-node
+ * detail, spec §7) lives in growth-map.tsx, positioned from NODE_POS.
  *
- * Geometry (spec §4): the route ASCENDS from Copper (bottom-left) to Ruby
- * (top-right) with gentle amplitude and STRAIGHT segments. The ONLY descent is
- * The Wall — a small dip between Steel and Silver. Icons (spec §5) are flat,
- * monocolour vectors tinted to each rank's material. Typography (spec §6) uses
- * the theme tokens via Tailwind font utilities (font-display / font-mono / body).
+ * v3 changes (owner feedback):
+ *  - Flatter / more horizontal: a wide, short viewBox with gentle amplitude.
+ *  - Premium material icons with gradients + highlights, shaped after the
+ *    reference set: coin, gear, 4-point sparkle, gold bars, diamond, pear ruby.
+ *  - The Wall is a brick-wall obstacle sitting ON the route with a legible label.
+ *
+ * Geometry (spec §4): the route ASCENDS Copper→Ruby with straight segments; the
+ * only descent is the small dip at The Wall (between Steel and Silver).
  */
 
-export const VIEWBOX = { w: 900, h: 320 };
+export const VIEWBOX = { w: 1120, h: 210 };
 
-// Node centres — ascending, one dip at Silver (The Wall). Kept in sync with the
-// overlay via NODE_POS (percent positions derived below).
+// Node centres — ascending, one dip at Silver (The Wall). Flat amplitude.
 const XY: { x: number; y: number }[] = [
-  { x: 80, y: 238 }, // Copper  (bottom-left)
-  { x: 232, y: 196 }, // Steel   (up)
-  { x: 384, y: 210 }, // Silver  (dip = The Wall)
-  { x: 536, y: 162 }, // Gold    (up)
-  { x: 688, y: 120 }, // Diamond (up)
-  { x: 832, y: 82 }, // Ruby    (top-right)
+  { x: 66, y: 150 }, // Copper  (bottom-left)
+  { x: 270, y: 126 }, // Steel
+  { x: 470, y: 140 }, // Silver  (dip = The Wall)
+  { x: 664, y: 112 }, // Gold
+  { x: 858, y: 90 }, // Diamond
+  { x: 1054, y: 68 }, // Ruby    (top-right)
 ];
 
-/** Node positions as viewBox coords + percentages (for the HTML overlay). */
 export const NODE_POS = XY.map((p) => ({
   ...p,
   xPct: (p.x / VIEWBOX.w) * 100,
   yPct: (p.y / VIEWBOX.h) * 100,
 }));
 
-/** Flat, monocolour vector icon per rank (spec §5). Drawn around (0,0). */
-function RankIcon({ rankKey, color }: { rankKey: RankKey; color: string }) {
+const R_OUT = 20; // medallion outer ring
+const R_DISC = 16; // material disc
+
+/** Gear silhouette (Steel) — alternating outer/inner radius points. */
+function gearPath(teeth: number, rOut: number, rIn: number): string {
+  const steps = teeth * 2;
+  const pts: string[] = [];
+  for (let k = 0; k < steps; k++) {
+    const a = (k / steps) * Math.PI * 2 - Math.PI / 2;
+    const r = k % 2 === 0 ? rOut : rIn;
+    pts.push(`${(Math.cos(a) * r).toFixed(2)},${(Math.sin(a) * r).toFixed(2)}`);
+  }
+  return `M${pts.join(" L")} Z`;
+}
+
+/** 4-point sparkle (Silver). */
+function star4(rOut: number, rIn: number): string {
+  return `M0,${-rOut} L${rIn},${-rIn} L${rOut},0 L${rIn},${rIn} L0,${rOut} L${-rIn},${rIn} L${-rOut},0 L${-rIn},${-rIn} Z`;
+}
+
+/** Premium material icon, drawn around (0,0). Gradient fill + highlight. */
+function RankIcon({ rankKey }: { rankKey: RankKey }) {
+  const g = (id: string) => `url(#gm-grad-${id})`;
   switch (rankKey) {
-    case "copper": // coin ($)
+    case "copper": // polished coin
       return (
         <g>
-          <circle r={8.5} fill="none" stroke={color} strokeWidth={1.5} />
-          <text
-            y={3.4}
-            textAnchor="middle"
-            className="font-mono"
-            fontSize={11}
-            fontWeight={700}
-            fill={color}
-          >
-            $
-          </text>
+          <circle r={11} fill={g("copper")} stroke="#7C4A22" strokeWidth={1} />
+          <circle r={8} fill="none" stroke="#F0B884" strokeOpacity={0.45} strokeWidth={1} />
+          <path d="M-6.5,-5.5 A9 9 0 0 1 3,-7.5" fill="none" stroke="#FFE0C0" strokeOpacity={0.65} strokeWidth={1.6} strokeLinecap="round" />
         </g>
       );
-    case "steel": // hammer (NOT a clock)
-      return (
-        <g fill={color}>
-          <rect x={-8} y={-8.5} width={16} height={5} rx={2} />
-          <rect x={-2} y={-4.5} width={4} height={12.5} rx={1.6} />
-        </g>
-      );
-    case "silver": // breastplate / armor
+    case "steel": // gear / cog
       return (
         <g>
-          <path
-            d="M-4,-8 L0,-5 L4,-8 M0,-6 C-6,-6 -7.5,-3 -7.5,0 C-7.5,4 -4,7.5 0,8.5 C4,7.5 7.5,4 7.5,0 C7.5,-3 6,-6 0,-6 Z"
-            fill={color}
-            fillOpacity={0.18}
-            stroke={color}
-            strokeWidth={1.2}
-            strokeLinejoin="round"
-          />
-          <line x1={0} y1={-4} x2={0} y2={7} stroke={color} strokeWidth={0.9} strokeOpacity={0.8} />
+          <path d={gearPath(8, 11, 8.2)} fill={g("steel")} stroke="#6B7684" strokeWidth={0.8} strokeLinejoin="round" />
+          <circle r={3.6} fill="#0E0E16" stroke="#6B7684" strokeWidth={0.8} />
+          <path d="M-5,-6 A8 8 0 0 1 3,-7.5" fill="none" stroke="#FFFFFF" strokeOpacity={0.55} strokeWidth={1.4} strokeLinecap="round" />
         </g>
       );
-    case "gold": // stacked ingots (bars, NOT a box)
-      return (
-        <g fill={color} fillOpacity={0.9}>
-          <path d="M-3.5,-6 L3.5,-6 L4.5,-2.5 L-4.5,-2.5 Z" />
-          <path d="M-8.5,-1 L-1,-1 L0,2.5 L-9.5,2.5 Z" />
-          <path d="M1,-1 L8.5,-1 L9.5,2.5 L0,2.5 Z" />
-        </g>
-      );
-    case "diamond": // brilliant-cut diamond
+    case "silver": // 4-point sparkle
       return (
         <g>
-          <polygon
-            points="0,-8.5 7.5,-2.5 0,9 -7.5,-2.5"
-            fill={color}
-            fillOpacity={0.22}
-            stroke={color}
-            strokeWidth={1.2}
-            strokeLinejoin="round"
-          />
-          <g stroke={color} strokeWidth={0.8} strokeOpacity={0.8}>
-            <line x1={-7.5} y1={-2.5} x2={7.5} y2={-2.5} />
-            <line x1={-3.7} y1={-2.5} x2={0} y2={9} />
-            <line x1={3.7} y1={-2.5} x2={0} y2={9} />
+          <path d={star4(11.5, 3)} fill={g("silver")} stroke="#8A96A4" strokeWidth={0.7} strokeLinejoin="round" />
+          <path d="M6,-9 l1.4,2.6 l2.6,1.4 l-2.6,1.4 l-1.4,2.6 l-1.4,-2.6 l-2.6,-1.4 l2.6,-1.4 Z" fill={g("silver")} stroke="#8A96A4" strokeWidth={0.5} />
+          <circle cx={-1.5} cy={-1.5} r={1.6} fill="#FFFFFF" fillOpacity={0.7} />
+        </g>
+      );
+    case "gold": // stacked bars
+      return (
+        <g stroke="#A9761F" strokeWidth={0.6} strokeLinejoin="round">
+          <path d="M-4,-7 L4,-7 L5.4,-3 L-5.4,-3 Z" fill={g("gold")} />
+          <path d="M-10,-1.5 L-1.2,-1.5 L0.2,3 L-11.4,3 Z" fill={g("gold")} />
+          <path d="M1.2,-1.5 L10,-1.5 L11.4,3 L-0.2,3 Z" fill={g("gold")} />
+          <line x1={-3} y1={-6} x2={3} y2={-6} stroke="#FFF0C0" strokeOpacity={0.7} strokeWidth={0.9} />
+        </g>
+      );
+    case "diamond": // brilliant cut
+      return (
+        <g stroke="#5FB8D6" strokeWidth={0.7} strokeLinejoin="round">
+          <path d="M-8,-4 L-4,-9 L4,-9 L8,-4 L0,11 Z" fill={g("diamond")} />
+          <g stroke="#BFF0FB" strokeOpacity={0.75} strokeWidth={0.6}>
+            <line x1={-8} y1={-4} x2={8} y2={-4} />
+            <line x1={-4} y1={-9} x2={-2.5} y2={-4} />
+            <line x1={4} y1={-9} x2={2.5} y2={-4} />
+            <line x1={-2.5} y1={-4} x2={0} y2={11} />
+            <line x1={2.5} y1={-4} x2={0} y2={11} />
           </g>
+          <path d="M-3.2,-7.5 L2.6,-7.5" stroke="#FFFFFF" strokeOpacity={0.8} strokeWidth={1} strokeLinecap="round" />
         </g>
       );
-    case "ruby": // red gem
+    case "ruby": // pear / teardrop cut
       return (
-        <g>
-          <polygon
-            points="-4,-6.5 4,-6.5 8,0 4,7.5 -4,7.5 -8,0"
-            fill={color}
-            fillOpacity={0.22}
-            stroke={color}
-            strokeWidth={1.2}
-            strokeLinejoin="round"
-          />
-          <g stroke={color} strokeWidth={0.8} strokeOpacity={0.8}>
-            <line x1={-4} y1={-6.5} x2={4} y2={-6.5} />
-            <line x1={-8} y1={0} x2={8} y2={0} />
-            <line x1={-4} y1={-6.5} x2={-8} y2={0} />
-            <line x1={4} y1={-6.5} x2={8} y2={0} />
+        <g stroke="#8E1330" strokeWidth={0.7} strokeLinejoin="round">
+          <path d="M0,-11 C5.5,-9 9,-3 9,2.5 C9,8 5,11 0,11 C-5,11 -9,8 -9,2.5 C-9,-3 -5.5,-9 0,-11 Z" fill={g("ruby")} />
+          <g stroke="#FF9DB0" strokeOpacity={0.6} strokeWidth={0.55}>
+            <line x1={0} y1={-11} x2={0} y2={11} />
+            <line x1={-9} y1={2.5} x2={9} y2={2.5} />
+            <line x1={0} y1={-11} x2={-9} y2={2.5} />
+            <line x1={0} y1={-11} x2={9} y2={2.5} />
           </g>
+          <path d="M-3,-7 C-1,-8 1,-8 2.5,-6.5" fill="none" stroke="#FFD0DA" strokeOpacity={0.75} strokeWidth={1.1} strokeLinecap="round" />
         </g>
       );
   }
@@ -128,13 +126,16 @@ export function MapCanvas({
   openIndex,
 }: {
   currentIndex: number;
-  /** Rank whose pin is open (null = nothing open — the default). */
   openIndex: number | null;
 }) {
   const pathPoints = XY.map((p) => `${p.x},${p.y}`).join(" ");
   const lockedPoints = XY.slice(currentIndex)
     .map((p) => `${p.x},${p.y}`)
     .join(" ");
+  const a = XY[1];
+  const b = XY[2];
+  const wallX = (a.x + b.x) / 2; // 370
+  const wallY = (a.y + b.y) / 2 + 3; // sits on the dip
 
   return (
     <svg
@@ -152,18 +153,46 @@ export function MapCanvas({
           <stop offset="1" stopColor="#6366F1" />
         </linearGradient>
         <linearGradient id="gm-path" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#2DD4BF" stopOpacity="0.85" />
-          <stop offset="0.28" stopColor="#2DD4BF" stopOpacity="0.5" />
-          <stop offset="0.42" stopColor="#9AA6B4" stopOpacity="0.28" />
-          <stop offset="1" stopColor="#9AA6B4" stopOpacity="0.14" />
+          <stop offset="0" stopColor="#2DD4BF" stopOpacity="0.9" />
+          <stop offset="0.32" stopColor="#2DD4BF" stopOpacity="0.5" />
+          <stop offset="0.42" stopColor="#9AA6B4" stopOpacity="0.3" />
+          <stop offset="1" stopColor="#9AA6B4" stopOpacity="0.16" />
         </linearGradient>
         <radialGradient id="gm-glow" cx="50%" cy="50%" r="50%">
-          <stop offset="0" stopColor="#2DD4BF" stopOpacity="0.5" />
+          <stop offset="0" stopColor="#2DD4BF" stopOpacity="0.55" />
           <stop offset="1" stopColor="#2DD4BF" stopOpacity="0" />
         </radialGradient>
+        {/* Material gradients (top-light → bottom-dark) */}
+        <linearGradient id="gm-grad-copper" x1="0" y1="0" x2="0.4" y2="1">
+          <stop offset="0" stopColor="#E8A96B" />
+          <stop offset="1" stopColor="#9C5A2A" />
+        </linearGradient>
+        <linearGradient id="gm-grad-steel" x1="0" y1="0" x2="0.4" y2="1">
+          <stop offset="0" stopColor="#EDF1F5" />
+          <stop offset="1" stopColor="#8A96A4" />
+        </linearGradient>
+        <linearGradient id="gm-grad-silver" x1="0" y1="0" x2="0.4" y2="1">
+          <stop offset="0" stopColor="#FFFFFF" />
+          <stop offset="1" stopColor="#9AA6B4" />
+        </linearGradient>
+        <linearGradient id="gm-grad-gold" x1="0" y1="0" x2="0.3" y2="1">
+          <stop offset="0" stopColor="#F9DE86" />
+          <stop offset="1" stopColor="#C9922E" />
+        </linearGradient>
+        <linearGradient id="gm-grad-diamond" x1="0" y1="0" x2="0.4" y2="1">
+          <stop offset="0" stopColor="#EAFCFF" />
+          <stop offset="1" stopColor="#7FD3E8" />
+        </linearGradient>
+        <linearGradient id="gm-grad-ruby" x1="0" y1="0" x2="0.4" y2="1">
+          <stop offset="0" stopColor="#FF6B85" />
+          <stop offset="1" stopColor="#A81834" />
+        </linearGradient>
+        <filter id="gm-shadow" x="-40%" y="-40%" width="180%" height="180%">
+          <feDropShadow dx="0" dy="1.4" stdDeviation="1.6" floodColor="#000000" floodOpacity="0.45" />
+        </filter>
       </defs>
 
-      {/* Route — ascending, solid base */}
+      {/* Route */}
       <polyline
         points={pathPoints}
         fill="none"
@@ -184,31 +213,39 @@ export function MapCanvas({
         />
       )}
 
-      {/* ── The Wall — danger zone, below the dip, clear of the nodes (spec §9) ── */}
+      {/* ── The Wall — brick-wall obstacle ON the route + label (spec §9) ── */}
       <g>
-        <path d="M308,214 L282,250" stroke="#EF4444" strokeOpacity={0.5} strokeWidth={1.8} strokeDasharray="4 5" fill="none" />
-        <path d="M308,214 L336,254" stroke="#EF4444" strokeOpacity={0.5} strokeWidth={1.8} strokeDasharray="4 5" fill="none" />
-        <g stroke="#EF4444" strokeWidth={1.8} strokeOpacity={0.85}>
-          <line x1={277} y1={245} x2={287} y2={255} />
-          <line x1={287} y1={245} x2={277} y2={255} />
-          <line x1={331} y1={249} x2={341} y2={259} />
-          <line x1={341} y1={249} x2={331} y2={259} />
+        {/* dead-end branches */}
+        <path d={`M${wallX},${wallY + 8} L${wallX - 40},${wallY + 44}`} stroke="#EF4444" strokeOpacity={0.5} strokeWidth={1.6} strokeDasharray="4 5" fill="none" />
+        <path d={`M${wallX},${wallY + 8} L${wallX + 40},${wallY + 46}`} stroke="#EF4444" strokeOpacity={0.5} strokeWidth={1.6} strokeDasharray="4 5" fill="none" />
+        <g stroke="#EF4444" strokeWidth={1.6} strokeOpacity={0.85}>
+          <line x1={wallX - 45} y1={wallY + 39} x2={wallX - 35} y2={wallY + 49} />
+          <line x1={wallX - 35} y1={wallY + 39} x2={wallX - 45} y2={wallY + 49} />
+          <line x1={wallX + 35} y1={wallY + 41} x2={wallX + 45} y2={wallY + 51} />
+          <line x1={wallX + 45} y1={wallY + 41} x2={wallX + 35} y2={wallY + 51} />
         </g>
-        <text x={270} y={270} textAnchor="middle" className="font-mono" fontSize={7} fill="#EF4444" letterSpacing="0.06em">
-          NO EXIT
-        </text>
-        <text x={345} y={273} textAnchor="middle" className="font-mono" fontSize={7} fill="#EF4444" letterSpacing="0.06em">
-          FALL BACK
-        </text>
-        <g transform="translate(308,286)">
-          <path d="M0,-13 L12,8 L-12,8 Z" fill="rgba(239,68,68,0.12)" stroke="#EF4444" strokeOpacity={0.7} strokeWidth={1.3} />
-          <line x1={0} y1={-5} x2={0} y2={2} stroke="#EF4444" strokeWidth={1.5} />
-          <circle cx={0} cy={5} r={1} fill="#EF4444" />
+
+        {/* brick wall icon, sitting on the path */}
+        <g transform={`translate(${wallX},${wallY})`} filter="url(#gm-shadow)">
+          <rect x={-13} y={-9} width={26} height={18} rx={2} fill="#1a1013" stroke="#EF4444" strokeOpacity={0.7} strokeWidth={1.1} />
+          <g stroke="#EF4444" strokeOpacity={0.55} strokeWidth={0.8}>
+            <line x1={-13} y1={-3} x2={13} y2={-3} />
+            <line x1={-13} y1={3} x2={13} y2={3} />
+            <line x1={-4} y1={-9} x2={-4} y2={-3} />
+            <line x1={5} y1={-9} x2={5} y2={-3} />
+            <line x1={0} y1={-3} x2={0} y2={3} />
+            <line x1={-8.5} y1={-3} x2={-8.5} y2={3} />
+            <line x1={8.5} y1={-3} x2={8.5} y2={3} />
+            <line x1={-4} y1={3} x2={-4} y2={9} />
+            <line x1={5} y1={3} x2={5} y2={9} />
+          </g>
         </g>
-        <text x={308} y={308} textAnchor="middle" className="font-display" fontSize={10} fontWeight={600} fill="#F6C9C9">
-          THE WALL · most stores quit here
+
+        {/* pointer + label */}
+        <text x={wallX} y={wallY + 74} textAnchor="middle" className="font-display" fontSize={9.5} fontWeight={600} fill="#F6C9C9">
+          THE WALL
         </text>
-        <text x={308} y={319} textAnchor="middle" className="font-mono" fontSize={8} fill="#EF4444" letterSpacing="0.04em">
+        <text x={wallX} y={wallY + 85} textAnchor="middle" className="font-mono" fontSize={7.5} fill="#EF4444" letterSpacing="0.03em">
           87% stall here · HBR &rsquo;08
         </text>
       </g>
@@ -220,62 +257,54 @@ export function MapCanvas({
         const open = i === openIndex;
         return (
           <g key={rank.key} transform={`translate(${pos.x},${pos.y})`}>
-            {state === "current" && <circle r={34} fill="url(#gm-glow)" />}
+            {state === "current" && <circle r={R_OUT + 12} fill="url(#gm-glow)" />}
             {open && (
-              <circle r={27} fill="none" stroke="#2DD4BF" strokeOpacity={0.55} strokeWidth={1} strokeDasharray="3 4" />
+              <circle r={R_OUT + 6} fill="none" stroke="#2DD4BF" strokeOpacity={0.55} strokeWidth={1} strokeDasharray="3 4" />
             )}
-            <circle
-              r={22}
-              fill="none"
-              stroke={state === "current" ? "url(#gm-brand)" : rank.color}
-              strokeOpacity={state === "ahead" ? 0.32 : state === "past" ? 0.5 : 1}
-              strokeWidth={state === "current" ? 2.4 : 1.5}
-              strokeDasharray={state === "ahead" ? "3 4" : undefined}
-            />
-            <circle
-              r={18}
-              fill={rank.color}
-              fillOpacity={state === "ahead" ? 0.05 : state === "past" ? 0.13 : 0.18}
-              stroke={rank.color}
-              strokeOpacity={state === "ahead" ? 0.4 : 0.9}
-              strokeWidth={1}
-            />
-            {/* icons enlarged per owner feedback (2 rounds) */}
-            <g opacity={state === "ahead" ? 0.65 : 1} transform="scale(1.28)">
-              <RankIcon rankKey={rank.key} color={rank.color} />
+            <g filter="url(#gm-shadow)">
+              <circle
+                r={R_OUT}
+                fill="#0E0E16"
+                stroke={state === "current" ? "url(#gm-brand)" : rank.color}
+                strokeOpacity={state === "ahead" ? 0.4 : state === "past" ? 0.6 : 1}
+                strokeWidth={state === "current" ? 2.4 : 1.4}
+                strokeDasharray={state === "ahead" ? "3 4" : undefined}
+              />
+              <circle r={R_DISC} fill={rank.color} fillOpacity={state === "ahead" ? 0.05 : 0.12} />
+            </g>
+            <g opacity={state === "ahead" ? 0.72 : 1}>
+              <RankIcon rankKey={rank.key} />
             </g>
 
-            <text y={-31} textAnchor="middle" className="font-mono" fontSize={8.5} fill={rank.color} letterSpacing="0.1em" opacity={state === "ahead" ? 0.75 : 1}>
+            <text y={-28} textAnchor="middle" className="font-mono" fontSize={8.5} fill={rank.color} letterSpacing="0.1em" opacity={state === "ahead" ? 0.8 : 1}>
               {rank.material.toUpperCase()}
             </text>
-            <text y={34} textAnchor="middle" className="font-sans" fontSize={9} fill={state === "ahead" ? "#C7CAD1" : "#fff"} fontWeight={state === "current" ? 700 : 600}>
+            <text y={31} textAnchor="middle" className="font-sans" fontSize={9} fill={state === "ahead" ? "#C7CAD1" : "#fff"} fontWeight={state === "current" ? 700 : 600}>
               {rank.stage}
             </text>
-            <text y={45} textAnchor="middle" className="font-mono" fontSize={7} fill="#8A8F98">
+            <text y={41} textAnchor="middle" className="font-mono" fontSize={7} fill="#8A8F98">
               {rank.band}
             </text>
 
             {state === "past" && (
-              <g transform="translate(14,-14)">
-                <circle r={6} fill="#22C55E" />
-                <path d="M-2.6,0 l1.9,2 L3.4,-2.6" stroke="#06060A" strokeWidth={1.4} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              <g transform="translate(13,-13)" filter="url(#gm-shadow)">
+                <circle r={5.5} fill="#22C55E" />
+                <path d="M-2.4,0 l1.7,1.9 L3,-2.4" stroke="#06060A" strokeWidth={1.3} fill="none" strokeLinecap="round" strokeLinejoin="round" />
               </g>
             )}
-
             {state === "current" && (
-              <g transform="translate(0,-52)">
-                <rect x={-34} y={-10} width={68} height={20} rx={10} fill="#0A0A0F" stroke="url(#gm-brand)" strokeWidth={1.4} />
-                <text y={3.5} textAnchor="middle" className="font-sans" fontSize={8.5} fontWeight={700} fill="#5EEAD4" letterSpacing="0.07em">
+              <g transform="translate(0,-46)">
+                <rect x={-33} y={-9.5} width={66} height={19} rx={9.5} fill="#0A0A0F" stroke="url(#gm-brand)" strokeWidth={1.4} />
+                <text y={3.5} textAnchor="middle" className="font-sans" fontSize={8} fontWeight={700} fill="#5EEAD4" letterSpacing="0.06em">
                   YOUR STORE
                 </text>
               </g>
             )}
-
             {state === "ahead" && (
-              <g transform="translate(15,-15)" opacity={0.8}>
-                <circle r={6.5} fill="#0A0A0F" stroke={rank.color} strokeOpacity={0.6} />
-                <rect x={-2} y={-1} width={4} height={3.5} rx={0.8} fill={rank.color} fillOpacity={0.8} />
-                <path d="M-1.3,-1 v-1.4 a1.3,1.3 0 0 1 2.6,0 v1.4" fill="none" stroke={rank.color} strokeWidth={0.8} strokeOpacity={0.8} />
+              <g transform="translate(14,-14)" opacity={0.85}>
+                <circle r={6} fill="#0A0A0F" stroke={rank.color} strokeOpacity={0.6} />
+                <rect x={-1.9} y={-0.9} width={3.8} height={3.3} rx={0.7} fill={rank.color} fillOpacity={0.85} />
+                <path d="M-1.25,-0.9 v-1.3 a1.25,1.25 0 0 1 2.5,0 v1.3" fill="none" stroke={rank.color} strokeWidth={0.8} strokeOpacity={0.85} />
               </g>
             )}
           </g>

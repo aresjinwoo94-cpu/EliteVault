@@ -1,9 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { Sparkles, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { AnalysisResult } from "@/lib/supabase/types";
@@ -13,7 +11,7 @@ import { resolveNicheLabel } from "@/lib/growth-map/niche";
 import { rankByIndex, RANKS } from "@/lib/growth-map/ranks";
 import { gateForViewer } from "@/lib/growth-map/gate";
 import type { GrowthMapData } from "@/lib/growth-map/types";
-import { MapCanvas, NODE_POS } from "./map-canvas";
+import { MapCanvas, NODE_POS, VIEWBOX } from "./map-canvas";
 import { NodeCard } from "./node-card";
 import { ExportButton } from "./export-button";
 
@@ -118,18 +116,8 @@ export function GrowthMap({
   const rank = rankByIndex(current);
   const openNode = openIndex != null ? data.nodes[openIndex] : null;
   const openPos = openIndex != null ? NODE_POS[openIndex] : null;
-  const above = openPos ? openPos.yPct > 50 : false;
-  const tx = openPos
-    ? openPos.xPct < 24
-      ? "-12%"
-      : openPos.xPct > 76
-        ? "-88%"
-        : "-50%"
-    : "-50%";
-  // Locked ranks don't open a rank-anchored popover — they raise a small alert
-  // (below), so the pitch never ties to a rank or covers the route.
-  const showFeedback = !!openNode && !openNode.locked && !!openPos;
-  const showAlert = !!openNode && openNode.locked;
+  // Caret x for the detail band, clamped so it never runs off the card edge.
+  const caretLeft = openPos ? Math.min(94, Math.max(6, openPos.xPct)) : 50;
   const displayScore = Math.round(result.score > 1 ? result.score : result.score * 100);
 
   return (
@@ -174,119 +162,112 @@ export function GrowthMap({
           </div>
         </div>
 
-        {/* Map + interactive pin overlay */}
+        {/* Interactive area: a flat, horizontal map + a detail band below it.
+            Leaving the whole area with the mouse closes; hovering the band keeps
+            the current rank open so its CTA stays reachable. */}
         <div
           ref={containerRef}
-          className="relative mt-3"
-          style={{ aspectRatio: "900 / 320" }}
+          onPointerLeave={(e) => {
+            if (e.pointerType === "mouse") closeAll();
+          }}
+          className="mt-3"
         >
-          <div ref={svgWrapRef} className="absolute inset-0">
-            <MapCanvas currentIndex={current} openIndex={openIndex} />
+          <div
+            className="relative"
+            style={{ aspectRatio: `${VIEWBOX.w} / ${VIEWBOX.h}` }}
+          >
+            <div ref={svgWrapRef} className="absolute inset-0">
+              <MapCanvas currentIndex={current} openIndex={openIndex} />
+            </div>
+
+            {/* Accessible hit-targets over each medallion */}
+            {RANKS.map((r, i) => {
+              const pos = NODE_POS[i];
+              const label =
+                i === current
+                  ? `${r.material}, your store — read diagnosis`
+                  : `${r.material}, ${r.stage} — read feedback`;
+              return (
+                <button
+                  key={r.key}
+                  type="button"
+                  aria-label={label}
+                  aria-expanded={openIndex === i}
+                  aria-controls="gm-detail"
+                  onPointerEnter={(e) => {
+                    if (e.pointerType === "mouse") setOpenIndex(i);
+                  }}
+                  onFocus={() => setOpenIndex(i)}
+                  onClick={() => setOpenIndex((p) => (p === i ? null : i))}
+                  className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-signal-400/70"
+                  style={{
+                    left: `${pos.xPct}%`,
+                    top: `${pos.yPct}%`,
+                    width: "8%",
+                    height: "26%",
+                  }}
+                />
+              );
+            })}
           </div>
 
-          {/* Invisible hit-targets over each medallion (accessible triggers) */}
-          {RANKS.map((r, i) => {
-            const pos = NODE_POS[i];
-            const label =
-              i === current
-                ? `${r.material}, your store — read diagnosis`
-                : `${r.material}, ${r.stage} — read feedback`;
-            return (
-              <button
-                key={r.key}
-                type="button"
-                aria-label={label}
-                aria-expanded={openIndex === i}
-                aria-haspopup="dialog"
-                // Mouse: hover to reveal, leave to hide (like the annotated pins).
-                onPointerEnter={(e) => {
-                  if (e.pointerType === "mouse") setOpenIndex(i);
-                }}
-                onPointerLeave={(e) => {
-                  // Keep a locked rank's alert up so its CTA stays reachable;
-                  // it dismisses on Esc / click-outside.
-                  if (e.pointerType !== "mouse") return;
-                  if (data.nodes[i]?.locked) return;
-                  setOpenIndex((p) => (p === i ? null : p));
-                }}
-                onFocus={() => setOpenIndex(i)}
-                onBlur={() =>
-                  setOpenIndex((p) =>
-                    p === i && !data.nodes[i]?.locked ? null : p,
-                  )
-                }
-                // Touch/click: toggle.
-                onClick={() => setOpenIndex((p) => (p === i ? null : i))}
-                className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-signal-400/70"
+          {/* Detail band — feedback / upgrade ad appears HERE, below the map, so
+              it never overlaps the route or the header (owner feedback). A caret
+              points up to the hovered rank. */}
+          <div
+            id="gm-detail"
+            className="relative mt-2 flex min-h-[86px] items-center rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3"
+          >
+            {openNode && (
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -top-[6px] size-3"
                 style={{
-                  left: `${pos.xPct}%`,
-                  top: `${pos.yPct}%`,
-                  width: "8%",
-                  height: "22%",
+                  left: `${caretLeft}%`,
+                  transform: "translateX(-50%) rotate(45deg)",
+                  background: "#0d0d14",
+                  borderLeft: `1px solid ${
+                    openNode.role === "current"
+                      ? "rgba(45,212,191,0.4)"
+                      : "rgba(255,255,255,0.08)"
+                  }`,
+                  borderTop: `1px solid ${
+                    openNode.role === "current"
+                      ? "rgba(45,212,191,0.4)"
+                      : "rgba(255,255,255,0.08)"
+                  }`,
                 }}
               />
-            );
-          })}
-
-          {/* Feedback popover — only for OPEN ranks (current + past), anchored
-              to the node (spec §7). Locked ranks use the alert below instead. */}
-          {showFeedback && (
-            <div
-              role="dialog"
-              aria-label={`${openNode!.rankKey} feedback`}
-              className="pointer-events-auto absolute z-10 w-[218px] max-w-[74vw] rounded-xl border bg-[#0e0e16]/97 p-3 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.7)] motion-safe:transition-[left,top] motion-safe:duration-150"
-              style={{
-                left: `${openPos!.xPct}%`,
-                top: `${openPos!.yPct}%`,
-                transform: `translateX(${tx}) translateY(${above ? "calc(-100% - 34px)" : "34px"})`,
-                borderColor:
-                  openNode!.role === "current"
-                    ? "rgba(45,212,191,0.45)"
-                    : "rgba(255,255,255,0.06)",
-              }}
-            >
-              <NodeCard node={openNode!} />
-            </div>
-          )}
-
-          {/* Upgrade ALERT — small, plan-agnostic, NOT tied to a rank and never
-              over the route (pinned bottom-right where the ascending path leaves
-              the corner empty). Light animation, EliteVault style. */}
-          <AnimatePresence>
-            {showAlert && (
-              <motion.div
-                key="gm-alert"
-                role="alert"
-                initial={reduce ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.98 }}
-                animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
-                exit={reduce ? { opacity: 0 } : { opacity: 0, y: 6, scale: 0.98 }}
-                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute bottom-2 right-2 z-20 flex max-w-[230px] items-center gap-2.5 rounded-lg border border-signal-400/30 bg-[#0e0e16]/95 px-3 py-2 shadow-[0_0_0_1px_rgba(45,212,191,0.08),0_12px_30px_-14px_rgba(0,0,0,0.7)] backdrop-blur-sm"
-              >
-                <span className="relative flex size-6 shrink-0 items-center justify-center rounded-full bg-signal-500/12 ring-1 ring-signal-400/30">
-                  <Sparkles className="size-3.5 text-signal-300" />
-                  {!reduce && (
-                    <span className="absolute inset-0 rounded-full ring-1 ring-signal-400/40 motion-safe:animate-ping" />
-                  )}
-                </span>
-                <p className="text-[11px] leading-snug text-white/80">
-                  Use Pro or Scale to unlock the tools and keep scaling.
-                </p>
-                <Link
-                  href="/app/checkout?plan=pro&interval=month"
-                  className="shrink-0 rounded-md bg-signal-400 px-2 py-1 text-[10.5px] font-semibold text-[#06060a] inline-flex items-center gap-0.5"
-                >
-                  Unlock
-                  <ArrowRight className="size-3" />
-                </Link>
-              </motion.div>
             )}
-          </AnimatePresence>
+            <div className="w-full">
+              <AnimatePresence mode="wait" initial={false}>
+                {openNode ? (
+                  <motion.div
+                    key={openIndex}
+                    initial={reduce ? { opacity: 0 } : { opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={reduce ? { opacity: 0 } : { opacity: 0, y: -4 }}
+                    transition={{ duration: 0.16 }}
+                  >
+                    <NodeCard node={openNode} />
+                  </motion.div>
+                ) : (
+                  <motion.p
+                    key="hint"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.16 }}
+                    className="text-center text-[11.5px] text-white/40"
+                  >
+                    Hover, tap or focus any rank to read its store-specific
+                    feedback.
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
         </div>
-
-        <p className="mt-2 text-center text-[11px] text-white/40">
-          Hover, tap or focus any rank to read its store-specific feedback.
-        </p>
 
         {/* Footer — citations + branded export (spec §3/§8) */}
         <div className="mt-4 flex flex-wrap items-end justify-between gap-3 border-t border-white/[0.06] pt-3">
