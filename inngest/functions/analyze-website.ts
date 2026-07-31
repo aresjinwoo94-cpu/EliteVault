@@ -16,6 +16,7 @@ import { runMetaAdsOptimizerAgent } from "@/ai/agents/meta-ads-optimizer-agent";
 // auto-run on every analysis.
 import type { BuyerPersona } from "@/lib/supabase/types";
 import { startDeadline, isDeadlineError } from "@/lib/deadline";
+import { quickScoreEnabled } from "@/lib/flags";
 
 /**
  * How many audits may run at once, globally.
@@ -234,6 +235,10 @@ export const analyzeWebsite = inngest.createFunction(
     // the sum. Both stay best-effort: neither can fail the audit.
     const [, discovery] = await Promise.all([
       step.run("quick-score", async () => {
+        // Skip the teaser's SEPARATE AI request unless explicitly enabled — on a
+        // single Gemini key (15 req/min) it doubles rate-limit pressure and can
+        // push the real audit over Vercel's 60s step ceiling. See flags.ts.
+        if (!quickScoreEnabled()) return null;
         const dl = startDeadline();
         let preview = null;
         try {
@@ -251,14 +256,12 @@ export const analyzeWebsite = inngest.createFunction(
           );
         }
         if (preview) {
-          await (
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            service.from("analyses") as any
-          )
+          await service
+            .from("analyses")
             .update({
               preview_score: preview.score,
               preview_summary: preview.headline,
-            })
+            } as never)
             .eq("id", analysisId);
         }
         return preview;

@@ -26,3 +26,19 @@ function enabled(name: string, defaultOn: boolean): boolean {
 export function nicheWinnersEnabled(): boolean {
   return enabled("ENABLE_NICHE_WINNERS", false);
 }
+
+/**
+ * The instant "teaser" score (P1.2) shown while the full audit runs.
+ *
+ * DEFAULT OFF. It's a nice-to-have that costs a SECOND AI request per audit —
+ * on Gemini's free tier (15 requests/min PER KEY) that doubles the rate-limit
+ * pressure, and a rate-limited key waits out a ~65s cooldown that can't fit
+ * Vercel Hobby's 60s step ceiling, so the whole audit times out and refunds.
+ * With one API key, halving the calls per audit is the difference between an
+ * audit that completes and one that refunds. Turn it back on with
+ * ANALYZER_QUICK_SCORE=true once the key pool (GEMINI_API_KEY_2..10) or a paid
+ * tier gives enough RPM headroom.
+ */
+export function quickScoreEnabled(): boolean {
+  return enabled("ANALYZER_QUICK_SCORE", false);
+}
