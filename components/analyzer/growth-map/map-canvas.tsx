@@ -54,9 +54,42 @@ function star4(rOut: number, rIn: number): string {
   return `M0,${-rOut} L${rIn},${-rIn} L${rOut},0 L${rIn},${rIn} L0,${rOut} L${-rIn},${rIn} L${-rOut},0 L${-rIn},${-rIn} Z`;
 }
 
+/** Reusable material gradients — id-prefixed so the same set can live in the
+ *  map SVG and in a standalone glyph without id collisions. */
+export function GradientDefs({ prefix }: { prefix: string }) {
+  return (
+    <>
+      <linearGradient id={`${prefix}copper`} x1="0" y1="0" x2="0.4" y2="1">
+        <stop offset="0" stopColor="#E8A96B" />
+        <stop offset="1" stopColor="#9C5A2A" />
+      </linearGradient>
+      <linearGradient id={`${prefix}steel`} x1="0" y1="0" x2="0.4" y2="1">
+        <stop offset="0" stopColor="#EDF1F5" />
+        <stop offset="1" stopColor="#8A96A4" />
+      </linearGradient>
+      <linearGradient id={`${prefix}silver`} x1="0" y1="0" x2="0.4" y2="1">
+        <stop offset="0" stopColor="#FFFFFF" />
+        <stop offset="1" stopColor="#9AA6B4" />
+      </linearGradient>
+      <linearGradient id={`${prefix}gold`} x1="0" y1="0" x2="0.3" y2="1">
+        <stop offset="0" stopColor="#F9DE86" />
+        <stop offset="1" stopColor="#C9922E" />
+      </linearGradient>
+      <linearGradient id={`${prefix}diamond`} x1="0" y1="0" x2="0.4" y2="1">
+        <stop offset="0" stopColor="#EAFCFF" />
+        <stop offset="1" stopColor="#7FD3E8" />
+      </linearGradient>
+      <linearGradient id={`${prefix}ruby`} x1="0" y1="0" x2="0.4" y2="1">
+        <stop offset="0" stopColor="#FF6B85" />
+        <stop offset="1" stopColor="#A81834" />
+      </linearGradient>
+    </>
+  );
+}
+
 /** Premium material icon, drawn around (0,0). Gradient fill + highlight. */
-function RankIcon({ rankKey }: { rankKey: RankKey }) {
-  const g = (id: string) => `url(#gm-grad-${id})`;
+function RankIcon({ rankKey, idPrefix }: { rankKey: RankKey; idPrefix: string }) {
+  const g = (id: string) => `url(#${idPrefix}${id})`;
   switch (rankKey) {
     case "copper": // polished coin
       return (
@@ -121,6 +154,32 @@ function RankIcon({ rankKey }: { rankKey: RankKey }) {
   }
 }
 
+/** Standalone material glyph for use OUTSIDE the map (e.g. the detail band).
+ *  Self-contained SVG with its own gradient defs (unique id prefix). */
+export function RankGlyph({
+  rankKey,
+  size = 22,
+}: {
+  rankKey: RankKey;
+  size?: number;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="-14 -14 28 28"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      className="block"
+    >
+      <defs>
+        <GradientDefs prefix="gg-grad-" />
+      </defs>
+      <RankIcon rankKey={rankKey} idPrefix="gg-grad-" />
+    </svg>
+  );
+}
+
 export function MapCanvas({
   currentIndex,
   openIndex,
@@ -163,30 +222,7 @@ export function MapCanvas({
           <stop offset="1" stopColor="#2DD4BF" stopOpacity="0" />
         </radialGradient>
         {/* Material gradients (top-light → bottom-dark) */}
-        <linearGradient id="gm-grad-copper" x1="0" y1="0" x2="0.4" y2="1">
-          <stop offset="0" stopColor="#E8A96B" />
-          <stop offset="1" stopColor="#9C5A2A" />
-        </linearGradient>
-        <linearGradient id="gm-grad-steel" x1="0" y1="0" x2="0.4" y2="1">
-          <stop offset="0" stopColor="#EDF1F5" />
-          <stop offset="1" stopColor="#8A96A4" />
-        </linearGradient>
-        <linearGradient id="gm-grad-silver" x1="0" y1="0" x2="0.4" y2="1">
-          <stop offset="0" stopColor="#FFFFFF" />
-          <stop offset="1" stopColor="#9AA6B4" />
-        </linearGradient>
-        <linearGradient id="gm-grad-gold" x1="0" y1="0" x2="0.3" y2="1">
-          <stop offset="0" stopColor="#F9DE86" />
-          <stop offset="1" stopColor="#C9922E" />
-        </linearGradient>
-        <linearGradient id="gm-grad-diamond" x1="0" y1="0" x2="0.4" y2="1">
-          <stop offset="0" stopColor="#EAFCFF" />
-          <stop offset="1" stopColor="#7FD3E8" />
-        </linearGradient>
-        <linearGradient id="gm-grad-ruby" x1="0" y1="0" x2="0.4" y2="1">
-          <stop offset="0" stopColor="#FF6B85" />
-          <stop offset="1" stopColor="#A81834" />
-        </linearGradient>
+        <GradientDefs prefix="gm-grad-" />
         <filter id="gm-shadow" x="-40%" y="-40%" width="180%" height="180%">
           <feDropShadow dx="0" dy="1.4" stdDeviation="1.6" floodColor="#000000" floodOpacity="0.45" />
         </filter>
@@ -243,7 +279,7 @@ export function MapCanvas({
 
         {/* pointer + label */}
         <text x={wallX} y={wallY + 74} textAnchor="middle" className="font-display" fontSize={9.5} fontWeight={600} fill="#F6C9C9">
-          THE WALL
+          THE WALL · most stores quit here
         </text>
         <text x={wallX} y={wallY + 85} textAnchor="middle" className="font-mono" fontSize={7.5} fill="#EF4444" letterSpacing="0.03em">
           87% stall here · HBR &rsquo;08
@@ -273,7 +309,7 @@ export function MapCanvas({
               <circle r={R_DISC} fill={rank.color} fillOpacity={state === "ahead" ? 0.05 : 0.12} />
             </g>
             <g opacity={state === "ahead" ? 0.72 : 1}>
-              <RankIcon rankKey={rank.key} />
+              <RankIcon rankKey={rank.key} idPrefix="gm-grad-" />
             </g>
 
             <text y={-28} textAnchor="middle" className="font-mono" fontSize={8.5} fill={rank.color} letterSpacing="0.1em" opacity={state === "ahead" ? 0.8 : 1}>
