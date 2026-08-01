@@ -31,6 +31,24 @@ const VIEWPORT_W = 1440;
 const VIEWPORT_H = 900;
 
 /**
+ * A realistic desktop-Chrome User-Agent + accept headers.
+ *
+ * Bot-blockers (Cloudflare and friends) key heavily off the UA and the absence
+ * of browser-shaped Accept/Accept-Language headers. The dedicated capture
+ * providers already send browser-like requests; this string is for OUR OWN
+ * direct fetches (the og:image fallback below), which would otherwise go out as
+ * plain `node-fetch`-looking requests and get refused by exactly the sites we
+ * most need the fallback for.
+ */
+const BROWSER_HEADERS: Record<string, string> = {
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+  Accept:
+    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+  "Accept-Language": "en-US,en;q=0.9",
+};
+
+/**
  * Default height cap (px) for full-page captures — ~9 viewports at 900px.
  * See `fullPageMaxHeight` on captureWithScreenshotOne for why this exists
  * (it's the fix for the 60s-per-step 504 on tall pages).
@@ -197,6 +215,28 @@ export async function captureScreenshot(
     }
   } else {
     errors.push("mshots: skipped (out of time budget)");
+  }
+
+  // Provider 4: og:image fallback (tech-fixes §3).
+  //
+  // Every headless-capture provider above just failed — almost always because
+  // the store actively blocks automated browsers (Cloudflare / anti-bot). But
+  // the SAME store usually still serves its Open Graph share image to a normal
+  // browser request, and that image is a real, representative shot of the brand
+  // (hero or flagship product) — enough for a partial visual audit that leans on
+  // the page's discovered text content. "A partial result beats no result": this
+  // is what turns a hard "we couldn't capture this site / credit refunded" into
+  // an actual audit for a large slice of bot-protected stores.
+  if (remaining() >= 3_000) {
+    try {
+      return await captureViaOgImage(url, remaining());
+    } catch (err) {
+      const msg = (err as Error).message;
+      console.warn(`[screenshot] og:image fallback failed: ${msg}`);
+      errors.push(`og:image: ${msg}`);
+    }
+  } else {
+    errors.push("og:image: skipped (out of time budget)");
   }
 
   throw new Error(
@@ -452,4 +492,85 @@ async function captureWithMshots(
   throw new Error(
     `mshots returned no usable response after ${attempts} attempts.`,
   );
+}
+
+/**
+ * Last-resort capture (tech-fixes §3): pull the page's Open Graph / Twitter
+ * card image with a realistic browser request and use THAT as the audit's
+ * visual. Reached only after every headless provider has failed — i.e. the
+ * store blocks automated capture. Many such stores still serve og:image to a
+ * plain browser fetch, so this recovers a real result where we'd otherwise
+ * refund and show nothing.
+ *
+ * It is deliberately strict: it must return a genuine, reasonably-sized image
+ * (not a 1x1 tracking pixel or an HTML error page), or it throws so the caller
+ * degrades cleanly to the honest "upload a screenshot" message + refund.
+ */
+export async function captureViaOgImage(
+  url: string,
+  budgetMs = 12_000,
+): Promise<{ base64: string; mediaType: "image/png" | "image/jpeg" }> {
+  const deadline = Date.now() + budgetMs;
+  const left = () => Math.max(1_000, deadline - Date.now());
+
+  // 1) Fetch the HTML as a browser would. The realistic UA alone gets past a
+  //    slice of the walls that refused the capture providers' requests.
+  const htmlRes = await fetch(url, {
+    headers: BROWSER_HEADERS,
+    redirect: "follow",
+    signal: AbortSignal.timeout(Math.min(8_000, left())),
+  });
+  if (!htmlRes.ok) throw new Error(`page fetch HTTP ${htmlRes.status}`);
+  // Only read what we need — og tags live in <head>. Cap the read so a giant
+  // page can't blow the time/memory budget.
+  const html = (await htmlRes.text()).slice(0, 120_000);
+
+  // 2) Extract og:image (or its documented equivalents), tolerating either
+  //    property/name-first or content-first attribute order.
+  const ogImage = extractOgImage(html);
+  if (!ogImage) throw new Error("no og:image on page");
+
+  let imageUrl: string;
+  try {
+    imageUrl = new URL(ogImage, url).toString(); // resolve relative paths
+  } catch {
+    throw new Error("og:image URL malformed");
+  }
+
+  // 3) Fetch the image itself, and validate it's a real raster image.
+  const imgRes = await fetch(imageUrl, {
+    headers: { "User-Agent": BROWSER_HEADERS["User-Agent"], Accept: "image/*" },
+    redirect: "follow",
+    signal: AbortSignal.timeout(Math.min(10_000, left())),
+  });
+  if (!imgRes.ok) throw new Error(`og:image fetch HTTP ${imgRes.status}`);
+  const contentType = (imgRes.headers.get("content-type") ?? "").toLowerCase();
+  const buf = Buffer.from(await imgRes.arrayBuffer());
+  if (buf.length < MIN_REAL_SHOT_BYTES) {
+    throw new Error(`og:image too small (${buf.length}b) — likely a logo/pixel`);
+  }
+  const mediaType: "image/png" | "image/jpeg" = contentType.includes("png")
+    ? "image/png"
+    : "image/jpeg";
+  console.log(`[screenshot] og:image fallback succeeded (${buf.length}b)`);
+  return { base64: buf.toString("base64"), mediaType };
+}
+
+/** Pull the best available social-share image URL out of raw HTML. */
+export function extractOgImage(html: string): string | null {
+  // Preference order: og:image:secure_url → og:image → twitter:image.
+  const patterns = [
+    /<meta[^>]+(?:property|name)=["']og:image:secure_url["'][^>]*content=["']([^"']+)["']/i,
+    /<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["']og:image:secure_url["']/i,
+    /<meta[^>]+(?:property|name)=["']og:image["'][^>]*content=["']([^"']+)["']/i,
+    /<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["']og:image["']/i,
+    /<meta[^>]+(?:property|name)=["']twitter:image["'][^>]*content=["']([^"']+)["']/i,
+    /<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["']twitter:image["']/i,
+  ];
+  for (const re of patterns) {
+    const m = html.match(re);
+    const val = m?.[1]?.trim();
+    if (val && /^https?:\/\/|^\//.test(val)) return val;
+  }
+  return null;
 }

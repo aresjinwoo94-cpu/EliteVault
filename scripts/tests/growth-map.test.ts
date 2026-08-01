@@ -89,6 +89,44 @@ test("three different stores land on three different ranks", () => {
   assert.ok(atWall.length < 3, "not every store should be at The Wall");
 });
 
+test("calibration (§6): an average store with leaks lands at The Wall, not past it", () => {
+  // The tech-fixes §6 example: 58/100, sterile imagery (45), thin offer (55).
+  // Old bands dropped this into Silver/Optimization (past The Wall); the hook is
+  // strongest AT the wall, so it must now land at Steel with atWallEdge set.
+  const mediocre = makeResult({
+    score: 58,
+    cro: 60,
+    offer: 55,
+    image: 45,
+    summary: "Sterile imagery, offer isn't legible in two seconds.",
+    topFix: "Reshoot the hero and lead with the offer",
+  });
+  const p = computePlacement(mediocre);
+  assert.equal(p.rankKey, "steel", `expected steel, got ${p.rankKey}`);
+  assert.ok(p.atWallEdge, "a mediocre store with leaks must feel The Wall");
+
+  // A genuinely strong store still escapes past The Wall — the gate isn't just
+  // "everyone is stuck".
+  const strong = computePlacement(storeC);
+  assert.ok(!strong.atWallEdge, "a strong store escapes The Wall");
+  assert.notEqual(strong.rankKey, "steel");
+});
+
+test("calibration: critical leaks hold a high-scoring store back to The Wall", () => {
+  // High composite, but the shopper can't tell what it sells (offer 40). The
+  // number alone would place it in Gold; findings must pull it to Steel.
+  const flattered = makeResult({
+    score: 88,
+    cro: 85,
+    offer: 40, // critical: offer not legible
+    summary: "Beautiful, but you can't tell what they sell.",
+    topFix: "Name the offer in the hero",
+  });
+  const p = computePlacement(flattered);
+  assert.equal(p.rankKey, "steel", `expected steel, got ${p.rankKey}`);
+  assert.ok(p.atWallEdge);
+});
+
 test("placement signals are non-empty and store-specific", () => {
   const a = computePlacement(storeA);
   const c = computePlacement(storeC);

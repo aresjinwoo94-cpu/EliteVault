@@ -4,6 +4,8 @@ import { NICHE_LABELS } from "@/lib/library/niche-pages";
 import { metaAdLibraryUrl, faviconUrl, normalizeDomain } from "@/lib/library/domain";
 import { estRevenueRange } from "@/lib/library/quality";
 import { nicheWinnersEnabled } from "@/lib/flags";
+import { detectImageNiche } from "@/ai/agents/image-niche-detector";
+import { runSearchAgent } from "@/ai/agents/search-agent";
 
 /**
  * Data layer for the analyzer's "🔥 Winners in your niche — live" module
@@ -117,6 +119,10 @@ function matchPctFor(detected: string, storeNiche: string): number {
 
 /** Raw shape of the winning_sites columns we read. */
 interface WinningRow {
+  // Present on the screenshot-match path (needed to map re-rank results back to
+  // rows); absent on the legacy momentum-only queries, hence optional.
+  id?: string;
+  description?: string | null;
   url: string;
   domain: string;
   title: string;
@@ -353,7 +359,16 @@ export async function getNicheWinners(
       }
     }
 
-    return { niche, nicheLabel, winners };
+    // Legacy path (no screenshot to re-rank against): still avoid the flat
+    // "100% · 100% · 100%" that made this read as canned. Derive a VARIABLE %
+    // from niche exactness + list position — a defensible ordering signal, not
+    // a computed visual distance (that only exists on the stored match path).
+    const varied = winners.map((w, i) => ({
+      ...w,
+      matchPct: matchPctFallback(w.exactMatch, i),
+    }));
+
+    return { niche, nicheLabel, winners: varied };
   } catch (err) {
     console.warn("[niche-winners] fetch failed:", (err as Error).message);
     return empty;
@@ -410,6 +425,239 @@ export async function getTopWinners(
     console.warn("[niche-winners] global fetch failed:", (err as Error).message);
     return [];
   }
+}
+
+/** Columns the screenshot-match path needs on top of ranking data. */
+const MATCH_COLS =
+  "id, url, domain, title, niche, description, metrics, ad_signals, is_featured, favicon_url, active_ads_count, est_revenue_low, est_revenue_high, momentum_score, status, is_live";
+
+/**
+ * Deterministic, VARIABLE fallback match % for when the re-ranker didn't return
+ * a numeric score for a row. Exact-niche rows read higher than related fills,
+ * and each step down the ranked list drops a few points — so the card never
+ * shows a flat "100% · 100% · 100%" trio even without the model's score.
+ */
+function matchPctFallback(exact: boolean, rankPos: number): number {
+  const base = exact ? 93 : 78;
+  return Math.max(42, Math.min(97, base - rankPos * 6));
+}
+
+/**
+ * The REAL matcher (tech-fixes §2). Given the analyzed store's own screenshot,
+ * it returns the genuinely closest winners — NOT a fixed momentum trio.
+ *
+ * Reuses the Library's existing visual engine, the same one Library image
+ * search runs:
+ *   1. detectImageNiche(screenshot) → the real niche from the PIXELS (fixes the
+ *      old bug where the niche came from the audit summary/hostname, so a
+ *      non-fitness store still got fitness winners).
+ *   2. SQL-prefilter the Library to that niche (+ small related backfill).
+ *   3. runSearchAgent(screenshot, candidates) → a visual re-rank with a 0-100
+ *      per-store similarity, so the ORDER and the "% match" both vary per store.
+ *
+ * Two different stores → two different niches and/or two different re-ranks →
+ * two different winner sets with variable percentages. When the niche can't be
+ * detected we still visually re-rank the Library's top performers (so the set
+ * still varies per store) but make NO niche-match claim (scope "global").
+ *
+ * Best-effort by contract: any failure resolves to null and the caller keeps
+ * the report intact. Runs in the Inngest pipeline, never on the report's
+ * request path, and only when the winners module is enabled.
+ */
+export async function buildNicheWinnersFromScreenshot(input: {
+  screenshotBase64: string;
+  mediaType: "image/png" | "image/jpeg" | "image/webp";
+  url: string | null;
+}): Promise<{
+  detectedNiche: string | null;
+  scope: "niche" | "global";
+  result: NicheWinnersResult;
+} | null> {
+  if (!nicheWinnersEnabled()) return null;
+  const ownDomain = normalizeDomain(input.url);
+
+  try {
+    const service = createSupabaseServiceClient();
+
+    // 1) Real niche from the screenshot. A failure here is fine — we degrade to
+    //    the global (unclassified) path below rather than abort.
+    let detectedNiche: string | null = null;
+    let keywords: string[] = [];
+    try {
+      const detection = await detectImageNiche({
+        screenshotBase64: input.screenshotBase64,
+        mediaType: input.mediaType,
+      });
+      detectedNiche = detection.niche;
+      keywords = detection.keywords ?? [];
+    } catch (err) {
+      console.warn(
+        "[niche-winners] image niche detection failed:",
+        (err as Error).message,
+      );
+    }
+
+    const scope: "niche" | "global" = detectedNiche ? "niche" : "global";
+    const niche = detectedNiche ?? "";
+    const related = detectedNiche ? RELATED_NICHES[detectedNiche] ?? [] : [];
+
+    // 2) Candidate pool. Niche + related when classified; otherwise the whole
+    //    published/live Library's top performers.
+    let query = service
+      .from("winning_sites")
+      .select(MATCH_COLS)
+      .eq("status", "published")
+      .eq("is_live", true)
+      .order("momentum_score", { ascending: false, nullsFirst: false })
+      .limit(14);
+    if (detectedNiche) query = query.in("niche", [detectedNiche, ...related]);
+
+    const { data, error } = await query;
+    if (error) {
+      // Most likely a pre-0017 DB without status/is_live. Retry unfiltered on
+      // the legacy shape so the matcher still works during migration.
+      console.warn(
+        `[niche-winners] match query failed, trying legacy shape: ${error.message}`,
+      );
+      const legacy = await service
+        .from("winning_sites")
+        .select("id, url, domain, title, niche, description, metrics, ad_signals, is_featured")
+        .limit(14);
+      if (legacy.error || !Array.isArray(legacy.data)) return null;
+      return finishMatch(
+        legacy.data as unknown as WinningRow[],
+        { detectedNiche, niche, scope, related, keywords, ownDomain, screenshotBase64: input.screenshotBase64, mediaType: input.mediaType },
+      );
+    }
+
+    const rows = (Array.isArray(data) ? data : []) as unknown as WinningRow[];
+    return finishMatch(rows, {
+      detectedNiche,
+      niche,
+      scope,
+      related,
+      keywords,
+      ownDomain,
+      screenshotBase64: input.screenshotBase64,
+      mediaType: input.mediaType,
+    });
+  } catch (err) {
+    console.warn(
+      "[niche-winners] screenshot match failed:",
+      (err as Error).message,
+    );
+    return null;
+  }
+}
+
+/** Second half of buildNicheWinnersFromScreenshot — the visual re-rank + shape. */
+async function finishMatch(
+  rows: WinningRow[],
+  ctx: {
+    detectedNiche: string | null;
+    niche: string;
+    scope: "niche" | "global";
+    related: string[];
+    keywords: string[];
+    ownDomain: string | null;
+    screenshotBase64: string;
+    mediaType: "image/png" | "image/jpeg" | "image/webp";
+  },
+): Promise<{
+  detectedNiche: string | null;
+  scope: "niche" | "global";
+  result: NicheWinnersResult;
+} | null> {
+  const nicheLabel =
+    ctx.scope === "niche"
+      ? NICHE_LABELS[ctx.niche]?.label ?? ctx.niche
+      : "Across ecommerce";
+
+  // Never surface the analyzed store as its own competitor.
+  const usable = ctx.ownDomain
+    ? rows.filter((r) => normalizeDomain(r?.domain ?? r?.url) !== ctx.ownDomain)
+    : rows;
+
+  // Order candidates so the exact niche leads, then momentum — this is the pool
+  // the visual re-ranker refines. Prefer rows that carry an id (the re-rank maps
+  // by id); rows without one can't be re-ranked but can still be a momentum fill.
+  const pool = [...usable].sort(
+    (a, b) =>
+      Number(b.niche === ctx.niche) - Number(a.niche === ctx.niche) ||
+      rank(a, b),
+  );
+  if (pool.length === 0) {
+    return { detectedNiche: ctx.detectedNiche, scope: ctx.scope, result: { niche: ctx.niche, nicheLabel, winners: [] } };
+  }
+
+  // Visual re-rank against the analyzed screenshot. Best-effort: a failure just
+  // means we keep the momentum order and use the variable fallback %.
+  const rankable = pool.filter((r) => typeof r.id === "string" && r.id);
+  const order = new Map<string, number>();
+  const scores = new Map<string, number>();
+  if (rankable.length > 1) {
+    try {
+      const ranked = await runSearchAgent({
+        candidates: rankable.slice(0, 12).map((r) => ({
+          id: r.id as string,
+          title: r.title,
+          niche: r.niche,
+          description: r.description ?? "",
+          url: r.url,
+        })),
+        prompt:
+          ctx.keywords.length > 0
+            ? `Visual aesthetic of the user's store: ${ctx.keywords.join(", ")}`
+            : undefined,
+        screenshotBase64: ctx.screenshotBase64,
+        mediaType: ctx.mediaType,
+      });
+      ranked.forEach((r, i) => {
+        order.set(r.id, i);
+        if (typeof r.score === "number" && Number.isFinite(r.score)) {
+          scores.set(r.id, Math.max(0, Math.min(100, Math.round(r.score))));
+        }
+      });
+    } catch (err) {
+      console.warn(
+        "[niche-winners] visual re-rank failed, using momentum order:",
+        (err as Error).message,
+      );
+    }
+  }
+
+  // Apply the re-rank order (rows the model returned first), momentum for the
+  // rest, then take the top 3.
+  const ordered = [...pool].sort((a, b) => {
+    const oa = a.id ? order.get(a.id) ?? 999 : 999;
+    const ob = b.id ? order.get(b.id) ?? 999 : 999;
+    return oa - ob || rank(a, b);
+  });
+
+  const winners: NicheWinner[] = [];
+  for (const row of ordered) {
+    if (winners.length >= 3) break;
+    const w = toWinner(row, ctx.niche);
+    if (!w) continue;
+    if (winners.some((x) => x.domain === w.domain)) continue;
+    const modelScore = row.id ? scores.get(row.id) : undefined;
+    // Real, variable match %: the model's per-store visual score when we have
+    // it, else the variable fallback. For the unclassified (global) scope we
+    // make NO niche claim, matching the honest card contract (matchPct 0).
+    const matchPct =
+      ctx.scope === "global"
+        ? 0
+        : typeof modelScore === "number"
+          ? modelScore
+          : matchPctFallback(w.exactMatch, winners.length);
+    winners.push({ ...w, matchPct });
+  }
+
+  return {
+    detectedNiche: ctx.detectedNiche,
+    scope: ctx.scope,
+    result: { niche: ctx.niche, nicheLabel, winners },
+  };
 }
 
 /** What the analyzer page hands to the <NicheWinners> card. */
@@ -482,16 +730,52 @@ export function gateWinners(
  * plus a COUNT. Gating in the component alone would ship every store in the
  * RSC payload, where anyone can read it.
  */
+/**
+ * Parse the `analyses.niche_winners` column the pipeline precomputed. Returns
+ * the real, variable-match winners the screenshot matcher produced, or null
+ * when the column is absent (older audit) or malformed (fall back to live).
+ */
+function parseStoredWinners(
+  stored: unknown,
+): { result: NicheWinnersResult; scope: "niche" | "global" } | null {
+  if (!stored || typeof stored !== "object") return null;
+  const s = stored as {
+    niche?: unknown;
+    nicheLabel?: unknown;
+    scope?: unknown;
+    winners?: unknown;
+  };
+  if (!Array.isArray(s.winners) || s.winners.length === 0) return null;
+  return {
+    result: {
+      niche: typeof s.niche === "string" ? s.niche : "",
+      nicheLabel: typeof s.nicheLabel === "string" ? s.nicheLabel : "Your niche",
+      winners: s.winners as NicheWinner[],
+    },
+    scope: s.scope === "global" ? "global" : "niche",
+  };
+}
+
 export async function loadNicheWinnersModule(input: {
   status: string;
   url: string | null;
   summary?: string | null;
   isPaid: boolean;
+  /** Precomputed real winners from analyses.niche_winners (preferred path). */
+  stored?: unknown;
 }): Promise<NicheWinnersModule | null> {
   // Kill switch — off means the page never even queries.
   if (!nicheWinnersEnabled()) return null;
   // Nothing to enrich until the audit itself succeeded.
   if (input.status !== "succeeded") return null;
+
+  // Preferred path (tech-fixes §2): the pipeline already matched THIS store's
+  // screenshot against the Library and stored the real, variable-match winners.
+  // Read them straight through — no niche re-guessing, no fixed momentum trio.
+  const precomputed = parseStoredWinners(input.stored);
+  if (precomputed) {
+    return gateWinners(precomputed.result, input.isPaid, precomputed.scope);
+  }
 
   // The analyzed store's own domain — used both to VARY which winners each
   // store sees (so two stores in a niche don't get the identical trio) and to

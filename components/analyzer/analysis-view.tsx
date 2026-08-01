@@ -26,8 +26,10 @@ import { PublishCallout } from "@/components/community/publish-callout";
 import { ReviewPrompt } from "@/components/reviews/review-prompt";
 import { MetaAdsOptimizer } from "./meta-ads-optimizer";
 import { MetaCampaignSimulator } from "./meta-campaign-simulator";
-import { NichePositionBar } from "./niche-position-bar";
-import { StrengthsIssuesMap } from "./strengths-issues-map";
+// NichePositionBar ("Where you stand") and StrengthsIssuesMap ("Strengths vs
+// issues") were removed in the tech-fixes §5 de-duplication: the Growth Map
+// already shows the store's position + score, and the CategoryRadar is the
+// single category-scores view. Their files remain for reuse elsewhere.
 import { FreeLockedCure } from "./free-locked-cure";
 import { FreeMetaPanel } from "./free-meta-panel";
 import { NicheWinners } from "./niche-winners";
@@ -342,51 +344,30 @@ export function AnalysisView({
             />
 
             {/*
-              Report layout (restored to the original distribution per owner):
-                1. Score + gauges
-                2. Free-only modelable-ROAS panel (under the score)
-                3. Executive deck (niche position + strengths) — two columns
-                4. Library bridge
-                5. Two-column body: LEFT screenshot + persona · RIGHT category
-                   radar + prioritized fixes
-                6. Meta Ads tools (Optimizer + Campaign Scenario Modeler) AT THE
-                   END, full width.
+              Report layout — de-duplicated + re-ordered (tech-fixes §5).
+
+              The Growth Map above is the hero: it already carries the score, the
+              niche, the store's position and the per-node diagnosis. So the old
+              standalone ScoreCard, the "Where you stand" slider and the
+              "Strengths vs issues" bars are gone (they repeated the map and the
+              category radar). The conversion-scenario gauges moved to the very
+              end as the Meta-readiness teaser rather than sitting loose up top.
+
+              New order puts the differentiators first:
+                1. Growth Map (above)                → the hook
+                2. Top fixes + Winners in your niche → most actionable / engaging
+                3. Annotated audit + Category radar  → the visual diagnosis, once
+                4. Buyer-persona response
+                5. Library bridge
+                6. Meta-readiness teaser + tools (conversion gauges live here)
             */}
 
             {/*
-              1-3 — Header block, then full-width sections.
-
-              HEADER ROW pairs the score + conversion scenarios (left) with the
-              winners module (right). Those two stacks are close in height
-              (~score+gauges ≈ winners), so the columns balance and neither
-              leaves a big gap — the problem the earlier "score alone | tall
-              winners" row had. NOT sticky: a sticky rail pinned on scroll and
-              felt stuck coming back up, so it just scrolls with the page.
-
-              Everything after the header (free panel, ad-readiness, executive
-              deck) is full width again — its original distribution.
-
-              Mobile ordering (spec): score → winners → gauges → rest. In the
-              header row the wrappers collapse to `contents` so the three cards
-              become one ordered flex flow; at `lg` they resolve back into the
-              two grid columns and `order` stops applying.
+              2 — Top fixes (the single most actionable block) paired with the
+              Winners module. Two stacks of similar height, so the columns
+              balance. If the Winners module is hidden, fixes go full width.
             */}
             {(() => {
-              const scoreCard = <ScoreCard result={data.result} />;
-              const gauges = <ConversionGauges scenarios={data.result.scenarios} />;
-              // Free-only modelable ROAS panel; paid users get live Meta tools later.
-              const freePanel = !viewer.isPaid ? (
-                <FreeMetaPanel score={data.result.score} niche={niche} />
-              ) : null;
-              // Ad-readiness reframes the score around paid traffic; renders
-              // nothing on audits from before the field existed.
-              const adReadiness = <AdReadinessCard data={data.result.ad_readiness} />;
-              const deck = (
-                <div className="grid md:grid-cols-2 gap-6">
-                  <NichePositionBar score={data.result.score} />
-                  <StrengthsIssuesMap scores={data.result.category_scores} />
-                </div>
-              );
               const winnersCard = nicheWinners ? (
                 <NicheWinners
                   nicheLabel={nicheWinners.nicheLabel}
@@ -396,40 +377,59 @@ export function AnalysisView({
                   scope={nicheWinners.scope ?? "niche"}
                 />
               ) : null;
-
-              return (
-                <>
-                  {/* HEADER ROW */}
-                  {winnersCard ? (
-                    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
-                      {/* LEFT — score + conversion scenarios (the numbers) */}
-                      <div className="contents lg:block lg:space-y-6 lg:min-w-0">
-                        <div className="order-1">{scoreCard}</div>
-                        <div className="order-3">{gauges}</div>
-                      </div>
-                      {/* RIGHT — winners module, roughly the same height */}
-                      <div className="contents lg:block">
-                        <div className="order-2">{winnersCard}</div>
-                      </div>
-                    </div>
-                  ) : (
-                    // No module → score + gauges full width, no empty gutter.
-                    <div className="space-y-6">
-                      {scoreCard}
-                      {gauges}
-                    </div>
-                  )}
-
-                  {/* FULL-WIDTH SECTIONS */}
-                  {freePanel}
-                  {adReadiness}
-                  {deck}
-                </>
+              const topFixes = (
+                <TopFixes
+                  fixes={data.result.top_fixes}
+                  unlockedCount={viewer.isPaid ? undefined : 1}
+                />
+              );
+              return winnersCard ? (
+                <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
+                  <div className="min-w-0">{topFixes}</div>
+                  <div className="min-w-0">{winnersCard}</div>
+                </div>
+              ) : (
+                topFixes
               );
             })()}
 
             {/*
-              4 — Analyzer → Library bridge. "So who's beating me, and what do
+              3 — The visual diagnosis, shown ONCE. LEFT: annotated screenshot.
+              RIGHT: category breakdown (radar). NEVER fall back to mshots
+              client-side: an empty screenshot_url shows the overlay's clean
+              unavailable state.
+            */}
+            <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
+              <div className="min-w-0">
+                <AnnotationsOverlay
+                  imageUrl={data.screenshot_url ?? ""}
+                  annotations={data.result.annotations}
+                />
+              </div>
+              <div className="min-w-0">
+                <CategoryRadar scores={data.result.category_scores} />
+              </div>
+            </div>
+
+            {/*
+              4 — Buyer-persona reaction. Paid users see it; Free sees it blurred
+              behind a Pro upgrade CTA (their real computed response).
+            */}
+            {viewer.isPaid ? (
+              <PersonaResponse response={data.result.buyer_persona_response} />
+            ) : (
+              <FreeLockedCure
+                title="Buyer-persona simulation"
+                tagline="Hear exactly how your target buyer reacts to your store — what makes them hesitate, and whether they'd buy."
+              >
+                <PersonaResponse
+                  response={data.result.buyer_persona_response}
+                />
+              </FreeLockedCure>
+            )}
+
+            {/*
+              5 — Analyzer → Library bridge. "So who's beating me, and what do
               they do differently?" — one hop to the Library answers it.
             */}
             <Link
@@ -456,68 +456,34 @@ export function AnalysisView({
             </Link>
 
             {/*
-              5 — Two-column body. LEFT: annotated screenshot → buyer-persona
-              reaction. RIGHT: category breakdown (radar) → prioritized fixes.
-              On mobile both stack. NEVER fall back to mshots client-side: an
-              empty screenshot_url shows the overlay's clean unavailable state.
+              6 — Meta-readiness teaser + tools, AT THE END (tech-fixes §5 pt 5).
+              Ad-readiness reframes the score around paid traffic; the conversion
+              gauges are the "estimated conversion rate" teaser (paid) / the
+              modelable ROAS panel (free). The live Meta tools follow for plans
+              that can run them.
             */}
-            <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
-              <div className="space-y-6 min-w-0">
-                <AnnotationsOverlay
-                  imageUrl={data.screenshot_url ?? ""}
-                  annotations={data.result.annotations}
-                />
-                {/* Buyer-persona: paid users see it; Free sees it blurred
-                    behind a Pro upgrade CTA (their real computed response). */}
-                {viewer.isPaid ? (
-                  <PersonaResponse
-                    response={data.result.buyer_persona_response}
+            <div className="space-y-6">
+              <AdReadinessCard data={data.result.ad_readiness} />
+              {viewer.isPaid ? (
+                <ConversionGauges scenarios={data.result.scenarios} />
+              ) : (
+                <FreeMetaPanel score={data.result.score} niche={niche} />
+              )}
+              {viewer.canRunMeta && (
+                <>
+                  {data.meta_ads != null ? (
+                    <MetaAdsOptimizer meta={data.meta_ads as never} />
+                  ) : viewer.isScale ? (
+                    <MetaAdsPending />
+                  ) : null}
+                  <MetaCampaignSimulator
+                    analysisId={data.id}
+                    initial={initialSimulation ?? null}
+                    quota={{ limit: viewer.metaLimit, used: viewer.metaUsed }}
                   />
-                ) : (
-                  <FreeLockedCure
-                    title="Buyer-persona simulation"
-                    tagline="Hear exactly how your target buyer reacts to your store — what makes them hesitate, and whether they'd buy."
-                  >
-                    <PersonaResponse
-                      response={data.result.buyer_persona_response}
-                    />
-                  </FreeLockedCure>
-                )}
-              </div>
-
-              <div className="space-y-6 min-w-0">
-                <CategoryRadar scores={data.result.category_scores} />
-                {/* Prioritized fixes: paid users get every fix; Free gets fix
-                    #1 unlocked + the rest title-visible/blurred with a counter
-                    + Pro CTA (P1-6). */}
-                <TopFixes
-                  fixes={data.result.top_fixes}
-                  unlockedCount={viewer.isPaid ? undefined : 1}
-                />
-              </div>
+                </>
+              )}
             </div>
-
-            {/*
-              6 — Meta Ads tools AT THE END (paid only). The Optimizer targets
-              and the 7-day Campaign Scenario Modeler. Scale has the Optimizer
-              from audit time; Pro's monthly run computes it alongside the
-              modeler (see run-meta-simulation.ts). Free users get the modelable
-              panel above instead.
-            */}
-            {viewer.canRunMeta && (
-              <div className="space-y-6">
-                {data.meta_ads != null ? (
-                  <MetaAdsOptimizer meta={data.meta_ads as never} />
-                ) : viewer.isScale ? (
-                  <MetaAdsPending />
-                ) : null}
-                <MetaCampaignSimulator
-                  analysisId={data.id}
-                  initial={initialSimulation ?? null}
-                  quota={{ limit: viewer.metaLimit, used: viewer.metaUsed }}
-                />
-              </div>
-            )}
         </motion.div>
       )}
     </div>
@@ -550,47 +516,3 @@ function MetaAdsPending() {
   );
 }
 
-function ScoreCard({ result }: { result: AnalysisResult }) {
-  // Gemini Flash-Lite sometimes returns score as 0..1 instead of 0..100.
-  // If <= 1, assume normalized and rescale.
-  const rawScore = result.score ?? 0;
-  const score = Math.round(rawScore > 1 ? rawScore : rawScore * 100);
-  const tier =
-    score >= 90
-      ? "World-class"
-      : score >= 75
-        ? "Strong"
-        : score >= 55
-          ? "Average"
-          : score >= 35
-            ? "Below avg."
-            : "Broken";
-
-  return (
-    <Card className="relative overflow-hidden p-6 md:p-8">
-      <div className="pointer-events-none absolute -right-12 -top-12 size-48 rounded-full bg-champagne-400/15 blur-3xl" />
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-widest text-white/40">
-            Overall score
-          </p>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="font-mono tabular-nums text-7xl tnum text-gold-gradient leading-none">
-              {score}
-            </span>
-            <span className="text-xl text-white/40">/ 100</span>
-          </div>
-          <Badge variant="gold" className="mt-3">
-            {tier}
-          </Badge>
-        </div>
-      </div>
-      {/* Spec §9 — the Growth Map now carries the headline diagnosis, so the
-          long executive summary is clamped here to recover space (reversible;
-          the full text is still in the DOM). */}
-      <p className="mt-6 text-sm text-white/65 leading-relaxed line-clamp-5">
-        {result.summary}
-      </p>
-    </Card>
-  );
-}
