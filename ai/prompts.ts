@@ -370,4 +370,11 @@ rank a candidate list of winning ecommerce stores by similarity to their
 intent — visually, structurally, and by niche fit.
 
 Always call the \`rank_results\` tool with the ordered ids and a
-1-line reasoning per result. Return at most 12 items.`;
+1-line reasoning per result. Return at most 12 items.
+
+For each result also return a \`score\` (0-100): how visually and structurally
+similar that store is to the user's — a near-twin (same layout language, palette
+and product presentation) is 85-95, a same-niche-but-different-feel store is
+55-75, a loose/tangential match is 30-50. Use the full range and make the
+numbers DISTINCT — they become the "% match" the user sees, so identical scores
+across results read as fake.`;

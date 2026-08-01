@@ -22,6 +22,11 @@ const RANK_SCHEMA = {
         properties: {
           id: { type: "string" },
           reason: { type: "string" },
+          // 0-100 visual/aesthetic similarity to the user's store. Drives the
+          // "N% match" the analyzer shows on each winner, so it must be a REAL
+          // per-candidate judgement (a close sibling ~90, a loose one ~55), not
+          // a flat number. Optional so older callers that ignore it still work.
+          score: { type: "number", minimum: 0, maximum: 100 },
         },
         required: ["id", "reason"],
       },
@@ -40,7 +45,7 @@ export async function runSearchAgent(opts: {
   prompt?: string;
   screenshotBase64?: string;
   mediaType?: "image/png" | "image/jpeg" | "image/webp";
-}): Promise<{ id: string; reason: string }[]> {
+}): Promise<{ id: string; reason: string; score?: number }[]> {
   const provider = await getProvider();
 
   const candidatesText = opts.candidates
@@ -69,11 +74,12 @@ export async function runSearchAgent(opts: {
 
   try {
     const raw = await provider.generateStructured<{
-      ranked?: { id: string; reason: string }[];
+      ranked?: { id: string; reason: string; score?: number }[];
     }>(
       {
         name: "rank_results",
-        description: "Ordered ids with one-line reasons.",
+        description:
+          "Ordered ids with a one-line reason and a 0-100 similarity score each.",
         schema: RANK_SCHEMA,
       },
       {

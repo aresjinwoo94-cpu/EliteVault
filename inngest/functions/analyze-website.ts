@@ -11,6 +11,7 @@ import { discoverSite } from "@/lib/site-discovery";
 import { runAnalyzerAgent } from "@/ai/agents/analyzer-agent";
 import { runQuickScore } from "@/ai/agents/quick-score-agent";
 import { runMetaAdsOptimizerAgent } from "@/ai/agents/meta-ads-optimizer-agent";
+import { buildNicheWinnersFromScreenshot } from "@/lib/library/niche-winners";
 // Auto-Rewrite agent removed from the v2.1 Scale pipeline — kept in
 // /ai/agents for future on-demand routes ("regenerate hero") but not
 // auto-run on every analysis.
@@ -416,41 +417,74 @@ export const analyzeWebsite = inngest.createFunction(
       });
     });
 
-    // Scale-plan extra: Meta Ads Optimizer ONLY. Inngest persists each
-    // step independently — if this fails we still save the core analysis
-    // (the user just doesn't see the Meta Ads panel) rather than refund
-    // the whole job. The legacy `runRewrite` event flag still routes here
-    // so upstream callers don't have to change.
-    let metaAds = null;
-    if (runRewrite) {
-      metaAds = await step.run("run-meta-ads-agent", async () => {
-        const dl = startDeadline();
+    // Two independent enrichments, run CONCURRENTLY so neither adds serial
+    // wall-clock to the other (tech-fixes §4):
+    //   • Meta Ads Optimizer (Scale only) — the legacy `runRewrite` flag routes
+    //     here so upstream callers don't have to change.
+    //   • Real niche match (tech-fixes §2) — detect the store's niche from the
+    //     screenshot and rank the genuinely closest Library winners against it.
+    // Both are best-effort and fully self-contained: a failure yields null and
+    // the core audit still saves. Only the winners write depends on the winners
+    // flag being on (buildNicheWinnersFromScreenshot short-circuits when off, so
+    // it costs zero AI calls in the default configuration).
+    const [metaAds, nicheMatch] = await Promise.all([
+      runRewrite
+        ? step.run("run-meta-ads-agent", async () => {
+            const dl = startDeadline();
+            try {
+              return await runMetaAdsOptimizerAgent({
+                deadlineAt: dl.at,
+                url: url ?? "",
+                score: result.score,
+                summary: result.summary,
+                topFixes: result.top_fixes,
+                persona: persona as BuyerPersona | null,
+                niche,
+                // Discovered product + price context — drives more realistic
+                // CPC/CPM targets and creative angle suggestions.
+                siteInfo: discovery
+                  ? {
+                      title: discovery.title,
+                      description: discovery.description,
+                      prices: discovery.prices,
+                      platform: discovery.platform,
+                    }
+                  : null,
+              });
+            } catch (err) {
+              console.warn("[analyzer] meta-ads skipped:", (err as Error).message);
+              return null;
+            }
+          })
+        : Promise.resolve(null),
+
+      step.run("match-niche-winners", async () => {
         try {
-          return await runMetaAdsOptimizerAgent({
-            deadlineAt: dl.at,
-            url: url ?? "",
-            score: result.score,
-            summary: result.summary,
-            topFixes: result.top_fixes,
-            persona: persona as BuyerPersona | null,
-            niche,
-            // Discovered product + price context — drives more realistic
-            // CPC/CPM targets and creative angle suggestions.
-            siteInfo: discovery
-              ? {
-                  title: discovery.title,
-                  description: discovery.description,
-                  prices: discovery.prices,
-                  platform: discovery.platform,
-                }
-              : null,
+          const base64 = await urlToBase64(screenshot.publicUrl);
+          const match = await buildNicheWinnersFromScreenshot({
+            screenshotBase64: base64,
+            mediaType: screenshot.mediaType,
+            url: url ?? null,
           });
+          if (!match) return null;
+          return {
+            detectedNiche: match.detectedNiche,
+            nicheWinners: {
+              niche: match.result.niche,
+              nicheLabel: match.result.nicheLabel,
+              scope: match.scope,
+              winners: match.result.winners,
+            },
+          };
         } catch (err) {
-          console.warn("[analyzer] meta-ads skipped:", (err as Error).message);
+          console.warn(
+            "[analyzer] niche match skipped:",
+            (err as Error).message,
+          );
           return null;
         }
-      });
-    }
+      }),
+    ]);
 
     await step.run("save-result", async () => {
       await service
@@ -463,6 +497,38 @@ export const analyzeWebsite = inngest.createFunction(
         })
         .eq("id", analysisId);
     });
+
+    // Persist the real niche match (tech-fixes §2) in a SEPARATE, best-effort
+    // write — deliberately AFTER the audit is already marked succeeded and
+    // decoupled from it. The columns come from migration 0022, which is applied
+    // as a manual ops step; folding them into save-result would mean an
+    // un-migrated DB rejects the whole update and the audit never succeeds. Here
+    // a missing-column error is caught and logged, the audit stands, and the
+    // report simply falls back to its live winners path.
+    if (nicheMatch) {
+      await step.run("persist-niche-match", async () => {
+        try {
+          const { error } = await service
+            .from("analyses")
+            .update({
+              detected_niche: nicheMatch.detectedNiche,
+              niche_winners: nicheMatch.nicheWinners,
+            } as never)
+            .eq("id", analysisId);
+          if (error) {
+            console.warn(
+              "[analyzer] niche match not persisted (migration 0022 applied?):",
+              error.message,
+            );
+          }
+        } catch (err) {
+          console.warn(
+            "[analyzer] niche match persist skipped:",
+            (err as Error).message,
+          );
+        }
+      });
+    }
 
     // Activation (Phase 5): stamp time-to-first-value the first time a user
     // reaches a successful audit, and kick off the delayed follow-up email.

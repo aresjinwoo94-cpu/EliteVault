@@ -114,6 +114,10 @@ export default async function AnalysisPage({
     url: analysis.url,
     summary: analysisResult?.summary ?? null,
     isPaid,
+    // Preferred: the real, variable-match winners the pipeline computed from
+    // THIS store's screenshot (migration 0022). Falls back to the live path
+    // for audits created before it existed.
+    stored: analysis.niche_winners,
   });
 
   return (

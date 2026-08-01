@@ -312,6 +312,10 @@ export interface Database {
           meta_ads: unknown;
           // Growth Map cache (migration 0021) — see lib/growth-map/types.ts.
           growth_map: unknown;
+          // Real niche match (migration 0022) — the niche inferred from the
+          // screenshot + the precomputed Winners payload. See niche-winners.ts.
+          detected_niche: string | null;
+          niche_winners: unknown;
           is_published: boolean;
           published_at: string | null;
           error: string | null;

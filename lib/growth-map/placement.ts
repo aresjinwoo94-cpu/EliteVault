@@ -53,20 +53,45 @@ export function computePlacement(result: AnalysisResult): GrowthMapPlacement {
   const cro = norm100(cats?.cro_principles);
   const composite = Math.round(score * 0.6 + cro * 0.22 + offer * 0.18);
 
-  // Band the composite into the six ranks. Thresholds spread real stores across
-  // the map (so "TU TIENDA" is NOT always at The Wall — spec §10 check).
-  const rankIndex =
-    composite < 30
-      ? 0 // Copper / Foundation
-      : composite < 48
-        ? 1 // Steel / Traction (frequently just before The Wall)
-        : composite < 64
-          ? 2 // Silver / Optimization
-          : composite < 79
-            ? 3 // Gold / Scale
-            : composite < 91
-              ? 4 // Diamond / Authority
-              : 5; // Ruby / Elite
+  // Band the composite into the six ranks.
+  //
+  // Calibration (tech-fixes §6): the old bands were too generous — an "average"
+  // store (~58 composite with real leaks) sailed into Silver/Optimization,
+  // PAST The Wall, which is exactly where the hook goes soft. The Wall sits
+  // right after Steel (WALL_AFTER_INDEX), so the fix is to keep average stores
+  // AT Steel: the whole 40–70 band now lands there (Steel proper 40–58, then
+  // the 58–70 "stuck at the wall" zone). A store only escapes to Silver once
+  // it's genuinely past average (70+). Genuinely good stores still climb, so
+  // "TU TIENDA" is NOT always at The Wall — but most average ones now feel it.
+  let rankIndex =
+    composite < 40
+      ? 0 // Copper / Foundation      (<40)
+      : composite < 70
+        ? 1 // Steel / Traction        (40–70, includes The Wall zone)
+        : composite < 82
+          ? 2 // Silver / Optimization  (70–82)
+          : composite < 90
+            ? 3 // Gold / Scale          (82–90)
+            : composite < 96
+              ? 4 // Diamond / Authority (90–96)
+              : 5; // Ruby / Elite       (96+)
+
+  // Findings-based demotion (tech-fixes §6): the number alone can flatter a
+  // store that photographs well but leaks conversion. A store with critical
+  // conversion/offer leaks belongs AT OR BEFORE The Wall (index ≤ 1) even when
+  // its composite would place it higher — that tension is the honest read and
+  // where the urgency lives. We never PROMOTE on findings, only hold back.
+  const worstCat = Math.min(
+    ...CATS.map((k) => norm100(cats?.[k])),
+  );
+  const hasCriticalLeak =
+    offer < 55 || // shopper can't tell what you sell in <2s
+    cro < 55 || // clear funnel leaks
+    worstCat < 48 || // at least one badly broken dimension (e.g. sterile imagery)
+    result.ad_readiness?.verdict === "not_ready";
+  if (hasCriticalLeak && rankIndex > WALL_AFTER_INDEX) {
+    rankIndex = WALL_AFTER_INDEX; // hold at Steel — at the edge of The Wall
+  }
 
   const rank = rankByIndex(rankIndex);
 
