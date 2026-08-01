@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Sparkles, ArrowRight, Lock } from "lucide-react";
 import type { NodeFeedback } from "@/lib/growth-map/types";
 import { rankByKey } from "@/lib/growth-map/ranks";
+import { RankGlyph } from "./map-canvas";
 
 /**
  * Horizontal content for the detail band below the map (spec §7, v3). Revealed
@@ -23,8 +24,9 @@ export function NodeCard({ node }: { node: NodeFeedback }) {
           <Lock className="size-4 text-signal-300" />
         </span>
         <p className="min-w-0 flex-1 text-[12.5px] leading-snug text-white/80">
-          Use <span className="text-white">Pro or Scale</span> to unlock the tools
-          and keep scaling.
+          Want to scale your store?{" "}
+          <span className="text-white">Pro or Scale</span> shows you exactly what
+          to do next.
         </p>
         <Link
           href="/app/checkout?plan=pro&interval=month"
@@ -42,15 +44,14 @@ export function NodeCard({ node }: { node: NodeFeedback }) {
   return (
     <div className="flex items-start gap-3">
       <span
-        className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-bold"
+        className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full"
         style={{
-          color: rank.color,
           background: `${rank.color}1f`,
           boxShadow: `inset 0 0 0 1px ${rank.color}55`,
         }}
         aria-hidden
       >
-        {rank.icon}
+        <RankGlyph rankKey={node.rankKey} size={19} />
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">

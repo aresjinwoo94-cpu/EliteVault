@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { AnalysisResult } from "@/lib/supabase/types";
@@ -280,6 +281,19 @@ export function GrowthMap({
           <ExportButton
             getSvg={() => svgWrapRef.current?.querySelector("svg") ?? null}
             domain={domain}
+            title={`Your store · ${rank.material} · ${rank.stage}`}
+            body={data.nodes[current]?.text}
+          />
+        </div>
+
+        {/* Scroll nudge — the report continues below (fixes, persona, tools) */}
+        <div className="mt-4 flex items-center justify-center gap-2.5 rounded-xl border border-signal-400/20 bg-signal-500/[0.06] px-4 py-2.5 text-center">
+          <span className="text-[12px] text-white/75">
+            Your full audit continues below — prioritized fixes, buyer-persona
+            &amp; Meta tools.
+          </span>
+          <ChevronDown
+            className={`size-4 shrink-0 text-signal-300 ${reduce ? "" : "motion-safe:animate-bounce"}`}
           />
         </div>
       </Card>
