@@ -48,11 +48,11 @@ export function AnonRegisterGate({ score }: { score: number | null }) {
   const [open, setOpen] = useState(false);
   const shown = useRef(false);
 
-  // Raise the modal ONCE per audit/session — but only after the visitor has had
-  // time to actually read their whole report. It fires when they've scrolled
-  // near the bottom (they've seen everything), with a long fallback timer for
-  // short reports / tall screens where there's little to scroll. Never on
-  // arrival — that would bury the "aha" they just waited for.
+  // Raise the modal exactly ONCE per session, and only after a long read
+  // window — this is a serious tool, not a nag. A single, quiet, dismissible
+  // nudge ~45s in, never on arrival (that would bury the report they waited
+  // for), never repeated. The persistent banner carries the ask the rest of
+  // the time.
   useEffect(() => {
     if (shown.current) return;
     try {
@@ -64,33 +64,18 @@ export function AnonRegisterGate({ score }: { score: number | null }) {
       /* storage blocked */
     }
 
-    const reveal = (trigger: string) => {
+    const timer = setTimeout(() => {
       if (shown.current) return;
       shown.current = true;
       setOpen(true);
-      capture("anon_gate_shown", { trigger, score: roundedScore });
+      capture("anon_gate_shown", { trigger: "dwell", score: roundedScore });
       try {
         sessionStorage.setItem("ev_anon_register_gate", "1");
       } catch {
         /* ignore */
       }
-    };
-
-    const onScroll = () => {
-      const scrolled = window.scrollY + window.innerHeight;
-      const full = document.documentElement.scrollHeight;
-      // Within ~600px of the bottom → they've read essentially the whole report.
-      if (full - scrolled < 600) reveal("scroll_end");
-    };
-
-    // Fallback: if they linger without scrolling to the end, surface it after a
-    // generous read window so it never feels rushed.
-    const fallback = setTimeout(() => reveal("dwell"), 45_000);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      clearTimeout(fallback);
-      window.removeEventListener("scroll", onScroll);
-    };
+    }, 45_000);
+    return () => clearTimeout(timer);
   }, [roundedScore]);
 
   const onSignup = (trigger: string) =>

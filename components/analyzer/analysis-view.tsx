@@ -508,13 +508,15 @@ export function AnalysisView({
             </div>
 
             {/*
-              Thin upgrade-modal layer (Tarea 3) — ONLY for free viewers, and
-              placed at the very end so its scroll sentinel sits just after the
-              "What this means for your ads" block. It complements (never
-              duplicates) the inline locks above. Hidden entirely once there's
-              nothing left to unlock.
+              Thin upgrade-modal layer (Tarea 3) — ONLY for logged-in free
+              viewers, placed at the end so its scroll sentinel sits just after
+              the "What this means for your ads" block. Skipped for anonymous
+              visitors: they get a single register modal (AnonRegisterGate)
+              instead, so the pre-login experience stays a serious tool with one
+              gentle prompt — the inline "$19/mo" locks still carry the Pro push.
             */}
             {!viewer.isPaid &&
+              !isAnon &&
               (() => {
                 const lockedFixes = Math.max(
                   0,
