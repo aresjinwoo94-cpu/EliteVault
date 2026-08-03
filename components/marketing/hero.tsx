@@ -1,41 +1,115 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowRight, ShieldCheck, Lock } from "lucide-react";
+import { ArrowRight, ShieldCheck, Lock, Globe, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import posthog from "posthog-js";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { DataPill } from "@/components/ui/data-pill";
 import { AnalyzerTeaserVideo } from "./analyzer-teaser-video";
 import { ScanField, CornerBrackets } from "./scan-field";
 import { useT } from "@/components/i18n/locale-provider";
+import { createAnonAnalysis } from "@/app/actions/anon-analyzer";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
 /**
- * Primary hero CTA — single, unambiguous focus.
+ * Hero audit box — the activation funnel's front door (Tarea 1).
  *
- * One strong primary CTA that routes into sign-up → /app/analyzer (the
- * analyzer-launcher prompts for the URL at exactly the moment it can act on
- * it), plus a quiet secondary link that scrolls to the live demo for visitors
- * who want to see it work before committing.
+ * The landing's ONE job is to turn cold traffic into a first audit, not to sell.
+ * So the hero is a URL field + button that runs a real audit inline WITHOUT an
+ * account, then hands the visitor their "aha" (score + annotated screenshot) on
+ * /audit/[id], where a free-account gate takes over. The old "route to sign-up"
+ * CTA is gone; the quiet secondary link still scrolls to the live demo.
  */
-function HeroCta() {
+function HeroAuditBox() {
   const { t } = useT();
+  const router = useRouter();
+  const [url, setUrl] = useState("");
+  const [isPending, startTransition] = useTransition();
+
+  function submit() {
+    const value = url.trim();
+    if (!value) {
+      toast.error(t("hero.inputPlaceholder"));
+      return;
+    }
+    startTransition(async () => {
+      // Activation event — the first step of the anon funnel.
+      try {
+        if (typeof window !== "undefined" && (posthog as { __loaded?: boolean }).__loaded) {
+          posthog.capture("anon_audit_started", { url: value });
+        }
+      } catch {
+        /* analytics best-effort */
+      }
+      const res = await createAnonAnalysis({ url: value });
+      if (!res.ok) {
+        // Over the daily limit → nudge to a free account, don't just error.
+        if (res.limited) {
+          toast(res.error, {
+            action: {
+              label: t("anonGate.ctaPrimary"),
+              onClick: () => router.push("/sign-up?next=/app/analyzer"),
+            },
+          });
+        } else {
+          toast.error(res.error);
+        }
+        return;
+      }
+      router.push(`/audit/${res.id}`);
+    });
+  }
+
   return (
-    <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-      <Button asChild size="xl" className="shrink-0">
-        <Link href="/sign-up?next=/app/analyzer">
-          {t("hero.ctaPrimary")}
-          <ArrowRight className="size-4" />
+    <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="relative w-full sm:max-w-md">
+          <Globe className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-white/30" />
+          <Input
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && submit()}
+            placeholder={t("hero.inputPlaceholder")}
+            aria-label={t("hero.inputPlaceholder")}
+            disabled={isPending}
+            className="h-12 pl-10 text-base"
+          />
+        </div>
+        <Button
+          size="xl"
+          className="shrink-0"
+          onClick={submit}
+          disabled={isPending}
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              {t("hero.auditing")}
+            </>
+          ) : (
+            <>
+              {t("hero.auditButton")}
+              <ArrowRight className="size-4" />
+            </>
+          )}
+        </Button>
+      </div>
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+        <p className="text-xs tracking-wide text-white/35">{t("hero.anonMicro")}</p>
+        <Link
+          href="#analyzer"
+          className="group inline-flex items-center gap-1.5 text-xs text-white/45 transition-colors hover:text-white/80"
+        >
+          {t("hero.ctaSecondary")}
+          <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
         </Link>
-      </Button>
-      <Link
-        href="#analyzer"
-        className="group inline-flex items-center gap-1.5 px-1 text-sm text-white/55 transition-colors hover:text-white/85"
-      >
-        {t("hero.ctaSecondary")}
-        <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-      </Link>
+      </div>
     </div>
   );
 }
@@ -120,7 +194,7 @@ export function Hero() {
               transition={{ duration: 0.7, ease, delay: 0.25 }}
               className="mt-8"
             >
-              <HeroCta />
+              <HeroAuditBox />
             </motion.div>
 
             <motion.p

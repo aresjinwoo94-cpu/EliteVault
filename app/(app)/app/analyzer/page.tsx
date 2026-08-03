@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowUpRight, Sparkles } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AnalyzerLauncher } from "@/components/analyzer/analyzer-launcher";
@@ -6,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ScoreBadge } from "@/components/ui/score-badge";
 import { PLANS } from "@/lib/stripe/plans";
+import { getAnonToken } from "@/lib/anon/session";
+import { claimAnonAnalyses } from "@/lib/anon/claim";
 
 // NOTE: /app/* is disallowed in robots.txt (dashboard, not indexed), so this
 // description/keywords are for the browser tab + completeness, not Google
@@ -32,6 +35,20 @@ export default async function AnalyzerPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Activation-funnel continuity (§2 "regla de continuidad crítica"): if this
+  // account was created right after an anonymous audit, re-parent that audit to
+  // the account and drop the user straight into it with the free roadmap (fix
+  // #1 unlocked). This is the default post-sign-up destination, so it covers
+  // OAuth, magic-link AND email/password signups. The claim only touches still-
+  // unowned rows, so it's idempotent; the anon cookie expires on its own.
+  const anonToken = await getAnonToken();
+  if (anonToken) {
+    const claimedId = await claimAnonAnalyses(user!.id, anonToken);
+    if (claimedId) {
+      redirect(`/app/analyzer/${claimedId}`);
+    }
+  }
 
   const [{ data: profile }, { data: history }] = await Promise.all([
     supabase
