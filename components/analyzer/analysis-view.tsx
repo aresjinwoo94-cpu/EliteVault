@@ -35,6 +35,7 @@ import { FreeMetaPanel } from "./free-meta-panel";
 import { NicheWinners } from "./niche-winners";
 import { AdReadinessCard } from "./ad-readiness";
 import { AnalyzerPaywall } from "./analyzer-paywall";
+import { AnonRegisterGate } from "./anon-register-gate";
 import { ShareButton } from "./share-button";
 import { GrowthMap } from "./growth-map/growth-map";
 import type {
@@ -117,11 +118,21 @@ export function AnalysisView({
   viewer,
   initialSimulation,
   nicheWinners,
+  isAnon = false,
 }: {
   initial: Analysis;
   viewer: ViewerCtx;
   initialSimulation?: Simulation | null;
   nicheWinners?: NicheWinnersData | null;
+  /**
+   * Anonymous (pre-login) mode. The public /audit/[id] page renders this SAME
+   * report for a cold visitor so it's identical to the free logged-in analyzer.
+   * When true we: never poll the auth-only status endpoint (the page only
+   * mounts this once the audit already succeeded), hide the owner-only chrome
+   * (share, review nudge), point "Back" at the marketing site, and layer a
+   * "create a free account" gate on top of the existing Pro/Scale upsells.
+   */
+  isAnon?: boolean;
 }) {
   const [data, setData] = useState<Analysis>(initial);
   const router = useRouter();
@@ -145,6 +156,10 @@ export function AnalysisView({
   statusRef.current = data.status;
 
   useEffect(() => {
+    // Anonymous mode never polls the auth-only status endpoint — the public
+    // page only mounts this once the audit already succeeded, and the anon
+    // pending/analyzing state is handled by its own poller.
+    if (isAnon) return;
     let alive = true;
     const tick = async () => {
       if (
@@ -180,7 +195,7 @@ export function AnalysisView({
       alive = false;
       clearInterval(t);
     };
-  }, [data.id]);
+  }, [data.id, isAnon]);
 
   const isDone = data.status === "succeeded";
   const isWorking = data.status === "queued" || data.status === "running";
@@ -204,11 +219,11 @@ export function AnalysisView({
       <header className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <Link
-            href="/app/analyzer"
+            href={isAnon ? "/" : "/app/analyzer"}
             className="inline-flex items-center gap-1 text-xs text-white/40 hover:text-white/80 transition-colors"
           >
             <ArrowLeft className="size-3" />
-            Back to Analyzer
+            {isAnon ? "Back to EliteVault" : "Back to Analyzer"}
           </Link>
           <h1 className="mt-2 font-serif text-3xl md:text-4xl tracking-tight truncate">
             {data.url ?? "Uploaded screenshot"}
@@ -218,8 +233,9 @@ export function AnalysisView({
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {/* P0.3 — share the public, read-only audit (any plan). */}
-          {isDone && (
+          {/* P0.3 — share the public, read-only audit. Owner-only, hidden in
+              the anonymous view (it calls an auth-gated server action). */}
+          {isDone && !isAnon && (
             <ShareButton
               analysisId={data.id}
               initialSlug={data.share_slug ?? null}
@@ -235,6 +251,11 @@ export function AnalysisView({
         </div>
       </header>
 
+      {/* Anonymous banner — the primary activation push: create a free account
+          to save this report, run more audits and browse the Library. Sits
+          above the report so it's the first thing after the header. */}
+      {isDone && isAnon && <AnonRegisterGate score={data.result?.score ?? null} />}
+
       {/* Prominent Publish-to-Community callout (Pro/Scale only, succeeded only) */}
       {isDone && viewer.canPublish && (
         <PublishCallout
@@ -246,8 +267,8 @@ export function AnalysisView({
       )}
 
       {/* Post-audit satisfaction moment — subtle, dismissible "leave a review"
-          nudge. Shows only after the audit succeeds. */}
-      {isDone && <ReviewPrompt />}
+          nudge. Owner-only (an anonymous visitor has no audit to review yet). */}
+      {isDone && !isAnon && <ReviewPrompt />}
 
       {/* No AnimatePresence around isWorking — infinite child animations in
           AnalyzingState would block the exit transition and stall the UI

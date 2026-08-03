@@ -33,7 +33,7 @@ export async function GET(
   const { data, error } = await service
     .from("analyses")
     .select(
-      "id, status, url, screenshot_url, result, preview_score, preview_summary, error, anon_id, user_id, started_at, created_at",
+      "id, status, url, preview_score, preview_summary, error, anon_id, user_id, started_at, created_at",
     )
     .eq("id", id)
     .single();
@@ -46,15 +46,6 @@ export async function GET(
     id: string;
     status: string;
     url: string | null;
-    screenshot_url: string | null;
-    result: {
-      score?: number;
-      summary?: string;
-      annotations?: unknown;
-      top_fixes?: { title?: string; impact?: string }[];
-      category_scores?: unknown;
-      ad_readiness?: unknown;
-    } | null;
     preview_score: number | null;
     preview_summary: string | null;
     error: string | null;
@@ -89,32 +80,18 @@ export async function GET(
     }
   }
 
-  const succeeded = status === "succeeded";
-  const allFixes = Array.isArray(row.result?.top_fixes) ? row.result!.top_fixes! : [];
-  const fixesTotal = allFixes.length;
-
+  // Minimal payload — the anon pending poller only needs the status to know
+  // when to refresh the page. The succeeded report is server-rendered from the
+  // full row by /audit/[id] (the identical-to-free AnalysisView), so no audit
+  // content is served here.
   return NextResponse.json(
     {
       id: row.id,
       status,
       url: row.url,
-      screenshot_url: row.screenshot_url,
       error: errMsg,
       preview_score: row.preview_score,
       preview_summary: row.preview_summary,
-      // The free DIAGNOSIS — the same context a free logged-in user sees, so the
-      // anonymous report is a real roadmap, not a bare number:
-      score: row.result?.score ?? null,
-      summary: succeeded ? (row.result?.summary ?? null) : null,
-      annotations: succeeded ? (row.result?.annotations ?? []) : [],
-      category_scores: succeeded ? (row.result?.category_scores ?? null) : null,
-      ad_readiness: succeeded ? (row.result?.ad_readiness ?? null) : null,
-      // Ranked fix TITLES + impact chips (context: "what's wrong"), but NOT the
-      // how-to/why — that "cure" stays locked behind the free account.
-      fixes: succeeded
-        ? allFixes.map((f) => ({ title: f?.title ?? "", impact: f?.impact ?? "medium" }))
-        : [],
-      fixes_total: fixesTotal,
     },
     { headers: { "Cache-Control": "no-store" } },
   );

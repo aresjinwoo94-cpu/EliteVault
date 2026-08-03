@@ -76,11 +76,18 @@ const en: Dict = {
       "Free saves your report and unlocks fix #1. Pro then reveals the full prioritized cure, your buyer-persona reaction and the 7-day Meta projection — $19/mo.",
   },
   anonGate: {
-    title: "Your score is {score}/100. See exactly what's costing you sales.",
+    title: "Your score is {score}/100. Save your audit before you go.",
     body:
       "Create your free account to unlock your #1 priority fix and save this report — no card needed.",
     ctaPrimary: "Create free account",
     ctaSecondary: "Maybe later",
+    banner:
+      "This is your free audit. Create a free account to save it, run another and browse the winning-stores Library.",
+    bannerCta: "Create free account",
+    modalBody:
+      "Create a free account to keep this report, run another audit, and browse the Library of stores already converting in your niche.",
+    proNote:
+      "Want the full cure — every fix, your buyer-persona reaction and the 7-day Meta projection? Unlock it any time with Pro or Scale.",
   },
   // "Who EliteVault is for" — persona self-identification + niche long-tail SEO.
   whoFor: {
@@ -628,11 +635,18 @@ const es: Dict = {
       "Gratis guarda tu informe y desbloquea el fix #1. Pro revela luego la cura priorizada completa, la reacción de tu buyer-persona y la proyección Meta de 7 días — $19/mes.",
   },
   anonGate: {
-    title: "Tu score es {score}/100. Mira exactamente qué te cuesta ventas.",
+    title: "Tu score es {score}/100. Guarda tu auditoría antes de irte.",
     body:
       "Crea tu cuenta gratis para desbloquear tu fix #1 y guardar este informe — sin tarjeta.",
     ctaPrimary: "Crear cuenta gratis",
     ctaSecondary: "Quizá luego",
+    banner:
+      "Esta es tu auditoría gratis. Crea una cuenta gratis para guardarla, hacer otra y explorar la Library de tiendas ganadoras.",
+    bannerCta: "Crear cuenta gratis",
+    modalBody:
+      "Crea una cuenta gratis para conservar este informe, hacer otra auditoría y explorar la Library de tiendas que ya están convirtiendo en tu nicho.",
+    proNote:
+      "¿Quieres la cura completa — todos los fixes, la reacción de tu buyer-persona y la proyección Meta de 7 días? Desbloquéala cuando quieras con Pro o Scale.",
   },
   // "¿Para quién es EliteVault?" — self-identificación del persona + long-tail.
   whoFor: {

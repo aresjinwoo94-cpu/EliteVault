@@ -2,11 +2,9 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { getAnonToken } from "@/lib/anon/session";
-import {
-  AnonAnalysisView,
-  type AnonAudit,
-} from "@/components/analyzer/anon-analysis-view";
-import type { Annotation } from "@/lib/supabase/types";
+import { AnalysisView } from "@/components/analyzer/analysis-view";
+import { AnonPending } from "@/components/analyzer/anon-pending";
+import { loadNicheWinnersModule } from "@/lib/library/niche-winners";
 
 // A per-session result page — never indexed, always fresh.
 export const metadata: Metadata = {
@@ -23,6 +21,12 @@ export const dynamic = "force-dynamic";
  * anon_id. The row is unowned, so we read it with the service client and check
  * ownership ourselves. Once an account has claimed the audit (user_id set) we
  * send the visitor to sign-in → their owned report instead.
+ *
+ * When the audit has succeeded we render the SAME report a free logged-in user
+ * gets — the real AnalysisView, in anonymous mode — so the experience is
+ * identical to the free analyzer, with the free/Pro/Scale locks intact and a
+ * "create a free account" gate layered on top. While it's still running we show
+ * the anon pending poller.
  */
 export default async function AnonAuditPage({
   params,
@@ -36,63 +40,76 @@ export default async function AnonAuditPage({
   const service = createSupabaseServiceClient();
   const { data, error } = await service
     .from("analyses")
-    .select(
-      "id, status, url, screenshot_url, result, preview_score, preview_summary, error, anon_id, user_id",
-    )
+    .select("*")
     .eq("id", id)
     .single();
 
   if (error || !data) notFound();
 
-  const row = data as {
+  // Loose runtime shape — same approach as the owned report page (our
+  // hand-written Supabase types collapse to `never` across selects).
+  const row = data as Record<string, unknown> & {
     id: string;
-    status: AnonAudit["status"];
+    status: "queued" | "running" | "succeeded" | "failed" | "refunded";
     url: string | null;
-    screenshot_url: string | null;
-    result: {
-      score?: number;
-      summary?: string;
-      annotations?: Annotation[];
-      top_fixes?: { title?: string; impact?: string }[];
-      category_scores?: AnonAudit["category_scores"];
-      ad_readiness?: AnonAudit["ad_readiness"];
-    } | null;
+    result: unknown;
+    anon_id: string | null;
+    user_id: string | null;
     preview_score: number | null;
     preview_summary: string | null;
     error: string | null;
-    anon_id: string | null;
-    user_id: string | null;
+    niche_winners: unknown;
   };
 
-  // Already claimed by an account → this anon page no longer serves it. Route
-  // the visitor to their owned report behind sign-in.
+  // Already claimed by an account → route the visitor to their owned report.
   if (row.user_id) {
     redirect(`/sign-in?next=${encodeURIComponent(`/app/analyzer/${id}`)}`);
   }
-
   // Not this browser's audit.
   if (!row.anon_id || row.anon_id !== anonToken) notFound();
 
-  const succeeded = row.status === "succeeded";
-  const allFixes = Array.isArray(row.result?.top_fixes) ? row.result!.top_fixes! : [];
-  const initial: AnonAudit = {
-    id: row.id,
+  // Still running / failed → the anon poller (refreshes this page when done).
+  if (row.status !== "succeeded" || !row.result) {
+    return (
+      <AnonPending
+        initial={{
+          id: row.id,
+          status: row.status,
+          url: row.url,
+          preview_score: row.preview_score ?? null,
+          preview_summary: row.preview_summary ?? null,
+          error: row.error ?? null,
+        }}
+      />
+    );
+  }
+
+  // Succeeded → the identical-to-free report. Free viewer context: the inline
+  // Pro/Scale locks and the AnalyzerPaywall modals all render off isPaid:false.
+  const nicheWinners = await loadNicheWinnersModule({
     status: row.status,
     url: row.url,
-    screenshot_url: row.screenshot_url,
-    error: row.error,
-    preview_score: row.preview_score,
-    preview_summary: row.preview_summary,
-    score: row.result?.score ?? null,
-    summary: succeeded ? (row.result?.summary ?? null) : null,
-    annotations: succeeded ? (row.result?.annotations ?? []) : [],
-    category_scores: succeeded ? (row.result?.category_scores ?? null) : null,
-    ad_readiness: succeeded ? (row.result?.ad_readiness ?? null) : null,
-    fixes: succeeded
-      ? allFixes.map((f) => ({ title: f?.title ?? "", impact: (f?.impact ?? "medium") as "high" | "medium" | "low" }))
-      : [],
-    fixes_total: allFixes.length,
-  };
+    summary: (row.result as { summary?: string } | null)?.summary ?? null,
+    isPaid: false,
+    stored: row.niche_winners,
+  });
 
-  return <AnonAnalysisView initial={initial} />;
+  return (
+    <AnalysisView
+      initial={row}
+      viewer={{
+        canPublish: false,
+        publishedSlug: null,
+        fullName: null,
+        isScale: false,
+        isPaid: false,
+        canRunMeta: false,
+        metaLimit: 0,
+        metaUsed: 0,
+      }}
+      initialSimulation={null}
+      nicheWinners={nicheWinners}
+      isAnon
+    />
+  );
 }
