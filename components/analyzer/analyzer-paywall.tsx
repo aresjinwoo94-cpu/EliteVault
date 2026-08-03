@@ -60,6 +60,7 @@ export function AnalyzerPaywall({
   score,
   lockedFixes,
   niche,
+  isAnon = false,
 }: {
   analysisId: string;
   /** Overall audit score (0..100). */
@@ -68,6 +69,12 @@ export function AnalyzerPaywall({
   lockedFixes: number;
   /** Inferred niche — drives the honest ROAS band, same as the inline panel. */
   niche: string;
+  /**
+   * Anonymous mode. The anon reveal has its own "create a free account" modal
+   * that fires at scroll-end, so we drop the Pro scroll-recap modal here (they'd
+   * collide at the bottom) and keep only the exit-intent Pro nudge.
+   */
+  isAnon?: boolean;
 }) {
   const { t } = useT();
   const roundedScore = Math.round(score > 1 ? score : score * 100);
@@ -112,7 +119,9 @@ export function AnalyzerPaywall({
 
   // Modal A — scroll past the "What this means for your ads" block. The sentinel
   // sits right after that block, so seeing it means the user read the report.
+  // Skipped in anonymous mode (the register modal owns the scroll-end moment).
   useEffect(() => {
+    if (isAnon) return;
     const el = sentinelRef.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
     const obs = new IntersectionObserver(

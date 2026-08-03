@@ -59,7 +59,11 @@ export function CategoryRadar({ scores }: { scores: CategoryScores }) {
   return (
     <Card className="p-6">
       <h3 className="text-sm font-medium text-white">Category breakdown</h3>
-      <div className="mt-4">
+      {/* Cap the radar so it stays compact even when this card is full-width
+          (stacked on narrow screens / in the anonymous report), instead of
+          blowing up to the container width. The numbers grid below keeps the
+          card's full width. */}
+      <div className="mt-4 mx-auto max-w-[300px]">
         <svg viewBox="0 0 200 200" className="w-full h-auto">
           {/* concentric rings */}
           {[0.25, 0.5, 0.75, 1].map((f) => (

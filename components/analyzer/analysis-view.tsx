@@ -527,6 +527,7 @@ export function AnalysisView({
                     score={data.result.score}
                     lockedFixes={lockedFixes}
                     niche={niche}
+                    isAnon={isAnon}
                   />
                 );
               })()}
