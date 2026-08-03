@@ -18,10 +18,11 @@ import { getT } from "@/lib/i18n/server";
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
 export const metadata: Metadata = {
-  title: "Free Shopify Store Audit — Score + Fixes in 60s | EliteVault",
+  title: "Free Shopify Store Audit — Does Your Design Make Them Buy? | EliteVault",
   description:
-    "Paste your URL for a free AI CRO audit: conversion score, annotated screenshot and a ranked punch-list of fixes. Built for Shopify & DTC founders. No credit card.",
+    "If your product is a want, not a need, your store's design is the sale. Free AI audit: conversion score, annotated screenshot and a ranked punch-list of fixes. Built for Shopify & DTC founders. No credit card.",
   keywords: [
+    // Core keywords that already rank — kept intact.
     "free website audit",
     "free shopify store audit",
     "shopify store audit",
@@ -32,6 +33,12 @@ export const metadata: Metadata = {
     "free store audit",
     "ecommerce website analyzer",
     "conversion audit",
+    // Design/desire cluster (buyer-persona SEO layer).
+    "shopify store design audit",
+    "does my store look trustworthy",
+    "ecommerce website design review",
+    "why visitors don't buy",
+    "store design conversion audit",
   ],
   alternates: { canonical: "/free-website-audit" },
   openGraph: {

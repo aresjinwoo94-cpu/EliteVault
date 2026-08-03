@@ -9,6 +9,7 @@ import { COMPANY } from "@/lib/company";
 export const metadata: Metadata = {
   title: "Contact support",
   description: "Get in touch with the EliteVault team.",
+  alternates: { canonical: "/support/contact" },
 };
 
 export default function ContactPage() {

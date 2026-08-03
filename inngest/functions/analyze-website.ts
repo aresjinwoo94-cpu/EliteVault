@@ -94,7 +94,7 @@ export const analyzeWebsite = inngest.createFunction(
     onFailure: async ({ event, error }) => {
       const service = createSupabaseServiceClient();
       const data = (event as unknown as {
-        data: { event: { data: { analysisId: string; userId: string } } };
+        data: { event: { data: { analysisId: string; userId: string | null } } };
       }).data.event.data;
 
       // Surface a useful — but bounded — error to the user
@@ -109,16 +109,21 @@ export const analyzeWebsite = inngest.createFunction(
         })
         .eq("id", data.analysisId);
 
-      const { data: profile } = await service
-        .from("profiles")
-        .select("credits")
-        .eq("id", data.userId)
-        .single();
-      if (profile) {
-        await service
+      // Credit refund only applies to OWNED audits. An anonymous audit
+      // (userId null) charged no credit, so there's nothing to refund and no
+      // profile to read.
+      if (data.userId) {
+        const { data: profile } = await service
           .from("profiles")
-          .update({ credits: profile.credits + 1 })
-          .eq("id", data.userId);
+          .select("credits")
+          .eq("id", data.userId)
+          .single();
+        if (profile) {
+          await service
+            .from("profiles")
+            .update({ credits: profile.credits + 1 })
+            .eq("id", data.userId);
+        }
       }
     },
   },
@@ -534,6 +539,9 @@ export const analyzeWebsite = inngest.createFunction(
     // reaches a successful audit, and kick off the delayed follow-up email.
     // Additive — never affects the audit result itself.
     const firstValue = await step.run("mark-first-value", async () => {
+      // Anonymous audits (userId null) have no profile to stamp and no
+      // activation email to send — they haven't converted to an account yet.
+      if (!userId) return false;
       const { data: prof } = await service
         .from("profiles")
         .select("first_value_at")
@@ -552,10 +560,12 @@ export const analyzeWebsite = inngest.createFunction(
     });
 
     if (firstValue) {
+      // `firstValue` is only true for an OWNED audit (mark-first-value returns
+      // false when userId is null), so userId is non-null here.
       await step.sendEvent("activation-first-value", {
         name: "activation/first-value",
         data: {
-          userId,
+          userId: userId!,
           analysisId,
           score: result.score,
           plan: plan ?? null,

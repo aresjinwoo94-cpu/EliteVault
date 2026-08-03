@@ -4,6 +4,7 @@ export const metadata: Metadata = {
   title: "Refund & Cancellation Policy",
   description:
     "How cancellation, access periods, plan changes, and refunds work for EliteVault subscriptions.",
+  alternates: { canonical: "/legal/refunds" },
 };
 
 const LAST_UPDATED = "June 2026";

@@ -4,7 +4,13 @@ type Events = {
   "analysis/requested": {
     data: {
       analysisId: string;
-      userId: string;
+      // Null for an ANONYMOUS (pre-login) audit — the activation-funnel Tarea 1
+      // flow. The pipeline skips the owner-only steps (credit refund on failure,
+      // first-value email) when userId is null.
+      userId: string | null;
+      // Set only for anonymous audits: the session token that ties the audit to
+      // the browser (for claiming it on sign-up). Absent for owned audits.
+      anonId?: string | null;
       url?: string;
       screenshotUrl?: string;
       persona?: Record<string, unknown> | null;

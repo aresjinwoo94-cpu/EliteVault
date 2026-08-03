@@ -49,12 +49,12 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
-  // Canonical / alternates — important when the same site is served from
-  // multiple domains (vercel preview + custom domain). Always point to
-  // the canonical NEXT_PUBLIC_APP_URL.
-  alternates: {
-    canonical: "/",
-  },
+  // NOTE: no default `alternates.canonical` here. A root-layout default of "/"
+  // silently mis-canonicalized every page that forgot to set its own (e.g.
+  // /about pointed its canonical at the homepage), telling Google those pages
+  // were duplicates of the home and shouldn't be indexed separately. Canonicals
+  // are now set PER PAGE, self-referentially. `metadataBase` (above) still
+  // resolves those relative canonicals to the correct absolute domain.
   openGraph: {
     title: "EliteVault — Copy what actually converts",
     description:

@@ -24,14 +24,13 @@ const en: Dict = {
   hero: {
     badge1: "AI CONVERSION AUDIT",
     badge2: "BUILT FOR ECOMMERCE FOUNDERS",
-    line1: "Is your store leaving",
-    line2: "money on the table?",
+    line1: "If nobody needs what you sell, your store has to make them",
+    line2: "want it.",
     line3: "",
     subPre:
-      "Every founder knows the feeling — pouring everything in, still unsure you're on the right path. EliteVault ",
-    subHighlight: "makes that effort pay off",
-    subPost:
-      ": annotated screenshots that reveal what's costing you sales, a buyer-persona simulator that reacts like a real buyer, and a 7-day Meta Ads modeler that shows what to expect before you spend.",
+      "EliteVault audits your store like a senior media buyer and shows you — in 60 seconds — exactly why visitors ",
+    subHighlight: "bounce instead of buy",
+    subPost: ". Free, no login.",
     ctaPrimary: "Audit my store free",
     ctaSecondary: "or see how it works first",
     trust: "No credit card · 1 free analysis · Cancel anytime.",
@@ -39,6 +38,63 @@ const en: Dict = {
     sslBadge: "256-bit SSL",
     teaserTitle: "See how the analyzer works",
     teaserDuration: "54 sec · sound on",
+    // Activation funnel — inline anonymous-audit box (Tarea 1).
+    inputPlaceholder: "Paste your store URL (e.g. yourstore.com)",
+    auditButton: "Audit my store — free",
+    auditing: "Auditing your store…",
+    anonMicro: "No login · no card · 1 free audit",
+  },
+  // Anonymous audit reveal + registration gate (activation funnel Tarea 1).
+  anonReveal: {
+    back: "Run another audit",
+    analyzingTitle: "Reading your store like a buyer would…",
+    scoreEyebrow: "Your store's conversion score",
+    scoreCaption: "This is your diagnosis. The prioritized cure is one free account away.",
+    lockedTitle: "Your full report is ready",
+    lockedBody:
+      "Create your free account to unlock your #1 priority fix, your buyer-persona reaction and your Meta-readiness verdict — and save this report so you don't lose it.",
+    lockedFixes: "Your ranked fixes",
+    lockedPersona: "Buyer-persona reaction",
+    lockedMeta: "Meta-readiness verdict",
+    cta: "Create free account to unlock",
+    saved: "No card needed · your report saves to your account",
+    failedTitle: "We couldn't finish this audit",
+    failedRetry: "Try another store",
+  },
+  anonGate: {
+    title: "Your score is {score}/100. See exactly what's costing you sales.",
+    body:
+      "Create your free account to unlock your #1 priority fix and save this report — no card needed.",
+    ctaPrimary: "Create free account",
+    ctaSecondary: "Maybe later",
+  },
+  // "Who EliteVault is for" — persona self-identification + niche long-tail SEO.
+  whoFor: {
+    eyebrow: "Who it's for",
+    heading: "Built for solo founders in design-led niches",
+    body:
+      "If your product is a want, not a need, your store has one job: make people trust it and desire it fast. That's exactly what EliteVault audits — for founders running the whole thing themselves, no team, no agency.",
+    niches:
+      "Accessories, Jewelry, Fashion, Home decor, Beauty, Gadgets, Skincare, Supplements",
+  },
+  // Analyzer upgrade paywall — the thin modal layer on top of the inline locks
+  // (Tarea 3). Honest pressure only: the loss framing is used ONLY when the
+  // store's own modeled range is a net loss; a ready store gets the neutral
+  // headline. No countdowns, no fake scarcity.
+  paywall: {
+    aTitleLoss:
+      "Your store models to just {roasLow}×–{roasHigh}× ROAS on cold traffic — a likely net loss.",
+    aTitleReady:
+      "Your store models to {roasLow}×–{roasHigh}× ROAS on cold traffic. See the full 7-day projection.",
+    aBody:
+      "You've seen the diagnosis. Pro reveals the prioritized cure: all {lockedFixes} remaining fixes, your buyer-persona reaction, and the full 7-day Meta projection — plus unlimited re-audits as you fix.",
+    aCtaPro: "Unlock my fixes + projection — Pro $19/mo",
+    aCtaScale: "Unlimited Meta projections — Scale $29/mo",
+    dismiss: "Maybe later",
+    micro: "Cancel anytime · prorated",
+    cTitle:
+      "Leaving at {score}/100? Your {lockedFixes} highest-leverage fixes are still locked. Fix them before you spend on ads.",
+    cCtaPro: "Unlock with Pro — $19/mo",
   },
   socialStrip: {
     eyebrow: "What you walk away with",
@@ -365,7 +421,7 @@ const en: Dict = {
   freeAudit: {
     badge1: "FREE WEBSITE AUDIT",
     badge2: "NO CREDIT CARD",
-    heroH1: "Free website audit — your store's conversion score in 60 seconds",
+    heroH1: "Free website audit — see why visitors bounce instead of buy",
     heroBody:
       "EliteVault is an AI website analyzer built for ecommerce. Paste your URL and get an honest conversion score, an annotated screenshot of exactly what's costing you sales, your #1 fix unlocked, and a modeled 7-day Meta Ads ROAS range for a store like yours — free, no card, in under a minute.",
     heroCta: "Audit my store free",
@@ -506,14 +562,13 @@ const es: Dict = {
   hero: {
     badge1: "AUDITORÍA DE CONVERSIÓN CON IA",
     badge2: "HECHO PARA FUNDADORES DE ECOMMERCE",
-    line1: "¿Tu tienda está dejando",
-    line2: "dinero sobre la mesa?",
+    line1: "Si nadie necesita lo que vendes, tu tienda tiene que hacer que lo",
+    line2: "deseen.",
     line3: "",
     subPre:
-      "Todo fundador conoce la sensación — darlo todo y aun así dudar si vas por buen camino. EliteVault ",
-    subHighlight: "hace que ese esfuerzo valga la pena",
-    subPost:
-      ": capturas anotadas que revelan qué te está costando ventas, un simulador de buyer-persona que reacciona como un comprador real, y un modelador de Meta Ads a 7 días que te muestra qué esperar antes de gastar.",
+      "EliteVault audita tu tienda como un media buyer senior y te muestra —en 60 segundos— por qué tus visitantes ",
+    subHighlight: "se van sin comprar",
+    subPost: ". Gratis, sin registro.",
     ctaPrimary: "Audita mi tienda gratis",
     ctaSecondary: "o mira cómo funciona primero",
     trust: "Sin tarjeta · 1 análisis gratis · Cancela cuando quieras.",
@@ -521,6 +576,62 @@ const es: Dict = {
     sslBadge: "SSL de 256 bits",
     teaserTitle: "Mira cómo funciona el analizador",
     teaserDuration: "54 s · con sonido",
+    // Funnel de activación — caja de auditoría anónima inline (Tarea 1).
+    inputPlaceholder: "Pega la URL de tu tienda (ej. tutienda.com)",
+    auditButton: "Auditar mi tienda — gratis",
+    auditing: "Auditando tu tienda…",
+    anonMicro: "Sin registro · sin tarjeta · 1 auditoría gratis",
+  },
+  // Reveal anónimo + gate de registro (funnel de activación Tarea 1).
+  anonReveal: {
+    back: "Auditar otra tienda",
+    analyzingTitle: "Leyendo tu tienda como lo haría un comprador…",
+    scoreEyebrow: "El score de conversión de tu tienda",
+    scoreCaption: "Este es tu diagnóstico. La cura priorizada está a una cuenta gratis de distancia.",
+    lockedTitle: "Tu informe completo está listo",
+    lockedBody:
+      "Crea tu cuenta gratis para desbloquear tu fix #1, la reacción de tu buyer-persona y tu veredicto de preparación para Meta — y guarda este informe para no perderlo.",
+    lockedFixes: "Tus fixes priorizados",
+    lockedPersona: "Reacción del buyer-persona",
+    lockedMeta: "Veredicto de preparación para Meta",
+    cta: "Crear cuenta gratis para desbloquear",
+    saved: "Sin tarjeta · tu informe se guarda en tu cuenta",
+    failedTitle: "No pudimos terminar esta auditoría",
+    failedRetry: "Prueba otra tienda",
+  },
+  anonGate: {
+    title: "Tu score es {score}/100. Mira exactamente qué te cuesta ventas.",
+    body:
+      "Crea tu cuenta gratis para desbloquear tu fix #1 y guardar este informe — sin tarjeta.",
+    ctaPrimary: "Crear cuenta gratis",
+    ctaSecondary: "Quizá luego",
+  },
+  // "¿Para quién es EliteVault?" — self-identificación del persona + long-tail.
+  whoFor: {
+    eyebrow: "Para quién es",
+    heading: "Hecho para fundadores en solitario de nichos donde manda el diseño",
+    body:
+      "Si tu producto es un deseo, no una necesidad, tu tienda tiene un solo trabajo: generar confianza y ganas de comprar, rápido. Eso es exactamente lo que EliteVault audita — para fundadores que lo llevan todo ellos mismos, sin equipo, sin agencia.",
+    niches:
+      "Accesorios, Joyería, Moda, Decoración, Belleza, Gadgets, Skincare, Suplementos",
+  },
+  // Paywall del analyzer — la capa fina de modales sobre los locks inline
+  // (Tarea 3). Presión honesta: el framing de pérdida SOLO cuando el rango
+  // modelado de la propia tienda es una pérdida neta.
+  paywall: {
+    aTitleLoss:
+      "Tu tienda modela solo {roasLow}×–{roasHigh}× de ROAS en tráfico frío — probable pérdida neta.",
+    aTitleReady:
+      "Tu tienda modela {roasLow}×–{roasHigh}× de ROAS en tráfico frío. Mira la proyección completa de 7 días.",
+    aBody:
+      "Ya viste el diagnóstico. Pro revela la cura priorizada: los {lockedFixes} fixes restantes, la reacción de tu buyer-persona y la proyección Meta de 7 días completa — más re-auditorías ilimitadas mientras arreglas.",
+    aCtaPro: "Desbloquear fixes + proyección — Pro $19/mes",
+    aCtaScale: "Proyecciones Meta ilimitadas — Scale $29/mes",
+    dismiss: "Quizá luego",
+    micro: "Cancela cuando quieras · prorrateado",
+    cTitle:
+      "¿Te vas con {score}/100? Tus {lockedFixes} fixes de mayor impacto siguen bloqueados. Arréglalos antes de gastar en ads.",
+    cCtaPro: "Desbloquear con Pro — $19/mes",
   },
   socialStrip: {
     eyebrow: "Lo que te llevas",
@@ -847,7 +958,7 @@ const es: Dict = {
   freeAudit: {
     badge1: "AUDITORÍA WEB GRATIS",
     badge2: "SIN TARJETA",
-    heroH1: "Auditoría web gratis — el score de conversión de tu tienda en 60 segundos",
+    heroH1: "Auditoría web gratis — descubre por qué se van sin comprar",
     heroBody:
       "EliteVault es un analizador web con IA hecho para ecommerce. Pega tu URL y recibe un score de conversión honesto, una captura anotada de exactamente qué te está costando ventas, tu arreglo #1 desbloqueado, y un rango modelado de ROAS a 7 días en Meta Ads para una tienda como la tuya — gratis, sin tarjeta, en menos de un minuto.",
     heroCta: "Audita mi tienda gratis",

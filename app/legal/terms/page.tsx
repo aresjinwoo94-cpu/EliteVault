@@ -4,6 +4,7 @@ export const metadata: Metadata = {
   title: "Terms of Service",
   description:
     "The terms governing your use of EliteVault, including the nature of AI estimates, acceptable use, and liability.",
+  alternates: { canonical: "/legal/terms" },
 };
 
 const LAST_UPDATED = "June 2026";

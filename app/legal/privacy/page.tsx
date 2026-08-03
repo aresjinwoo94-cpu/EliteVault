@@ -4,6 +4,7 @@ export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
     "How EliteVault collects, uses, processes, and protects your data — including AI processing with Google Gemini.",
+  alternates: { canonical: "/legal/privacy" },
 };
 
 const LAST_UPDATED = "June 2026";

@@ -9,6 +9,10 @@ export const metadata: Metadata = {
   title: "About",
   description:
     "Why EliteVault exists, who builds it, and how to reach us — honest CRO audits for ecommerce founders.",
+  // Self-referential canonical. Previously this page inherited the root
+  // layout's default canonical of "/", which told Google /about was a
+  // duplicate of the homepage.
+  alternates: { canonical: "/about" },
 };
 
 export default function AboutPage() {

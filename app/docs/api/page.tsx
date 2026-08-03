@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: "API documentation",
   description:
     "EliteVault REST API v1 — authentication, endpoints, request/response formats, limits, and errors.",
+  alternates: { canonical: "/docs/api" },
 };
 
 function Code({ children }: { children: string }) {

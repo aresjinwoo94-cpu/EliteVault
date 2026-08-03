@@ -9,11 +9,12 @@ import { MarketingNav } from "@/components/marketing/nav";
  */
 export const metadata: Metadata = {
   title: {
-    absolute: "Free Shopify & Ecommerce Store Audit (AI) — EliteVault",
+    absolute: "Free Shopify Store Design Audit — Why Visitors Don't Buy | EliteVault",
   },
   description:
-    "Free AI store audit for Shopify & DTC: get a CRO score, an annotated screenshot and ranked fixes in 60 seconds — no card. See why top stores convert and copy it.",
+    "Selling accessories, jewelry or anything discretionary? On Shopify or DTC, your store's design IS the sale. Free 60-second AI audit: score, annotated screenshot and the #1 fix costing you conversions. No login.",
   keywords: [
+    // Core bottom-funnel keywords that already rank — kept intact.
     "free website audit",
     "free shopify store audit",
     "ai store audit",
@@ -25,6 +26,12 @@ export const metadata: Metadata = {
     "meta ads forecast",
     "dtc conversion optimization",
     "website analyzer",
+    // Design/desire cluster (buyer-persona SEO layer) — added, not replacing.
+    "shopify store design audit",
+    "does my store look trustworthy",
+    "ecommerce website design review",
+    "why visitors don't buy",
+    "store design conversion audit",
   ],
   alternates: { canonical: "/" },
   openGraph: {
@@ -48,6 +55,7 @@ export const dynamic = "force-dynamic";
 
 import { Hero } from "@/components/marketing/hero";
 import { SocialStrip } from "@/components/marketing/social-strip";
+import { WhoFor } from "@/components/marketing/who-for";
 import { ScanDivider } from "@/components/marketing/scan-field";
 import { FeaturesShowcase } from "@/components/marketing/features-showcase";
 import { ComparisonTable } from "@/components/marketing/comparison-table";
@@ -193,6 +201,7 @@ export default async function HomePage() {
       <main className="relative">
         <Hero />
         <SocialStrip />
+        <WhoFor />
         <AnalyzerDemo />
         <ScanDivider />
         <TwoPaths />
