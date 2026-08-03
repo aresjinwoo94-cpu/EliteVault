@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   title: "Help center",
   description:
     "Onboarding, billing, usage limits, reading your score, and how to contact EliteVault support.",
+  alternates: { canonical: "/support" },
 };
 
 const TIERS: PlanTier[] = ["free", "pro", "scale"];

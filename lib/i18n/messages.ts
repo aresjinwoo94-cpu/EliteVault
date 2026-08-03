@@ -68,6 +68,15 @@ const en: Dict = {
     ctaPrimary: "Create free account",
     ctaSecondary: "Maybe later",
   },
+  // "Who EliteVault is for" — persona self-identification + niche long-tail SEO.
+  whoFor: {
+    eyebrow: "Who it's for",
+    heading: "Built for solo founders in design-led niches",
+    body:
+      "If your product is a want, not a need, your store has one job: make people trust it and desire it fast. That's exactly what EliteVault audits — for founders running the whole thing themselves, no team, no agency.",
+    niches:
+      "Accessories, Jewelry, Fashion, Home decor, Beauty, Gadgets, Skincare, Supplements",
+  },
   socialStrip: {
     eyebrow: "What you walk away with",
     b1Title: "See how to lift your conversion",
@@ -393,7 +402,7 @@ const en: Dict = {
   freeAudit: {
     badge1: "FREE WEBSITE AUDIT",
     badge2: "NO CREDIT CARD",
-    heroH1: "Free website audit — your store's conversion score in 60 seconds",
+    heroH1: "Free website audit — see why visitors bounce instead of buy",
     heroBody:
       "EliteVault is an AI website analyzer built for ecommerce. Paste your URL and get an honest conversion score, an annotated screenshot of exactly what's costing you sales, your #1 fix unlocked, and a modeled 7-day Meta Ads ROAS range for a store like yours — free, no card, in under a minute.",
     heroCta: "Audit my store free",
@@ -577,6 +586,15 @@ const es: Dict = {
       "Crea tu cuenta gratis para desbloquear tu fix #1 y guardar este informe — sin tarjeta.",
     ctaPrimary: "Crear cuenta gratis",
     ctaSecondary: "Quizá luego",
+  },
+  // "¿Para quién es EliteVault?" — self-identificación del persona + long-tail.
+  whoFor: {
+    eyebrow: "Para quién es",
+    heading: "Hecho para fundadores en solitario de nichos donde manda el diseño",
+    body:
+      "Si tu producto es un deseo, no una necesidad, tu tienda tiene un solo trabajo: generar confianza y ganas de comprar, rápido. Eso es exactamente lo que EliteVault audita — para fundadores que lo llevan todo ellos mismos, sin equipo, sin agencia.",
+    niches:
+      "Accesorios, Joyería, Moda, Decoración, Belleza, Gadgets, Skincare, Suplementos",
   },
   socialStrip: {
     eyebrow: "Lo que te llevas",
@@ -903,7 +921,7 @@ const es: Dict = {
   freeAudit: {
     badge1: "AUDITORÍA WEB GRATIS",
     badge2: "SIN TARJETA",
-    heroH1: "Auditoría web gratis — el score de conversión de tu tienda en 60 segundos",
+    heroH1: "Auditoría web gratis — descubre por qué se van sin comprar",
     heroBody:
       "EliteVault es un analizador web con IA hecho para ecommerce. Pega tu URL y recibe un score de conversión honesto, una captura anotada de exactamente qué te está costando ventas, tu arreglo #1 desbloqueado, y un rango modelado de ROAS a 7 días en Meta Ads para una tienda como la tuya — gratis, sin tarjeta, en menos de un minuto.",
     heroCta: "Audita mi tienda gratis",
