@@ -34,6 +34,7 @@ import { FreeLockedCure } from "./free-locked-cure";
 import { FreeMetaPanel } from "./free-meta-panel";
 import { NicheWinners } from "./niche-winners";
 import { AdReadinessCard } from "./ad-readiness";
+import { AnalyzerPaywall } from "./analyzer-paywall";
 import { ShareButton } from "./share-button";
 import { GrowthMap } from "./growth-map/growth-map";
 import type {
@@ -484,6 +485,30 @@ export function AnalysisView({
                 </>
               )}
             </div>
+
+            {/*
+              Thin upgrade-modal layer (Tarea 3) — ONLY for free viewers, and
+              placed at the very end so its scroll sentinel sits just after the
+              "What this means for your ads" block. It complements (never
+              duplicates) the inline locks above. Hidden entirely once there's
+              nothing left to unlock.
+            */}
+            {!viewer.isPaid &&
+              (() => {
+                const lockedFixes = Math.max(
+                  0,
+                  (data.result.top_fixes?.length ?? 0) - 1,
+                );
+                if (lockedFixes < 1) return null;
+                return (
+                  <AnalyzerPaywall
+                    analysisId={data.id}
+                    score={data.result.score}
+                    lockedFixes={lockedFixes}
+                    niche={niche}
+                  />
+                );
+              })()}
         </motion.div>
       )}
     </div>

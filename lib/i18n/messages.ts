@@ -77,6 +77,25 @@ const en: Dict = {
     niches:
       "Accessories, Jewelry, Fashion, Home decor, Beauty, Gadgets, Skincare, Supplements",
   },
+  // Analyzer upgrade paywall — the thin modal layer on top of the inline locks
+  // (Tarea 3). Honest pressure only: the loss framing is used ONLY when the
+  // store's own modeled range is a net loss; a ready store gets the neutral
+  // headline. No countdowns, no fake scarcity.
+  paywall: {
+    aTitleLoss:
+      "Your store models to just {roasLow}×–{roasHigh}× ROAS on cold traffic — a likely net loss.",
+    aTitleReady:
+      "Your store models to {roasLow}×–{roasHigh}× ROAS on cold traffic. See the full 7-day projection.",
+    aBody:
+      "You've seen the diagnosis. Pro reveals the prioritized cure: all {lockedFixes} remaining fixes, your buyer-persona reaction, and the full 7-day Meta projection — plus unlimited re-audits as you fix.",
+    aCtaPro: "Unlock my fixes + projection — Pro $19/mo",
+    aCtaScale: "Unlimited Meta projections — Scale $29/mo",
+    dismiss: "Maybe later",
+    micro: "Cancel anytime · prorated",
+    cTitle:
+      "Leaving at {score}/100? Your {lockedFixes} highest-leverage fixes are still locked. Fix them before you spend on ads.",
+    cCtaPro: "Unlock with Pro — $19/mo",
+  },
   socialStrip: {
     eyebrow: "What you walk away with",
     b1Title: "See how to lift your conversion",
@@ -595,6 +614,24 @@ const es: Dict = {
       "Si tu producto es un deseo, no una necesidad, tu tienda tiene un solo trabajo: generar confianza y ganas de comprar, rápido. Eso es exactamente lo que EliteVault audita — para fundadores que lo llevan todo ellos mismos, sin equipo, sin agencia.",
     niches:
       "Accesorios, Joyería, Moda, Decoración, Belleza, Gadgets, Skincare, Suplementos",
+  },
+  // Paywall del analyzer — la capa fina de modales sobre los locks inline
+  // (Tarea 3). Presión honesta: el framing de pérdida SOLO cuando el rango
+  // modelado de la propia tienda es una pérdida neta.
+  paywall: {
+    aTitleLoss:
+      "Tu tienda modela solo {roasLow}×–{roasHigh}× de ROAS en tráfico frío — probable pérdida neta.",
+    aTitleReady:
+      "Tu tienda modela {roasLow}×–{roasHigh}× de ROAS en tráfico frío. Mira la proyección completa de 7 días.",
+    aBody:
+      "Ya viste el diagnóstico. Pro revela la cura priorizada: los {lockedFixes} fixes restantes, la reacción de tu buyer-persona y la proyección Meta de 7 días completa — más re-auditorías ilimitadas mientras arreglas.",
+    aCtaPro: "Desbloquear fixes + proyección — Pro $19/mes",
+    aCtaScale: "Proyecciones Meta ilimitadas — Scale $29/mes",
+    dismiss: "Quizá luego",
+    micro: "Cancela cuando quieras · prorrateado",
+    cTitle:
+      "¿Te vas con {score}/100? Tus {lockedFixes} fixes de mayor impacto siguen bloqueados. Arréglalos antes de gastar en ads.",
+    cCtaPro: "Desbloquear con Pro — $19/mes",
   },
   socialStrip: {
     eyebrow: "Lo que te llevas",
