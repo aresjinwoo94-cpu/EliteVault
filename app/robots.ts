@@ -16,9 +16,18 @@ export default function robots(): MetadataRoute.Robots {
   const baseUrl =
     process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
-  // /audit/* are per-session anonymous audit result pages (also noindex via
-  // page metadata) — never index them.
-  const disallow = ["/api/", "/app/", "/audit/", "/sign-in", "/sign-up", "/auth/"];
+  // /audit/* are per-session anonymous audit result pages, /preview/* are
+  // internal design previews — both are also noindex via page metadata; never
+  // index them.
+  const disallow = [
+    "/api/",
+    "/app/",
+    "/audit/",
+    "/preview/",
+    "/sign-in",
+    "/sign-up",
+    "/auth/",
+  ];
 
   // Explicitly WELCOME the major AI/answer-engine crawlers (GEO): being
   // crawlable by these is how EliteVault can show up in ChatGPT, Gemini,

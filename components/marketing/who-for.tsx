@@ -17,7 +17,10 @@ export function WhoFor() {
     .filter(Boolean);
 
   return (
-    <section aria-label={t("whoFor.eyebrow")} className="relative">
+    <section
+      aria-label={t("whoFor.eyebrow")}
+      className="relative mt-16 md:mt-24"
+    >
       <div className="container max-w-[1280px]">
         <div className="mx-auto max-w-3xl rounded-2xl border border-white/[0.06] bg-white/[0.015] p-8 md:p-10 text-center">
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
