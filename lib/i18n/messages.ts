@@ -60,6 +60,20 @@ const en: Dict = {
     saved: "No card needed · your report saves to your account",
     failedTitle: "We couldn't finish this audit",
     failedRetry: "Try another store",
+    verdictEyebrow: "The verdict",
+    diagnosisEyebrow: "Category breakdown",
+    issuesTitle: "{n} issues are costing you sales",
+    issuesSub:
+      "Your punch-list, ranked by impact. Create a free account to unlock the exact how-to for each.",
+    howToLocked: "How-to locked",
+    metaEyebrow: "What this means for your ads",
+    metaReadyTitle: "Your store is modelable for paid traffic.",
+    metaNotReadyTitle: "Your store isn't ready to scale yet — and we know exactly why.",
+    metaBody:
+      "Stores with a structural profile like yours model into a range of ROAS {roasLow}×–{roasHigh}× on a 7-day cold Meta test.",
+    metaDisclaimer: "Range modeled on similar stores — not a prediction of your result.",
+    proHint:
+      "Free saves your report and unlocks fix #1. Pro then reveals the full prioritized cure, your buyer-persona reaction and the 7-day Meta projection — $19/mo.",
   },
   anonGate: {
     title: "Your score is {score}/100. See exactly what's costing you sales.",
@@ -598,6 +612,20 @@ const es: Dict = {
     saved: "Sin tarjeta · tu informe se guarda en tu cuenta",
     failedTitle: "No pudimos terminar esta auditoría",
     failedRetry: "Prueba otra tienda",
+    verdictEyebrow: "El veredicto",
+    diagnosisEyebrow: "Desglose por categoría",
+    issuesTitle: "{n} problemas te están costando ventas",
+    issuesSub:
+      "Tu lista priorizada por impacto. Crea una cuenta gratis para desbloquear el cómo-arreglarlo de cada uno.",
+    howToLocked: "Cómo-arreglarlo bloqueado",
+    metaEyebrow: "Qué significa esto para tus ads",
+    metaReadyTitle: "Tu tienda es modelable para tráfico de pago.",
+    metaNotReadyTitle: "Tu tienda aún no está lista para escalar — y sabemos exactamente por qué.",
+    metaBody:
+      "Tiendas con un perfil estructural como el tuyo modelan un rango de ROAS {roasLow}×–{roasHigh}× en un test frío de Meta de 7 días.",
+    metaDisclaimer: "Rango modelado sobre tiendas similares — no es una predicción de tu resultado.",
+    proHint:
+      "Gratis guarda tu informe y desbloquea el fix #1. Pro revela luego la cura priorizada completa, la reacción de tu buyer-persona y la proyección Meta de 7 días — $19/mes.",
   },
   anonGate: {
     title: "Tu score es {score}/100. Mira exactamente qué te cuesta ventas.",

@@ -47,7 +47,14 @@ export async function GET(
     status: string;
     url: string | null;
     screenshot_url: string | null;
-    result: { score?: number; annotations?: unknown; top_fixes?: unknown[] } | null;
+    result: {
+      score?: number;
+      summary?: string;
+      annotations?: unknown;
+      top_fixes?: { title?: string; impact?: string }[];
+      category_scores?: unknown;
+      ad_readiness?: unknown;
+    } | null;
     preview_score: number | null;
     preview_summary: string | null;
     error: string | null;
@@ -82,9 +89,9 @@ export async function GET(
     }
   }
 
-  const fixesTotal = Array.isArray(row.result?.top_fixes)
-    ? row.result!.top_fixes!.length
-    : 0;
+  const succeeded = status === "succeeded";
+  const allFixes = Array.isArray(row.result?.top_fixes) ? row.result!.top_fixes! : [];
+  const fixesTotal = allFixes.length;
 
   return NextResponse.json(
     {
@@ -95,10 +102,18 @@ export async function GET(
       error: errMsg,
       preview_score: row.preview_score,
       preview_summary: row.preview_summary,
-      // The "aha" only: score + annotations for the annotated screenshot.
+      // The free DIAGNOSIS — the same context a free logged-in user sees, so the
+      // anonymous report is a real roadmap, not a bare number:
       score: row.result?.score ?? null,
-      annotations: status === "succeeded" ? (row.result?.annotations ?? []) : [],
-      // Counts, not content — drive the gate copy without leaking the cure.
+      summary: succeeded ? (row.result?.summary ?? null) : null,
+      annotations: succeeded ? (row.result?.annotations ?? []) : [],
+      category_scores: succeeded ? (row.result?.category_scores ?? null) : null,
+      ad_readiness: succeeded ? (row.result?.ad_readiness ?? null) : null,
+      // Ranked fix TITLES + impact chips (context: "what's wrong"), but NOT the
+      // how-to/why — that "cure" stays locked behind the free account.
+      fixes: succeeded
+        ? allFixes.map((f) => ({ title: f?.title ?? "", impact: f?.impact ?? "medium" }))
+        : [],
       fixes_total: fixesTotal,
     },
     { headers: { "Cache-Control": "no-store" } },

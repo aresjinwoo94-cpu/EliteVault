@@ -49,7 +49,14 @@ export default async function AnonAuditPage({
     status: AnonAudit["status"];
     url: string | null;
     screenshot_url: string | null;
-    result: { score?: number; annotations?: Annotation[]; top_fixes?: unknown[] } | null;
+    result: {
+      score?: number;
+      summary?: string;
+      annotations?: Annotation[];
+      top_fixes?: { title?: string; impact?: string }[];
+      category_scores?: AnonAudit["category_scores"];
+      ad_readiness?: AnonAudit["ad_readiness"];
+    } | null;
     preview_score: number | null;
     preview_summary: string | null;
     error: string | null;
@@ -67,6 +74,7 @@ export default async function AnonAuditPage({
   if (!row.anon_id || row.anon_id !== anonToken) notFound();
 
   const succeeded = row.status === "succeeded";
+  const allFixes = Array.isArray(row.result?.top_fixes) ? row.result!.top_fixes! : [];
   const initial: AnonAudit = {
     id: row.id,
     status: row.status,
@@ -76,10 +84,14 @@ export default async function AnonAuditPage({
     preview_score: row.preview_score,
     preview_summary: row.preview_summary,
     score: row.result?.score ?? null,
+    summary: succeeded ? (row.result?.summary ?? null) : null,
     annotations: succeeded ? (row.result?.annotations ?? []) : [],
-    fixes_total: Array.isArray(row.result?.top_fixes)
-      ? row.result!.top_fixes!.length
-      : 0,
+    category_scores: succeeded ? (row.result?.category_scores ?? null) : null,
+    ad_readiness: succeeded ? (row.result?.ad_readiness ?? null) : null,
+    fixes: succeeded
+      ? allFixes.map((f) => ({ title: f?.title ?? "", impact: (f?.impact ?? "medium") as "high" | "medium" | "low" }))
+      : [],
+    fixes_total: allFixes.length,
   };
 
   return <AnonAnalysisView initial={initial} />;

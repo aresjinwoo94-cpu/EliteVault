@@ -12,7 +12,9 @@ import {
   Shield,
   MessageSquare,
   TrendingUp,
-  Wrench,
+  Zap,
+  Flame,
+  Scale as ScaleIcon,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,13 +28,26 @@ import {
 } from "@/components/ui/dialog";
 import { AnalyzingState } from "./analyzing-state";
 import { AnnotationsOverlay } from "./annotations-overlay";
+import { CategoryRadar } from "./category-radar";
+import { AdReadinessCard } from "./ad-readiness";
+import { roasRangeForAudit } from "@/lib/meta/roas-range";
 import { useT } from "@/components/i18n/locale-provider";
-import type { Annotation } from "@/lib/supabase/types";
+import type { Annotation, AdReadiness, AnalysisResult } from "@/lib/supabase/types";
+
+/** A ranked fix as seen by an anonymous viewer — title + impact only, the
+ *  how-to/why is never sent (that's the locked "cure"). */
+interface AnonFix {
+  title: string;
+  impact: "high" | "medium" | "low";
+}
 
 /**
- * Trimmed DTO returned by /api/anon-analyses/[id]. It deliberately carries only
- * the "aha" (score + annotations) and COUNTS for the locked cure — never the
- * paid content — so the gate holds at the network boundary.
+ * DTO returned by /api/anon-analyses/[id]. It carries the free DIAGNOSIS — the
+ * same roadmap context a free logged-in user sees (score, verdict, categories,
+ * annotated screenshot, ad-readiness, ranked issue titles) — but never the paid
+ * "cure" (fix how-to/why, buyer-persona response, full Meta projection). The
+ * gate holds at the network boundary: the cure is unlocked by creating a free
+ * account, and Pro/Scale from there.
  */
 export interface AnonAudit {
   id: string;
@@ -43,7 +58,11 @@ export interface AnonAudit {
   preview_score: number | null;
   preview_summary: string | null;
   score: number | null;
+  summary: string | null;
   annotations: Annotation[];
+  category_scores: AnalysisResult["category_scores"] | null;
+  ad_readiness: AdReadiness | null;
+  fixes: AnonFix[];
   fixes_total: number;
 }
 
@@ -138,6 +157,18 @@ export function AnonAnalysisView({ initial }: { initial: AnonAudit }) {
       ? Math.round(data.score > 1 ? data.score : data.score * 100)
       : null;
 
+  // Niche inferred from the domain, the same way the analyzer pipeline does —
+  // drives the honest ROAS band in the Meta teaser.
+  const niche = (() => {
+    try {
+      return data.url
+        ? new URL(data.url).hostname.replace(/^www\./, "").split(".")[0]
+        : "ecommerce";
+    } catch {
+      return "ecommerce";
+    }
+  })();
+
   return (
     <div className="min-h-screen p-6 md:p-8 max-w-5xl mx-auto space-y-6">
       <header className="flex items-center justify-between gap-4">
@@ -183,7 +214,7 @@ export function AnonAnalysisView({ initial }: { initial: AnonAudit }) {
           transition={{ duration: 0.5 }}
           className="space-y-6"
         >
-          {/* Score hero — the diagnosis, unlocked for the anonymous visitor. */}
+          {/* 1 — Score hero + the model's verdict, so the number has context. */}
           <Card className="relative overflow-hidden p-8 md:p-10 text-center">
             <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-signal-600/10 blur-3xl" />
             <p className="relative text-xs uppercase tracking-widest text-white/45">
@@ -193,21 +224,51 @@ export function AnonAnalysisView({ initial }: { initial: AnonAudit }) {
               {roundedScore ?? "—"}
               <span className="text-3xl text-white/30">/100</span>
             </div>
-            <p className="relative mt-4 text-sm text-white/55 max-w-md mx-auto leading-relaxed">
-              {t("anonReveal.scoreCaption")}
-            </p>
+            {data.summary ? (
+              <p className="relative mx-auto mt-5 max-w-xl text-sm md:text-base text-white/70 leading-relaxed">
+                {data.summary}
+              </p>
+            ) : (
+              <p className="relative mt-4 max-w-md mx-auto text-sm text-white/55 leading-relaxed">
+                {t("anonReveal.scoreCaption")}
+              </p>
+            )}
           </Card>
 
-          {/* The annotated screenshot — the visual "aha". */}
-          {data.screenshot_url && (
-            <AnnotationsOverlay
-              imageUrl={data.screenshot_url}
-              annotations={data.annotations ?? []}
-            />
+          {/* 2 — Visual diagnosis: annotated screenshot + category breakdown. */}
+          <div className="grid gap-6 lg:grid-cols-[1fr_340px] lg:items-start">
+            {data.screenshot_url && (
+              <div className="min-w-0">
+                <AnnotationsOverlay
+                  imageUrl={data.screenshot_url}
+                  annotations={data.annotations ?? []}
+                />
+              </div>
+            )}
+            {data.category_scores && (
+              <div className="min-w-0">
+                <p className="mb-2 text-[10px] uppercase tracking-widest text-white/40">
+                  {t("anonReveal.diagnosisEyebrow")}
+                </p>
+                <CategoryRadar scores={data.category_scores} />
+              </div>
+            )}
+          </div>
+
+          {/* 3 — Ranked issues: titles + impact visible, the how-to locked. */}
+          {data.fixes.length > 0 && (
+            <AnonIssuesList fixes={data.fixes} onSignupClick={onSignupClick} />
           )}
 
-          {/* Locked cure + registration CTA. We never received the paid content
-              client-side; this shows its SHAPE and routes to a free account. */}
+          {/* 4 — "Ready for Meta traffic?" — the media-buyer verdict (free). */}
+          {data.ad_readiness && <AdReadinessCard data={data.ad_readiness} />}
+
+          {/* 5 — What this means for your ads: honest modeled ROAS range. */}
+          {roundedScore != null && (
+            <AnonMetaTeaser score={roundedScore} niche={niche} onSignupClick={onSignupClick} />
+          )}
+
+          {/* 6 — Locked cure + registration gate (seeds Pro/Scale). */}
           <AnonLockedGate
             fixesTotal={data.fixes_total}
             onSignupClick={onSignupClick}
@@ -268,7 +329,7 @@ function AnonLockedGate({
 }) {
   const { t } = useT();
   const teasers = [
-    { icon: Wrench, label: t("anonReveal.lockedFixes"), count: fixesTotal },
+    { icon: Zap, label: t("anonReveal.lockedFixes"), count: fixesTotal },
     { icon: MessageSquare, label: t("anonReveal.lockedPersona") },
     { icon: TrendingUp, label: t("anonReveal.lockedMeta") },
   ];
@@ -321,6 +382,155 @@ function AnonLockedGate({
             {t("anonReveal.saved")}
           </p>
         </div>
+
+        {/* Seed the paid tiers: free is step 1, Pro is where the full cure +
+            Meta projection live. Honest, not pushy. */}
+        <p className="mt-4 border-t border-white/[0.06] pt-4 text-xs leading-relaxed text-white/45">
+          {t("anonReveal.proHint")}
+        </p>
+      </div>
+    </Card>
+  );
+}
+
+/**
+ * Ranked issue list for an anonymous viewer — the store's problems, by impact.
+ * Titles + impact chips are shown (real context: "what's wrong and how bad"),
+ * but the actionable how-to is never sent, so each row carries a "how-to
+ * locked" hint. This mirrors the free logged-in TopFixes shape while routing
+ * the unlock to a free account.
+ */
+function AnonIssuesList({
+  fixes,
+  onSignupClick,
+}: {
+  fixes: AnonFix[];
+  onSignupClick: () => void;
+}) {
+  const { t } = useT();
+  return (
+    <Card className="p-6">
+      <div className="flex items-center gap-2">
+        <Zap className="size-4 text-champagne-400" />
+        <h3 className="text-sm font-medium text-white">
+          {t("anonReveal.issuesTitle").replace("{n}", String(fixes.length))}
+        </h3>
+      </div>
+      <p className="mt-1 text-xs text-white/50 leading-relaxed">
+        {t("anonReveal.issuesSub")}
+      </p>
+
+      <ol className="mt-4 space-y-2">
+        {fixes.map((f, i) => (
+          <li
+            key={i}
+            className="flex items-start gap-3 rounded-xl border border-white/[0.04] bg-white/[0.02] p-3.5"
+          >
+            <span className="tnum w-7 text-center font-serif text-2xl text-gold-gradient">
+              {i + 1}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium leading-tight text-white">{f.title}</p>
+              <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                <Badge
+                  variant={
+                    f.impact === "high"
+                      ? "danger"
+                      : f.impact === "medium"
+                        ? "warning"
+                        : "default"
+                  }
+                >
+                  {f.impact} impact
+                </Badge>
+                <span className="inline-flex items-center gap-1 text-[10px] text-champagne-300/80">
+                  <Lock className="size-3" />
+                  {t("anonReveal.howToLocked")}
+                </span>
+              </div>
+            </div>
+            <Lock className="mt-0.5 size-4 shrink-0 text-white/20" />
+          </li>
+        ))}
+      </ol>
+
+      <Link href={SIGNUP_HREF} onClick={onSignupClick} className="mt-4 inline-block">
+        <Button variant="primary" size="sm">
+          <Sparkles className="size-4" />
+          {t("anonReveal.cta")}
+          <ArrowRight className="size-4" />
+        </Button>
+      </Link>
+    </Card>
+  );
+}
+
+/**
+ * "What this means for your ads" for an anonymous viewer — the same honest,
+ * deterministic modeled ROAS band the free logged-in user sees
+ * (roasRangeForAudit), with the not-ready framing when the band is a net loss.
+ * Routes the full day-by-day projection to a free account.
+ */
+function AnonMetaTeaser({
+  score,
+  niche,
+  onSignupClick,
+}: {
+  score: number;
+  niche: string;
+  onSignupClick: () => void;
+}) {
+  const { t } = useT();
+  const range = roasRangeForAudit(score, niche);
+  const body = t("anonReveal.metaBody")
+    .replace("{roasLow}", range.low.toFixed(1))
+    .replace("{roasHigh}", range.high.toFixed(1));
+
+  return (
+    <Card className="relative overflow-hidden border-signal-500/20 bg-gradient-to-br from-signal-600/[0.06] to-champagne-400/[0.04] p-6 md:p-8">
+      <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-signal-600/12 blur-3xl" />
+      <div className="relative">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="size-4 text-signal-300" />
+          <span className="text-[10px] uppercase tracking-widest text-white/45">
+            {t("anonReveal.metaEyebrow")}
+          </span>
+        </div>
+        <h3 className="mt-3 font-serif text-2xl md:text-3xl tracking-tight text-white text-balance">
+          {range.ready
+            ? t("anonReveal.metaReadyTitle")
+            : t("anonReveal.metaNotReadyTitle")}
+        </h3>
+        <p className="mt-3 max-w-xl text-sm md:text-base text-white/70 leading-relaxed">
+          {body}
+        </p>
+
+        {/* Blurred 3-scenario shape — the value they'll get, not the numbers. */}
+        <div className="mt-5 grid max-w-md grid-cols-3 gap-2 opacity-70 blur-[3px]" aria-hidden>
+          {[
+            { Icon: Shield, tint: "text-sky-300" },
+            { Icon: ScaleIcon, tint: "text-champagne-300" },
+            { Icon: Flame, tint: "text-rose-300" },
+          ].map(({ Icon, tint }, i) => (
+            <div key={i} className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
+              <Icon className={`size-3.5 ${tint}`} />
+              <div className="mt-3 h-6 w-12 rounded bg-white/15" />
+              <div className="mt-2 h-1.5 w-full rounded bg-white/[0.08]" />
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-4 text-xs italic text-white/40">
+          {t("anonReveal.metaDisclaimer")}
+        </p>
+
+        <Link href={SIGNUP_HREF} onClick={onSignupClick} className="mt-5 inline-block">
+          <Button variant="primary" size="lg">
+            <Sparkles className="size-4" />
+            {t("anonReveal.cta")}
+            <ArrowRight className="size-4" />
+          </Button>
+        </Link>
       </div>
     </Card>
   );
