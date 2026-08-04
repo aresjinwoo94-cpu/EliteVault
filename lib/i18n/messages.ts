@@ -527,7 +527,7 @@ const en: Dict = {
   metaAdsPage: {
     badge1: "META ADS FORECAST",
     badge2: "BEFORE YOU SPEND A DOLLAR",
-    heroH1: "Forecast your Meta Ads campaign before you fund it",
+    heroH1: "Know your Meta Ads ROAS before you spend a dollar",
     heroBody:
       "EliteVault projects a 7-day Meta campaign across three scenarios — conservative, balanced and aggressive — using your budget, average order value and current niche benchmarks. See the likely spend, CPC, ROAS and revenue range before you commit, so you know whether the math even works.",
     heroCta: "Model my campaign",
@@ -562,6 +562,7 @@ const en: Dict = {
     honestyBody2:
       "So forecast the campaign — then make sure the destination can take the traffic.",
     honestyLink: "Why your Meta ads aren't converting",
+    readinessLink: "Is your store ready for Meta ads?",
     finalH2: "Know the math before you spend",
     finalBody:
       "Start free with a store audit — it now includes a modeled ROAS range for your store. The full 7-day Campaign Scenario Modeler is included on Pro (1/month) and unlimited on Scale.",
@@ -1085,7 +1086,7 @@ const es: Dict = {
   metaAdsPage: {
     badge1: "FORECAST DE META ADS",
     badge2: "ANTES DE GASTAR UN DÓLAR",
-    heroH1: "Proyecta tu campaña de Meta Ads antes de financiarla",
+    heroH1: "Conoce el ROAS de tus Meta Ads antes de gastar un dólar",
     heroBody:
       "EliteVault proyecta una campaña de Meta a 7 días en tres escenarios — conservador, balanceado y agresivo — usando tu presupuesto, tu ticket promedio y benchmarks actuales de tu nicho. Mira el rango probable de gasto, CPC, ROAS e ingresos antes de comprometerte, para que sepas si las cuentas siquiera cuadran.",
     heroCta: "Modelar mi campaña",
@@ -1120,6 +1121,7 @@ const es: Dict = {
     honestyBody2:
       "Así que proyecta la campaña — y luego asegúrate de que el destino aguante el tráfico.",
     honestyLink: "Por qué tus Meta ads no convierten",
+    readinessLink: "¿Tu tienda está lista para Meta ads?",
     finalH2: "Conoce las cuentas antes de gastar",
     finalBody:
       "Empieza gratis con una auditoría de tienda — ahora incluye un rango modelado de ROAS para tu tienda. El Modelador de Escenarios de Campaña a 7 días completo viene incluido en Pro (1/mes) e ilimitado en Scale.",

@@ -33,6 +33,65 @@ export type BlogPost = {
 
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: "is-your-store-ready-for-meta-ads",
+    title: "Is Your Store Ready for Meta Ads? A 6-Point Checklist",
+    h1: "Is your store ready for Meta ads? A 6-point checklist before you spend a dollar",
+    description:
+      "Before you fund a Meta campaign, run your store through this 6-point readiness check — offer clarity, trust, imagery, speed and more. How to diagnose each, and a free 60-second audit.",
+    keyword: "is my store ready for meta ads",
+    keywords: [
+      "is my store ready for meta ads",
+      "is my store ready for facebook ads",
+      "should i fix my store before running ads",
+      "meta ads readiness checklist",
+      "store ready for paid traffic",
+      "shopify store facebook ads checklist",
+    ],
+    date: "2026-08-03",
+    author: "Ariel Jiménez",
+    readingMinutes: 7,
+    excerpt:
+      "Meta will happily spend your budget sending strangers to a store that leaks them. The 6-point readiness check to run before you fund a campaign — and how to diagnose each.",
+    bodyHtml: `
+<p class="lede">Almost every solo founder makes the same expensive mistake: launch the campaign first, find out the store can't convert cold traffic second. Meta will happily spend your budget sending strangers to a page that leaks them — running paid traffic to a store that can't convert is pouring water into a bucket with a hole in the bottom. Your store is ready when a cold visitor gets the offer in two seconds, trusts you enough to buy, and hits no friction on mobile. Here are the six things to check first, and how to diagnose each one fast.</p>
+<p>This matters most when your product is a <em>want</em>, not a <em>need</em> — apparel, jewelry, skincare, home decor, candles, accessories. The buyer isn't solving an urgent problem; they're deciding in the first two seconds whether they trust and desire your brand. Cold Meta traffic is the harshest test of that, and design <em>is</em> the sale.</p>
+<h2>1. The offer isn't clear in the first 2 seconds</h2>
+<p>If a stranger can't tell what you sell and why it's for them before scrolling, they bounce — and cold traffic gives you nothing longer than a couple of seconds. <strong>Diagnose:</strong> show your homepage to someone who's never seen it for two seconds, then ask what you sell and who it's for. If they hesitate, this is costing you the most.</p>
+<h2>2. One offer, one CTA — or decision fatigue</h2>
+<p>A landing page with competing offers, full navigation and a dozen directions creates friction at exactly the wrong moment. Paid traffic wants one obvious next step. <strong>Diagnose:</strong> open your page on mobile and count the number of things asking for a tap above the fold. More than one primary action? Cut.</p>
+<h2>3. No trust, or trust hidden below the fold</h2>
+<p>A stranger from an ad has zero prior relationship with you — visible proof is what earns the first purchase. <strong>Diagnose:</strong> can a buyer see reviews, a return policy and secure-checkout signals <em>near the buy button</em>? If trust lives only in the footer, it doesn't exist. More on this in <a href="/blog/why-your-shopify-store-isnt-converting">why your store isn't converting</a>.</p>
+<h2>4. Imagery that doesn't fit your niche</h2>
+<p>What converts in skincare kills conversion in supplements. Generic dropship-template visuals read as risky to cold buyers. <strong>Diagnose:</strong> put your hero next to two winning stores in your exact niche. If yours looks like a template and theirs look like brands, that gap is your cost per purchase.</p>
+<h2>5. Friction between "interested" and "bought"</h2>
+<p>Confusing variants, hidden shipping, forced account creation, a clunky mobile checkout — every one is a place paid traffic quietly drops off. <strong>Diagnose:</strong> complete a purchase on your own store on mobile and count the taps and surprises. Each one is an exit.</p>
+<h2>6. A slow store on mobile</h2>
+<p>Every second of load past three seconds burns traffic you paid for, and mobile — where Meta lives — is least forgiving. <strong>Diagnose:</strong> run a free PageSpeed Insights test on mobile. LCP over ~2.5s? Fix heavy images and apps before you spend.</p>
+<h2>Readiness first, forecast second</h2>
+<p>You don't need perfection to start — you need a store that doesn't fight the campaign. Once it can take the traffic, model the campaign before you fund it: the <a href="/meta-ads-forecast">Meta Ads scenario modeler</a> projects a 7-day campaign across conservative, balanced and aggressive cases from your AOV and budget, so you spend knowing the floor, not just the dream. And if the clicks are already coming but not converting, start with <a href="/blog/why-meta-ads-arent-converting">why your Meta ads aren't converting</a>.</p>
+<h2>The fastest way to know</h2>
+<p>You could check all six by hand — or get a senior-media-buyer read of your store in under a minute. <a href="/sign-up?next=/app/analyzer">EliteVault's free audit</a> annotates your homepage with the exact issues from this list, scores your readiness across the six categories, simulates how a buyer persona reacts, and ranks what to fix first by leverage — free, no card. When you know which leak is yours, fixing it before you spend is the easy part.</p>
+`.trim(),
+    faqs: [
+      {
+        q: "How do I know if my store is ready for Meta ads?",
+        a: "Your store is ready when a cold visitor understands the offer in about two seconds, trusts you enough to buy, and hits no friction on mobile. Score those six things with a free 60-second audit instead of guessing.",
+      },
+      {
+        q: "Should I fix my store or run ads first?",
+        a: "Fix the store first. Ads can't fix a conversion problem — they expose it faster and more expensively. Audit the store, fix the top leaks, then launch.",
+      },
+      {
+        q: "Why am I getting clicks from my ads but no sales?",
+        a: "Clicks without sales is almost always a post-click problem, not an ad problem: an unclear offer, weak trust, a slow mobile page, or a design that reads as risky to strangers. Sending more traffic into a leaky store won't fix it.",
+      },
+      {
+        q: "Does store design really affect ad performance?",
+        a: "Yes — heavily, especially for want-not-need niches like fashion, beauty and decor. Cold traffic judges design in seconds, so a weak first impression or off-niche imagery raises your cost per purchase no matter how good the creative is.",
+      },
+    ],
+  },
+  {
     slug: "free-website-audit-tools",
     title: "Free Website Audit Tools (2026): What They Check & Which to Use",
     h1: "Free website audit tools in 2026: what they actually check (and which to use)",
@@ -290,7 +349,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <div class="callout"><h3>The in-app browser trap</h3><p>Many brands under-count conversions because Meta links open in Meta's in-app browser instead of Safari/Chrome — which can break tracking and checkout. Before you blame your store's design, confirm your pixel and checkout actually work inside the in-app browser. Sometimes the leak is plumbing, not persuasion.</p></div>
 <h2>Why "test more" is the wrong reflex</h2>
 <p>Testing more creative is the right move when the <em>ad</em> is underperforming. But when the store is the bottleneck, every new ad you test just sends fresh traffic into the same leaky funnel — and you "learn" that nothing works. You didn't have a creative problem. You had a destination problem, and you spent your test budget proving it three more times.</p>
-<p>The fix order is almost always backwards from what founders do: <strong>audit the store first, then scale the ads.</strong> A store that converts cold traffic turns mediocre ads into profit. A store that doesn't turns great ads into expensive lessons. (More on the usual culprits in <a href="/blog/why-your-shopify-store-isnt-converting">why your store isn't converting</a>.)</p>
+<p>The fix order is almost always backwards from what founders do: <strong>audit the store first, then scale the ads.</strong> A store that converts cold traffic turns mediocre ads into profit. A store that doesn't turns great ads into expensive lessons. Not sure which you have? Run the <a href="/blog/is-your-store-ready-for-meta-ads">6-point readiness check</a> before you scale. (More on the usual culprits in <a href="/blog/why-your-shopify-store-isnt-converting">why your store isn't converting</a>.)</p>
 <h2>Diagnose the store like a cold visitor would</h2>
 <p>You can't see your own store objectively — you've visited it a thousand times. The move is to look at it through the eyes of the exact person your ad just sent: a skeptical stranger, on a phone, with their thumb already hovering over "back."</p>
 <p>That's what <a href="/free-website-audit">EliteVault's free analyzer</a> does. Paste your URL and it reacts like a cold buyer — annotated screenshot of every leak, a buyer-persona reaction in their own voice, and a punch-list ranked by impact. And before you scale spend, the <a href="/#pricing">Campaign Scenario Modeler</a> projects a 7-day Meta campaign across conservative, balanced and aggressive cases based on your AOV and budget — so you know whether the math even works before you fund it.</p>

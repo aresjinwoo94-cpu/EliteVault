@@ -17,10 +17,11 @@ import { getT } from "@/lib/i18n/server";
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
 export const metadata: Metadata = {
-  title: "Meta Ads Forecast — Project a Campaign Before You Spend",
+  title: "Meta Ads ROAS Forecast — Know If the Campaign Pays Before You Spend",
   description:
-    "Forecast a 7-day Meta Ads campaign across 3 scenarios before you fund it. EliteVault projects spend, CPC, ROAS and revenue from your AOV and budget — an honest estimate, not a prediction.",
+    "Model your Meta Ads ROAS across conservative, balanced and aggressive cases from your AOV and budget — and check your store is ready to convert the traffic first. Free to start, no card.",
   keywords: [
+    "meta ads roas forecast",
     "meta ads forecast",
     "facebook ads forecast",
     "meta ads scenario modeler",
@@ -201,13 +202,22 @@ export default async function MetaAdsForecastPage() {
             <p className="mt-3 text-sm text-white/55 leading-relaxed">
               {t("metaAdsPage.honestyBody2")}
             </p>
-            <Link
-              href="/blog/why-meta-ads-arent-converting"
-              className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-signal-300 hover:text-signal-200"
-            >
-              {t("metaAdsPage.honestyLink")}
-              <ArrowRight className="size-3.5" />
-            </Link>
+            <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+              <Link
+                href="/blog/is-your-store-ready-for-meta-ads"
+                className="inline-flex items-center gap-1 text-sm font-medium text-signal-300 hover:text-signal-200"
+              >
+                {t("metaAdsPage.readinessLink")}
+                <ArrowRight className="size-3.5" />
+              </Link>
+              <Link
+                href="/blog/why-meta-ads-arent-converting"
+                className="inline-flex items-center gap-1 text-sm font-medium text-signal-300 hover:text-signal-200"
+              >
+                {t("metaAdsPage.honestyLink")}
+                <ArrowRight className="size-3.5" />
+              </Link>
+            </div>
           </div>
         </section>
 
