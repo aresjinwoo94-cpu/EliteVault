@@ -422,75 +422,52 @@ export const analyzeWebsite = inngest.createFunction(
       });
     });
 
-    // Two independent enrichments, run CONCURRENTLY so neither adds serial
-    // wall-clock to the other (tech-fixes §4):
-    //   • Meta Ads Optimizer (Scale only) — the legacy `runRewrite` flag routes
-    //     here so upstream callers don't have to change.
-    //   • Real niche match (tech-fixes §2) — detect the store's niche from the
-    //     screenshot and rank the genuinely closest Library winners against it.
-    // Both are best-effort and fully self-contained: a failure yields null and
-    // the core audit still saves. Only the winners write depends on the winners
-    // flag being on (buildNicheWinnersFromScreenshot short-circuits when off, so
-    // it costs zero AI calls in the default configuration).
-    const [metaAds, nicheMatch] = await Promise.all([
-      runRewrite
-        ? step.run("run-meta-ads-agent", async () => {
-            const dl = startDeadline();
-            try {
-              return await runMetaAdsOptimizerAgent({
-                deadlineAt: dl.at,
-                url: url ?? "",
-                score: result.score,
-                summary: result.summary,
-                topFixes: result.top_fixes,
-                persona: persona as BuyerPersona | null,
-                niche,
-                // Discovered product + price context — drives more realistic
-                // CPC/CPM targets and creative angle suggestions.
-                siteInfo: discovery
-                  ? {
-                      title: discovery.title,
-                      description: discovery.description,
-                      prices: discovery.prices,
-                      platform: discovery.platform,
-                    }
-                  : null,
-              });
-            } catch (err) {
-              console.warn("[analyzer] meta-ads skipped:", (err as Error).message);
-              return null;
-            }
-          })
-        : Promise.resolve(null),
+    // Meta Ads Optimizer (Scale only) — the legacy `runRewrite` flag routes
+    // here so upstream callers don't have to change. It stays BEFORE save-result
+    // because `meta_ads` is part of the saved result payload, and only Scale
+    // audits (runRewrite) pay its wall-clock at all. Best-effort: a failure
+    // yields null and the core audit still saves.
+    const metaAds = runRewrite
+      ? await step.run("run-meta-ads-agent", async () => {
+          const dl = startDeadline();
+          try {
+            return await runMetaAdsOptimizerAgent({
+              deadlineAt: dl.at,
+              url: url ?? "",
+              score: result.score,
+              summary: result.summary,
+              topFixes: result.top_fixes,
+              persona: persona as BuyerPersona | null,
+              niche,
+              // Discovered product + price context — drives more realistic
+              // CPC/CPM targets and creative angle suggestions.
+              siteInfo: discovery
+                ? {
+                    title: discovery.title,
+                    description: discovery.description,
+                    prices: discovery.prices,
+                    platform: discovery.platform,
+                  }
+                : null,
+            });
+          } catch (err) {
+            console.warn("[analyzer] meta-ads skipped:", (err as Error).message);
+            return null;
+          }
+        })
+      : null;
 
-      step.run("match-niche-winners", async () => {
-        try {
-          const base64 = await urlToBase64(screenshot.publicUrl);
-          const match = await buildNicheWinnersFromScreenshot({
-            screenshotBase64: base64,
-            mediaType: screenshot.mediaType,
-            url: url ?? null,
-          });
-          if (!match) return null;
-          return {
-            detectedNiche: match.detectedNiche,
-            nicheWinners: {
-              niche: match.result.niche,
-              nicheLabel: match.result.nicheLabel,
-              scope: match.scope,
-              winners: match.result.winners,
-            },
-          };
-        } catch (err) {
-          console.warn(
-            "[analyzer] niche match skipped:",
-            (err as Error).message,
-          );
-          return null;
-        }
-      }),
-    ]);
-
+    // Mark the audit succeeded AS SOON AS the core result (+ Scale's meta_ads)
+    // is ready — this is the status the report page polls for, so it's the
+    // moment the user sees their audit. The niche-winners enrichment below used
+    // to run CONCURRENTLY with meta-ads and then BLOCK this save via Promise.all,
+    // which meant its up-to-2 extra vision calls (image-niche detect + visual
+    // re-rank) were added to the time-to-result of EVERY audit — on a single
+    // Gemini key that both slows every audit and multiplies rate-limit pressure.
+    // Moving it AFTER save-result takes those calls off the critical path for all
+    // plans (free, pro, scale, anonymous) with zero loss of function: the winners
+    // land in a separate column (persist-niche-match) and the report already
+    // falls back to the live Library winners when that column isn't populated yet.
     await step.run("save-result", async () => {
       await service
         .from("analyses")
@@ -501,6 +478,39 @@ export const analyzeWebsite = inngest.createFunction(
           finished_at: new Date().toISOString(),
         })
         .eq("id", analysisId);
+    });
+
+    // Real niche match (tech-fixes §2) — DECOUPLED from the critical path above.
+    // Detects the store's niche from the screenshot and ranks the genuinely
+    // closest Library winners against it. Best-effort and self-contained: a
+    // failure yields null and the (already-succeeded) audit stands.
+    // buildNicheWinnersFromScreenshot short-circuits when the winners flag is
+    // off, so it costs zero AI calls in the default configuration.
+    const nicheMatch = await step.run("match-niche-winners", async () => {
+      try {
+        const base64 = await urlToBase64(screenshot.publicUrl);
+        const match = await buildNicheWinnersFromScreenshot({
+          screenshotBase64: base64,
+          mediaType: screenshot.mediaType,
+          url: url ?? null,
+        });
+        if (!match) return null;
+        return {
+          detectedNiche: match.detectedNiche,
+          nicheWinners: {
+            niche: match.result.niche,
+            nicheLabel: match.result.nicheLabel,
+            scope: match.scope,
+            winners: match.result.winners,
+          },
+        };
+      } catch (err) {
+        console.warn(
+          "[analyzer] niche match skipped:",
+          (err as Error).message,
+        );
+        return null;
+      }
     });
 
     // Persist the real niche match (tech-fixes §2) in a SEPARATE, best-effort
