@@ -2,42 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  CreditCard,
-  Compass,
-  Globe,
-  KeyRound,
-  Library,
-  Scan,
-  Settings,
-  Sparkles,
-  TrendingUp,
-} from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { PLANS } from "@/lib/stripe/plans";
 import { useT } from "@/components/i18n/locale-provider";
 import { Logo } from "@/components/brand/logo";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { BASE_NAV, isNavItemActive } from "@/components/dashboard/nav-items";
 import type { Database } from "@/lib/supabase/types";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"] | null;
-
-const BASE_NAV: Array<{
-  key: string;
-  href: string;
-  icon: typeof Compass;
-  highlight?: boolean;
-  scaleOnly?: boolean;
-}> = [
-  { key: "sidebar.navOverview", href: "/app", icon: Compass },
-  { key: "sidebar.navAnalyzer", href: "/app/analyzer", icon: Scan, highlight: true },
-  { key: "sidebar.navTrends", href: "/app/trends", icon: TrendingUp },
-  { key: "sidebar.navLibrary", href: "/app/library", icon: Library },
-  { key: "sidebar.navCommunity", href: "/app/community", icon: Globe },
-  { key: "sidebar.navApiKeys", href: "/app/settings/api-keys", icon: KeyRound, scaleOnly: true },
-  { key: "sidebar.navBilling", href: "/app/billing", icon: CreditCard },
-  { key: "sidebar.navSettings", href: "/app/settings", icon: Settings },
-];
 
 export function AppSidebar({ profile }: { profile: Profile }) {
   const path = usePathname();
@@ -62,12 +36,7 @@ export function AppSidebar({ profile }: { profile: Profile }) {
       */}
       <nav className="px-3 py-2 space-y-0.5">
         {NAV.map((item) => {
-          // Settings should NOT match nested /app/settings/api-keys —
-          // require exact match for /app and /app/settings, prefix for the rest.
-          const exactMatchRoutes = new Set(["/app", "/app/settings"]);
-          const active = exactMatchRoutes.has(item.href)
-            ? path === item.href
-            : path?.startsWith(item.href);
+          const active = isNavItemActive(item.href, path);
           return (
             <Link
               key={item.href}

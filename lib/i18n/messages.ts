@@ -20,6 +20,9 @@ const en: Dict = {
     about: "About",
     signIn: "Sign in",
     startFree: "Start free",
+    menu: "Menu",
+    openMenu: "Open menu",
+    closeMenu: "Close menu",
   },
   hero: {
     badge1: "AI CONVERSION AUDIT",
@@ -189,6 +192,7 @@ const en: Dict = {
     colCapability: "Capability",
     colAgency: "CRO agency",
     youAreHere: "You are here",
+    scrollHint: "Swipe to compare all tools",
     rowAudit: "AI CRO audit in under 60 seconds",
     rowScreenshot: "Annotated screenshot with prioritized fixes",
     rowPersona: "Buyer-persona simulation (reacts in their voice)",
@@ -442,7 +446,7 @@ const en: Dict = {
   freeAudit: {
     badge1: "FREE WEBSITE AUDIT",
     badge2: "NO CREDIT CARD",
-    heroH1: "Free website audit — see why visitors bounce instead of buy",
+    heroH1: "Ecommerce web analyzer — see why visitors bounce instead of buy",
     heroBody:
       "EliteVault is an AI website analyzer built for ecommerce. Paste your URL and get an honest conversion score, an annotated screenshot of exactly what's costing you sales, your #1 fix unlocked, and a modeled 7-day Meta Ads ROAS range for a store like yours — free, no card, in under a minute.",
     heroCta: "Audit my store free",
@@ -527,9 +531,9 @@ const en: Dict = {
   metaAdsPage: {
     badge1: "META ADS FORECAST",
     badge2: "BEFORE YOU SPEND A DOLLAR",
-    heroH1: "Know your Meta Ads ROAS before you spend a dollar",
+    heroH1: "Meta Ads simulator — model your campaign before you spend a dollar",
     heroBody:
-      "EliteVault projects a 7-day Meta campaign across three scenarios — conservative, balanced and aggressive — using your budget, average order value and current niche benchmarks. See the likely spend, CPC, ROAS and revenue range before you commit, so you know whether the math even works.",
+      "EliteVault is a Meta Ads simulator — it models how your campaign is likely to perform before you fund it. It projects a 7-day Meta campaign across three scenarios — conservative, balanced and aggressive — using your budget, average order value and current niche benchmarks. See the likely spend, CPC, ROAS and revenue range before you commit, so you know whether the math even works.",
     heroCta: "Model my campaign",
     heroCaption: "estimate, not prediction",
     scenariosH2: "Three scenarios, modeled side by side",
@@ -580,6 +584,9 @@ const es: Dict = {
     about: "Nosotros",
     signIn: "Iniciar sesión",
     startFree: "Empezar gratis",
+    menu: "Menú",
+    openMenu: "Abrir menú",
+    closeMenu: "Cerrar menú",
   },
   hero: {
     badge1: "AUDITORÍA DE CONVERSIÓN CON IA",
@@ -748,6 +755,7 @@ const es: Dict = {
     colCapability: "Capacidad",
     colAgency: "Agencia CRO",
     youAreHere: "Estás aquí",
+    scrollHint: "Desliza para comparar todas las herramientas",
     rowAudit: "Auditoría CRO con IA en menos de 60 segundos",
     rowScreenshot: "Captura anotada con arreglos priorizados",
     rowPersona: "Simulación de buyer-persona (reacciona con su voz)",
