@@ -153,7 +153,9 @@ export const analyzeWebsite = inngest.createFunction(
     // base64. The screenshot is uploaded to storage here (merging the old
     // save-screenshot step); steps that need the bytes fetch them via
     // urlToBase64() so nothing large is ever a persisted step output.
-    const screenshot = await step.run("capture-screenshot", async () => {
+    // Started here as a promise (not awaited yet) so the site-HTML discovery
+    // below runs IN PARALLEL with this capture — see the Promise.all after.
+    const captureStep = step.run("capture-screenshot", async () => {
       // Every step below opens its own budget. It has to expire BEFORE the
       // route's maxDuration, otherwise Vercel kills the request mid-step and
       // Inngest only sees "your server returned HTTP 504" — an opaque failure
@@ -231,20 +233,30 @@ export const analyzeWebsite = inngest.createFunction(
       return uploadAndUrl(shot.base64, shot.mediaType);
     });
 
-    // P1.2 — instant teaser score, and v2.2 site discovery.
-    //
-    // These two are INDEPENDENT of each other: the teaser reads the screenshot
-    // we already have, discovery fetches the site's HTML. They used to run one
-    // after the other, so the user waited through the sum (~5s + ~10s) for no
-    // reason. Promise.all makes Inngest run both steps in parallel and the
-    // audit starts at whichever finishes last — the wait becomes the max, not
-    // the sum. Both stay best-effort: neither can fail the audit.
-    const [, discovery] = await Promise.all([
-      step.run("quick-score", async () => {
-        // Skip the teaser's SEPARATE AI request unless explicitly enabled — on a
-        // single Gemini key (15 req/min) it doubles rate-limit pressure and can
-        // push the real audit over Vercel's 60s step ceiling. See flags.ts.
-        if (!quickScoreEnabled()) return null;
+    // v2.2 site discovery runs IN PARALLEL with the screenshot capture above.
+    // Both need only the URL and are fully independent, so awaiting them together
+    // makes the wait the MAX of the two rather than the SUM — trimming the whole
+    // discovery duration (~5-10s) off the critical path of every audit. Discovery
+    // stays best-effort: a failure yields null and never fails the audit.
+    const [screenshot, discovery] = await Promise.all([
+      captureStep,
+      step.run("discover-site", async () => {
+        if (!url) return null;
+        try {
+          return await discoverSite(url);
+        } catch (err) {
+          console.warn("[analyzer] discovery skipped:", (err as Error).message);
+          return null;
+        }
+      }),
+    ]);
+
+    // P1.2 — instant teaser score. Best-effort and DISABLED by default (a second
+    // AI request per audit; see flags.ts). Only invoke the step — and pay its
+    // Inngest round-trip — when the flag is actually on. When off it used to be a
+    // no-op step that still cost a full orchestration round-trip on the path.
+    if (quickScoreEnabled()) {
+      await step.run("quick-score", async () => {
         const dl = startDeadline();
         let preview = null;
         try {
@@ -270,38 +282,22 @@ export const analyzeWebsite = inngest.createFunction(
             } as never)
             .eq("id", analysisId);
         }
-        return preview;
-      }),
+      });
+    }
 
-      step.run("discover-site", async () => {
-        if (!url) return null;
-        try {
-          return await discoverSite(url);
-        } catch (err) {
-          console.warn("[analyzer] discovery skipped:", (err as Error).message);
-          return null;
-        }
-      }),
-    ]);
-
-    const niche = await step.run("infer-niche", async () => {
-      // A malformed URL is not a reason to fail an audit that already has its
-      // screenshot — fall back to a generic label.
-      try {
-        const host = url
-          ? new URL(url).hostname.replace("www.", "")
-          : "ecommerce";
-        return host.split(".")[0] || "ecommerce";
-      } catch {
-        return "ecommerce";
-      }
-    });
+    // Niche label for the (Scale-only) meta-ads step. A trivial synchronous URL
+    // parse — inlined rather than run as its own `step.run`, which cost a full
+    // Inngest round-trip on the critical path for a computation that can't fail
+    // in a way worth persisting/retrying.
+    const niche = inferNicheFromUrl(url);
 
     // v2.2b: capture screenshots of up to 2 ADDITIONAL pages discovered
     // (typically the top product page + one more). Each capture is its own
     // step so a single bad URL doesn't abort the run — Inngest just retries
     // the failing step. The model sees ALL screenshots in one conversation.
-    const extraShots = await step.run("capture-extra-screenshots", async () => {
+    const extraShots = !(MAX_EXTRA_SHOTS > 0)
+      ? []
+      : await step.run("capture-extra-screenshots", async () => {
       const extraUrls = (discovery?.pageUrls ?? [])
         .filter((u) => u !== url)
         .slice(0, MAX_EXTRA_SHOTS);
@@ -353,7 +349,7 @@ export const analyzeWebsite = inngest.createFunction(
       const out = settled.filter((s): s is Extra => s !== null);
       console.log(`[analyzer] captured ${out.length} extra screenshots`);
       return out;
-    });
+        });
 
     // (The primary screenshot was already uploaded + screenshot_url set in
     // capture-screenshot, so the old separate save-screenshot step is gone.)
@@ -586,6 +582,21 @@ export const analyzeWebsite = inngest.createFunction(
     return { analysisId, score: result.score };
   },
 );
+
+/**
+ * Cheap niche label from the store's hostname (e.g. "acme.com" → "acme"), with a
+ * generic fallback for a missing/malformed URL. Only the Scale meta-ads step uses
+ * it. Kept as a plain sync function — not an Inngest step — so it adds no
+ * orchestration round-trip to the audit's critical path.
+ */
+function inferNicheFromUrl(url: string | undefined): string {
+  try {
+    const host = url ? new URL(url).hostname.replace("www.", "") : "ecommerce";
+    return host.split(".")[0] || "ecommerce";
+  } catch {
+    return "ecommerce";
+  }
+}
 
 /**
  * Reduces a noisy SDK error to something useful for the user.
