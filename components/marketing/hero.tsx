@@ -68,7 +68,7 @@ function HeroAuditBox() {
 
   return (
     <div>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center lg:justify-start">
         <div className="relative w-full sm:max-w-md">
           <Globe className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-white/30" />
           <Input
@@ -100,7 +100,7 @@ function HeroAuditBox() {
           )}
         </Button>
       </div>
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+      <div className="mt-3 flex flex-wrap items-center justify-center lg:justify-start gap-x-4 gap-y-1.5">
         <p className="text-xs tracking-wide text-white/35">{t("hero.anonMicro")}</p>
         <Link
           href="#analyzer"
@@ -121,7 +121,7 @@ function HeroAuditBox() {
 function StripeTrust() {
   const { t } = useT();
   return (
-    <div className="mt-5 flex flex-wrap items-center gap-2.5">
+    <div className="mt-5 flex flex-wrap items-center justify-center lg:justify-start gap-2.5">
       <span className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.02] px-2.5 py-1 text-xs text-white/50">
         <ShieldCheck className="size-3.5 text-champagne-400/80" />
         {t("hero.stripeBadge")}
@@ -154,9 +154,11 @@ export function Hero() {
           column carries the argument, right column carries the proof (the real
           product teaser). Stacks on mobile: message first, demo second.
         */}
-        <div className="grid items-center gap-10 lg:grid-cols-[0.96fr_1.04fr] lg:gap-8">
-          {/* LEFT — the pitch */}
-          <div>
+        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[0.96fr_1.04fr] lg:gap-8">
+          {/* LEFT — the pitch. Centered while stacked on mobile/tablet so it
+              matches the rest of the page; returns to left-aligned at lg where
+              the asymmetric two-column split takes over. */}
+          <div className="text-center lg:text-left">
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
@@ -181,7 +183,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease, delay: 0.15 }}
-              className="mt-6 max-w-xl text-base leading-relaxed text-white/55 md:text-lg"
+              className="mt-6 max-w-xl mx-auto lg:mx-0 text-base leading-relaxed text-white/55 md:text-lg"
             >
               {t("hero.subPre")}
               <span className="text-white/85">{t("hero.subHighlight")}</span>

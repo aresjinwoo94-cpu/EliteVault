@@ -27,7 +27,9 @@ export function DataPill({
   return (
     <div
       className={cn(
-        "glow-chip inline-flex items-center gap-2 rounded-full bg-obsidian-950/80 px-3.5 py-1.5",
+        // max-w-full + wrapping so a long two-part pill never forces its
+        // parent wider than the mobile viewport (which would break centering).
+        "glow-chip inline-flex max-w-full items-center gap-2 rounded-full bg-obsidian-950/80 px-3.5 py-1.5",
         "font-mono text-[11px] tracking-[0.18em] uppercase",
         isGold
           ? "border border-champagne-400/25 text-champagne-300 shadow-gold"
@@ -49,7 +51,7 @@ export function DataPill({
           )}
         />
       </span>
-      <span className="flex items-center gap-2">
+      <span className="flex min-w-0 flex-wrap items-center justify-center gap-2">
         {items.map((item, i) => (
           <span key={i} className="flex items-center gap-2">
             {i > 0 && <span className="text-white/25">·</span>}
