@@ -586,6 +586,10 @@
   border-collapse: collapse;
   margin: 1.75rem 0;
   font-size: 0.9rem;
+  /* On phones a 3-column article table would force the page to scroll
+     sideways. Let the table scroll inside its own box and wrap cell text. */
+  display: block;
+  overflow-x: auto;
 }
 .article-prose th,
 .article-prose td {
@@ -593,6 +597,8 @@
   padding: 0.6rem 0.8rem;
   text-align: left;
   vertical-align: top;
+  word-break: break-word;
+  min-width: 8ch;
 }
 .article-prose th {
   background: rgba(255, 255, 255, 0.03);

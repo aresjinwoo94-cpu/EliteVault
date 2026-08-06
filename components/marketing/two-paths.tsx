@@ -88,7 +88,7 @@ export function TwoPaths() {
 
                 <p
                   className={
-                    "mt-6 text-[11px] font-medium uppercase tracking-widest " +
+                    "mt-6 text-xs font-medium uppercase tracking-widest " +
                     (isPrimary ? "text-signal-300/80" : "text-white/40")
                   }
                 >

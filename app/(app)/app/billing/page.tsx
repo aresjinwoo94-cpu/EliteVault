@@ -158,7 +158,7 @@ export default async function BillingPage({
       </header>
 
       {sp.checkout === "success" && (
-        <Card className="border-success/30 bg-success/[0.04] p-4 flex items-start gap-3">
+        <Card className="border-success/30 bg-success/[0.04] p-4 flex flex-col sm:flex-row sm:items-start gap-3">
           <CheckCircle2 className="size-5 text-success shrink-0 mt-0.5" />
           <div>
             <p className="font-medium text-white">Welcome to {plan.name} 👑</p>
@@ -166,8 +166,8 @@ export default async function BillingPage({
               Your credits are loaded. Run your first analysis →
             </p>
           </div>
-          <Link href="/app/analyzer" className="ml-auto">
-            <Button size="sm">Start analyzing</Button>
+          <Link href="/app/analyzer" className="sm:ml-auto">
+            <Button size="sm" className="w-full sm:w-auto">Start analyzing</Button>
           </Link>
         </Card>
       )}

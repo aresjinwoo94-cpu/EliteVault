@@ -162,7 +162,7 @@ export default async function SharedAuditPage({
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-8 md:px-6 md:py-12 space-y-6">
+      <main className="mx-auto max-w-5xl px-4 py-8 pb-24 md:px-6 md:py-12 space-y-6">
         {/* Score hero */}
         <div className="text-center">
           <Badge variant="gold" className="mx-auto">
@@ -191,7 +191,7 @@ export default async function SharedAuditPage({
         {/* Category breakdown */}
         {categories.length > 0 && (
           <Card className="p-5 md:p-6">
-            <p className="text-[10px] uppercase tracking-widest text-white/40 mb-4">
+            <p className="text-[11px] uppercase tracking-widest text-white/40 mb-4">
               Category scores
             </p>
             <div className="grid sm:grid-cols-2 gap-x-8 gap-y-3">

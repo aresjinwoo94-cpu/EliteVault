@@ -159,7 +159,7 @@ export function ScoreRing({
             />
             <span className="font-mono text-xs tabular-nums text-white/40">/100</span>
           </div>
-          <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-signal-300/80">
+          <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.14em] text-signal-300/80">
             {label}
           </p>
         </div>

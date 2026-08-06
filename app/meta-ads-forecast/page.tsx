@@ -17,14 +17,21 @@ import { getT } from "@/lib/i18n/server";
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
 export const metadata: Metadata = {
-  title: "Meta Ads ROAS Forecast — Know If the Campaign Pays Before You Spend",
+  title: "Meta Ads Simulator — Model Your ROAS Before You Spend",
   description:
-    "Model your Meta Ads ROAS across conservative, balanced and aggressive cases from your AOV and budget — and check your store is ready to convert the traffic first. Free to start, no card.",
+    "Free Meta Ads simulator: model your campaign's ROAS across conservative, balanced and aggressive cases from your budget and AOV — before you spend a dollar. No card to start.",
   keywords: [
+    // Group 2 — Meta Ads simulator cluster.
+    "meta ads simulator",
+    "facebook ads simulator",
+    "meta ads calculator",
+    "facebook ads roas calculator",
+    "ad campaign simulator",
+    "meta ads scenario modeler",
+    // Forecast cluster — kept intact.
     "meta ads roas forecast",
     "meta ads forecast",
     "facebook ads forecast",
-    "meta ads scenario modeler",
     "campaign forecast tool",
     "ad spend forecast",
     "meta ads roas calculator",
@@ -54,6 +61,10 @@ const INPUTS = [
 ];
 
 const FAQS = [
+  {
+    q: "What is a Meta Ads simulator?",
+    a: "A Meta Ads simulator projects how a campaign will likely perform — spend, CPC, ROAS and revenue — before you run it, from your budget, AOV and niche benchmarks. EliteVault simulates three scenarios so you see the range before you commit.",
+  },
   {
     q: "What is a Meta Ads forecast?",
     a: "A Meta Ads forecast projects how a campaign is likely to perform — spend, clicks, CPC, ROAS and revenue — before you run it, based on your budget, average order value and current niche benchmarks. It turns 'let's just test and see' into a planned range.",
@@ -239,7 +250,7 @@ export default async function MetaAdsForecastPage() {
         </section>
 
         {/* Final CTA */}
-        <section className="mt-16 rounded-3xl border border-champagne-400/20 bg-champagne-400/[0.04] p-8 text-center">
+        <section className="mt-16 rounded-3xl border border-champagne-400/20 bg-champagne-400/[0.04] p-6 md:p-8 text-center">
           <h2 className="font-serif text-2xl md:text-3xl tracking-tight text-white">
             {t("metaAdsPage.finalH2")}
           </h2>

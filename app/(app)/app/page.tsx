@@ -37,7 +37,7 @@ export default async function OverviewPage() {
   const first = (profile?.full_name ?? "").split(" ")[0] ?? "";
 
   return (
-    <div className="p-6 md:p-10 lg:p-12 pt-10 md:pt-14 max-w-6xl mx-auto space-y-10 md:space-y-12">
+    <div className="p-6 md:p-10 lg:p-12 pt-10 md:pt-14 pb-24 md:pb-12 max-w-6xl mx-auto space-y-10 md:space-y-12">
       <header>
         <p className="text-xs uppercase tracking-widest text-white/40">
           Welcome back{first ? `, ${first}` : ""}
@@ -182,7 +182,7 @@ export default async function OverviewPage() {
           )}
         </div>
         {!recent || recent.length === 0 ? (
-          <Card className="p-10 md:p-14 text-center">
+          <Card className="p-6 md:p-14 text-center">
             <p className="text-white/55">
               No analyses yet. Your first audit is on us.
             </p>

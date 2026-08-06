@@ -99,7 +99,7 @@ function ReviewCard({ review }: { review: PublicReview }) {
       <div className="flex items-center justify-between">
         <Stars value={review.rating} />
         {date && (
-          <span className="font-mono text-[11px] tabular-nums text-white/30">
+          <span className="font-mono text-xs tabular-nums text-white/30">
             {date}
           </span>
         )}
