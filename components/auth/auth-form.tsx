@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useT } from "@/components/i18n/locale-provider";
 import {
   sendMagicLink,
+  signInWithGoogle,
   signInWithPassword,
   signUpWithPassword,
   verifyEmailOtp,
@@ -27,11 +28,13 @@ import {
  *   2. PASSWORD (toggle) — classic email + password, kept for users
  *      who prefer it or who have weak email access.
  *
- * Google OAuth was removed in v3.8 — it added Supabase-domain UI noise
- * to the OAuth consent screen, required Google Cloud project setup, and
- * had higher fail rate than magic links. Magic link is the "automatic"
- * alternative the user asked for: a single email field, click submit,
- * check inbox, done.
+ * Google OAuth was removed in v3.8, then RE-ADDED (feature/google-login)
+ * as a one-tap accelerator ALONGSIDE — never replacing — magic link and
+ * password. It posts to the existing `signInWithGoogle` server action,
+ * which calls `supabase.auth.signInWithOAuth` and redirects through the
+ * same /auth/callback route the magic-link flow already uses. Requires
+ * the Google provider to be enabled in the Supabase Dashboard (Client ID
+ * + Secret live there, not in this code).
  */
 async function saveCredentialIfPossible(email: string, password: string) {
   if (typeof window === "undefined") return;
@@ -106,6 +109,18 @@ export function AuthForm({
         )}
       </AnimatePresence>
 
+      {/* "or" divider + Google — an additive one-tap accelerator that sits
+          alongside magic link / password, never replacing them. */}
+      <div className="my-5 flex items-center gap-3">
+        <span className="h-px flex-1 bg-white/[0.06]" />
+        <span className="text-[11px] uppercase tracking-wider text-white/30">
+          {t("auth.orDivider")}
+        </span>
+        <span className="h-px flex-1 bg-white/[0.06]" />
+      </div>
+
+      <GoogleButton nextUrl={nextUrl} />
+
       {/* Method toggle */}
       <div className="mt-5 pt-5 border-t border-white/[0.06] text-center">
         {method === "magic" ? (
@@ -149,6 +164,50 @@ export function AuthForm({
         )}
       </p>
     </motion.div>
+  );
+}
+
+// ─── Google OAuth button ──────────────────────────────────────────────────
+
+/**
+ * Posts to the `signInWithGoogle` server action, which starts the Supabase
+ * OAuth handshake and redirects to Google. The action reads `next` from the
+ * form so the user lands back where they intended after /auth/callback.
+ * Inline SVG (no external favicon request) keeps it CSP-clean and offline-safe.
+ */
+function GoogleButton({ nextUrl }: { nextUrl: string }) {
+  const { t } = useT();
+  return (
+    <form action={signInWithGoogle}>
+      <input type="hidden" name="next" value={nextUrl} />
+      <Button type="submit" variant="secondary" size="lg" className="w-full">
+        <GoogleGlyph />
+        {t("auth.continueWithGoogle")}
+      </Button>
+    </form>
+  );
+}
+
+function GoogleGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true">
+      <path
+        fill="#4285F4"
+        d="M23.52 12.27c0-.82-.07-1.6-.21-2.36H12v4.46h6.46a5.52 5.52 0 0 1-2.4 3.62v3h3.88c2.27-2.09 3.58-5.17 3.58-8.72z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 24c3.24 0 5.96-1.08 7.94-2.91l-3.88-3.01c-1.08.72-2.45 1.15-4.06 1.15-3.12 0-5.77-2.11-6.71-4.95H1.28v3.09A12 12 0 0 0 12 24z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.29 14.28a7.2 7.2 0 0 1 0-4.56V6.63H1.28a12 12 0 0 0 0 10.74l4.01-3.09z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 4.75c1.76 0 3.34.61 4.58 1.79l3.44-3.44C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.28 6.63l4.01 3.09C6.23 6.86 8.88 4.75 12 4.75z"
+      />
+    </svg>
   );
 }
 

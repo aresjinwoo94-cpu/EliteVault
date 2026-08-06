@@ -324,6 +324,8 @@ const en: Dict = {
     creatingAccount: "Creating account…",
     signIn: "Sign in",
     signingIn: "Signing in…",
+    continueWithGoogle: "Continue with Google",
+    orDivider: "or",
   },
   sidebar: {
     navOverview: "Overview",
@@ -883,6 +885,8 @@ const es: Dict = {
     creatingAccount: "Creando cuenta…",
     signIn: "Iniciar sesión",
     signingIn: "Iniciando sesión…",
+    continueWithGoogle: "Continuar con Google",
+    orDivider: "o",
   },
   sidebar: {
     navOverview: "Resumen",
