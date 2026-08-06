@@ -18,20 +18,35 @@ import { getT } from "@/lib/i18n/server";
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
 export const metadata: Metadata = {
-  title: "Free Shopify Store Audit — Does Your Design Make Them Buy? | EliteVault",
+  title: "Ecommerce Web Analyzer — Free Store Audit Tool",
   description:
-    "If your product is a want, not a need, your store's design is the sale. Free AI audit: conversion score, annotated screenshot and a ranked punch-list of fixes. Built for Shopify & DTC founders. No credit card.",
+    "Free ecommerce web analyzer and store audit tool. Paste your URL and get a conversion score, an annotated screenshot and ranked fixes in 60 seconds. Shopify & DTC. No card.",
   keywords: [
+    // Group 1 — store audit / analyzer cluster.
+    "ecommerce web analyzer",
+    "ecommerce website analyzer",
+    "online store analyzer",
+    "shopify store analyzer",
+    "ecommerce store audit tool",
+    "website analyzer for ecommerce",
+    "free store analyzer",
+    "shopify audit tool",
+    "website analyzer",
+    // Group 3 — dropshipping store audit cluster.
+    "dropshipping store audit",
+    "audit my dropshipping store",
+    "shopify dropshipping audit",
+    "dropshipping website review",
+    "dropshipping store analyzer",
+    "is my dropshipping store good",
     // Core keywords that already rank — kept intact.
     "free website audit",
     "free shopify store audit",
     "shopify store audit",
-    "website analyzer",
     "web analyzer",
     "free website analyzer",
     "website audit tool",
     "free store audit",
-    "ecommerce website analyzer",
     "conversion audit",
     // Design/desire cluster (buyer-persona SEO layer).
     "shopify store design audit",
@@ -67,12 +82,20 @@ const STEPS = [
 
 const FAQS = [
   {
+    q: "What is an ecommerce web analyzer?",
+    a: "An ecommerce web analyzer reviews your store the way a buyer experiences it and reports what's hurting sales. EliteVault scores six categories, marks each issue on a screenshot, and ranks the fixes — free, in under a minute.",
+  },
+  {
     q: "Is the website audit really free?",
     a: "Yes. Your first audit is free — you get the overall score and an annotated screenshot with no credit card. Paid plans unlock the prioritized fixes, buyer-persona simulation and unlimited audits.",
   },
   {
     q: "What is a website analyzer?",
     a: "A website analyzer reviews a page the way a visitor experiences it and reports what helps or hurts results. EliteVault is a conversion-focused analyzer: it scores your store, marks the specific problems on a screenshot, and ranks the fixes by impact.",
+  },
+  {
+    q: "Can I audit a dropshipping store?",
+    a: "Yes. EliteVault works from your public URL, so it audits any dropshipping or Shopify store — no app install. You get a conversion score, an annotated screenshot and ranked fixes free.",
   },
   {
     q: "What does the free audit check?",
@@ -229,6 +252,19 @@ export default async function FreeWebsiteAuditPage() {
               </div>
             </div>
           </div>
+        </section>
+
+        {/* Dropshipping store audit */}
+        <section className="mt-20 max-w-2xl">
+          <h2 className="font-serif text-2xl md:text-3xl tracking-tight">
+            Dropshipping store audit
+          </h2>
+          <p className="mt-3 text-sm text-white/55 leading-relaxed">
+            Running a dropshipping store? EliteVault audits your store the way a
+            cold buyer from a Meta ad sees it — offer clarity, trust, imagery and
+            speed — and tells you what to fix before you spend on ads. Paste your
+            URL for a free dropshipping store audit.
+          </p>
         </section>
 
         {/* FAQ */}
