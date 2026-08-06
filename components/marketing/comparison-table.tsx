@@ -108,9 +108,13 @@ export function ComparisonTable() {
           </p>
         </motion.div>
 
+        {/* Scroll hint — only shown on phones where the table scrolls */}
+        <p className="mt-10 mb-2 text-center text-[11px] text-white/30 md:hidden">
+          {t("compare.scrollHint")} →
+        </p>
         {/* Table — horizontal scroll on narrow screens, page never breaks */}
-        <div className="mt-12 overflow-x-auto rounded-2xl border border-white/[0.06] bg-card shadow-card">
-          <table className="w-full min-w-[720px] border-collapse text-sm">
+        <div className="mt-2 md:mt-12 overflow-x-auto rounded-2xl border border-white/[0.06] bg-card shadow-card">
+          <table className="w-full min-w-[640px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-white/[0.06]">
                 <th className="p-4 text-left font-normal text-white/40 text-xs uppercase tracking-wider">

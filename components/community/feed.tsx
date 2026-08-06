@@ -157,7 +157,7 @@ export function CommunityFeed({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 60 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+            className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-2rem)]"
           >
             <div className="flex items-center gap-3 rounded-2xl bg-obsidian-900/95 backdrop-blur-xl border border-white/10 px-4 py-2.5 shadow-2xl">
               <ArrowLeftRight className="size-4 text-champagne-400" />

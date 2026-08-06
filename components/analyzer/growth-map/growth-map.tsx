@@ -173,8 +173,12 @@ export function GrowthMap({
           }}
           className="mt-3"
         >
+          {/* On phones the 5.3:1 canvas would shrink to ~52px tall and become
+              illegible/untappable. Instead we let it keep a legible minimum
+              width and scroll horizontally, with a hint below. */}
+          <div className="overflow-x-auto">
           <div
-            className="relative"
+            className="relative min-w-[720px]"
             style={{ aspectRatio: `${VIEWBOX.w} / ${VIEWBOX.h}` }}
           >
             <div ref={svgWrapRef} className="absolute inset-0">
@@ -200,7 +204,7 @@ export function GrowthMap({
                   }}
                   onFocus={() => setOpenIndex(i)}
                   onClick={() => setOpenIndex((p) => (p === i ? null : i))}
-                  className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-signal-400/70"
+                  className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-signal-400/70 min-w-[44px] min-h-[44px]"
                   style={{
                     left: `${pos.xPct}%`,
                     top: `${pos.yPct}%`,
@@ -211,6 +215,10 @@ export function GrowthMap({
               );
             })}
           </div>
+          </div>
+          <p className="mt-1.5 text-[11px] text-white/30 md:hidden">
+            ← swipe to see the full map →
+          </p>
 
           {/* Detail band — feedback / upgrade ad appears HERE, below the map, so
               it never overlaps the route or the header (owner feedback). A caret

@@ -93,15 +93,15 @@ export function AnnotationsOverlay({
           </span>
         </div>
         <div className="flex items-center gap-3 text-[10px] text-white/40">
-          <span className="hidden sm:flex items-center gap-1">
+          <span className="flex items-center gap-1">
             <span className="size-1.5 rounded-full bg-destructive" />
             High
           </span>
-          <span className="hidden sm:flex items-center gap-1">
+          <span className="flex items-center gap-1">
             <span className="size-1.5 rounded-full bg-warning" />
             Medium
           </span>
-          <span className="hidden sm:flex items-center gap-1">
+          <span className="flex items-center gap-1">
             <span className="size-1.5 rounded-full bg-success" />
             Low / good
           </span>
@@ -207,22 +207,32 @@ export function AnnotationsOverlay({
                 onClick={() => setActiveIdx(activeIdx === i ? null : i)}
                 onMouseEnter={() => setHoverIdx(i)}
                 onMouseLeave={() => setHoverIdx(null)}
-                className="absolute z-20 -translate-x-1/2 -translate-y-1/2 grid place-items-center rounded-full text-[11px] font-semibold text-white transition-transform"
+                className="absolute z-20 grid place-items-center transition-transform"
                 style={{
                   left: `${a.x * 100}%`,
                   top: `${a.y * 100}%`,
-                  width: 28,
-                  height: 28,
-                  background: c,
-                  border: "2px solid rgba(255,255,255,0.92)",
-                  boxShadow: isFocus
-                    ? `0 0 0 4px ${c}55, 0 4px 14px -2px rgba(0,0,0,0.6)`
-                    : "0 2px 8px -1px rgba(0,0,0,0.55)",
+                  // 44px transparent tap target (mobile a11y); the visible
+                  // 28px disc is the inner span so the pin still looks small.
+                  width: 44,
+                  height: 44,
                   transform: `translate(-50%, -50%) scale(${isFocus ? 1.18 : 1})`,
                 }}
                 aria-label={`Issue ${i + 1}: ${a.message}`}
               >
-                {i + 1}
+                <span
+                  className="grid place-items-center rounded-full text-[11px] font-semibold text-white"
+                  style={{
+                    width: 28,
+                    height: 28,
+                    background: c,
+                    border: "2px solid rgba(255,255,255,0.92)",
+                    boxShadow: isFocus
+                      ? `0 0 0 4px ${c}55, 0 4px 14px -2px rgba(0,0,0,0.6)`
+                      : "0 2px 8px -1px rgba(0,0,0,0.55)",
+                  }}
+                >
+                  {i + 1}
+                </span>
               </motion.button>
             );
           })}

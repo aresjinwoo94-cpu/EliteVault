@@ -112,12 +112,13 @@ export function LeaderboardRow({
         </div>
       </div>
 
-      {/* Composite score */}
-      <div className="shrink-0 text-right hidden sm:block">
-        <p className="text-[10px] uppercase tracking-widest text-white/35">
+      {/* Composite score — this is the metric the board is ranked by, so it
+          must stay visible on mobile (compact), not hidden below sm. */}
+      <div className="shrink-0 text-right">
+        <p className="hidden sm:block text-[11px] uppercase tracking-widest text-white/35">
           Composite
         </p>
-        <p className="num text-xl text-signal-300 leading-tight">
+        <p className="num text-base sm:text-xl text-signal-300 leading-tight">
           {item.composite_score.toFixed(1)}
         </p>
       </div>
