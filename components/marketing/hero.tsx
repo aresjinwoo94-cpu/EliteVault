@@ -104,7 +104,7 @@ function HeroAuditBox() {
         <p className="text-xs tracking-wide text-white/35">{t("hero.anonMicro")}</p>
         <Link
           href="#analyzer"
-          className="group inline-flex items-center gap-1.5 text-xs text-white/45 transition-colors hover:text-white/80"
+          className="group -my-2 py-2 inline-flex items-center gap-1.5 text-xs text-white/45 transition-colors hover:text-white/80"
         >
           {t("hero.ctaSecondary")}
           <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
@@ -122,11 +122,11 @@ function StripeTrust() {
   const { t } = useT();
   return (
     <div className="mt-5 flex flex-wrap items-center gap-2.5">
-      <span className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.02] px-2.5 py-1 text-[11px] text-white/50">
+      <span className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.02] px-2.5 py-1 text-xs text-white/50">
         <ShieldCheck className="size-3.5 text-champagne-400/80" />
         {t("hero.stripeBadge")}
       </span>
-      <span className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.02] px-2.5 py-1 text-[11px] text-white/50">
+      <span className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.02] px-2.5 py-1 text-xs text-white/50">
         <Lock className="size-3.5 text-champagne-400/80" />
         {t("hero.sslBadge")}
       </span>

@@ -67,7 +67,7 @@ export default async function TrendsPage({
         </p>
 
         {/* Honest provenance banner */}
-        <div className="mt-4 flex items-start gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3.5 py-2.5 text-[11px] text-white/45 max-w-2xl">
+        <div className="mt-4 flex items-start gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3.5 py-2.5 text-xs text-white/45 max-w-2xl">
           <Info className="size-3.5 shrink-0 mt-0.5 text-white/30" />
           <span>
             These are <strong className="text-white/70">AI estimates</strong>{" "}
@@ -138,7 +138,7 @@ export default async function TrendsPage({
               </div>
               <Link
                 href={`/app/analyzer?from=trend&niche=${trends.niche.slug}`}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-champagne-400 px-4 py-2 text-sm font-medium text-obsidian-950 hover:bg-champagne-300 transition-colors"
+                className="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 rounded-lg bg-champagne-400 px-4 py-3 sm:py-2 text-sm font-medium text-obsidian-950 hover:bg-champagne-300 transition-colors"
               >
                 Audit your store against this trend
                 <ArrowRight className="size-4" />

@@ -241,7 +241,7 @@ export default async function WinningShopifyStoresPage() {
                 <Link
                   key={n.slug}
                   href={`/winning-shopify-stores/${n.slug}`}
-                  className="rounded-full border border-white/[0.08] bg-white/[0.02] px-4 py-1.5 text-sm text-white/60 transition-colors hover:border-white/[0.16] hover:text-white"
+                  className="inline-flex items-center rounded-full border border-white/[0.08] bg-white/[0.02] px-4 py-2 min-h-11 text-sm text-white/60 transition-colors hover:border-white/[0.16] hover:text-white"
                 >
                   {n.label} ({n.count})
                 </Link>
@@ -268,7 +268,7 @@ export default async function WinningShopifyStoresPage() {
         </section>
 
         {/* Final CTA */}
-        <section className="mt-16 rounded-3xl border border-champagne-400/20 bg-champagne-400/[0.04] p-8 text-center">
+        <section className="mt-16 rounded-3xl border border-champagne-400/20 bg-champagne-400/[0.04] p-6 md:p-8 text-center">
           <h2 className="font-serif text-2xl md:text-3xl tracking-tight text-white">
             {t("winnersPage.finalH2")}
           </h2>

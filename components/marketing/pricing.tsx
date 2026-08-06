@@ -54,7 +54,7 @@ export function Pricing() {
                   // `transition-all` is kept so the active-state fill still
                   // animates; the hover glow (chip tier) rides the same
                   // transition and never overrides the selected state.
-                  "px-4 py-1.5 text-sm rounded-full transition-all hover:shadow-[0_0_12px_rgba(45,212,191,0.16)]",
+                  "px-4 py-2.5 min-h-11 inline-flex items-center text-sm rounded-full transition-all hover:shadow-[0_0_12px_rgba(45,212,191,0.16)]",
                   interval === i
                     ? "bg-champagne-400 text-obsidian-900 font-medium"
                     : "text-white/60 hover:text-white",

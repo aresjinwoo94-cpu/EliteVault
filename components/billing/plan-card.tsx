@@ -88,13 +88,13 @@ export function PlanCard({
 
       {plan.id !== "free" ? (
         <>
-          <div className="mt-3 inline-flex rounded-md border border-white/[0.08] p-0.5 bg-white/[0.02] text-[11px]">
+          <div className="mt-3 inline-flex rounded-md border border-white/[0.08] p-0.5 bg-white/[0.02] text-xs">
             {(["month", "year"] as Interval[]).map((i) => (
               <button
                 key={i}
                 onClick={() => setInterval(i)}
                 className={cn(
-                  "px-2 py-0.5 rounded-sm transition-all",
+                  "px-3 py-2 min-h-11 inline-flex items-center rounded-sm transition-all",
                   interval === i
                     ? "bg-champagne-400 text-obsidian-900 font-medium"
                     : "text-white/50 hover:text-white",
