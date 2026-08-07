@@ -12,6 +12,7 @@ import { resolveNicheLabel } from "@/lib/growth-map/niche";
 import { rankByIndex, RANKS } from "@/lib/growth-map/ranks";
 import { gateForViewer } from "@/lib/growth-map/gate";
 import type { GrowthMapData } from "@/lib/growth-map/types";
+import { useT } from "@/components/i18n/locale-provider";
 import { MapCanvas, NODE_POS, VIEWBOX } from "./map-canvas";
 import { NodeCard } from "./node-card";
 import { ExportButton } from "./export-button";
@@ -38,6 +39,7 @@ export function GrowthMap({
   url: string | null;
   isPaid: boolean;
 }) {
+  const { t } = useT();
   const domain = useMemo(() => {
     if (!url) return null;
     try {
@@ -151,8 +153,7 @@ export function GrowthMap({
             </h2>
             {/* §1.3 — reads the map honestly: readiness, not revenue. */}
             <p className="mt-1.5 text-[11.5px] leading-snug text-white/45 max-w-[52ch]">
-              This maps how far your store&apos;s conversion readiness can carry
-              it — not your current revenue.
+              {t("report.mapIntro")}
             </p>
             <div className="mt-2 flex items-center gap-2 flex-wrap">
               {domain && (
@@ -319,9 +320,7 @@ export function GrowthMap({
                   by fixing {projection.liftFixes.join(", ")}.
                 </span>
               )}
-              <span className="text-white/75">
-                Apply these fixes, then re-run the analyzer to advance.
-              </span>
+              <span className="text-white/75">{t("report.rerunCta")}</span>
             </div>
           )}
         </div>

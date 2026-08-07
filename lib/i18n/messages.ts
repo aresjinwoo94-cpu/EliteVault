@@ -284,6 +284,10 @@ const en: Dict = {
   report: {
     disclaimer:
       "EliteVault doesn't predict the future — nobody can. It estimates from the current market and the state of your niche: demand, comparable winning stores, and active competitors.",
+    // Brief §1.3 — Growth Map copy (both locales).
+    mapIntro:
+      "This maps how far your store's conversion readiness can carry it — not your current revenue.",
+    rerunCta: "Apply these fixes, then re-run the analyzer to advance.",
   },
   analyzerDemo: {
     heading: "A senior media buyer in a tab.",
@@ -856,6 +860,10 @@ const es: Dict = {
   report: {
     disclaimer:
       "EliteVault no predice el futuro —nadie puede—. Estima a partir del mercado actual y del estado de tu nicho: la demanda, tiendas ganadoras comparables y competidores activos.",
+    // Brief §1.3 — copy del Growth Map (ambos locales).
+    mapIntro:
+      "Esto mapea hasta dónde puede llevar a tu tienda su preparación para convertir — no tus ingresos actuales.",
+    rerunCta: "Aplica estos arreglos y vuelve a correr el analizador para avanzar.",
   },
   analyzerDemo: {
     heading: "Un media buyer senior en una pestaña.",
