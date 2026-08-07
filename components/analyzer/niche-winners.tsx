@@ -43,9 +43,15 @@ function usable(n: unknown): n is number {
   return typeof n === "number" && Number.isFinite(n) && n > 0;
 }
 
+// Brief §2.2 — a REAL signal (measured from the Meta Ad Library). Styled as a
+// live, factual badge (green + pulse) and labelled as such for a11y.
 function AdsBadge({ n }: { n: number }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success ring-1 ring-success/20">
+    <span
+      title="Real signal — live Meta Ad Library count"
+      aria-label={`${n} active ads — real signal, live Meta Ad Library count`}
+      className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success ring-1 ring-success/20"
+    >
       <span className="relative flex size-1.5">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success/60" />
         <span className="relative inline-flex size-1.5 rounded-full bg-success" />
@@ -55,9 +61,16 @@ function AdsBadge({ n }: { n: number }) {
   );
 }
 
+// Brief §2.2 — an AI ESTIMATE (modeled from niche AOV assumptions). Deliberately
+// styled apart from the real ad badge and marked "est." so it never reads as a
+// measured figure.
 function RevenueSignal({ low, high }: { low: number; high: number }) {
   return (
-    <span className="font-mono text-[10px] tabular-nums text-signal-300">
+    <span
+      title="AI estimate — modeled from niche AOV, not a measured figure"
+      aria-label={`Estimated revenue ~$${formatCompact(low)} to $${formatCompact(high)} per month — AI estimate`}
+      className="font-mono text-[10px] tabular-nums text-signal-300"
+    >
       ~${formatCompact(low)}–{formatCompact(high)}/mo est.
     </span>
   );

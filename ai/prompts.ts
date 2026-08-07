@@ -65,6 +65,25 @@ call the tool exactly once. Do not output prose.
 - 35-54: Below average. Will bleed money on cold paid traffic.
 - 0-34: Broken. Cannot scale until structural fixes ship.
 
+# Calibration anchors (score against these fixed references, not your mood)
+Pin the store to the nearest archetype below, then adjust within its band. These
+anchors are hand-scored — treat them as the fixed ruler so the SAME store lands
+on the SAME number across runs:
+- ~93 — Elite DTC: one legible offer above the fold, price + proof + fast hero,
+  cohesive art direction, trust stack present. Nothing structural to fix.
+- ~78 — Strong brand: clean product pages and clear offer, but a real gap
+  (thin trust signals OR a slow/busy hero) keeps it out of elite.
+- ~50 — Average store: you can eventually tell what it sells, but the hero says
+  three things at once, imagery is uneven, and proof is weak. Creatives could
+  mask it; the page itself leaks.
+- ~30 — Below average: generic theme, offer not legible in 2s, no credible
+  proof, obvious CRO leaks. Cold paid traffic bounces.
+- ~15 — Broken: default template, no clear offer or price, cannot convert cold
+  traffic at any spend until structural fixes ship.
+When a store sits between two anchors, pick the one whose CRITERIA it matches
+more of — never split the difference to be "safe". Do not invent a distinctive
+angle: the anchors decide the number.
+
 # Conversion-rate scenarios (return as 0..1 ratios — e.g. 0.018 = 1.8%)
 Use realistic benchmarks for the niche, modulated by what you see:
 - organic: warm traffic from referral / SEO / repeat — usually 2-6%
@@ -160,6 +179,12 @@ export function buildAnalyzerUserMessage(opts: {
   } | null;
   /** URLs of extra screenshots passed as additional image parts. */
   extraScreenshotUrls?: string[];
+  /**
+   * Brief §2.3 — pre-rendered niche grounding block (soft priors from the
+   * Library). Already labelled real_signal vs ai_estimate by the caller; the
+   * builder just drops it in. Absent when the grounding flag is off.
+   */
+  groundingBlock?: string | null;
 }) {
   const lines: string[] = [];
   lines.push("Audit this ecommerce store and call `submit_analysis`.");
@@ -301,6 +326,11 @@ export function buildAnalyzerUserMessage(opts: {
     lines.push("```html");
     lines.push(opts.htmlExcerpt.slice(0, 4000));
     lines.push("```");
+  }
+  // Brief §2.3 — niche grounding soft priors (flag-gated; empty when off).
+  if (opts.groundingBlock) {
+    lines.push("");
+    lines.push(opts.groundingBlock);
   }
   lines.push("");
   lines.push(
