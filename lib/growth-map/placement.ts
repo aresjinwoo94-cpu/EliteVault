@@ -1,6 +1,6 @@
 import type { AnalysisResult } from "@/lib/supabase/types";
 import { RANKS, WALL_AFTER_INDEX, rankByIndex } from "./ranks";
-import type { GrowthMapPlacement } from "./types";
+import type { GrowthMapPlacement, GrowthMapProjection } from "./types";
 
 /**
  * Deterministic placement (spec §4/§6).
@@ -43,6 +43,46 @@ function norm100(v: number | undefined | null): number {
   return Math.max(0, Math.min(100, scaled));
 }
 
+/**
+ * The store's composite — the overall score nudged by the CRO/offer-clarity
+ * signals the stage model cares about. Extracted so the current placement and
+ * the projected "potential" node (brief §1.1) read from ONE formula.
+ */
+export function compositeOf(result: AnalysisResult): number {
+  const score = norm100(result.score);
+  const cats = result.category_scores;
+  const offer = norm100(cats?.niche_coherence);
+  const cro = norm100(cats?.cro_principles);
+  return Math.round(score * 0.6 + cro * 0.22 + offer * 0.18);
+}
+
+/**
+ * Band a composite (0..100) into one of the six rank indices.
+ *
+ * Calibration (tech-fixes §6): the old bands were too generous — an "average"
+ * store (~58 composite with real leaks) sailed into Silver/Optimization, PAST
+ * The Wall, which is exactly where the hook goes soft. The Wall sits right after
+ * Steel (WALL_AFTER_INDEX), so average stores are held AT Steel: the whole
+ * 40–70 band lands there (Steel proper 40–58, then the 58–70 "stuck at the wall"
+ * zone). A store only escapes to Silver once it's genuinely past average (70+).
+ *
+ * Extracted verbatim from computePlacement so the projected node bands
+ * identically — the thresholds below are the SAME logic, not a new table.
+ */
+export function bandCompositeToIndex(composite: number): number {
+  return composite < 40
+    ? 0 // Copper / Foundation      (<40)
+    : composite < 70
+      ? 1 // Steel / Traction        (40–70, includes The Wall zone)
+      : composite < 82
+        ? 2 // Silver / Optimization  (70–82)
+        : composite < 90
+          ? 3 // Gold / Scale          (82–90)
+          : composite < 96
+            ? 4 // Diamond / Authority (90–96)
+            : 5; // Ruby / Elite       (96+)
+}
+
 export function computePlacement(result: AnalysisResult): GrowthMapPlacement {
   const score = norm100(result.score);
   const cats = result.category_scores;
@@ -51,30 +91,10 @@ export function computePlacement(result: AnalysisResult): GrowthMapPlacement {
   // survive its own traffic — weight them alongside the headline score.
   const offer = norm100(cats?.niche_coherence);
   const cro = norm100(cats?.cro_principles);
-  const composite = Math.round(score * 0.6 + cro * 0.22 + offer * 0.18);
+  const composite = compositeOf(result);
 
-  // Band the composite into the six ranks.
-  //
-  // Calibration (tech-fixes §6): the old bands were too generous — an "average"
-  // store (~58 composite with real leaks) sailed into Silver/Optimization,
-  // PAST The Wall, which is exactly where the hook goes soft. The Wall sits
-  // right after Steel (WALL_AFTER_INDEX), so the fix is to keep average stores
-  // AT Steel: the whole 40–70 band now lands there (Steel proper 40–58, then
-  // the 58–70 "stuck at the wall" zone). A store only escapes to Silver once
-  // it's genuinely past average (70+). Genuinely good stores still climb, so
-  // "TU TIENDA" is NOT always at The Wall — but most average ones now feel it.
-  let rankIndex =
-    composite < 40
-      ? 0 // Copper / Foundation      (<40)
-      : composite < 70
-        ? 1 // Steel / Traction        (40–70, includes The Wall zone)
-        : composite < 82
-          ? 2 // Silver / Optimization  (70–82)
-          : composite < 90
-            ? 3 // Gold / Scale          (82–90)
-            : composite < 96
-              ? 4 // Diamond / Authority (90–96)
-              : 5; // Ruby / Elite       (96+)
+  // "TU TIENDA" is NOT always at The Wall — genuinely good stores still climb.
+  let rankIndex = bandCompositeToIndex(composite);
 
   // Findings-based demotion (tech-fixes §6): the number alone can flatter a
   // store that photographs well but leaks conversion. A store with critical
@@ -135,6 +155,58 @@ export function computePlacement(result: AnalysisResult): GrowthMapPlacement {
     rankIndex: rank.index,
     atWallEdge: rank.index === WALL_AFTER_INDEX,
     signals: signals.slice(0, 6),
+  };
+}
+
+/** Impact → composite delta for the projected node (brief §1.1 defaults). */
+const IMPACT_DELTA: Record<"high" | "medium" | "low", number> = {
+  high: 8,
+  medium: 4,
+  low: 2,
+};
+
+/**
+ * Projected "potential" placement (brief §1.1) — "here's where these fixes take
+ * you". Pure, deterministic, zero-latency: projected composite = current
+ * composite + the report's top-fix impact deltas, capped at 100, and the ADVANCE
+ * is capped at one rank for realism. Never demotes below the current rank.
+ *
+ * Note it does NOT re-apply the findings-based demotion computePlacement uses:
+ * the projection assumes those very leaks are the fixes being applied, so the
+ * honest read is "clear them and you clear The Wall".
+ */
+export function projectPlacement(
+  result: AnalysisResult,
+  current: GrowthMapPlacement,
+): GrowthMapProjection {
+  const composite = compositeOf(result);
+
+  let lift = 0;
+  const liftFixes: string[] = [];
+  for (const fix of result.top_fixes ?? []) {
+    const delta = IMPACT_DELTA[fix.impact] ?? 0;
+    if (delta > 0) {
+      lift += delta;
+      if (fix.title) liftFixes.push(fix.title);
+    }
+  }
+
+  const projectedComposite = Math.min(100, composite + lift);
+  const banded = bandCompositeToIndex(projectedComposite);
+  // At most one rank of advance, never below where the store already sits.
+  const rankIndex = Math.min(
+    current.rankIndex + 1,
+    RANKS.length - 1,
+    Math.max(current.rankIndex, banded),
+  );
+  const rank = rankByIndex(rankIndex);
+
+  return {
+    composite: projectedComposite,
+    rankIndex,
+    rankKey: rank.key,
+    advances: rankIndex > current.rankIndex,
+    liftFixes: liftFixes.slice(0, 3),
   };
 }
 

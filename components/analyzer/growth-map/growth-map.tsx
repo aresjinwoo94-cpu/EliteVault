@@ -115,6 +115,13 @@ export function GrowthMap({
 
   const reduce = useReducedMotion();
   const rank = rankByIndex(current);
+  // §1.1 — the projected "potential" rank (only when it genuinely advances).
+  const projection = data.projection;
+  const ghostIndex =
+    projection && projection.advances ? projection.rankIndex : null;
+  const ghostRank = ghostIndex != null ? rankByIndex(ghostIndex) : null;
+  // §1.2 — movement vs the previous run for this domain, if any.
+  const movement = data.movement;
   const openNode = openIndex != null ? data.nodes[openIndex] : null;
   const openPos = openIndex != null ? NODE_POS[openIndex] : null;
   // Caret x for the detail band, clamped so it never runs off the card edge.
@@ -142,6 +149,11 @@ export function GrowthMap({
                 <span className="text-white/60"> — one step from The Wall</span>
               )}
             </h2>
+            {/* §1.3 — reads the map honestly: readiness, not revenue. */}
+            <p className="mt-1.5 text-[11.5px] leading-snug text-white/45 max-w-[52ch]">
+              This maps how far your store&apos;s conversion readiness can carry
+              it — not your current revenue.
+            </p>
             <div className="mt-2 flex items-center gap-2 flex-wrap">
               {domain && (
                 <span className="font-mono text-[11px] text-white/45 truncate max-w-[200px]">
@@ -152,6 +164,20 @@ export function GrowthMap({
                 {displayScore}/100
               </Badge>
               <Badge variant="ai">{data.nicheLabel}</Badge>
+              {/* §1.2 — re-run movement: how far this store moved since last time. */}
+              {movement && (
+                <Badge
+                  variant="default"
+                  className="font-mono tnum border-signal-400/40 text-signal-200"
+                >
+                  {movement.previousComposite} → {movement.currentComposite}
+                  {movement.crossedWall
+                    ? " · crossed The Wall"
+                    : movement.currentRankIndex > movement.previousRankIndex
+                      ? " · advanced"
+                      : ""}
+                </Badge>
+              )}
             </div>
           </div>
 
@@ -182,7 +208,11 @@ export function GrowthMap({
             style={{ aspectRatio: `${VIEWBOX.w} / ${VIEWBOX.h}` }}
           >
             <div ref={svgWrapRef} className="absolute inset-0">
-              <MapCanvas currentIndex={current} openIndex={openIndex} />
+              <MapCanvas
+                currentIndex={current}
+                openIndex={openIndex}
+                ghostIndex={ghostIndex}
+              />
             </div>
 
             {/* Accessible hit-targets over each medallion */}
@@ -276,6 +306,24 @@ export function GrowthMap({
               </AnimatePresence>
             </div>
           </div>
+
+          {/* §1.1/§1.3 — the current→ghost gap: what the top fixes unlock, and
+              the re-run CTA that turns the map into a retention loop. */}
+          {ghostRank && (
+            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-signal-400/25 bg-signal-500/[0.06] px-4 py-2.5 text-[12px]">
+              <span className="font-sans font-semibold text-signal-200">
+                Potential: {rank.material} → {ghostRank.material}
+              </span>
+              {projection && projection.liftFixes.length > 0 && (
+                <span className="text-white/60">
+                  by fixing {projection.liftFixes.join(", ")}.
+                </span>
+              )}
+              <span className="text-white/75">
+                Apply these fixes, then re-run the analyzer to advance.
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Footer — citations + branded export (spec §3/§8) */}

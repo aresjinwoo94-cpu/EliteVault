@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { AnalysisResult } from "@/lib/supabase/types";
-import { getOrBuildGrowthMap, gateForViewer } from "@/lib/growth-map/build";
+import {
+  getOrBuildGrowthMap,
+  gateForViewer,
+  readGrowthMovement,
+} from "@/lib/growth-map/build";
+import { compositeOf, projectPlacement } from "@/lib/growth-map/placement";
+import {
+  growthMapHistoryEnabled,
+  growthMapPotentialEnabled,
+} from "@/lib/flags";
 
 /**
  * Growth Map payload for one analysis (spec §5/§6/§7).
@@ -56,12 +65,32 @@ export async function GET(
   const isPaid = (profile?.plan ?? "free") !== "free";
 
   try {
+    const result = analysis.result as AnalysisResult;
     const data = await getOrBuildGrowthMap({
       analysisId: id,
       cached: analysis.growth_map,
-      result: analysis.result as AnalysisResult,
+      result,
       url: analysis.url,
+      userId: user.id,
     });
+
+    // §1.1/§1.2 — decorate the potential node + re-run movement at REQUEST time
+    // (not cached) so the flags stay authoritative and a later flip applies to
+    // already-built analyses. Both are viewer-agnostic, so they sit outside the
+    // Free/Pro gate.
+    if (growthMapPotentialEnabled()) {
+      data.projection = projectPlacement(result, data.placement);
+    }
+    if (growthMapHistoryEnabled()) {
+      const movement = await readGrowthMovement({
+        analysisId: id,
+        url: analysis.url,
+        currentComposite: compositeOf(result),
+        currentRankIndex: data.placement.rankIndex,
+      });
+      if (movement) data.movement = movement;
+    }
+
     return NextResponse.json(gateForViewer(data, isPaid), {
       // Short client cache — the payload is stable once built.
       headers: { "Cache-Control": "private, max-age=60" },

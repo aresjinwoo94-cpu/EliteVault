@@ -1,7 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import type { AnalysisResult } from "../../lib/supabase/types";
-import { computePlacement } from "../../lib/growth-map/placement";
+import {
+  computePlacement,
+  compositeOf,
+  projectPlacement,
+} from "../../lib/growth-map/placement";
 import { scaffoldDiagnosis, scaffoldNodes } from "../../lib/growth-map/phrase-bank";
 import { gateForViewer } from "../../lib/growth-map/gate";
 import { GROWTH_MAP_VERSION, type GrowthMapData } from "../../lib/growth-map/types";
@@ -172,6 +176,61 @@ test("Free gating locks every node ahead; Pro sees all unlocked", () => {
     pro.nodes.every((n) => !n.locked),
     "Pro sees the full escape route unlocked",
   );
+});
+
+// ── §1.1 — the projected "potential" node ──────────────────────────────────
+
+test("projectPlacement advances at most one rank and never demotes", () => {
+  for (const store of [storeA, storeB, storeC]) {
+    const current = computePlacement(store);
+    const proj = projectPlacement(store, current);
+    assert.ok(
+      proj.rankIndex >= current.rankIndex,
+      "projection must never sit below the current rank",
+    );
+    assert.ok(
+      proj.rankIndex <= current.rankIndex + 1,
+      `projection may advance at most one rank (was +${proj.rankIndex - current.rankIndex})`,
+    );
+    assert.equal(
+      proj.advances,
+      proj.rankIndex > current.rankIndex,
+      "advances flag must mirror the rank delta",
+    );
+  }
+});
+
+test("projectPlacement caps the projected composite at 100", () => {
+  // A strong store (~76 composite) with a pile of high-impact fixes would blow
+  // past 100 without the cap.
+  const stacked = {
+    ...storeC,
+    top_fixes: [
+      { title: "a", impact: "high", effort: "M" },
+      { title: "b", impact: "high", effort: "M" },
+      { title: "c", impact: "high", effort: "M" },
+      { title: "d", impact: "high", effort: "M" },
+      { title: "e", impact: "high", effort: "M" },
+    ],
+  } as unknown as AnalysisResult;
+  const proj = projectPlacement(stacked, computePlacement(stacked));
+  assert.ok(proj.composite <= 100, `composite must cap at 100, got ${proj.composite}`);
+  assert.ok(proj.composite >= compositeOf(stacked));
+});
+
+test("projectPlacement is deterministic (same input → same output)", () => {
+  const current = computePlacement(storeA);
+  const a = projectPlacement(storeA, current);
+  const b = projectPlacement(storeA, current);
+  assert.deepEqual(a, b);
+});
+
+test("projectPlacement surfaces the lift fixes (≤3) that drive the advance", () => {
+  const current = computePlacement(storeA);
+  const proj = projectPlacement(storeA, current);
+  assert.ok(proj.liftFixes.length <= 3);
+  // storeA's single high-impact fix should be named.
+  assert.ok(proj.liftFixes.includes(storeA.top_fixes[0].title));
 });
 
 test("scaffoldNodes lockNext toggles the immediate next node", () => {

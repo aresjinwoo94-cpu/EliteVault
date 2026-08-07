@@ -23,6 +23,39 @@ export interface GrowthMapPlacement {
   signals: string[];
 }
 
+/**
+ * The projected "potential" node (brief §1.1) — "here's where these fixes take
+ * you". Derived DETERMINISTICALLY from the report's own top-fix impacts, capped
+ * at one rank of advance for realism. No API, no latency. Present on the payload
+ * only when the potential flag is on.
+ */
+export interface GrowthMapProjection {
+  /** Projected composite (0..100) after the report's top fixes. */
+  composite: number;
+  /** Rank index of the projected node (≤ current + 1). */
+  rankIndex: number;
+  rankKey: RankKey;
+  /** True when the projected rank is genuinely above the current rank. */
+  advances: boolean;
+  /** Titles of the fixes that drive the lift (≤3) — labels the current→ghost gap. */
+  liftFixes: string[];
+}
+
+/**
+ * Movement vs the previous run for the same domain (brief §1.2). Present on the
+ * payload only when the history flag is on AND a prior run exists.
+ */
+export interface GrowthMapMovement {
+  previousComposite: number;
+  currentComposite: number;
+  previousRankIndex: number;
+  currentRankIndex: number;
+  /** ISO timestamp of the previous run. */
+  previousAt: string;
+  /** True when the store crossed The Wall since the previous run. */
+  crossedWall: boolean;
+}
+
 /** One node's AI micro-feedback (spec §5). */
 export interface NodeFeedback {
   rankKey: RankKey;
@@ -49,6 +82,16 @@ export interface GrowthMapData {
   source: "ai" | "scaffold";
   /** Resolved niche label for display + phrase-bank tone (e.g. "Skincare"). */
   nicheLabel: string;
+  /**
+   * Projected "potential" node (brief §1.1). Decorated onto the payload only
+   * when the potential flag is on; absent otherwise so the map stays unchanged.
+   */
+  projection?: GrowthMapProjection;
+  /**
+   * Movement vs the previous run for this domain (brief §1.2). Present only when
+   * the history flag is on and a prior run exists.
+   */
+  movement?: GrowthMapMovement;
   generatedAt: string;
 }
 
