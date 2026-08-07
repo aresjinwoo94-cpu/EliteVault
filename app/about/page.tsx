@@ -47,10 +47,13 @@ export default function AboutPage() {
               seconds, on demand.
             </p>
             <p>
+              {/* Brief §5 — aligned to the canonical framing (§3). Additive
+                  only; no protection weakened. FLAG FOR HUMAN REVIEW. */}
               We&apos;re deliberately honest about what this is: the scores and
               projections are{" "}
               <strong className="text-white/85">
-                AI-generated estimates, not guarantees
+                AI-generated estimates from the current market and your niche,
+                not guarantees or predictions of the future
               </strong>
               . They&apos;re a fast, repeatable second opinion to point you at
               the highest-leverage changes — not a promise of results.

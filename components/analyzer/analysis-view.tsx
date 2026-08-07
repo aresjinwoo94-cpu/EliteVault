@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { useT } from "@/components/i18n/locale-provider";
 import { ConversionGauges } from "./conversion-gauges";
 import { CategoryRadar } from "./category-radar";
 import { AnnotationsOverlay } from "./annotations-overlay";
@@ -136,6 +137,7 @@ export function AnalysisView({
 }) {
   const [data, setData] = useState<Analysis>(initial);
   const router = useRouter();
+  const { t } = useT();
 
   // Fase 2 — pick up meta_ads when a server re-render (router.refresh() after a
   // Pro Meta run) delivers it. The Ads Optimizer is computed asynchronously as
@@ -364,6 +366,15 @@ export function AnalysisView({
               url={data.url}
               isPaid={viewer.isPaid}
             />
+
+            {/*
+              Brief §3 — the ONE canonical disclaimer, shown once here, right
+              under the score. It replaces the scattered "estimates, not
+              guarantees/predictions" hedges the report used to repeat per module.
+            */}
+            <p className="mx-auto max-w-[70ch] text-center text-[11.5px] leading-relaxed text-white/40">
+              {t("report.disclaimer")}
+            </p>
 
             {/*
               Report layout — de-duplicated + re-ordered (tech-fixes §5).

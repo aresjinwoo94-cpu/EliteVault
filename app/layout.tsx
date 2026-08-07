@@ -13,11 +13,12 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "EliteVault — Copy what actually converts",
+    // Brief §4.2 — clarity over cleverness for the site-wide default title.
+    default: "EliteVault — Free AI store audit before you run Meta ads",
     template: "%s · EliteVault",
   },
   description:
-    "AI-powered ecommerce audit with annotated screenshots, buyer-persona simulations, and a 7-day Meta Ads scenario modeler. Find and copy exactly what stores already crushing it are doing.",
+    "Test your store like a senior media buyer before you spend on Meta ads. Free AI audit with an annotated screenshot, buyer-persona reaction and a 7-day Meta Ads scenario modeler.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
   applicationName: "EliteVault",
   keywords: [
@@ -56,9 +57,9 @@ export const metadata: Metadata = {
   // are now set PER PAGE, self-referentially. `metadataBase` (above) still
   // resolves those relative canonicals to the correct absolute domain.
   openGraph: {
-    title: "EliteVault — Copy what actually converts",
+    title: "EliteVault — Free AI store audit before you run Meta ads",
     description:
-      "AI-powered audit, library of winning ecommerce stores, and a conversion analyzer that thinks like a top media buyer.",
+      "Test your store like a senior media buyer before you spend on Meta: a free AI conversion audit, a library of winning ecommerce stores, and a 7-day Meta Ads scenario modeler.",
     type: "website",
     locale: "en_US",
     siteName: "EliteVault",
@@ -68,9 +69,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "EliteVault — Copy what actually converts",
+    title: "EliteVault — Free AI store audit before you run Meta ads",
     description:
-      "AI ecommerce audit + curated library of winners + 7-day Meta Ads scenario modeler.",
+      "Test your store like a senior media buyer before you spend on Meta ads: free AI audit + a library of winning stores + a 7-day Meta Ads scenario modeler.",
     // Same — app/twitter-image.tsx is auto-detected.
   },
   // Explicit icons declaration. Next.js App Router also auto-detects

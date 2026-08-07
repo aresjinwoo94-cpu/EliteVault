@@ -9,10 +9,12 @@ import { MarketingNav } from "@/components/marketing/nav";
  */
 export const metadata: Metadata = {
   title: {
-    absolute: "Free Shopify Store Design Audit — Why Visitors Don't Buy | EliteVault",
+    // Brief §4.2 — keep the light keywords in <title>, lead with the hook.
+    absolute:
+      "Free Shopify Store Audit — Fix Why Visitors Don't Buy Before You Run Meta Ads | EliteVault",
   },
   description:
-    "Selling accessories, jewelry or anything discretionary? On Shopify or DTC, your store's design IS the sale. Free 60-second AI audit: score, annotated screenshot and the #1 fix costing you conversions. No login.",
+    "Before you lose thousands on Meta ads, test your store first. Free 60-second AI audit like a senior media buyer: score, annotated screenshot and the #1 fix costing you conversions. No login.",
   keywords: [
     // Core bottom-funnel keywords that already rank — kept intact.
     "free website audit",
@@ -35,11 +37,17 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Free Website Audit & Store Analyzer — EliteVault",
+    // Brief §4.2 — hook-forward og/twitter title + description.
+    title: "Before you lose thousands on Meta ads, try this — EliteVault",
     description:
-      "Free AI conversion audit for ecommerce: score, annotated screenshot and ranked fixes in 60 seconds. Plus a library of winning stores and a 7-day Meta Ads modeler.",
+      "Test your store like a senior media buyer before you spend on Meta: a free 60-second AI audit with your score, an annotated screenshot and the #1 fix costing you conversions.",
     type: "website",
     url: "/",
+  },
+  twitter: {
+    title: "Before you lose thousands on Meta ads, try this — EliteVault",
+    description:
+      "Test your store like a senior media buyer before you spend on Meta: a free 60-second AI audit with your score, an annotated screenshot and the #1 fix costing you conversions.",
   },
 };
 

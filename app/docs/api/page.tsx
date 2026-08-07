@@ -121,7 +121,8 @@ export default function ApiDocsPage() {
             <p>
               The overall <code>score</code> is 0–100. Fields populate only once{" "}
               <code>status</code> is <code>succeeded</code>. Scores are
-              AI-generated estimates, not guarantees.
+              AI-generated estimates from the current market and niche — not
+              guarantees or predictions.
             </p>
 
             <h2>Errors</h2>

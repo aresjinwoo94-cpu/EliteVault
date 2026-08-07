@@ -27,8 +27,10 @@ const en: Dict = {
   hero: {
     badge1: "AI CONVERSION AUDIT",
     badge2: "BUILT FOR ECOMMERCE FOUNDERS",
-    line1: "If nobody needs what you sell, your store has to make them",
-    line2: "want it.",
+    // Brief §4.1 — PRIMARY hook: clarity over cleverness. "try this." carries the
+    // gold gradient (line2); line1 is the setup, line3 stays empty.
+    line1: "Before you lose thousands on Meta ads,",
+    line2: "try this.",
     line3: "",
     subPre:
       "EliteVault audits your store like a senior media buyer and shows you — in 60 seconds — exactly why visitors ",
@@ -261,7 +263,7 @@ const en: Dict = {
   social: {
     heading: "These stores are crushing it.",
     subheading:
-      "Three winners straight from the EliteVault Library — real stores, real conversion metrics, tracked live.",
+      "Three winners straight from the EliteVault Library — real stores, hand-picked, with conversion metrics modeled from public signals.",
     libraryCtaLead: "Want the winners in your niche?",
     libraryCta: "Log in to browse the full Library",
     convRate: "est. conv. rate",
@@ -275,6 +277,13 @@ const en: Dict = {
     badgeStripe: "Payments secured by Stripe",
     badgeCancel: "Cancel anytime · no lock-in",
     badgeEstimates: "Estimates, not predictions",
+  },
+  // Brief §3 — the ONE canonical disclaimer, shown once prominently near the
+  // score. Replaces the scattered "estimates, not guarantees/predictions"
+  // hedges across the analyzer report.
+  report: {
+    disclaimer:
+      "EliteVault doesn't predict the future — nobody can. It estimates from the current market and the state of your niche: demand, comparable winning stores, and active competitors.",
   },
   analyzerDemo: {
     heading: "A senior media buyer in a tab.",
@@ -591,8 +600,10 @@ const es: Dict = {
   hero: {
     badge1: "AUDITORÍA DE CONVERSIÓN CON IA",
     badge2: "HECHO PARA FUNDADORES DE ECOMMERCE",
-    line1: "Si nadie necesita lo que vendes, tu tienda tiene que hacer que lo",
-    line2: "deseen.",
+    // Brief §4.1 — hook PRIMARY: claridad sobre ingenio. "pruébalo primero."
+    // lleva el degradado dorado (line2); line1 es el gancho, line3 vacío.
+    line1: "Antes de perder miles en anuncios de Meta,",
+    line2: "pruébalo primero.",
     line3: "",
     subPre:
       "EliteVault audita tu tienda como un media buyer senior y te muestra —en 60 segundos— por qué tus visitantes ",
@@ -824,7 +835,7 @@ const es: Dict = {
   social: {
     heading: "Estas tiendas la rompieron.",
     subheading:
-      "Tres ganadoras directas del Library de EliteVault — tiendas reales, métricas de conversión reales, rastreadas en vivo.",
+      "Tres ganadoras directas del Library de EliteVault — tiendas reales, seleccionadas a mano, con métricas de conversión modeladas a partir de señales públicas.",
     libraryCtaLead: "¿Quieres ver las ganadoras de tu nicho?",
     libraryCta: "Entra al Library iniciando sesión",
     convRate: "tasa conv. est.",
@@ -838,6 +849,13 @@ const es: Dict = {
     badgeStripe: "Pagos protegidos por Stripe",
     badgeCancel: "Cancela cuando quieras · sin ataduras",
     badgeEstimates: "Estimaciones, no predicciones",
+  },
+  // Brief §3 — el disclaimer canónico, mostrado UNA vez de forma prominente
+  // junto al score. Reemplaza los hedges dispersos de "estimaciones, no
+  // garantías/predicciones" del reporte del analizador.
+  report: {
+    disclaimer:
+      "EliteVault no predice el futuro —nadie puede—. Estima a partir del mercado actual y del estado de tu nicho: la demanda, tiendas ganadoras comparables y competidores activos.",
   },
   analyzerDemo: {
     heading: "Un media buyer senior en una pestaña.",

@@ -18,7 +18,7 @@ export function GET() {
 
 > AI conversion-audit tool for ecommerce founders. Paste a store URL and get a CRO score, an annotated screenshot, a buyer-persona simulation, and a ranked list of fixes in under a minute.
 
-EliteVault is operated by ${COMPANY.legalEntity} (${COMPANY.country}). Scores, persona simulations and Meta Ads projections are AI-generated estimates to guide decisions — not guarantees of any outcome.
+EliteVault is operated by ${COMPANY.legalEntity} (${COMPANY.country}). Scores, persona simulations and Meta Ads projections are AI-generated estimates from the current market and the state of your niche to guide decisions — not predictions or guarantees of any outcome.
 
 ## What it does
 - Website Analyzer: CRO audit with an overall score (0-100), an annotated homepage screenshot, six category scores (color, layout, imagery, technical, niche fit, CRO principles), and a ranked punch-list of fixes.

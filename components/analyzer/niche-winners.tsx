@@ -178,9 +178,13 @@ function Header({
             {scope === "niche" ? "Winners in your niche" : "Top converting stores"}
           </h3>
         </div>
-        <p className="mt-1 inline-flex items-center gap-1.5 text-[11px] text-success">
+        {/* Brief §9 — the exhibited set is curated with frozen thumbnails and
+            editorial estimates, so we don't claim "live / most active right
+            now". The one genuinely live signal (Meta ad counts) is labelled
+            per-store where it's shown. */}
+        <p className="mt-1 inline-flex items-center gap-1.5 text-[11px] text-white/45">
           <Radio className="size-3" />
-          Live · most active right now
+          Curated winners · hand-picked, refreshed periodically
         </p>
       </div>
       <Badge variant="default" className="shrink-0">
