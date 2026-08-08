@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, TrendingUp, RefreshCw } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { AnalysisResult } from "@/lib/supabase/types";
@@ -251,14 +251,46 @@ export function GrowthMap({
             ← swipe to see the full map →
           </p>
 
-          {/* Potential, not revenue — spell it out where the $ ranges live so no
-              node reads as a claim about THIS store's earnings. */}
-          <p className="mt-2 flex items-start gap-1.5 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-[11px] leading-snug text-white/45">
-            <span aria-hidden className="mt-[1px] text-signal-300">
-              ⓘ
-            </span>
-            <span>{t("report.mapBandsLegend")}</span>
-          </p>
+          {/* Announcement — the $ ranges are POTENTIAL, not revenue. Given real
+              weight (brand-gradient chip) so it reads as a statement, not a
+              footnote, right where the $ figures live. */}
+          <div className="relative mt-3 overflow-hidden rounded-xl border border-signal-400/30 bg-signal-500/[0.07] px-4 py-3.5">
+            <div className="pointer-events-none absolute -left-8 -top-10 size-24 rounded-full bg-signal-500/15 blur-2xl" />
+            <div className="relative flex items-start gap-3">
+              <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg bg-[image:var(--grad-brand)]">
+                <TrendingUp className="size-4 text-black/85" />
+              </span>
+              <div className="min-w-0">
+                <p className="font-display text-[13.5px] font-semibold leading-tight text-white">
+                  {t("report.potentialTitle")}
+                </p>
+                <p className="mt-1 text-[11.5px] leading-relaxed text-white/60">
+                  {t("report.potentialBody")}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Free / signed-out viewers don't get the Pro escape route, so give
+              them the honest path up: re-run after every fix. Champagne accent
+              differentiates it from the teal potential banner above. */}
+          {!isPaid && (
+            <div className="relative mt-2 overflow-hidden rounded-xl border border-champagne-300/25 bg-champagne-300/[0.05] px-4 py-3.5">
+              <div className="relative flex items-start gap-3">
+                <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg border border-champagne-300/30 bg-champagne-300/10">
+                  <RefreshCw className="size-4 text-champagne-300" />
+                </span>
+                <div className="min-w-0">
+                  <p className="font-display text-[13.5px] font-semibold leading-tight text-white">
+                    {t("report.rerunTitle")}
+                  </p>
+                  <p className="mt-1 text-[11.5px] leading-relaxed text-white/60">
+                    {t("report.rerunBody")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Detail band — feedback / upgrade ad appears HERE, below the map, so
               it never overlaps the route or the header (owner feedback). A caret
