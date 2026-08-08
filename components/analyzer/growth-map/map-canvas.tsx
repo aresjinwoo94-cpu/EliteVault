@@ -391,6 +391,13 @@ export function MapCanvas({
             <text y={41} textAnchor="middle" className="font-mono" fontSize={7} fill="#8A8F98">
               {rank.band}
             </text>
+            {/* At the store's own node, spell out that the $ above is the stage's
+                potential — not a reading of what this store earns. */}
+            {state === "current" && (
+              <text y={49} textAnchor="middle" className="font-sans" fontSize={5.5} fill="#5EEAD4" fillOpacity={0.85}>
+                potential at this stage — not your revenue
+              </text>
+            )}
 
             {state === "past" && (
               <g transform="translate(13,-13)" filter="url(#gm-shadow)">
