@@ -288,6 +288,10 @@ const en: Dict = {
     mapIntro:
       "This maps how far your store's conversion readiness can carry it — not your current revenue.",
     rerunCta: "Apply these fixes, then re-run the analyzer to advance.",
+    // Make unmistakable, at every rank, that the $ range is the POTENTIAL of
+    // that stage — never a reading of what THIS store earns.
+    mapBandsLegend:
+      "The $ under each rank is the typical revenue for stores AT that stage — your potential as you climb this map, not a claim about what your store earns today.",
   },
   analyzerDemo: {
     heading: "A senior media buyer in a tab.",
@@ -866,6 +870,10 @@ const es: Dict = {
     mapIntro:
       "Esto mapea hasta dónde puede llevar a tu tienda su preparación para convertir — no tus ingresos actuales.",
     rerunCta: "Aplica estos arreglos y vuelve a correr el analizador para avanzar.",
+    // Dejar inequívoco, en cada rango, que el rango de $ es el POTENCIAL de esa
+    // etapa — nunca una lectura de lo que ESTA tienda gana.
+    mapBandsLegend:
+      "El $ bajo cada rango es el ingreso típico de las tiendas EN esa etapa — tu potencial a medida que subes este mapa, no una afirmación de lo que tu tienda gana hoy.",
   },
   analyzerDemo: {
     heading: "Un media buyer senior en una pestaña.",

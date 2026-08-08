@@ -251,6 +251,15 @@ export function GrowthMap({
             ← swipe to see the full map →
           </p>
 
+          {/* Potential, not revenue — spell it out where the $ ranges live so no
+              node reads as a claim about THIS store's earnings. */}
+          <p className="mt-2 flex items-start gap-1.5 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-[11px] leading-snug text-white/45">
+            <span aria-hidden className="mt-[1px] text-signal-300">
+              ⓘ
+            </span>
+            <span>{t("report.mapBandsLegend")}</span>
+          </p>
+
           {/* Detail band — feedback / upgrade ad appears HERE, below the map, so
               it never overlaps the route or the header (owner feedback). A caret
               points up to the hovered rank. */}
