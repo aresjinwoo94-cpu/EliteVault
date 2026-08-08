@@ -288,10 +288,15 @@ const en: Dict = {
     mapIntro:
       "This maps how far your store's conversion readiness can carry it — not your current revenue.",
     rerunCta: "Apply these fixes, then re-run the analyzer to advance.",
-    // Make unmistakable, at every rank, that the $ range is the POTENTIAL of
-    // that stage — never a reading of what THIS store earns.
-    mapBandsLegend:
-      "The $ under each rank is the typical revenue for stores AT that stage — your potential as you climb this map, not a claim about what your store earns today.",
+    // Announcement — the $ ranges are the store's POTENTIAL at each phase, never
+    // a reading of what it earns today. Shown to everyone under the map.
+    potentialTitle: "These numbers are potential — not your revenue.",
+    potentialBody:
+      "Each $ range is what a store is worth once it reaches that phase — how far your conversion readiness could carry you. To climb, work the full report below: it's the exact list of what to fix next.",
+    // Announcement — free / signed-out viewers: the honest path up the ranks.
+    rerunTitle: "Keep climbing — re-run after every fix.",
+    rerunBody:
+      "Ranks are earned, not bought. Fix what the report flags, run the analyzer again, and repeat periodically — every pass moves your store up the map, from a leaky storefront to one that actually converts.",
   },
   analyzerDemo: {
     heading: "A senior media buyer in a tab.",
@@ -870,10 +875,15 @@ const es: Dict = {
     mapIntro:
       "Esto mapea hasta dónde puede llevar a tu tienda su preparación para convertir — no tus ingresos actuales.",
     rerunCta: "Aplica estos arreglos y vuelve a correr el analizador para avanzar.",
-    // Dejar inequívoco, en cada rango, que el rango de $ es el POTENCIAL de esa
-    // etapa — nunca una lectura de lo que ESTA tienda gana.
-    mapBandsLegend:
-      "El $ bajo cada rango es el ingreso típico de las tiendas EN esa etapa — tu potencial a medida que subes este mapa, no una afirmación de lo que tu tienda gana hoy.",
+    // Anuncio — los rangos de $ son el POTENCIAL de la tienda en cada fase,
+    // nunca una lectura de lo que gana hoy. Se muestra a todos bajo el mapa.
+    potentialTitle: "Estos números son potencial — no tus ingresos.",
+    potentialBody:
+      "Cada rango de $ es lo que vale una tienda al llegar a esa fase — hasta dónde puede llevarte tu preparación para convertir. Para subir, trabaja el reporte completo de abajo: es la lista exacta de qué arreglar.",
+    // Anuncio — usuarios free / sin sesión: el camino honesto para subir de rango.
+    rerunTitle: "Sigue subiendo — vuelve a correrlo tras cada arreglo.",
+    rerunBody:
+      "Los rangos se ganan, no se compran. Arregla lo que marca el reporte, corre el analizador otra vez y repítelo periódicamente — cada pasada sube tu tienda en el mapa, de un escaparate con fugas a uno que de verdad convierte.",
   },
   analyzerDemo: {
     heading: "Un media buyer senior en una pestaña.",

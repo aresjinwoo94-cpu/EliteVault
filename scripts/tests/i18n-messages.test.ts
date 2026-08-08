@@ -9,7 +9,15 @@ import { messages, translator } from "../../lib/i18n/messages";
  * copy (§1.3/§3) in BOTH locales.
  */
 
-const REPORT_KEYS = ["disclaimer", "mapIntro", "rerunCta", "mapBandsLegend"] as const;
+const REPORT_KEYS = [
+  "disclaimer",
+  "mapIntro",
+  "rerunCta",
+  "potentialTitle",
+  "potentialBody",
+  "rerunTitle",
+  "rerunBody",
+] as const;
 
 test("report copy exists in both locales (en + es)", () => {
   for (const locale of ["en", "es"] as const) {
@@ -28,13 +36,13 @@ test("report copy exists in both locales (en + es)", () => {
   }
 });
 
-test("translator resolves the potential-bands legend in both locales", () => {
+test("translator resolves the potential announcement in both locales", () => {
   for (const locale of ["en", "es"] as const) {
     const t = translator(locale);
-    const legend = t("report.mapBandsLegend");
+    const title = t("report.potentialTitle");
     // A resolved value differs from the raw path (translator returns the path on
     // a miss), and the en/es copy makes the potential-not-revenue point.
-    assert.notEqual(legend, "report.mapBandsLegend");
-    assert.match(legend, locale === "en" ? /potential/i : /potencial/i);
+    assert.notEqual(title, "report.potentialTitle");
+    assert.match(title, locale === "en" ? /potential/i : /potencial/i);
   }
 });
