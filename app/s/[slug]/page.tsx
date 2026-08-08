@@ -256,8 +256,8 @@ export default async function SharedAuditPage({
           Audited with{" "}
           <Link href="/" className="text-white/50 hover:text-white/80">
             EliteVault
-          </Link>{" "}
-          · figures are AI estimates, not predictions.
+          </Link>
+          .
         </p>
       </main>
     </div>

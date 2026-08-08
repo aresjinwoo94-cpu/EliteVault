@@ -183,9 +183,12 @@ export function RankGlyph({
 export function MapCanvas({
   currentIndex,
   openIndex,
+  ghostIndex = null,
 }: {
   currentIndex: number;
   openIndex: number | null;
+  /** brief §1.1 — projected "potential" rank; draws a ghost medallion. */
+  ghostIndex?: number | null;
 }) {
   const pathPoints = XY.map((p) => `${p.x},${p.y}`).join(" ");
   const lockedPoints = XY.slice(currentIndex)
@@ -285,6 +288,73 @@ export function MapCanvas({
           87% stall here · HBR &rsquo;08
         </text>
       </g>
+
+      {/* ── Potential (ghost) node — brief §1.1: "here's where these fixes take
+          you." Deterministic projection, drawn as a dashed brand-ring halo on
+          the projected rank with a POTENTIAL tag and a dashed lift arrow from
+          the current node. ── */}
+      {ghostIndex != null &&
+        ghostIndex !== currentIndex &&
+        ghostIndex >= 0 &&
+        ghostIndex < XY.length &&
+        (() => {
+          const from = XY[currentIndex];
+          const to = XY[ghostIndex];
+          return (
+            <g>
+              <line
+                x1={from.x}
+                y1={from.y}
+                x2={to.x}
+                y2={to.y}
+                stroke="url(#gm-brand)"
+                strokeWidth={1.8}
+                strokeOpacity={0.7}
+                strokeDasharray="4 4"
+                strokeLinecap="round"
+              />
+              <g transform={`translate(${to.x},${to.y})`}>
+                <circle
+                  r={R_OUT + 3}
+                  fill="url(#gm-glow)"
+                  opacity={0.6}
+                />
+                <circle
+                  r={R_OUT + 3}
+                  fill="none"
+                  stroke="url(#gm-brand)"
+                  strokeWidth={1.8}
+                  strokeDasharray="3 3"
+                  strokeOpacity={0.9}
+                />
+                <g transform="translate(0,-46)">
+                  <rect
+                    x={-31}
+                    y={-9.5}
+                    width={62}
+                    height={19}
+                    rx={9.5}
+                    fill="#0A0A0F"
+                    stroke="url(#gm-brand)"
+                    strokeWidth={1.2}
+                    strokeDasharray="3 3"
+                  />
+                  <text
+                    y={3.5}
+                    textAnchor="middle"
+                    className="font-sans"
+                    fontSize={8}
+                    fontWeight={700}
+                    fill="#5EEAD4"
+                    letterSpacing="0.06em"
+                  >
+                    POTENTIAL
+                  </text>
+                </g>
+              </g>
+            </g>
+          );
+        })()}
 
       {/* ── Nodes ── */}
       {RANKS.map((rank, i) => {

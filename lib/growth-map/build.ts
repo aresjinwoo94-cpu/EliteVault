@@ -3,12 +3,14 @@ import type { AnalysisResult } from "@/lib/supabase/types";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { resolveNicheLabel } from "@/lib/growth-map/niche";
 import { runGrowthMapFeedback } from "@/ai/agents/growth-map-feedback-agent";
-import { computePlacement } from "./placement";
+import { growthMapHistoryEnabled } from "@/lib/flags";
+import { computePlacement, compositeOf } from "./placement";
 import { scaffoldNodes, scaffoldDiagnosis } from "./phrase-bank";
-import { RANKS } from "./ranks";
+import { RANKS, WALL_AFTER_INDEX } from "./ranks";
 import {
   GROWTH_MAP_VERSION,
   type GrowthMapData,
+  type GrowthMapMovement,
   type NodeFeedback,
 } from "./types";
 
@@ -115,6 +117,7 @@ export async function getOrBuildGrowthMap(input: {
   cached: unknown;
   result: AnalysisResult;
   url: string | null;
+  userId?: string | null;
 }): Promise<GrowthMapData> {
   if (isFreshCache(input.cached)) return input.cached;
 
@@ -133,7 +136,92 @@ export async function getOrBuildGrowthMap(input: {
     console.warn("[growth-map] cache write failed:", (err as Error).message);
   }
 
+  // §1.2 — record this run's placement point (once per analysis, on first build)
+  // so a LATER run for the same domain can show movement. Best-effort, flagged.
+  await recordPlacementPoint({
+    analysisId: input.analysisId,
+    userId: input.userId ?? null,
+    url: input.url,
+    result: input.result,
+    rankIndex: data.placement.rankIndex,
+  });
+
   return data;
+}
+
+/**
+ * §1.2 — persist one placement point for the domain (best-effort, flag-gated).
+ * Service-role write; failure never affects the rendered map.
+ */
+async function recordPlacementPoint(input: {
+  analysisId: string;
+  userId: string | null;
+  url: string | null;
+  result: AnalysisResult;
+  rankIndex: number;
+}): Promise<void> {
+  if (!growthMapHistoryEnabled()) return;
+  const domain = domainOf(input.url);
+  if (!domain) return;
+  try {
+    const svc = createSupabaseServiceClient();
+    await svc.from("growth_map_history").insert({
+      domain,
+      user_id: input.userId,
+      analysis_id: input.analysisId,
+      composite: compositeOf(input.result),
+      rank_index: input.rankIndex,
+    } as never);
+  } catch (err) {
+    console.warn("[growth-map] history write failed:", (err as Error).message);
+  }
+}
+
+/**
+ * §1.2 — movement vs the previous run for this domain. Reads the most recent
+ * point that is NOT this analysis (service-role; the table has no client
+ * policies). Returns null when the feature is off or there's no prior run — the
+ * map then renders the current run as the first point, gracefully.
+ */
+export async function readGrowthMovement(input: {
+  analysisId: string;
+  url: string | null;
+  currentComposite: number;
+  currentRankIndex: number;
+}): Promise<GrowthMapMovement | null> {
+  if (!growthMapHistoryEnabled()) return null;
+  const domain = domainOf(input.url);
+  if (!domain) return null;
+  try {
+    const svc = createSupabaseServiceClient();
+    const { data } = await svc
+      .from("growth_map_history")
+      .select("composite, rank_index, created_at, analysis_id")
+      .eq("domain", domain)
+      .neq("analysis_id", input.analysisId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const prev = data as unknown as {
+      composite: number;
+      rank_index: number;
+      created_at: string;
+    } | null;
+    if (!prev) return null;
+    return {
+      previousComposite: prev.composite,
+      currentComposite: input.currentComposite,
+      previousRankIndex: prev.rank_index,
+      currentRankIndex: input.currentRankIndex,
+      previousAt: prev.created_at,
+      crossedWall:
+        prev.rank_index <= WALL_AFTER_INDEX &&
+        input.currentRankIndex > WALL_AFTER_INDEX,
+    };
+  } catch (err) {
+    console.warn("[growth-map] history read failed:", (err as Error).message);
+    return null;
+  }
 }
 
 // Read-time Free/Pro gating lives in ./gate (pure, unit-testable). Re-exported

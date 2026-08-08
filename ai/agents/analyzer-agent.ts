@@ -8,6 +8,10 @@ import {
 import { ANALYZER_SYSTEM, buildAnalyzerUserMessage } from "@/ai/prompts";
 import type { BuyerPersona } from "@/lib/supabase/types";
 import { deadlineAt, isDeadlineError } from "@/lib/deadline";
+import {
+  fetchNicheGroundingPriors,
+  renderGroundingBlock,
+} from "@/lib/library/grounding";
 
 /**
  * Sampling temperature for the audit. Low by design — see the comment at the
@@ -107,6 +111,16 @@ export async function runAnalyzerAgent(opts: {
 
   const extraUrls = extras.map((e) => e.url);
 
+  // Brief §2.3 — optional niche grounding (flag-gated inside the helper, hard
+  // timeout, empty fallback). It's a Supabase read, not a third-party call, so
+  // it respects the request-path rule; when the flag is off this is a no-op.
+  const grounding = await fetchNicheGroundingPriors({
+    url: opts.url ?? null,
+    hint: opts.siteInfo
+      ? `${opts.siteInfo.title ?? ""} ${opts.siteInfo.description ?? ""}`
+      : null,
+  });
+
   parts.push({
     text: buildAnalyzerUserMessage({
       url: opts.url,
@@ -114,6 +128,7 @@ export async function runAnalyzerAgent(opts: {
       htmlExcerpt: opts.htmlExcerpt,
       siteInfo: opts.siteInfo ?? null,
       extraScreenshotUrls: extraUrls,
+      groundingBlock: grounding ? renderGroundingBlock(grounding) : null,
     }),
   } as never);
 

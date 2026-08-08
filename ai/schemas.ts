@@ -6,6 +6,22 @@ import { z } from "zod";
  * output and our DB column stay in sync.
  */
 
+/**
+ * Brief §2.2 — the provenance of a displayed number, so the UI can style a
+ * measured signal differently from an AI estimate and kill false precision.
+ *
+ * - "real_signal": measured from a real source (e.g. Meta Ad Library active-ad
+ *   counts). Present it plainly; it's a fact.
+ * - "ai_estimate": modeled/inferred by the analyzer or curated editorially
+ *   (scores, conversion scenarios, ROAS, modeled revenue). Present it as an
+ *   estimate — never as a measured fact.
+ *
+ * Everything the analyzer model itself emits is, by construction, an
+ * `ai_estimate`; the only `real_signal` on the report is the live ad count.
+ */
+export const SIGNAL_SOURCES = ["real_signal", "ai_estimate"] as const;
+export type SignalSource = (typeof SIGNAL_SOURCES)[number];
+
 export const BuyerPersonaSchema = z.object({
   age: z.union([z.number(), z.string()]).optional(),
   gender: z.enum(["male", "female", "any"]).optional(),

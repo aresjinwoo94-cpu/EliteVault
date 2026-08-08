@@ -103,7 +103,7 @@ const CURATED: KbEntry[] = [
     id: "guarantee",
     category: "legal",
     q: "Do you guarantee results?",
-    a: "No. Scores, persona simulations, and Meta Ads projections are AI-generated estimates to guide you, not guarantees of any specific revenue or advertising outcome. You decide what to act on.",
+    a: "No. Scores, persona simulations, and Meta Ads projections are AI-generated estimates from the current market and your niche to guide you, not predictions or guarantees of any specific revenue or advertising outcome. You decide what to act on.",
     keywords: ["guarantee", "guaranteed", "promise", "results", "estimate", "accurate"],
   },
   // ── Company ────────────────────────────────────────────────────────────

@@ -66,9 +66,10 @@ export function ConversionGauges({
         })}
       </div>
 
+      {/* Brief §3 — one short module footnote; the canonical disclaimer sits
+          once near the score above. */}
       <p className="mt-6 text-[11px] leading-relaxed text-white/30">
-        Estimates based on niche benchmarks + design audit. Real numbers depend
-        on offer, traffic temperature and creative.
+        Modeled from your niche and design audit — not a guarantee.
       </p>
     </Card>
   );

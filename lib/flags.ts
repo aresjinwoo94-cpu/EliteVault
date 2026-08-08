@@ -42,3 +42,40 @@ export function nicheWinnersEnabled(): boolean {
 export function quickScoreEnabled(): boolean {
   return enabled("ANALYZER_QUICK_SCORE", false);
 }
+
+/**
+ * Growth Map "potential" ghost node (brief §1.1).
+ *
+ * DEFAULT OFF. Renders a projected medallion — "here's where these fixes take
+ * you" — derived DETERMINISTICALLY from the report's own top-fix impacts (no
+ * API, no latency). Off until §7 acceptance passes so the projection copy and
+ * the one-rank realism cap can be verified against real audits first.
+ */
+export function growthMapPotentialEnabled(): boolean {
+  return enabled("GROWTH_MAP_POTENTIAL", false);
+}
+
+/**
+ * Growth Map re-run movement (brief §1.2).
+ *
+ * DEFAULT OFF. Persists a lightweight placement point per normalized domain and,
+ * on a later run, shows the delta ("48 → 57 · crossed The Wall"). Requires the
+ * growth_map_history table (migration 0024). Off until that table is applied and
+ * the movement copy is verified in both locales.
+ */
+export function growthMapHistoryEnabled(): boolean {
+  return enabled("GROWTH_MAP_HISTORY", false);
+}
+
+/**
+ * Analyzer niche grounding (brief §2.3).
+ *
+ * DEFAULT OFF. Feeds the scoring pass a few precomputed `winning_sites` rows as
+ * SOFT PRIORS (always labelled ai_estimate, anchored on the real
+ * active_ads_count + niche demand). It's a Supabase read, not a third-party
+ * call, so it fits the zero-third-party-call request rule — but stays off until
+ * the added read is proven not to regress analyzer p95 (§7).
+ */
+export function analyzerGroundingEnabled(): boolean {
+  return enabled("ANALYZER_NICHE_GROUNDING", false);
+}
