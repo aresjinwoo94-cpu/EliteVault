@@ -108,7 +108,7 @@ export function SimulatorChart({ days }: { days: SimulationDay[] }) {
             y={l.y + 3}
             textAnchor="end"
             className="fill-white/40"
-            style={{ fontSize: 9, fontFamily: "ui-sans-serif" }}
+            style={{ fontSize: 13, fontFamily: "ui-sans-serif" }}
           >
             {l.label}
           </text>
@@ -163,7 +163,7 @@ export function SimulatorChart({ days }: { days: SimulationDay[] }) {
             y={H - 6}
             textAnchor="middle"
             className="fill-white/40"
-            style={{ fontSize: 10, fontFamily: "ui-sans-serif" }}
+            style={{ fontSize: 14, fontFamily: "ui-sans-serif" }}
           >
             {l.label}
           </text>

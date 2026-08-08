@@ -111,7 +111,7 @@ export function CategoryRadar({ scores }: { scores: CategoryScores }) {
               y={p.labelY}
               textAnchor="middle"
               dominantBaseline="middle"
-              fontSize="7"
+              fontSize="10"
               fill="rgba(255,255,255,0.65)"
               className="font-medium"
             >

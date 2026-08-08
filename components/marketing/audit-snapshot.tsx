@@ -35,9 +35,9 @@ export function AuditSnapshot() {
           <div className="ml-3 flex-1 rounded-md bg-white/[0.04] px-3 py-1 text-xs text-white/40 font-mono">
             elitevaultapp.com/app/analyzer
           </div>
-          <div className="hidden sm:flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-success">
+          <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-success">
             <CheckCircle2 className="size-3" />
-            Audit complete
+            <span className="hidden sm:inline">Audit complete</span>
           </div>
         </div>
 
@@ -121,7 +121,7 @@ export function AuditSnapshot() {
               </div>
             </div>
 
-            <div className="absolute left-3 bottom-2 text-[9px] uppercase tracking-widest text-white/25">
+            <div className="absolute left-3 bottom-2 text-[11px] uppercase tracking-widest text-white/25">
               annotated screenshot
             </div>
            </div>
@@ -203,7 +203,7 @@ export function AuditSnapshot() {
                   style={{ left: "62%", transform: "translateX(-50%)" }}
                 />
               </div>
-              <div className="mt-1 flex justify-between font-mono text-[9px] tabular-nums text-white/30">
+              <div className="mt-1 flex justify-between font-mono text-[10px] tabular-nums text-white/30">
                 <span>0</span>
                 <span>Niche · 58</span>
                 <span>Top · 82</span>
@@ -248,7 +248,7 @@ export function AuditSnapshot() {
                   <p className="text-[11px] text-white/85 leading-tight truncate">
                     {f.title}
                   </p>
-                  <p className="mt-0.5 text-[9px] text-white/35">
+                  <p className="mt-0.5 text-[11px] text-white/35">
                     {f.impact} impact · {f.effort}
                   </p>
                 </div>
@@ -276,7 +276,7 @@ const CATEGORIES: { name: string; score: number }[] = [
 function CategoryBreakdown() {
   return (
     <div className="flex-1 border-t border-white/[0.04] bg-obsidian-900/30 p-3 md:p-4">
-      <p className="mb-2.5 font-mono text-[9px] uppercase tracking-widest text-white/40">
+      <p className="mb-2.5 font-mono text-[11px] uppercase tracking-widest text-white/40">
         Category breakdown
       </p>
       <div className="grid grid-cols-1 gap-x-5 gap-y-2 sm:grid-cols-2">
@@ -363,7 +363,7 @@ function SnapshotAnnotation({
         </div>
       </div>
       <div
-        className="glass absolute flex items-center gap-1.5 text-[9px] text-white/85 px-1.5 py-0.5 rounded-md whitespace-nowrap pointer-events-none"
+        className="glass absolute hidden sm:flex items-center gap-1.5 text-[9px] text-white/85 px-1.5 py-0.5 rounded-md whitespace-nowrap pointer-events-none"
         style={labelStyle}
       >
         <span

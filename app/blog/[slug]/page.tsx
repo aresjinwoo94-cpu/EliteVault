@@ -181,7 +181,7 @@ export default async function BlogPostPage({
           </p>
           <Link
             href="/sign-up?next=/app/analyzer"
-            className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-champagne-400 px-5 py-2.5 text-sm font-medium text-obsidian-950 hover:bg-champagne-300 transition-colors"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-champagne-400 px-5 py-3 text-sm font-medium text-obsidian-950 hover:bg-champagne-300 transition-colors"
           >
             Audit my store free
             <ArrowRight className="size-4" />

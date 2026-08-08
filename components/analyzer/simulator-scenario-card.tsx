@@ -156,7 +156,7 @@ export function SimulatorScenarioCard({
             const net = t.revenue - t.spend;
             const netLabel = net >= 0 ? `+${fmtUsd(net)}` : `−${fmtUsd(Math.abs(net))}`;
             return (
-              <div className="mt-5 grid grid-cols-5 gap-2">
+              <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                 {(
                   [
                     ["Spend", fmtUsd(t.spend), "text-white"],

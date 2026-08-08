@@ -72,7 +72,7 @@ export function AuthForm({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="glass-strong rounded-2xl p-8 shadow-card"
+      className="glass-strong rounded-2xl p-6 md:p-8 shadow-card"
     >
       <div className="mb-6 flex items-center gap-2">
         <div className="flex size-9 items-center justify-center rounded-lg bg-champagne-400/10 ring-1 ring-champagne-400/20">
@@ -126,14 +126,14 @@ export function AuthForm({
         {method === "magic" ? (
           <button
             onClick={() => setMethod("password")}
-            className="text-xs text-white/45 hover:text-white/80 transition-colors"
+            className="inline-flex items-center px-1 py-2 min-h-11 text-xs text-white/45 hover:text-white/80 transition-colors"
           >
             {t("auth.toggleToPasswordPrefix")} <span className="text-champagne-400">{t("auth.toggleToPasswordLink")} →</span>
           </button>
         ) : (
           <button
             onClick={() => setMethod("magic")}
-            className="text-xs text-white/45 hover:text-white/80 transition-colors"
+            className="inline-flex items-center px-1 py-2 min-h-11 text-xs text-white/45 hover:text-white/80 transition-colors"
           >
             <span className="text-champagne-400">← {t("auth.toggleToMagicLink")}</span>
           </button>
@@ -323,7 +323,7 @@ function MagicLinkForm({ nextUrl }: { nextUrl: string }) {
           );
         })()}
 
-        <p className="mt-4 text-[11px] text-white/35">
+        <p className="mt-4 text-xs text-white/35">
           {t("auth.checkEmailHelper")}
         </p>
 
@@ -376,7 +376,7 @@ function MagicLinkForm({ nextUrl }: { nextUrl: string }) {
         <p className="text-xs text-destructive">{state.message}</p>
       )}
 
-      <p className="text-[11px] text-white/35 text-center leading-relaxed">
+      <p className="text-xs text-white/35 text-center leading-relaxed">
         {t("auth.magicHelper")}
       </p>
     </motion.form>
@@ -432,7 +432,7 @@ function OtpVerifyForm({
       {state.status === "error" && (
         <p className="mt-2 text-xs text-destructive">{state.message}</p>
       )}
-      <p className="mt-2 text-[11px] text-white/35">
+      <p className="mt-2 text-xs text-white/35">
         Always use the most recent email — older codes and links stop working.
       </p>
     </form>

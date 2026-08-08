@@ -240,7 +240,7 @@ export default async function BuyerPersonaSimulatorPage() {
         </section>
 
         {/* Final CTA */}
-        <section className="mt-16 rounded-3xl border border-champagne-400/20 bg-champagne-400/[0.04] p-8 text-center">
+        <section className="mt-16 rounded-3xl border border-champagne-400/20 bg-champagne-400/[0.04] p-6 md:p-8 text-center">
           <h2 className="font-serif text-2xl md:text-3xl tracking-tight text-white">
             {t("personaPage.finalH2")}
           </h2>

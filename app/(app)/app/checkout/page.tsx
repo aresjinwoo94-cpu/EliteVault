@@ -83,7 +83,7 @@ export default async function CheckoutPage({
             <ArrowLeft className="size-3.5" />
             Back to billing
           </Link>
-          <div className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-white/30">
+          <div className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-white/30">
             <Lock className="size-3" />
             Secure checkout · Stripe
           </div>
@@ -112,7 +112,7 @@ export default async function CheckoutPage({
                     <Sparkles className="size-3" />
                     {plan.name}
                   </Badge>
-                  <span className="text-[10px] text-white/40 uppercase tracking-widest ml-auto">
+                  <span className="text-[11px] text-white/40 uppercase tracking-widest ml-auto">
                     {interval === "month" ? "Monthly billing" : "Annual billing"}
                   </span>
                 </div>
@@ -127,7 +127,7 @@ export default async function CheckoutPage({
                 </div>
 
                 {interval === "year" && (
-                  <p className="mt-1 text-[11px] text-success">
+                  <p className="mt-1 text-xs text-success">
                     Save vs monthly · 20% off
                   </p>
                 )}
@@ -140,7 +140,7 @@ export default async function CheckoutPage({
 
             {/* What's included */}
             <div className="rounded-2xl border border-white/[0.06] bg-card/40 p-5">
-              <p className="text-[10px] uppercase tracking-widest text-white/40 mb-3">
+              <p className="text-[11px] uppercase tracking-widest text-white/40 mb-3">
                 What you get
               </p>
               <ul className="space-y-2.5">
@@ -166,7 +166,7 @@ export default async function CheckoutPage({
             </div>
 
             {/* Trust footer */}
-            <div className="grid grid-cols-2 gap-3 text-[11px] text-white/45">
+            <div className="grid grid-cols-2 gap-3 text-xs text-white/45">
               <div className="flex items-center gap-2">
                 <Shield className="size-3.5 text-white/30" />
                 Cancel anytime
@@ -180,11 +180,11 @@ export default async function CheckoutPage({
 
           {/* RIGHT — Stripe Embedded Checkout */}
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-white/40 mb-3">
+            <p className="text-[11px] uppercase tracking-widest text-white/40 mb-3">
               Payment
             </p>
             <EmbeddedCheckoutForm plan={planId} interval={interval} />
-            <p className="mt-4 text-[11px] text-white/30 text-center leading-relaxed">
+            <p className="mt-4 text-xs text-white/30 text-center leading-relaxed">
               Payment is processed by Stripe. EliteVault never sees or stores
               your card details.
             </p>

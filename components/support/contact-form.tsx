@@ -28,7 +28,7 @@ export function ContactForm() {
   }
 
   const field =
-    "w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-1 focus:ring-champagne-400/40";
+    "w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-1 focus:ring-champagne-400/40";
 
   return (
     <form action={action} className="space-y-4">
@@ -92,7 +92,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={pending}
-        className="inline-flex items-center gap-2 rounded-lg bg-champagne-400 px-5 py-2.5 text-sm font-medium text-obsidian-950 hover:bg-champagne-300 transition-colors disabled:opacity-50"
+        className="inline-flex items-center gap-2 rounded-lg bg-champagne-400 px-5 py-3 text-sm font-medium text-obsidian-950 hover:bg-champagne-300 transition-colors disabled:opacity-50"
       >
         <Send className="size-4" />
         {pending ? "Sending…" : "Send message"}

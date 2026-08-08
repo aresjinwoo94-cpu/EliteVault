@@ -56,7 +56,7 @@ export default function BlogIndexPage() {
       />
       <MarketingNav />
       <main className="container max-w-3xl pt-28 pb-24 md:pt-36">
-        <p className="font-mono text-[10px] uppercase tracking-widest text-signal-300">
+        <p className="font-mono text-[11px] uppercase tracking-widest text-signal-300">
           Guides
         </p>
         <h1 className="mt-2 font-serif text-4xl md:text-5xl tracking-tight leading-tight">

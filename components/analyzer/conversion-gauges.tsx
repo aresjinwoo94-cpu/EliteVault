@@ -66,7 +66,7 @@ export function ConversionGauges({
         })}
       </div>
 
-      <p className="mt-6 text-[10px] leading-relaxed text-white/30">
+      <p className="mt-6 text-[11px] leading-relaxed text-white/30">
         Estimates based on niche benchmarks + design audit. Real numbers depend
         on offer, traffic temperature and creative.
       </p>

@@ -81,7 +81,7 @@ export function RealAudits({
   audits?: RealAudit[];
 }) {
   return (
-    <section className="relative py-20 md:py-28">
+    <section className="relative section-y">
       <div className="container max-w-6xl">
         <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
           <DataPill items={["REAL AUDITS", "STRAIGHT FROM THE ANALYZER"]} />

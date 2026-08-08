@@ -92,7 +92,7 @@ export function CommandMenu() {
                     setOpen(false);
                   }}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 cursor-pointer",
+                    "flex items-center gap-3 rounded-lg px-3 py-3 min-h-11 text-sm text-white/70 cursor-pointer",
                     "data-[selected=true]:bg-white/[0.06] data-[selected=true]:text-white",
                   )}
                 >

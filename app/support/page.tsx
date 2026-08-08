@@ -223,7 +223,7 @@ export default function SupportPage() {
             <p className="text-sm text-white/70">Still stuck?</p>
             <Link
               href="/support/contact"
-              className="mt-3 inline-flex items-center gap-2 rounded-lg bg-champagne-400 px-5 py-2.5 text-sm font-medium text-obsidian-950 hover:bg-champagne-300 transition-colors"
+              className="mt-3 inline-flex items-center gap-2 rounded-lg bg-champagne-400 px-5 py-3 text-sm font-medium text-obsidian-950 hover:bg-champagne-300 transition-colors"
             >
               Contact support
               <ArrowRight className="size-4" />

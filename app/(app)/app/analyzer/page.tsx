@@ -117,7 +117,7 @@ export default async function AnalyzerPage({
           Your analyses
         </h2>
         {!history || history.length === 0 ? (
-          <Card className="p-8 md:p-10 text-center border-white/[0.04]">
+          <Card className="p-6 md:p-10 text-center border-white/[0.04]">
             <p className="text-sm text-white/40">
               No analyses yet — run your first one above.
             </p>

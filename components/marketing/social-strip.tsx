@@ -33,7 +33,7 @@ export function SocialStrip() {
   return (
     <section aria-label={t("socialStrip.eyebrow")} className="relative">
       <div className="container max-w-[1280px]">
-        <p className="text-center font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
+        <p className="text-center font-mono text-[11px] uppercase tracking-[0.15em] text-white/40">
           {t("socialStrip.eyebrow")}
         </p>
         <ul className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

@@ -203,14 +203,14 @@ export default async function NichePage(props: {
                     <p className="font-mono tabular-nums text-base leading-none text-signal-300">
                       {s.convRate}%
                     </p>
-                    <p className="mt-0.5 text-[9px] uppercase tracking-wider text-white/40">
+                    <p className="mt-0.5 text-[11px] uppercase tracking-wider text-white/40">
                       est. conv. rate
                     </p>
                   </div>
                 ) : (
                   <Link
                     href="/sign-in?next=/app/library"
-                    className="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.02] px-2.5 py-1.5 text-[11px] text-white/45 transition-colors hover:text-white/70"
+                    className="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2 min-h-11 text-xs text-white/45 transition-colors hover:text-white/70"
                   >
                     <Lock className="size-3" />
                     Metrics
@@ -274,14 +274,14 @@ export default async function NichePage(props: {
                 <Link
                   key={n.slug}
                   href={`/winning-shopify-stores/${n.slug}`}
-                  className="rounded-full border border-white/[0.08] bg-white/[0.02] px-4 py-1.5 text-sm text-white/60 transition-colors hover:border-white/[0.16] hover:text-white"
+                  className="inline-flex items-center rounded-full border border-white/[0.08] bg-white/[0.02] px-4 py-2 min-h-11 text-sm text-white/60 transition-colors hover:border-white/[0.16] hover:text-white"
                 >
                   {n.label} ({n.count})
                 </Link>
               ))}
               <Link
                 href="/winning-shopify-stores"
-                className="rounded-full border border-signal-500/25 bg-signal-600/[0.05] px-4 py-1.5 text-sm text-signal-200 transition-colors hover:bg-signal-600/10"
+                className="inline-flex items-center rounded-full border border-signal-500/25 bg-signal-600/[0.05] px-4 py-2 min-h-11 text-sm text-signal-200 transition-colors hover:bg-signal-600/10"
               >
                 All winning stores →
               </Link>

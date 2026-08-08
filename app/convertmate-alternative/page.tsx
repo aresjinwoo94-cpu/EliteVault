@@ -220,7 +220,7 @@ export default function ConvertMateAlternativePage() {
             and what EliteVault gives you instead.
           </p>
           <div className="mt-8 overflow-x-auto rounded-2xl border border-white/[0.06] bg-card shadow-card">
-            <table className="w-full min-w-[640px] border-collapse text-sm">
+            <table className="w-full min-w-0 md:min-w-[640px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-white/[0.06]">
                   <th className="p-4 text-left font-normal text-xs uppercase tracking-wider text-white/40 w-1/2">
@@ -311,7 +311,7 @@ export default function ConvertMateAlternativePage() {
         </section>
 
         {/* Final CTA */}
-        <section className="mt-16 rounded-3xl border border-champagne-400/20 bg-champagne-400/[0.04] p-8 text-center">
+        <section className="mt-16 rounded-3xl border border-champagne-400/20 bg-champagne-400/[0.04] p-6 md:p-8 text-center">
           <h2 className="font-serif text-2xl md:text-3xl tracking-tight text-white">
             Don&apos;t migrate a tool. Upgrade the whole audit.
           </h2>

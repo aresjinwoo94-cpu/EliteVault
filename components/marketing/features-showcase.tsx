@@ -192,11 +192,11 @@ function WinnersVisual({ live }: { live: string }) {
       <div className="absolute right-1.5 top-1.5 rounded-md border border-signal-500/25 bg-obsidian-950/80 px-2 py-1 backdrop-blur-sm">
         <div className="flex items-center gap-1.5">
           <span className="size-1.5 rounded-full bg-signal-400 motion-safe:animate-glow" />
-          <span className="font-mono text-[9px] uppercase tracking-widest text-signal-300/90">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-signal-300/90">
             {live}
           </span>
           <span className="font-mono text-[11px] tabular-nums leading-none text-signal-300">
-            4.4<span className="text-[9px] text-white/40">%</span>
+            4.4<span className="text-[10px] text-white/40">%</span>
           </span>
         </div>
       </div>
@@ -212,7 +212,7 @@ function SimilarityVisual({ match, your, close }: { match: string; your: string;
     <div className="flex h-full flex-col justify-center gap-1.5">
       <div className="relative">
         <ThumbSlot src={SIMILARITY_PAIR.your} alt="Your store" sizes="260px" ratioClass="aspect-[16/5]" />
-        <span className="absolute left-1.5 top-1.5 rounded bg-obsidian-950/75 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-wider text-white/60 backdrop-blur-sm">
+        <span className="absolute left-1.5 top-1.5 rounded bg-obsidian-950/75 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-white/60 backdrop-blur-sm">
           {your}
         </span>
       </div>
@@ -220,7 +220,7 @@ function SimilarityVisual({ match, your, close }: { match: string; your: string;
       {/* Match badge + downward arrow linking the two. */}
       <div className="flex items-center justify-center gap-1.5 text-signal-300">
         <span className="font-mono text-[10px] tabular-nums">97%</span>
-        <span className="font-mono text-[8px] uppercase tracking-widest text-signal-300/80">
+        <span className="font-mono text-[10px] uppercase tracking-widest text-signal-300/80">
           {match}
         </span>
         <svg width="10" height="14" viewBox="0 0 10 14" fill="none" aria-hidden>
@@ -236,7 +236,7 @@ function SimilarityVisual({ match, your, close }: { match: string; your: string;
           sizes="260px"
           ratioClass="aspect-[16/5]"
         />
-        <span className="absolute left-1.5 top-1.5 rounded bg-obsidian-950/75 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-wider text-signal-300/70 backdrop-blur-sm">
+        <span className="absolute left-1.5 top-1.5 rounded bg-obsidian-950/75 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-signal-300/70 backdrop-blur-sm">
           {close}
         </span>
       </div>

@@ -69,7 +69,7 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
               </p>
               <p className="mt-1 font-mono tabular-nums text-xl tnum text-white">{val}</p>
               <p className="mt-0.5 text-[10px] text-white/40">{sub}</p>
-              <p className="mt-1.5 border-t border-white/[0.06] pt-1.5 text-[9px] leading-tight text-white/45">
+              <p className="mt-1.5 border-t border-white/[0.06] pt-1.5 text-[11px] leading-tight text-white/45">
                 niche median
                 <br />
                 <span className="text-white/60">{band}</span>

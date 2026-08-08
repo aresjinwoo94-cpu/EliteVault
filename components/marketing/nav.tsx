@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import * as Dialog from "@radix-ui/react-dialog";
+import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -24,6 +26,7 @@ const NAV = [
 export function MarketingNav() {
   const { t } = useT();
   const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
@@ -58,14 +61,70 @@ export function MarketingNav() {
         </nav>
         <div className="flex items-center gap-2">
           <LanguageToggle className="mr-1 hidden sm:inline-flex" />
-          <Link href="/sign-in">
+          <Link href="/sign-in" className="hidden sm:inline-flex">
             <Button variant="ghost" size="sm">
               {t("nav.signIn")}
             </Button>
           </Link>
-          <Link href="/sign-up">
+          <Link href="/sign-up" className="hidden sm:inline-flex">
             <Button size="sm">{t("nav.startFree")}</Button>
           </Link>
+
+          {/* Mobile menu trigger — the desktop nav is `hidden md:flex`, so
+              without this the whole site is unreachable on phones. */}
+          <Dialog.Root open={mobileOpen} onOpenChange={setMobileOpen}>
+            <Dialog.Trigger asChild>
+              <button
+                type="button"
+                aria-label={t("nav.openMenu")}
+                className="md:hidden inline-flex items-center justify-center min-h-11 min-w-11 rounded-lg text-white/70 hover:text-white hover:bg-white/[0.05] transition-colors"
+              >
+                <Menu className="size-5" />
+              </button>
+            </Dialog.Trigger>
+            <Dialog.Portal>
+              <Dialog.Overlay className="fixed inset-0 z-[60] bg-obsidian-950/70 backdrop-blur-md data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0" />
+              <Dialog.Content
+                className="fixed inset-y-0 right-0 z-[60] flex w-[82vw] max-w-sm flex-col border-l border-white/[0.06] bg-obsidian-950/95 backdrop-blur-2xl p-6 shadow-2xl data-[state=open]:animate-in data-[state=open]:slide-in-from-right data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right"
+              >
+                <Dialog.Title className="sr-only">{t("nav.menu")}</Dialog.Title>
+                <div className="flex items-center justify-between">
+                  <Logo />
+                  <Dialog.Close
+                    aria-label={t("nav.closeMenu")}
+                    className="inline-flex items-center justify-center min-h-11 min-w-11 rounded-lg text-white/60 hover:text-white hover:bg-white/[0.05] transition-colors"
+                  >
+                    <X className="size-5" />
+                  </Dialog.Close>
+                </div>
+
+                <nav className="mt-8 flex flex-col">
+                  {NAV.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className="flex min-h-11 items-center border-b border-white/[0.04] text-base text-white/75 hover:text-white transition-colors"
+                    >
+                      {t(item.key)}
+                    </Link>
+                  ))}
+                </nav>
+
+                <div className="mt-auto flex flex-col gap-3 pt-8">
+                  <LanguageToggle className="self-start" />
+                  <Link href="/sign-in" onClick={() => setMobileOpen(false)}>
+                    <Button variant="ghost" className="w-full min-h-11">
+                      {t("nav.signIn")}
+                    </Button>
+                  </Link>
+                  <Link href="/sign-up" onClick={() => setMobileOpen(false)}>
+                    <Button className="w-full min-h-11">{t("nav.startFree")}</Button>
+                  </Link>
+                </div>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
         </div>
       </div>
     </motion.header>

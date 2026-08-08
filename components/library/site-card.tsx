@@ -250,7 +250,7 @@ export function SiteCard({
       </div>
 
       {locked && (
-        <div className="absolute inset-0 grid place-items-center bg-obsidian-950/30 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute inset-0 grid place-items-center bg-obsidian-950/30 backdrop-blur-[2px] opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
           <div className="flex items-center gap-2 rounded-lg bg-obsidian-900/95 px-4 py-2 ring-1 ring-champagne-400/30 shadow-gold">
             <Lock className="size-3.5 text-champagne-400" />
             <span className="text-xs text-white">Unlock metrics with Pro</span>

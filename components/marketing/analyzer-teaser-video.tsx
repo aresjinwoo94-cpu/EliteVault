@@ -48,7 +48,7 @@ export function AnalyzerTeaserVideo() {
   return (
     <div className="relative">
       {/* Teaser title — invitation above the panel */}
-      <div className="mb-5 flex items-center justify-center gap-2.5 text-[11px] font-mono uppercase tracking-widest text-white/45">
+      <div className="mb-5 flex items-center justify-center gap-2.5 text-xs font-mono uppercase tracking-widest text-white/45">
         <span className="grid size-5 place-items-center rounded-full bg-signal-600/15 ring-1 ring-signal-500/25">
           <Play className="size-2.5 translate-x-px text-signal-300" fill="currentColor" />
         </span>
@@ -69,7 +69,7 @@ export function AnalyzerTeaserVideo() {
           <div className="ml-3 flex-1 rounded-md bg-white/[0.04] px-3 py-1 text-xs text-white/40 font-mono">
             elitevaultapp.com/app/analyzer
           </div>
-          <div className="flex items-center gap-1.5 text-[10px] text-white/30 uppercase tracking-widest">
+          <div className="flex items-center gap-1.5 text-[11px] text-white/30 uppercase tracking-widest">
             <span className="size-1.5 rounded-full bg-success animate-pulse motion-reduce:animate-none" />
             Live demo
           </div>
