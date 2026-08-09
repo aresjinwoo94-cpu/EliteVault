@@ -1,6 +1,8 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import { useT } from "@/components/i18n/locale-provider";
+import { deriveOverallScore } from "@/lib/analyzer/derive-score";
 
 const LABELS: { key: keyof CategoryScores; short: string }[] = [
   { key: "color_integration", short: "Color" },
@@ -20,7 +22,20 @@ type CategoryScores = {
   cro_principles: number;
 };
 
-export function CategoryRadar({ scores }: { scores: CategoryScores }) {
+export function CategoryRadar({
+  scores,
+  overall,
+}: {
+  scores: CategoryScores;
+  /**
+   * Brief §1 — the report's hero score. The reconciliation line is shown ONLY
+   * when the weighted categories actually reproduce it (i.e. a v2, code-derived
+   * audit). On an old audit whose stored score predates the derivation, the
+   * numbers wouldn't match, so we hide the line rather than contradict the hero.
+   */
+  overall?: number | null;
+}) {
+  const { t } = useT();
   // Gemini Flash-Lite sometimes returns scores as 0..1 fractions instead
   // of 0..100. If the max value across all categories is ≤ 1, treat them
   // as 0..1 and rescale. Otherwise use as-is.
@@ -130,6 +145,24 @@ export function CategoryRadar({ scores }: { scores: CategoryScores }) {
           </div>
         ))}
       </div>
+      {/* Brief §1 — make the reconciliation visible: the six categories,
+          weighted, ARE the overall hero score. Derived with the same code the
+          persistence path uses, so what's shown here matches the hero exactly. */}
+      {(() => {
+        const derived = deriveOverallScore(normalized);
+        if (derived == null) return null;
+        // Only claim the reconciliation when it's true against the hero.
+        const hero =
+          typeof overall === "number" && Number.isFinite(overall)
+            ? Math.round(overall > 1 ? overall : overall * 100)
+            : derived;
+        if (hero !== derived) return null;
+        return (
+          <p className="mt-3 border-t border-white/[0.05] pt-3 text-[11px] leading-relaxed text-white/40">
+            {t("report.categoryReconcile").replace("{overall}", String(derived))}
+          </p>
+        );
+      })()}
     </Card>
   );
 }

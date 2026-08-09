@@ -23,9 +23,13 @@
   console.log("─".repeat(60));
   console.log(`Score: ${result.score}/100`);
   console.log(`Summary: ${result.summary.slice(0, 200)}…`);
-  console.log("\nScenarios:");
-  for (const [k, v] of Object.entries(result.scenarios)) {
-    console.log(`  ${k.padEnd(20)} ${(v * 100).toFixed(2)}%`);
+  // Scenarios are now derived in code (brief §2), so the agent's raw output
+  // no longer carries them — guard for this debug script.
+  if (result.scenarios) {
+    console.log("\nScenarios:");
+    for (const [k, v] of Object.entries(result.scenarios)) {
+      console.log(`  ${k.padEnd(20)} ${(v * 100).toFixed(2)}%`);
+    }
   }
   console.log("\nCategory scores:");
   for (const [k, v] of Object.entries(result.category_scores)) {

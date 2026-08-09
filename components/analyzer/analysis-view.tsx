@@ -216,6 +216,22 @@ export function AnalysisView({
     }
   })();
 
+  // Brief §1/§4 — the hero number, and the deterministic bilingual seam
+  // handoffs that thread the report together. Both are pure/zero-latency: the
+  // score is already computed, the handoff copy is a code template (0 model
+  // tokens). Guarded on data.result being present.
+  const overall = data.result
+    ? Math.round(
+        data.result.score > 1 ? data.result.score : data.result.score * 100,
+      )
+    : 0;
+  const handoff = (key: string) => (
+    <p className="mx-auto max-w-[70ch] text-center text-[12px] leading-relaxed text-white/45">
+      <span className="text-signal-300/70">↳ </span>
+      {t(key).replace("{overall}", String(overall))}
+    </p>
+  );
+
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
       <header className="flex items-start justify-between gap-4">
@@ -376,6 +392,9 @@ export function AnalysisView({
               {t("report.disclaimer")}
             </p>
 
+            {/* Brief §4 — seam 1: verdict → audit. */}
+            {handoff("report.handoffVerdictToAudit")}
+
             {/*
               Report layout — de-duplicated + re-ordered (tech-fixes §5).
 
@@ -432,15 +451,22 @@ export function AnalysisView({
               client-side: an empty screenshot_url shows the overlay's clean
               unavailable state.
             */}
+            {/* Brief §4 — seam 2: audit → roadmap. */}
+            {handoff("report.handoffAuditToRoadmap")}
+
             <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
               <div className="min-w-0">
                 <AnnotationsOverlay
                   imageUrl={data.screenshot_url ?? ""}
                   annotations={data.result.annotations}
+                  result={data.result}
                 />
               </div>
               <div className="min-w-0">
-                <CategoryRadar scores={data.result.category_scores} />
+                <CategoryRadar
+                  scores={data.result.category_scores}
+                  overall={data.result.score}
+                />
               </div>
             </div>
 
@@ -496,9 +522,17 @@ export function AnalysisView({
               that can run them.
             */}
             <div className="space-y-6">
-              <AdReadinessCard data={data.result.ad_readiness} />
+              {/* Brief §4 — seam 3: roadmap → ready-for-Meta. */}
+              {handoff("report.handoffRoadmapToMeta")}
+              <AdReadinessCard
+                data={data.result.ad_readiness}
+                overallScore={data.result.score}
+                result={data.result}
+              />
+              {/* Brief §4 — seam 4: ready-for-Meta → modeler. */}
+              {handoff("report.handoffMetaToModeler")}
               {viewer.isPaid ? (
-                <ConversionGauges scenarios={data.result.scenarios} />
+                <ConversionGauges score={data.result.score} niche={niche} />
               ) : (
                 <FreeMetaPanel score={data.result.score} niche={niche} />
               )}

@@ -95,7 +95,10 @@ export default async function CommunityAnalysisPage({
             {data.summary}
           </p>
         </Card>
-        <ConversionGauges scenarios={data.scenarios} />
+        <ConversionGauges
+          score={data.score}
+          niche={data.niche ?? data.domain?.split(".")[0] ?? "ecommerce"}
+        />
       </div>
 
       <div className="grid lg:grid-cols-[1fr_360px] gap-6">
@@ -106,7 +109,7 @@ export default async function CommunityAnalysisPage({
           }
           annotations={data.annotations}
         />
-        <CategoryRadar scores={data.category_scores} />
+        <CategoryRadar scores={data.category_scores} overall={data.score} />
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
