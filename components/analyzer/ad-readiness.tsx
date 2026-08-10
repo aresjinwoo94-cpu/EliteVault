@@ -5,7 +5,9 @@ import { Megaphone, ShieldAlert, CircleCheck, TriangleAlert } from "lucide-react
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { AdReadiness } from "@/lib/supabase/types";
+import { useT } from "@/components/i18n/locale-provider";
+import { linkIssues, paidTrafficBlockers } from "@/lib/analyzer/link-issues";
+import type { AdReadiness, AnalysisResult } from "@/lib/supabase/types";
 
 /**
  * "Ready for paid traffic?" — the media-buyer verdict.
@@ -44,7 +46,28 @@ const VERDICTS = {
   },
 };
 
-export function AdReadinessCard({ data }: { data?: AdReadiness | null }) {
+export function AdReadinessCard({
+  data,
+  overallScore,
+  result,
+}: {
+  data?: AdReadiness | null;
+  /**
+   * Brief §1 — the report's hero score. When present we render the bridge
+   * sentence that ties this ad-readiness number back to the overall audit, so
+   * the two never read as two unrelated scores competing for attention.
+   */
+  overallScore?: number | null;
+  /**
+   * Brief §3 — the full audit. When present, "fix before you spend" is rendered
+   * as a FILTERED VIEW of the report's unified issue set (the canonical issues
+   * that block paid traffic), so a blocker that's really the same problem as a
+   * roadmap fix shows once and points at that fix — instead of restating it in
+   * different words. Absent (e.g. the community page) → the raw blockers list.
+   */
+  result?: AnalysisResult | null;
+}) {
+  const { t } = useT();
   // Guard every field: this object comes from a model, and an audit stored
   // before the field existed simply has none of it.
   const verdict = data?.verdict;
@@ -56,10 +79,33 @@ export function AdReadinessCard({ data }: { data?: AdReadiness | null }) {
     typeof data?.score === "number" && Number.isFinite(data.score)
       ? Math.round(Math.max(0, Math.min(100, data.score)))
       : null;
-  const blockers = (data?.blockers ?? []).filter(
+  const rawBlockers = (data?.blockers ?? []).filter(
     (b) => b && typeof b.title === "string" && b.title.trim(),
   );
   const Icon = meta.icon;
+
+  // Brief §3 — when we have the full result, render the UNIFIED, filtered view:
+  // canonical issues that block paid traffic, each pointing at the roadmap fix
+  // it maps to (if any) rather than restating it. Falls back to the raw
+  // model-emitted blockers when the full result isn't available.
+  const linked = result ? linkIssues(result) : null;
+  const canonicalBlockers = linked
+    ? paidTrafficBlockers(linked).map((iss) => {
+        const fixRef = iss.refs.find((r) => r.source === "fix");
+        const blockerRef = iss.refs.find((r) => r.source === "blocker");
+        const why =
+          (blockerRef &&
+            result?.ad_readiness?.blockers?.[blockerRef.index]?.why?.trim()) ||
+          (fixRef && result?.top_fixes?.[fixRef.index]?.why?.trim()) ||
+          "";
+        return {
+          title: iss.title,
+          why,
+          // 1-indexed position in the roadmap, when this issue IS a roadmap fix.
+          fixNumber: fixRef ? fixRef.index + 1 : null,
+        };
+      })
+    : null;
 
   return (
     <motion.div
@@ -74,11 +120,17 @@ export function AdReadinessCard({ data }: { data?: AdReadiness | null }) {
         )}
       >
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-2">
-            <Megaphone className="size-4 text-signal-300" />
-            <h3 className="text-sm font-medium text-white">
-              Ready for Meta traffic?
-            </h3>
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <div className="flex items-center gap-2">
+              <Megaphone className="size-4 text-signal-300" />
+              <h3 className="text-sm font-medium text-white">
+                Ready for Meta traffic?
+              </h3>
+            </div>
+            {/* Brief §1 — label it explicitly as a lens on the same audit. */}
+            <span className="pl-6 text-[10px] uppercase tracking-widest text-white/35">
+              {t("report.adLensLabel")}
+            </span>
           </div>
           <div className="flex shrink-0 items-center gap-3">
             {score !== null && (
@@ -96,26 +148,60 @@ export function AdReadinessCard({ data }: { data?: AdReadiness | null }) {
 
         <p className="mt-3 text-sm leading-relaxed text-white/75">{summary}</p>
 
-        {blockers.length > 0 && (
+        {/* Brief §1 — the bridge sentence: relate this score to the overall
+            hero so they read as one audit through two lenses, not two rival
+            numbers. Only shown when we know both scores. */}
+        {score !== null &&
+          typeof overallScore === "number" &&
+          Number.isFinite(overallScore) && (
+            <p className="mt-2 text-xs leading-relaxed text-signal-200/80">
+              {t("report.adLensBridge").replace("{adScore}", String(score))}
+            </p>
+          )}
+
+        {(canonicalBlockers ?? rawBlockers).length > 0 && (
           <div className="mt-4 space-y-2">
             <p className="text-[10px] uppercase tracking-widest text-white/40">
               Fix before you spend
             </p>
-            {blockers.map((b, i) => (
-              <div
-                key={i}
-                className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3"
-              >
-                <p className="text-sm font-medium leading-tight text-white">
-                  {b.title}
-                </p>
-                {b.why?.trim() && (
-                  <p className="mt-1 text-xs leading-relaxed text-white/55">
-                    {b.why}
-                  </p>
-                )}
-              </div>
-            ))}
+            {canonicalBlockers
+              ? canonicalBlockers.map((b, i) => (
+                  <div
+                    key={i}
+                    className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-sm font-medium leading-tight text-white">
+                        {b.title}
+                      </p>
+                      {b.fixNumber !== null && (
+                        <span className="shrink-0 rounded-full border border-signal-400/30 bg-signal-500/10 px-2 py-0.5 text-[10px] font-medium text-signal-200">
+                          Roadmap fix #{b.fixNumber}
+                        </span>
+                      )}
+                    </div>
+                    {b.why && (
+                      <p className="mt-1 text-xs leading-relaxed text-white/55">
+                        {b.why}
+                      </p>
+                    )}
+                  </div>
+                ))
+              : rawBlockers.map((b, i) => (
+                  <div
+                    key={i}
+                    className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3"
+                  >
+                    <p className="text-sm font-medium leading-tight text-white">
+                      {b.title}
+                    </p>
+                    {b.why?.trim() && (
+                      <p className="mt-1 text-xs leading-relaxed text-white/55">
+                        {b.why}
+                      </p>
+                    )}
+                  </div>
+                ))}
           </div>
         )}
 

@@ -284,6 +284,26 @@ const en: Dict = {
   report: {
     disclaimer:
       "EliteVault doesn't predict the future — nobody can. It estimates from the current market and the state of your niche: demand, comparable winning stores, and active competitors.",
+    // Brief §4 — deterministic bilingual handoffs rendered at the section seams
+    // (generated in code, so they cost the model zero tokens and add zero
+    // latency). {overall} is interpolated by the caller. They never promise
+    // anything the audit state doesn't already support.
+    handoffVerdictToAudit:
+      "These are the issues dragging your score down to {overall}.",
+    handoffAuditToRoadmap:
+      "Fix #1 and #2 are the ones that move that number the most.",
+    handoffRoadmapToMeta:
+      "Clear these and you shift from “regular” toward “top buyer” up top.",
+    handoffMetaToModeler:
+      "With those fixed, this projection stops being optimistic.",
+    // Brief §1 — ad-readiness reframed as a LENS on the same audit, never a
+    // second competing score. {adScore} interpolated by the caller.
+    adLensLabel: "A lens on the same audit",
+    adLensBridge:
+      "Your Meta readiness ({adScore}) is your same audit filtered through what decides a cold-traffic purchase — not a separate, competing score.",
+    // Brief §1 — makes the hero/breakdown reconciliation visible: these six,
+    // weighted, ARE the overall. {overall} interpolated by the caller.
+    categoryReconcile: "These six, weighted, are your {overall}/100 overall.",
     // Brief §1.3 — Growth Map copy (both locales).
     mapIntro:
       "This maps how far your store's conversion readiness can carry it — not your current revenue.",
@@ -871,6 +891,26 @@ const es: Dict = {
   report: {
     disclaimer:
       "EliteVault no predice el futuro —nadie puede—. Estima a partir del mercado actual y del estado de tu nicho: la demanda, tiendas ganadoras comparables y competidores activos.",
+    // Brief §4 — handoffs deterministas bilingües en los seams de cada sección
+    // (generados en código: 0 tokens del modelo, 0 latencia). El llamador
+    // interpola {overall}. Nunca prometen nada que el estado del audit no
+    // respalde ya.
+    handoffVerdictToAudit:
+      "Estos son los problemas que arrastran tu score hasta {overall}.",
+    handoffAuditToRoadmap:
+      "El fix #1 y el #2 son los que más mueven ese número.",
+    handoffRoadmapToMeta:
+      "Arréglalos y pasas de “regular” hacia “top buyer” allá arriba.",
+    handoffMetaToModeler:
+      "Con eso corregido, esta proyección deja de ser optimista.",
+    // Brief §1 — ad-readiness como LENTE del mismo audit, nunca un segundo
+    // score que compite. El llamador interpola {adScore}.
+    adLensLabel: "Una lente del mismo audit",
+    adLensBridge:
+      "Tu preparación para Meta ({adScore}) es tu mismo audit filtrado por lo que decide una compra en frío — no un score aparte que compite.",
+    // Brief §1 — hace visible que el desglose reconcilia con el héroe: estas
+    // seis, ponderadas, SON el overall. El llamador interpola {overall}.
+    categoryReconcile: "Estas seis, ponderadas, son tu {overall}/100 general.",
     // Brief §1.3 — copy del Growth Map (ambos locales).
     mapIntro:
       "Esto mapea hasta dónde puede llevar a tu tienda su preparación para convertir — no tus ingresos actuales.",

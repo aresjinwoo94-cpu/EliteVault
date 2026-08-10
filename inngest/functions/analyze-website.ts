@@ -9,6 +9,8 @@ import {
 } from "@/lib/screenshot-cache";
 import { discoverSite } from "@/lib/site-discovery";
 import { runAnalyzerAgent } from "@/ai/agents/analyzer-agent";
+import { withDerivedScore } from "@/lib/analyzer/derive-score";
+import { scenarioMidpoints } from "@/lib/analyzer/conversion-scenarios";
 import { runQuickScore } from "@/ai/agents/quick-score-agent";
 import { runMetaAdsOptimizerAgent } from "@/ai/agents/meta-ads-optimizer-agent";
 import { buildNicheWinnersFromScreenshot } from "@/lib/library/niche-winners";
@@ -383,7 +385,7 @@ export const analyzeWebsite = inngest.createFunction(
           );
         }
       }
-      return runAnalyzerAgent({
+      const audit = await runAnalyzerAgent({
         screenshotBase64: primaryBase64,
         mediaType: screenshot.mediaType,
         url,
@@ -416,6 +418,16 @@ export const analyzeWebsite = inngest.createFunction(
             }
           : null,
       });
+
+      // Brief §1/§2 — derive the two numbers the model no longer emits, right
+      // here at persistence so EVERY downstream reader (meta-ads below,
+      // save-result, placement.compositeOf, the Growth Map hero, the free ROAS
+      // panel) sees a `score` reconciled with the category breakdown and
+      // `scenarios` as deterministic niche/score-derived values — never the
+      // model's independent, false-precision numbers. Pure functions, no I/O.
+      const scored = withDerivedScore(audit);
+      scored.scenarios = scenarioMidpoints(scored.score, niche);
+      return scored;
     });
 
     // Meta Ads Optimizer (Scale only) — the legacy `runRewrite` flag routes

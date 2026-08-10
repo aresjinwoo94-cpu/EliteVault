@@ -50,8 +50,16 @@ export interface Annotation {
 }
 
 export interface AnalysisResult {
-  score: number;                      // 1..100
-  scenarios: ConversionScenarios;
+  score: number;                      // 1..100 — derived in code (brief §1)
+  /**
+   * Back-compat point values. New audits store code-derived midpoints (brief
+   * §2); the report UI renders BANDS from (score, niche), not these. Optional
+   * because the model no longer emits them and a fresh result is stamped by the
+   * pipeline, not the model.
+   */
+  scenarios?: ConversionScenarios;
+  /** Brief §1 — 2 once `score`/`scenarios` are code-derived; absent on old audits. */
+  schema_version?: number;
   category_scores: {
     color_integration: number;
     layout_proportion: number;

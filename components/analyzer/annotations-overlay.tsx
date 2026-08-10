@@ -6,7 +6,8 @@ import { ImageOff, Layers, Maximize2, Wrench } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { Annotation } from "@/lib/supabase/types";
+import { linkIssues } from "@/lib/analyzer/link-issues";
+import type { Annotation, AnalysisResult } from "@/lib/supabase/types";
 
 /**
  * Severity → solid pin color. high=red, medium=orange, low=green.
@@ -65,6 +66,7 @@ export function AnnotationsOverlay({
   imageUrl,
   annotations: raw,
   altLabel = "Audit screenshot",
+  result,
 }: {
   imageUrl: string;
   annotations: Annotation[];
@@ -73,8 +75,32 @@ export function AnnotationsOverlay({
   // In-app pages live under /app/* (robots-disallowed) so they keep the
   // generic default — alt text there has no crawl value.
   altLabel?: string;
+  /**
+   * Brief §3(c) — the full audit. When present, each screenshot marker that
+   * maps (via the deterministic issue linker) to a roadmap fix shows a
+   * "Fix #N" chip, so the marker and its prioritized fix are visibly the same
+   * issue instead of two disconnected mentions. Absent → no chips (e.g. the
+   * community page passes only annotations).
+   */
+  result?: AnalysisResult | null;
 }) {
   const annotations = normalizeCoords(raw);
+
+  // Brief §3(c) — map annotation index → roadmap fix number, when the linker
+  // groups them into the same canonical issue. `raw` is the untouched
+  // result.annotations array (normalizeCoords preserves order), so indices line
+  // up with the linker's annotation refs.
+  const fixNumberByAnnotation: Record<number, number> = {};
+  if (result) {
+    const linked = linkIssues(result);
+    for (const iss of linked.issues) {
+      const fixRef = iss.refs.find((r) => r.source === "fix");
+      if (!fixRef) continue;
+      for (const r of iss.refs) {
+        if (r.source === "annotation") fixNumberByAnnotation[r.index] = fixRef.index + 1;
+      }
+    }
+  }
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const [imgErrored, setImgErrored] = useState(false);
@@ -349,7 +375,15 @@ export function AnnotationsOverlay({
                 {i + 1}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-sm text-white font-medium">{a.message}</p>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm text-white font-medium">{a.message}</p>
+                  {/* Brief §3(c) — same issue as a roadmap fix, made visible. */}
+                  {fixNumberByAnnotation[i] != null && (
+                    <span className="mt-0.5 shrink-0 rounded-full border border-signal-400/30 bg-signal-500/10 px-2 py-0.5 text-[10px] font-medium text-signal-200">
+                      Fix #{fixNumberByAnnotation[i]}
+                    </span>
+                  )}
+                </div>
                 <AnimatePresence initial={false}>
                   {isOpen && (
                     <motion.p

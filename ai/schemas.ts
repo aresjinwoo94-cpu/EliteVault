@@ -122,8 +122,23 @@ export const PersonaResponseSchema = z.object({
 });
 
 export const AnalysisResultSchema = z.object({
-  score: z.number().min(0).max(100),
-  scenarios: ConversionScenariosSchema,
+  /**
+   * Brief §1/§2 — `score` and `scenarios` are NO LONGER emitted by the model.
+   * They're derived in code (lib/analyzer/derive-score.ts +
+   * conversion-scenarios.ts) at persistence, which reconciles the hero with the
+   * category breakdown, kills false-precision conversion %s, AND shrinks the
+   * model's output — the pipeline's binding constraint (§6).
+   *
+   * They stay OPTIONAL here (not removed) so:
+   *   • current generations that omit them still validate, and
+   *   • audits stored before this change (which DO carry them) still open.
+   * The bounds still apply when a value IS present, so a model that ignores the
+   * schema and returns 0..1 or 720 is still rejected into the repair pass.
+   */
+  score: z.number().min(0).max(100).optional(),
+  scenarios: ConversionScenariosSchema.optional(),
+  /** Stamped by withDerivedScore at persistence; absent on pre-v2 analyses. */
+  schema_version: z.number().int().optional(),
   category_scores: CategoryScoresSchema,
   buyer_persona_response: PersonaResponseSchema,
   annotations: z.array(AnnotationSchema).max(30),
@@ -148,17 +163,11 @@ export type RewriteResult = z.infer<typeof RewriteResultSchema>;
 export const ANALYSIS_TOOL_SCHEMA = {
   type: "object",
   properties: {
-    score: { type: "number", minimum: 0, maximum: 100 },
-    scenarios: {
-      type: "object",
-      properties: {
-        organic: { type: "number", minimum: 0, maximum: 1 },
-        meta_ads_bad: { type: "number", minimum: 0, maximum: 1 },
-        meta_ads_regular: { type: "number", minimum: 0, maximum: 1 },
-        meta_ads_good: { type: "number", minimum: 0, maximum: 1 },
-      },
-      required: ["organic", "meta_ads_bad", "meta_ads_regular", "meta_ads_good"],
-    },
+    // Brief §1/§2 — `score` and `scenarios` are intentionally NOT requested from
+    // the model. They're derived deterministically in code from category_scores
+    // + niche at persistence, which reconciles the hero with the breakdown,
+    // removes false-precision conversion %s, and shrinks the model's output (the
+    // binding latency constraint). The model returns only the categories.
     category_scores: {
       type: "object",
       properties: {
@@ -248,8 +257,6 @@ export const ANALYSIS_TOOL_SCHEMA = {
     },
   },
   required: [
-    "score",
-    "scenarios",
     "category_scores",
     "buyer_persona_response",
     "annotations",

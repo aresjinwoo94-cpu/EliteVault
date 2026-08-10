@@ -791,7 +791,22 @@ export async function loadNicheWinnersModule(input: {
       if (niche) {
         const data = await getNicheWinners(niche, { seed, exclude: ownDomain });
         if (data.winners.length > 0) {
-          return gateWinners(data, input.isPaid, "niche");
+          // Brief §5 — only CLAIM "winners in your niche" when there's genuine
+          // exact-niche inventory. When the list is entirely backfill from
+          // related niches (no exact match), showing giant off-niche brands
+          // under a niche-match header is exactly the "AG1/Liquid Death to an
+          // apparel store" mismatch the brief calls out. In that case we keep
+          // the same (honestly per-row-labelled) stores but relabel the card as
+          // ecommerce-wide benchmarks rather than a niche claim.
+          const hasExact = data.winners.some((w) => w.exactMatch);
+          if (hasExact) {
+            return gateWinners(data, input.isPaid, "niche");
+          }
+          return gateWinners(
+            { ...data, nicheLabel: "Across ecommerce" },
+            input.isPaid,
+            "global",
+          );
         }
       }
 
