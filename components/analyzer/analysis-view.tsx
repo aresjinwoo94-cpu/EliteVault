@@ -20,6 +20,7 @@ import { CategoryRadar } from "./category-radar";
 import { AnnotationsOverlay } from "./annotations-overlay";
 import { PersonaResponse } from "./persona-response";
 import { TopFixes } from "./top-fixes";
+import { ReportNav } from "./report-nav";
 // RewritePanel removed from v2.1 — Auto-Rewrite is no longer shown in the
 // analyzer; only Meta Ads Optimizer lives as the Scale-tier extra.
 import { AnalyzingState } from "./analyzing-state";
@@ -370,18 +371,28 @@ export function AnalysisView({
           className="space-y-6"
         >
             {/*
+              Report index (jump nav) — a compact overview of what the finished
+              audit contains, with smooth-scroll to each section. Client-only,
+              zero pipeline cost. Sits above the hero as the report's table of
+              contents.
+            */}
+            <ReportNav />
+
+            {/*
               THE GROWTH MAP — hero, at the very top of the result (spec §9).
               Additive: it reads `data.result` (already computed) and never
               touches the analyzer's scoring or the sections below it. Free sees
               the map + their rank + the current-node diagnosis; the escape
               route (nodes ahead) is gated to Pro.
             */}
-            <GrowthMap
-              analysisId={data.id}
-              result={data.result}
-              url={data.url}
-              isPaid={viewer.isPaid}
-            />
+            <div id="section-growth-map" className="scroll-mt-24">
+              <GrowthMap
+                analysisId={data.id}
+                result={data.result}
+                url={data.url}
+                isPaid={viewer.isPaid}
+              />
+            </div>
 
             {/*
               Brief §3 — the ONE canonical disclaimer, shown once here, right
@@ -419,31 +430,33 @@ export function AnalysisView({
               Winners module. Two stacks of similar height, so the columns
               balance. If the Winners module is hidden, fixes go full width.
             */}
-            {(() => {
-              const winnersCard = nicheWinners ? (
-                <NicheWinners
-                  nicheLabel={nicheWinners.nicheLabel}
-                  winners={nicheWinners.winners}
-                  locked={nicheWinners.locked}
-                  lockedCount={nicheWinners.lockedCount}
-                  scope={nicheWinners.scope ?? "niche"}
-                />
-              ) : null;
-              const topFixes = (
-                <TopFixes
-                  fixes={data.result.top_fixes}
-                  unlockedCount={viewer.isPaid ? undefined : 1}
-                />
-              );
-              return winnersCard ? (
-                <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
-                  <div className="min-w-0">{topFixes}</div>
-                  <div className="min-w-0">{winnersCard}</div>
-                </div>
-              ) : (
-                topFixes
-              );
-            })()}
+            <div id="section-fixes" className="scroll-mt-24">
+              {(() => {
+                const winnersCard = nicheWinners ? (
+                  <NicheWinners
+                    nicheLabel={nicheWinners.nicheLabel}
+                    winners={nicheWinners.winners}
+                    locked={nicheWinners.locked}
+                    lockedCount={nicheWinners.lockedCount}
+                    scope={nicheWinners.scope ?? "niche"}
+                  />
+                ) : null;
+                const topFixes = (
+                  <TopFixes
+                    fixes={data.result.top_fixes}
+                    unlockedCount={viewer.isPaid ? undefined : 1}
+                  />
+                );
+                return winnersCard ? (
+                  <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
+                    <div className="min-w-0">{topFixes}</div>
+                    <div className="min-w-0">{winnersCard}</div>
+                  </div>
+                ) : (
+                  topFixes
+                );
+              })()}
+            </div>
 
             {/*
               3 — The visual diagnosis, shown ONCE. LEFT: annotated screenshot.
@@ -454,7 +467,10 @@ export function AnalysisView({
             {/* Brief §4 — seam 2: audit → roadmap. */}
             {handoff("report.handoffAuditToRoadmap")}
 
-            <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
+            <div
+              id="section-audit"
+              className="grid lg:grid-cols-[1fr_360px] gap-6 items-start scroll-mt-24"
+            >
               <div className="min-w-0">
                 <AnnotationsOverlay
                   imageUrl={data.screenshot_url ?? ""}
@@ -474,18 +490,20 @@ export function AnalysisView({
               4 — Buyer-persona reaction. Paid users see it; Free sees it blurred
               behind a Pro upgrade CTA (their real computed response).
             */}
-            {viewer.isPaid ? (
-              <PersonaResponse response={data.result.buyer_persona_response} />
-            ) : (
-              <FreeLockedCure
-                title="Buyer-persona simulation"
-                tagline="Hear exactly how your target buyer reacts to your store — what makes them hesitate, and whether they'd buy."
-              >
-                <PersonaResponse
-                  response={data.result.buyer_persona_response}
-                />
-              </FreeLockedCure>
-            )}
+            <div id="section-persona" className="scroll-mt-24">
+              {viewer.isPaid ? (
+                <PersonaResponse response={data.result.buyer_persona_response} />
+              ) : (
+                <FreeLockedCure
+                  title="Buyer-persona simulation"
+                  tagline="Hear exactly how your target buyer reacts to your store — what makes them hesitate, and whether they'd buy."
+                >
+                  <PersonaResponse
+                    response={data.result.buyer_persona_response}
+                  />
+                </FreeLockedCure>
+              )}
+            </div>
 
             {/*
               5 — Analyzer → Library bridge. "So who's beating me, and what do
@@ -521,7 +539,7 @@ export function AnalysisView({
               modelable ROAS panel (free). The live Meta tools follow for plans
               that can run them.
             */}
-            <div className="space-y-6">
+            <div id="section-meta" className="space-y-6 scroll-mt-24">
               {/* Brief §4 — seam 3: roadmap → ready-for-Meta. */}
               {handoff("report.handoffRoadmapToMeta")}
               <AdReadinessCard
