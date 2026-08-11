@@ -85,6 +85,7 @@ export async function GET(
       const movement = await readGrowthMovement({
         analysisId: id,
         url: analysis.url,
+        result,
         currentComposite: compositeOf(result),
         currentRankIndex: data.placement.rankIndex,
       });

@@ -9,6 +9,11 @@ import {
 } from "../../lib/growth-map/placement";
 import { scaffoldDiagnosis, scaffoldNodes } from "../../lib/growth-map/phrase-bank";
 import { gateForViewer } from "../../lib/growth-map/gate";
+import {
+  isRankMoveConfident,
+  crossedWall,
+  HYSTERESIS_MARGIN,
+} from "../../lib/growth-map/movement";
 import { GROWTH_MAP_VERSION, type GrowthMapData } from "../../lib/growth-map/types";
 
 /**
@@ -310,6 +315,32 @@ test("§11 sensitivity: removing a cited leak lifts the deterministic read on re
   const moved =
     after.rankIndex > before.rankIndex || pAfter.pct > pBefore.pct;
   assert.ok(moved, "a real fix must move the rank or the intra-stage progress bar");
+});
+
+// ── A4 — hysteresis on the movement layer ───────────────────────────────────
+
+test("A4 hysteresis: a marginal composite wobble is NOT a confident rank move", () => {
+  // Steel(1)→Silver(2) but the composite only moved 2 pts (69→71): within the
+  // ±noise band, so we must NOT narrate an advance (the phantom flip).
+  assert.equal(isRankMoveConfident(69, 71, 1, 2), false);
+  // A real jump past the margin IS confident.
+  assert.equal(isRankMoveConfident(66, 74, 1, 2), true);
+});
+
+test("A4 hysteresis: same rank is never a rank move, even on a big composite swing", () => {
+  assert.equal(isRankMoveConfident(45, 60, 1, 1), false);
+});
+
+test("A4 hysteresis: the margin is exactly the ±noise threshold (inclusive)", () => {
+  // A composite delta of exactly HYSTERESIS_MARGIN clears the bar.
+  assert.equal(isRankMoveConfident(67, 67 + HYSTERESIS_MARGIN, 1, 2), true);
+  assert.equal(isRankMoveConfident(67, 67 + HYSTERESIS_MARGIN - 1, 1, 2), false);
+});
+
+test("A4 crossedWall fires only Steel→past-the-Wall", () => {
+  assert.equal(crossedWall(1, 2), true); // Steel → Silver
+  assert.equal(crossedWall(0, 1), false); // Copper → Steel is still before the Wall
+  assert.equal(crossedWall(2, 3), false); // already past the Wall
 });
 
 test("scaffoldNodes lockNext toggles the immediate next node", () => {
