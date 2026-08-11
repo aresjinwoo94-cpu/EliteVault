@@ -5,6 +5,7 @@ import {
   computePlacement,
   compositeOf,
   projectPlacement,
+  progressToNextRank,
 } from "../../lib/growth-map/placement";
 import { scaffoldDiagnosis, scaffoldNodes } from "../../lib/growth-map/phrase-bank";
 import { gateForViewer } from "../../lib/growth-map/gate";
@@ -231,6 +232,84 @@ test("projectPlacement surfaces the lift fixes (≤3) that drive the advance", (
   assert.ok(proj.liftFixes.length <= 3);
   // storeA's single high-impact fix should be named.
   assert.ok(proj.liftFixes.includes(storeA.top_fixes[0].title));
+});
+
+// ── A3 — intra-stage progress toward the next rank ──────────────────────────
+
+test("progressToNextRank: mid-band composite reports partial progress + edge distance", () => {
+  // Steel band is [40,70); composite 55 sits halfway to the Silver edge (70).
+  const p = progressToNextRank(55, 1);
+  assert.ok(Math.abs(p.pct - 0.5) < 0.02, `expected ~0.5 pct, got ${p.pct}`);
+  assert.equal(p.toNextEdge, 15, `expected 15 points to the edge, got ${p.toNextEdge}`);
+  assert.equal(p.nextRankKey, "silver");
+});
+
+test("progressToNextRank: improvement within the SAME band is visible (A3 sensitivity)", () => {
+  // The whole point: a store that improves but doesn't cross a rank still moves
+  // the bar — indispensable while most stores live in the wide Steel band.
+  const lo = progressToNextRank(45, 1);
+  const hi = progressToNextRank(65, 1);
+  assert.ok(hi.pct > lo.pct, "a higher composite in the same band must show more progress");
+  assert.ok(hi.toNextEdge < lo.toNextEdge, "and fewer points to the next edge");
+});
+
+test("progressToNextRank: derives band edges from bandCompositeToIndex (no drift)", () => {
+  // At the lower edge of a band, progress is ~0; just under the upper edge, ~full.
+  const bottom = progressToNextRank(40, 1); // Steel lower edge
+  const top = progressToNextRank(69, 1); // just below Silver edge (70)
+  assert.ok(bottom.pct < 0.05, `bottom of band should read ~0, got ${bottom.pct}`);
+  assert.ok(top.pct > 0.9, `top of band should read ~full, got ${top.pct}`);
+  assert.equal(top.toNextEdge, 1);
+});
+
+test("progressToNextRank: top rank (Ruby) has no next edge", () => {
+  const p = progressToNextRank(98, 5);
+  assert.equal(p.nextRankKey, null);
+  assert.equal(p.toNextEdge, 0);
+  assert.equal(p.pct, 1);
+});
+
+test("progressToNextRank: clamps and stays deterministic", () => {
+  assert.deepEqual(progressToNextRank(55, 1), progressToNextRank(55, 1));
+  // Out-of-range composite is clamped, never NaN/negative.
+  const over = progressToNextRank(200, 1);
+  assert.ok(over.pct >= 0 && over.pct <= 1);
+  assert.ok(over.toNextEdge >= 0);
+});
+
+test("§11 sensitivity: removing a cited leak lifts the deterministic read on re-run", () => {
+  // The same store, twice: once with a CRO leak, once with it fixed. The
+  // deterministic layer (composite → band → intra-stage progress) MUST recognize
+  // the improvement so a re-audit doesn't feel like the tool ignored the work.
+  const withLeak = makeResult({
+    score: 52,
+    cro: 44, // the leak the owner is told to fix
+    offer: 58,
+    summary: "Passive CTA below the fold; funnel leaks.",
+    topFix: "Move the CTA above the fold and make it outcome-first",
+  });
+  const fixed = makeResult({
+    score: 60, // fixing the funnel lifts the headline too
+    cro: 68, // the cited leak is gone
+    offer: 58,
+    summary: "CTA above the fold; funnel tightened.",
+    topFix: "Add reviews near the buy button",
+  });
+
+  assert.ok(
+    compositeOf(fixed) > compositeOf(withLeak),
+    "clearing the leak must raise the composite",
+  );
+
+  const before = computePlacement(withLeak);
+  const after = computePlacement(fixed);
+  const pBefore = progressToNextRank(compositeOf(withLeak), before.rankIndex);
+  const pAfter = progressToNextRank(compositeOf(fixed), after.rankIndex);
+  // Either the rank advances OR the intra-stage bar moves forward — either way,
+  // the owner sees recognition (never a flat/negative read for a real fix).
+  const moved =
+    after.rankIndex > before.rankIndex || pAfter.pct > pBefore.pct;
+  assert.ok(moved, "a real fix must move the rank or the intra-stage progress bar");
 });
 
 test("scaffoldNodes lockNext toggles the immediate next node", () => {

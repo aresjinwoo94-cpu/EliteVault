@@ -24,6 +24,21 @@ export interface GrowthMapPlacement {
 }
 
 /**
+ * Intra-stage progress toward the next rank (brief A3). Pure, zero-latency and
+ * client-rendered — drives the "72% of the way to Silver / X from Steel" bar so
+ * a store's improvement is visible even before it crosses a rank (indispensable
+ * while most stores live in the wide Steel band).
+ */
+export interface RankProgress {
+  /** 0..1 progress through the current band toward its upper edge. */
+  pct: number;
+  /** Composite points left to cross into the next rank (0 once at/over the edge). */
+  toNextEdge: number;
+  /** The rank the store is climbing toward; null at the top rank (Ruby). */
+  nextRankKey: RankKey | null;
+}
+
+/**
  * The projected "potential" node (brief §1.1) — "here's where these fixes take
  * you". Derived DETERMINISTICALLY from the report's own top-fix impacts, capped
  * at one rank of advance for realism. No API, no latency. Present on the payload
