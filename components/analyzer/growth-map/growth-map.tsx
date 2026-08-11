@@ -176,9 +176,9 @@ export function GrowthMap({
   const nextFixTitle = result.top_fixes?.find((f) => f?.title?.trim())?.title?.trim() ?? null;
   const wallVerdict = result.ad_readiness?.verdict;
   const WALL_VERDICT_META: Record<string, { dot: string; label: string }> = {
-    ready: { dot: "#22C55E", label: "Ad-ready" },
-    almost: { dot: "#EAB308", label: "Almost ad-ready" },
-    not_ready: { dot: "#EF4444", label: "Not ad-ready" },
+    ready: { dot: "#22C55E", label: t("report.wallAdReady") },
+    almost: { dot: "#EAB308", label: t("report.wallAdAlmost") },
+    not_ready: { dot: "#EF4444", label: t("report.wallAdNot") },
   };
 
   return (
@@ -268,7 +268,7 @@ export function GrowthMap({
                   style={{ background: WALL_VERDICT_META[wallVerdict].dot }}
                   aria-hidden
                 />
-                The Wall · {WALL_VERDICT_META[wallVerdict].label}
+                {t("report.wallPrefix")} · {WALL_VERDICT_META[wallVerdict].label}
               </div>
             )}
             {/* §1.3 — reads the map honestly: readiness, not revenue. */}

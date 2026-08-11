@@ -32,6 +32,10 @@ const REPORT_KEYS = [
   "changedStageFlat",
   "climbHeading",
   "climbMoreFixes",
+  "wallPrefix",
+  "wallAdReady",
+  "wallAdAlmost",
+  "wallAdNot",
 ] as const;
 
 test("report copy exists in both locales (en + es)", () => {

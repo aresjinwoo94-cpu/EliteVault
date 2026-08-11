@@ -339,6 +339,11 @@ const en: Dict = {
     // Master brief §C — the current→next segment reveals the escalera (fixes).
     climbHeading: "How you climb",
     climbMoreFixes: "+{count} more fixes with Pro",
+    // Master brief §C — the ad-readiness semáforo that sits at the Wall.
+    wallPrefix: "The Wall",
+    wallAdReady: "Ad-ready",
+    wallAdAlmost: "Almost ad-ready",
+    wallAdNot: "Not ad-ready",
   },
   analyzerDemo: {
     heading: "A senior media buyer in a tab.",
@@ -968,6 +973,11 @@ const es: Dict = {
     // Master brief §C — el segmento actual→siguiente revela la escalera (fixes).
     climbHeading: "Cómo subes",
     climbMoreFixes: "+{count} arreglos más con Pro",
+    // Master brief §C — el semáforo de ad-readiness que vive en el Muro.
+    wallPrefix: "El Muro",
+    wallAdReady: "Listo para ads",
+    wallAdAlmost: "Casi listo para ads",
+    wallAdNot: "No listo para ads",
   },
   analyzerDemo: {
     heading: "Un media buyer senior en una pestaña.",
