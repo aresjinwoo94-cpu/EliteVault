@@ -147,6 +147,40 @@ export function GrowthMap({
   const nextRank = progress.nextRankKey ? rankByIndex(current + 1) : null;
   const progressPct = Math.round(progress.pct * 100);
 
+  // §C — the modules that used to float loose now hang off the map by
+  // progressive disclosure: the CURRENT node reveals the leaks (why you're
+  // here), the current→next SEGMENT reveals the escalera (how you climb), and
+  // the Wall carries the ad-readiness semáforo. All derived from the result
+  // that's already here — no new data, no pipeline touch, and the SVG stays
+  // clean because the detail lives in the band, not inside the medallions.
+  const leaks = useMemo(() => {
+    const cats = result.category_scores as Record<string, number> | undefined;
+    const norm = (v: number | undefined) => {
+      const n = Number(v ?? 0);
+      if (!Number.isFinite(n)) return 0;
+      return Math.max(0, Math.min(100, n > 1 ? n : n * 100));
+    };
+    const LABELS: { key: string; label: string }[] = [
+      { key: "cro_principles", label: "Conversion fundamentals" },
+      { key: "niche_coherence", label: "Offer clarity" },
+      { key: "technical_optimization", label: "Technical health" },
+      { key: "layout_proportion", label: "Layout & hierarchy" },
+      { key: "image_quality", label: "Imagery" },
+      { key: "color_integration", label: "Visual cohesion" },
+    ];
+    return LABELS.map((l) => ({ ...l, v: Math.round(norm(cats?.[l.key])) }))
+      .filter((l) => l.v < 65)
+      .sort((a, b) => a.v - b.v)
+      .slice(0, 3);
+  }, [result]);
+  const nextFixTitle = result.top_fixes?.find((f) => f?.title?.trim())?.title?.trim() ?? null;
+  const wallVerdict = result.ad_readiness?.verdict;
+  const WALL_VERDICT_META: Record<string, { dot: string; label: string }> = {
+    ready: { dot: "#22C55E", label: "Ad-ready" },
+    almost: { dot: "#EAB308", label: "Almost ad-ready" },
+    not_ready: { dot: "#EF4444", label: "Not ad-ready" },
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -155,6 +189,62 @@ export function GrowthMap({
     >
       <Card className="glow-card relative overflow-hidden p-4 md:p-6">
         <div className="pointer-events-none absolute -right-16 -top-20 size-64 rounded-full bg-signal-500/10 blur-3xl" />
+
+        {/* §D — the return visit OPENS with what changed. Issue-delta is the
+            protagonist (resolved / new); the stage move is the secondary line.
+            Deterministic copy, 0 tokens. Present only when the issue-diff flag is
+            on server-side AND a prior run persisted issue snapshots. */}
+        {movement?.issueDelta &&
+          (movement.issueDelta.resolved.length > 0 ||
+            movement.issueDelta.introduced.length > 0) && (
+            <div className="relative mb-4 overflow-hidden rounded-xl border border-signal-400/25 bg-signal-500/[0.05] px-4 py-3.5">
+              <p className="text-[10.5px] uppercase tracking-[0.18em] text-white/45">
+                {t("report.changedSince").replace(
+                  "{date}",
+                  new Date(movement.previousAt).toLocaleDateString(),
+                )}
+              </p>
+              <div className="mt-2 space-y-2">
+                {movement.issueDelta.resolved.length > 0 && (
+                  <div className="flex items-start gap-2">
+                    <span className="mt-[3px] shrink-0 rounded-full bg-[#22C55E]/15 px-2 py-[1px] text-[10px] font-semibold text-[#22C55E]">
+                      {t("report.changedResolved")}
+                    </span>
+                    <p className="min-w-0 text-[12px] leading-relaxed text-white/80">
+                      {movement.issueDelta.resolved.map((i) => i.title).join(" · ")}
+                    </p>
+                  </div>
+                )}
+                {movement.issueDelta.introduced.length > 0 && (
+                  <div className="flex items-start gap-2">
+                    <span className="mt-[3px] shrink-0 rounded-full bg-champagne-300/15 px-2 py-[1px] text-[10px] font-semibold text-champagne-200">
+                      {t("report.changedNew")}
+                    </span>
+                    <p className="min-w-0 text-[12px] leading-relaxed text-white/70">
+                      {movement.issueDelta.introduced.map((i) => i.title).join(" · ")}
+                    </p>
+                  </div>
+                )}
+              </div>
+              <p className="mt-2 text-[11px] text-white/45">
+                {movement.rankMoveConfident &&
+                movement.currentRankIndex !== movement.previousRankIndex
+                  ? t("report.changedStageLine")
+                      .replace("{from}", rankByIndex(movement.previousRankIndex).material)
+                      .replace("{to}", rankByIndex(movement.currentRankIndex).material)
+                  : t("report.changedStageFlat")}
+                {movement.issueDelta.stillOpen.length > 0 && (
+                  <span className="text-white/35">
+                    {" · "}
+                    {t("report.changedStillOpen").replace(
+                      "{count}",
+                      String(movement.issueDelta.stillOpen.length),
+                    )}
+                  </span>
+                )}
+              </p>
+            </div>
+          )}
 
         {/* Minimal header (spec §7/§8) — short headline; detail lives in popovers */}
         <div className="relative flex items-start justify-between gap-4 flex-wrap">
@@ -168,6 +258,19 @@ export function GrowthMap({
                 <span className="text-white/60"> — one step from The Wall</span>
               )}
             </h2>
+            {/* §C — the ad-readiness semáforo lives AT the Wall: clearing it is
+                what makes the store ad-ready. Just the light here; the full
+                blockers list stays in its own card below. */}
+            {mapSpine && wallVerdict && WALL_VERDICT_META[wallVerdict] && (
+              <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.02] px-2.5 py-1 text-[11px] text-white/70">
+                <span
+                  className="size-2 rounded-full"
+                  style={{ background: WALL_VERDICT_META[wallVerdict].dot }}
+                  aria-hidden
+                />
+                The Wall · {WALL_VERDICT_META[wallVerdict].label}
+              </div>
+            )}
             {/* §1.3 — reads the map honestly: readiness, not revenue. */}
             <p className="mt-1.5 text-[11.5px] leading-snug text-white/45 max-w-[52ch]">
               {t("report.mapIntro")}
@@ -412,6 +515,47 @@ export function GrowthMap({
                   </motion.p>
                 )}
               </AnimatePresence>
+
+              {/* §C — progressive disclosure: the CURRENT node reveals the leaks
+                  (why you're here), the current→next node reveals the escalera
+                  (how you climb). Free still sees only the #1 fix — the lock on
+                  the rest is preserved. */}
+              {mapSpine && openIndex === current && leaks.length > 0 && (
+                <div className="mt-2.5 border-t border-white/[0.05] pt-2.5">
+                  <p className="mb-1 text-[10px] uppercase tracking-[0.14em] text-white/40">
+                    {t("report.leaksHeading")}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {leaks.map((l) => (
+                      <span
+                        key={l.key}
+                        className="rounded-md border border-white/[0.07] bg-white/[0.02] px-2 py-0.5 text-[11px] text-white/70"
+                      >
+                        {l.label}{" "}
+                        <span className="tnum text-white/40">{l.v}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {mapSpine && openIndex === current + 1 && nextFixTitle && (
+                <div className="mt-2.5 border-t border-white/[0.05] pt-2.5">
+                  <p className="mb-1 text-[10px] uppercase tracking-[0.14em] text-white/40">
+                    {t("report.climbHeading")}
+                  </p>
+                  <p className="text-[12px] leading-snug text-white/80">
+                    {nextFixTitle}
+                  </p>
+                  {!isPaid && (result.top_fixes?.length ?? 0) > 1 && (
+                    <p className="mt-1 text-[11px] text-signal-200/80">
+                      {t("report.climbMoreFixes").replace(
+                        "{count}",
+                        String((result.top_fixes?.length ?? 1) - 1),
+                      )}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

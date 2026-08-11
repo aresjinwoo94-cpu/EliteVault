@@ -336,6 +336,9 @@ const en: Dict = {
     changedStillOpen: "{count} still open",
     changedStageLine: "Stage: {from} → {to}",
     changedStageFlat: "Same stage — but the bar moved.",
+    // Master brief §C — the current→next segment reveals the escalera (fixes).
+    climbHeading: "How you climb",
+    climbMoreFixes: "+{count} more fixes with Pro",
   },
   analyzerDemo: {
     heading: "A senior media buyer in a tab.",
@@ -962,6 +965,9 @@ const es: Dict = {
     changedStillOpen: "{count} siguen abiertos",
     changedStageLine: "Etapa: {from} → {to}",
     changedStageFlat: "Misma etapa — pero la barra se movió.",
+    // Master brief §C — el segmento actual→siguiente revela la escalera (fixes).
+    climbHeading: "Cómo subes",
+    climbMoreFixes: "+{count} arreglos más con Pro",
   },
   analyzerDemo: {
     heading: "Un media buyer senior en una pestaña.",
