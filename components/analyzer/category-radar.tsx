@@ -25,6 +25,7 @@ type CategoryScores = {
 export function CategoryRadar({
   scores,
   overall,
+  leaksFraming = false,
 }: {
   scores: CategoryScores;
   /**
@@ -34,6 +35,12 @@ export function CategoryRadar({
    * numbers wouldn't match, so we hide the line rather than contradict the hero.
    */
   overall?: number | null;
+  /**
+   * Master brief §B3 — reframe the radar as "where you're leaking sales" (the
+   * why behind your stage) instead of six neutral grades. Copy only; the viz and
+   * the numbers are unchanged.
+   */
+  leaksFraming?: boolean;
 }) {
   const { t } = useT();
   // Gemini Flash-Lite sometimes returns scores as 0..1 fractions instead
@@ -73,7 +80,14 @@ export function CategoryRadar({
 
   return (
     <Card className="p-6">
-      <h3 className="text-sm font-medium text-white">Category breakdown</h3>
+      <h3 className="text-sm font-medium text-white">
+        {leaksFraming ? t("report.leaksHeading") : "Category breakdown"}
+      </h3>
+      {leaksFraming && (
+        <p className="mt-1 text-[11.5px] leading-snug text-white/45">
+          {t("report.leaksSub")}
+        </p>
+      )}
       {/* Cap the radar so it stays compact even when this card is full-width
           (stacked on narrow screens / in the anonymous report), instead of
           blowing up to the container width. The numbers grid below keeps the

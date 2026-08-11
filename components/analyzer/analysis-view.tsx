@@ -113,6 +113,13 @@ interface ViewerCtx {
   canRunMeta: boolean;
   metaLimit: number | null;
   metaUsed: number;
+  /**
+   * Master brief §B/§C — "map as the spine" UI (flag ANALYZER_MAP_SPINE, resolved
+   * server-side and threaded here since client components can't read the env
+   * flag). When false the report renders byte-identically to before: the 0–100
+   * stays the face, ad-readiness shows its number, the radar keeps its heading.
+   */
+  mapSpine?: boolean;
 }
 
 export function AnalysisView({
@@ -391,6 +398,7 @@ export function AnalysisView({
                 result={data.result}
                 url={data.url}
                 isPaid={viewer.isPaid}
+                mapSpine={viewer.mapSpine ?? false}
               />
             </div>
 
@@ -482,6 +490,7 @@ export function AnalysisView({
                 <CategoryRadar
                   scores={data.result.category_scores}
                   overall={data.result.score}
+                  leaksFraming={viewer.mapSpine ?? false}
                 />
               </div>
             </div>
@@ -546,6 +555,7 @@ export function AnalysisView({
                 data={data.result.ad_readiness}
                 overallScore={data.result.score}
                 result={data.result}
+                semaphoreOnly={viewer.mapSpine ?? false}
               />
               {/* Brief §4 — seam 4: ready-for-Meta → modeler. */}
               {handoff("report.handoffMetaToModeler")}

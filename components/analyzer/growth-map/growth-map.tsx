@@ -6,7 +6,11 @@ import { ChevronDown, TrendingUp, RefreshCw } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { AnalysisResult } from "@/lib/supabase/types";
-import { computePlacement } from "@/lib/growth-map/placement";
+import {
+  computePlacement,
+  compositeOf,
+  progressToNextRank,
+} from "@/lib/growth-map/placement";
 import { scaffoldNodes, scaffoldDiagnosis } from "@/lib/growth-map/phrase-bank";
 import { resolveNicheLabel } from "@/lib/growth-map/niche";
 import { rankByIndex, RANKS } from "@/lib/growth-map/ranks";
@@ -33,11 +37,18 @@ export function GrowthMap({
   result,
   url,
   isPaid,
+  mapSpine = false,
 }: {
   analysisId: string;
   result: AnalysisResult;
   url: string | null;
   isPaid: boolean;
+  /**
+   * Master brief §B — when true the stage is the hero: the 0–100 badge is
+   * replaced by an intra-stage progress bar toward the next rank plus the $
+   * potential band. Off ⇒ the score badge renders exactly as before.
+   */
+  mapSpine?: boolean;
 }) {
   const { t } = useT();
   const domain = useMemo(() => {
@@ -129,6 +140,12 @@ export function GrowthMap({
   // Caret x for the detail band, clamped so it never runs off the card edge.
   const caretLeft = openPos ? Math.min(94, Math.max(6, openPos.xPct)) : 50;
   const displayScore = Math.round(result.score > 1 ? result.score : result.score * 100);
+  // §B/§A3 — intra-stage progress toward the next rank, the face that replaces
+  // the 0–100 badge when the map-spine flag is on. Pure, client-side.
+  const composite = compositeOf(result);
+  const progress = progressToNextRank(composite, current);
+  const nextRank = progress.nextRankKey ? rankByIndex(current + 1) : null;
+  const progressPct = Math.round(progress.pct * 100);
 
   return (
     <motion.div
@@ -161,9 +178,18 @@ export function GrowthMap({
                   {domain}
                 </span>
               )}
-              <Badge variant="default" className="font-mono tnum">
-                {displayScore}/100
-              </Badge>
+              {mapSpine ? (
+                <Badge
+                  variant="default"
+                  className="font-mono tnum border-champagne-300/30 text-champagne-200"
+                >
+                  {t("report.potentialBand").replace("{band}", rank.band)}
+                </Badge>
+              ) : (
+                <Badge variant="default" className="font-mono tnum">
+                  {displayScore}/100
+                </Badge>
+              )}
               <Badge variant="ai">{data.nicheLabel}</Badge>
               {/* §1.2 — re-run movement: how far this store moved since last time. */}
               {movement && (
@@ -172,14 +198,54 @@ export function GrowthMap({
                   className="font-mono tnum border-signal-400/40 text-signal-200"
                 >
                   {movement.previousComposite} → {movement.currentComposite}
-                  {movement.crossedWall
+                  {movement.crossedWall && movement.rankMoveConfident
                     ? " · crossed The Wall"
-                    : movement.currentRankIndex > movement.previousRankIndex
+                    : movement.rankMoveConfident &&
+                        movement.currentRankIndex > movement.previousRankIndex
                       ? " · advanced"
                       : ""}
                 </Badge>
               )}
             </div>
+
+            {/* §B/§A3 — intra-stage progress bar: the visible face of a fix that
+                lifts the store without (yet) crossing a rank. Only in spine mode;
+                the score badge above is otherwise the face. */}
+            {mapSpine && (
+              <div className="mt-2.5 max-w-[320px]">
+                {nextRank ? (
+                  <>
+                    <div className="mb-1 flex items-center justify-between text-[11px]">
+                      <span className="text-white/55">
+                        {t("report.stageToNext")
+                          .replace("{pts}", String(progress.toNextEdge))
+                          .replace("{next}", nextRank.material)}
+                      </span>
+                      <span className="tnum text-white/40">{progressPct}%</span>
+                    </div>
+                    <div
+                      className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]"
+                      role="progressbar"
+                      aria-valuenow={progressPct}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label={t("report.stageProgressAria")
+                        .replace("{pct}", String(progressPct))
+                        .replace("{next}", nextRank.material)}
+                    >
+                      <div
+                        className="h-full rounded-full bg-[image:var(--grad-brand)]"
+                        style={{ width: `${Math.max(4, progressPct)}%` }}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <span className="text-[11px] text-white/45">
+                    {t("report.stageTopRank")}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-3 shrink-0">

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { AnalysisView } from "@/components/analyzer/analysis-view";
 import { loadNicheWinnersModule } from "@/lib/library/niche-winners";
+import { analyzerMapSpineEnabled } from "@/lib/flags";
 
 /**
  * Design preview of the anonymous audit reveal — the real (identical-to-free)
@@ -84,6 +85,7 @@ export default async function AnonRevealPreviewPage({
         canRunMeta: false,
         metaLimit: 0,
         metaUsed: 0,
+        mapSpine: analyzerMapSpineEnabled(),
       }}
       initialSimulation={null}
       nicheWinners={nicheWinners}

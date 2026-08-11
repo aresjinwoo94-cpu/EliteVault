@@ -5,6 +5,7 @@ import { getAnonToken } from "@/lib/anon/session";
 import { AnalysisView } from "@/components/analyzer/analysis-view";
 import { AnonPending } from "@/components/analyzer/anon-pending";
 import { loadNicheWinnersModule } from "@/lib/library/niche-winners";
+import { analyzerMapSpineEnabled } from "@/lib/flags";
 
 // A per-session result page — never indexed, always fresh.
 export const metadata: Metadata = {
@@ -106,6 +107,7 @@ export default async function AnonAuditPage({
         canRunMeta: false,
         metaLimit: 0,
         metaUsed: 0,
+        mapSpine: analyzerMapSpineEnabled(),
       }}
       initialSimulation={null}
       nicheWinners={nicheWinners}
