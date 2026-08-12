@@ -64,16 +64,21 @@ export function CategoryRadar({
 
   const points = LABELS.map((l, i) => {
     const angle = (Math.PI * 2 * i) / N - Math.PI / 2;
+    const cos = Math.cos(angle);
     const score = normalized[l.key];
     const dist = (r * score) / 100;
     return {
-      x: cx + Math.cos(angle) * dist,
+      x: cx + cos * dist,
       y: cy + Math.sin(angle) * dist,
-      labelX: cx + Math.cos(angle) * (r + 18),
+      labelX: cx + cos * (r + 18),
       labelY: cy + Math.sin(angle) * (r + 18),
+      // FIX 4 — anchor labels toward the centre by quadrant so side labels
+      // ("Imagery" right, "Niche fit" left) don't get clipped at the SVG edge:
+      // right side ends at the point, left side starts at it, top/bottom centre.
+      anchor: cos > 0.3 ? "end" : cos < -0.3 ? "start" : "middle",
       short: l.short,
       score,
-    };
+    } as const;
   });
 
   const polygon = points.map((p) => `${p.x},${p.y}`).join(" ");
@@ -93,7 +98,9 @@ export function CategoryRadar({
           blowing up to the container width. The numbers grid below keeps the
           card's full width. */}
       <div className="mt-4 mx-auto max-w-[300px]">
-        <svg viewBox="0 0 200 200" className="w-full h-auto">
+        {/* FIX 4 — widen the viewBox to give the outer labels margin without
+            shrinking the radar (r is unchanged), so nothing clips at the edge. */}
+        <svg viewBox="-18 -12 236 224" className="w-full h-auto">
           {/* concentric rings */}
           {[0.25, 0.5, 0.75, 1].map((f) => (
             <circle
@@ -138,7 +145,7 @@ export function CategoryRadar({
               key={p.short + "_label"}
               x={p.labelX}
               y={p.labelY}
-              textAnchor="middle"
+              textAnchor={p.anchor}
               dominantBaseline="middle"
               fontSize="10"
               fill="rgba(255,255,255,0.65)"
