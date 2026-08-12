@@ -80,11 +80,17 @@ export function GrowthMap({
   const current = data.placement.rankIndex;
   // Nothing open by default — feedback stays hidden until you hover/tap a rank
   // (like the numbered pins on the annotated screenshot).
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  // FIX 3 — the assigned rank is selected by default (its feedback + the fixes
+  // index are the first thing visible), not an empty "hover any rank" prompt.
+  // `current` is derived from the deterministic seed placement, so it's stable
+  // and available synchronously on first render.
+  const [openIndex, setOpenIndex] = useState<number | null>(current);
   const containerRef = useRef<HTMLDivElement>(null);
   const svgWrapRef = useRef<HTMLDivElement>(null);
 
-  const closeAll = useCallback(() => setOpenIndex(null), []);
+  // FIX 3 — Esc / click-outside / mouse-leave restore the ASSIGNED rank, not an
+  // empty state.
+  const closeAll = useCallback(() => setOpenIndex(current), [current]);
 
   // Phase 2 — fetch AI copy (cached server-side; one call per store).
   useEffect(() => {
@@ -403,7 +409,7 @@ export function GrowthMap({
                     if (e.pointerType === "mouse") setOpenIndex(i);
                   }}
                   onFocus={() => setOpenIndex(i)}
-                  onClick={() => setOpenIndex((p) => (p === i ? null : i))}
+                  onClick={() => setOpenIndex(i)}
                   className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-signal-400/70 min-w-[44px] min-h-[44px]"
                   style={{
                     left: `${pos.xPct}%`,
@@ -490,8 +496,10 @@ export function GrowthMap({
               />
             )}
             <div className="w-full">
+              {/* FIX 3 — the assigned rank is open by default, so there is no
+                  empty "hover any rank" state; other ranks stay clickable. */}
               <AnimatePresence mode="wait" initial={false}>
-                {openNode ? (
+                {openNode && (
                   <motion.div
                     key={openIndex}
                     initial={reduce ? { opacity: 0 } : { opacity: 0, y: 5 }}
@@ -501,18 +509,6 @@ export function GrowthMap({
                   >
                     <NodeCard node={openNode} />
                   </motion.div>
-                ) : (
-                  <motion.p
-                    key="hint"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.16 }}
-                    className="text-center text-[11.5px] text-white/40"
-                  >
-                    Hover, tap or focus any rank to read its store-specific
-                    feedback.
-                  </motion.p>
                 )}
               </AnimatePresence>
 
