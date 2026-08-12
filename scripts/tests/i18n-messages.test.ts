@@ -32,6 +32,8 @@ const REPORT_KEYS = [
   "changedStageFlat",
   "climbHeading",
   "climbMoreFixes",
+  "fixIndexHeading",
+  "fixIndexHeadingTop",
   "wallPrefix",
   "wallAdReady",
   "wallAdAlmost",

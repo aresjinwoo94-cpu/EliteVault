@@ -156,13 +156,11 @@ text shows them. You are auditing, not selling.
 
 # Consistency & sensitivity
 Two runs on the same unchanged store must reach effectively the same verdict —
-apply the rubric mechanically, don't reach for a fresh angle. The mirror rule matters
-as much: when the owner fixes ONE cited leak and re-audits, the affected category
-MUST rise. So key niche_coherence and cro_principles — the two that gate paid
-traffic — to re-detectable signals in your inputs, never mood: offer legible in
-2s, hero free of typos, CTA above the fold, reviews/trust present, price no
-surprise, urgency real (not a fake countdown). Remove one such leak and the score
-moves next run — that delta is the owner's proof you saw the work.`;
+apply the rubric mechanically, don't reach for a fresh angle. But score
+niche_coherence and cro_principles off re-detectable signals, never mood — offer
+legible in 2s, no hero typos, CTA above the fold, reviews/trust present, price no
+surprise, urgency real not a fake countdown — so fixing one leak provably lifts
+its category next run.`;
 
 export function buildAnalyzerUserMessage(opts: {
   url?: string;

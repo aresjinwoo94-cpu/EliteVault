@@ -379,11 +379,15 @@ export function AnalysisView({
         >
             {/*
               Report index (jump nav) — a compact overview of what the finished
-              audit contains, with smooth-scroll to each section. Client-only,
-              zero pipeline cost. Sits above the hero as the report's table of
-              contents.
+              audit contains, with smooth-scroll to each section.
+
+              Fixes brief FIX 2: in map-spine mode the standalone nav is REPLACED
+              by the prioritized, clickable fixes index inside the assigned-rank
+              feedback (the fusion of "leaking sales" + this nav). So it renders
+              only when the spine reframe is OFF — which keeps the flags-off
+              report byte-identical to before.
             */}
-            <ReportNav />
+            {!(viewer.mapSpine ?? false) && <ReportNav />}
 
             {/*
               THE GROWTH MAP — hero, at the very top of the result (spec §9).

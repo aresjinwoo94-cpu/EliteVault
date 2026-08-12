@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { ChevronDown, TrendingUp, RefreshCw } from "lucide-react";
+import { ChevronDown, TrendingUp, RefreshCw, Lock, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { AnalysisResult } from "@/lib/supabase/types";
@@ -15,6 +15,7 @@ import { scaffoldNodes, scaffoldDiagnosis } from "@/lib/growth-map/phrase-bank";
 import { resolveNicheLabel } from "@/lib/growth-map/niche";
 import { rankByIndex, RANKS } from "@/lib/growth-map/ranks";
 import { gateForViewer } from "@/lib/growth-map/gate";
+import { linkIssues } from "@/lib/analyzer/link-issues";
 import type { GrowthMapData } from "@/lib/growth-map/types";
 import { useT } from "@/components/i18n/locale-provider";
 import { MapCanvas, NODE_POS, VIEWBOX } from "./map-canvas";
@@ -80,11 +81,17 @@ export function GrowthMap({
   const current = data.placement.rankIndex;
   // Nothing open by default — feedback stays hidden until you hover/tap a rank
   // (like the numbered pins on the annotated screenshot).
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  // FIX 3 — the assigned rank is selected by default (its feedback + the fixes
+  // index are the first thing visible), not an empty "hover any rank" prompt.
+  // `current` is derived from the deterministic seed placement, so it's stable
+  // and available synchronously on first render.
+  const [openIndex, setOpenIndex] = useState<number | null>(current);
   const containerRef = useRef<HTMLDivElement>(null);
   const svgWrapRef = useRef<HTMLDivElement>(null);
 
-  const closeAll = useCallback(() => setOpenIndex(null), []);
+  // FIX 3 — Esc / click-outside / mouse-leave restore the ASSIGNED rank, not an
+  // empty state.
+  const closeAll = useCallback(() => setOpenIndex(current), [current]);
 
   // Phase 2 — fetch AI copy (cached server-side; one call per store).
   useEffect(() => {
@@ -147,33 +154,51 @@ export function GrowthMap({
   const nextRank = progress.nextRankKey ? rankByIndex(current + 1) : null;
   const progressPct = Math.round(progress.pct * 100);
 
-  // §C — the modules that used to float loose now hang off the map by
-  // progressive disclosure: the CURRENT node reveals the leaks (why you're
-  // here), the current→next SEGMENT reveals the escalera (how you climb), and
-  // the Wall carries the ad-readiness semáforo. All derived from the result
-  // that's already here — no new data, no pipeline touch, and the SVG stays
-  // clean because the detail lives in the band, not inside the medallions.
-  const leaks = useMemo(() => {
-    const cats = result.category_scores as Record<string, number> | undefined;
-    const norm = (v: number | undefined) => {
-      const n = Number(v ?? 0);
-      if (!Number.isFinite(n)) return 0;
-      return Math.max(0, Math.min(100, n > 1 ? n : n * 100));
+  // FIX 2 — the assigned rank's detail band carries a PRIORITIZED ACTION INDEX:
+  // the store's real, deduplicated issues (from linkIssues — top_fixes +
+  // annotations + blockers collapsed), ranked by the system's own criterion
+  // (leverage order of top_fixes, with paid-traffic blockers and severity as
+  // tiebreakers), each row deep-linking to the report section where it's
+  // detailed. This fuses the old "leaking sales" category tags with the
+  // standalone report nav into one navigable, actionable list. Pure/client-side,
+  // no pipeline touch.
+  const fixIndex = useMemo(() => {
+    const SEV = { high: 2, medium: 1, low: 0 } as const;
+    const issues = linkIssues(result).issues;
+    // Where each issue is DETAILED in the report — the most actionable target
+    // first: a roadmap fix → Priority Fixes; a paid-traffic blocker → Meta
+    // Readiness; otherwise the annotated screenshot.
+    const sectionOf = (refs: { source: string }[]): { id: string; label: string } => {
+      if (refs.some((r) => r.source === "fix"))
+        return { id: "section-fixes", label: "Priority Fixes" };
+      if (refs.some((r) => r.source === "blocker"))
+        return { id: "section-meta", label: "Meta Readiness" };
+      return { id: "section-audit", label: "Annotated Audit" };
     };
-    const LABELS: { key: string; label: string }[] = [
-      { key: "cro_principles", label: "Conversion fundamentals" },
-      { key: "niche_coherence", label: "Offer clarity" },
-      { key: "technical_optimization", label: "Technical health" },
-      { key: "layout_proportion", label: "Layout & hierarchy" },
-      { key: "image_quality", label: "Imagery" },
-      { key: "color_integration", label: "Visual cohesion" },
-    ];
-    return LABELS.map((l) => ({ ...l, v: Math.round(norm(cats?.[l.key])) }))
-      .filter((l) => l.v < 65)
-      .sort((a, b) => a.v - b.v)
-      .slice(0, 3);
+    // Leverage rank: a fix's own order is the model's priority; blocker-only and
+    // annotation-only issues fall after, so top_fixes[0] stays #1 (free's fix).
+    const leverage = (refs: { source: string; index: number }[], blocks: boolean) => {
+      const f = refs.find((r) => r.source === "fix");
+      if (f) return f.index;
+      return blocks ? 100 : 200;
+    };
+    return issues
+      .map((i) => ({
+        title: i.title,
+        section: sectionOf(i.refs),
+        _lev: leverage(i.refs, i.blocksPaidTraffic),
+        _sev: SEV[i.severity] ?? 1,
+      }))
+      .sort((a, b) => a._lev - b._lev || b._sev - a._sev)
+      .slice(0, 5);
   }, [result]);
   const nextFixTitle = result.top_fixes?.find((f) => f?.title?.trim())?.title?.trim() ?? null;
+
+  // FIX 2 — smooth-scroll to a report section (the mechanism ReportNav used).
+  const jumpToSection = useCallback((id: string) => {
+    if (typeof document === "undefined") return;
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
   const wallVerdict = result.ad_readiness?.verdict;
   const WALL_VERDICT_META: Record<string, { dot: string; label: string }> = {
     ready: { dot: "#22C55E", label: t("report.wallAdReady") },
@@ -403,7 +428,7 @@ export function GrowthMap({
                     if (e.pointerType === "mouse") setOpenIndex(i);
                   }}
                   onFocus={() => setOpenIndex(i)}
-                  onClick={() => setOpenIndex((p) => (p === i ? null : i))}
+                  onClick={() => setOpenIndex(i)}
                   className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-signal-400/70 min-w-[44px] min-h-[44px]"
                   style={{
                     left: `${pos.xPct}%`,
@@ -490,8 +515,10 @@ export function GrowthMap({
               />
             )}
             <div className="w-full">
+              {/* FIX 3 — the assigned rank is open by default, so there is no
+                  empty "hover any rank" state; other ranks stay clickable. */}
               <AnimatePresence mode="wait" initial={false}>
-                {openNode ? (
+                {openNode && (
                   <motion.div
                     key={openIndex}
                     initial={reduce ? { opacity: 0 } : { opacity: 0, y: 5 }}
@@ -501,40 +528,51 @@ export function GrowthMap({
                   >
                     <NodeCard node={openNode} />
                   </motion.div>
-                ) : (
-                  <motion.p
-                    key="hint"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.16 }}
-                    className="text-center text-[11.5px] text-white/40"
-                  >
-                    Hover, tap or focus any rank to read its store-specific
-                    feedback.
-                  </motion.p>
                 )}
               </AnimatePresence>
 
-              {/* §C — progressive disclosure: the CURRENT node reveals the leaks
-                  (why you're here), the current→next node reveals the escalera
-                  (how you climb). Free still sees only the #1 fix — the lock on
-                  the rest is preserved. */}
-              {mapSpine && openIndex === current && leaks.length > 0 && (
+              {/* §C + FIX 2 — progressive disclosure: the CURRENT node reveals the
+                  prioritized fixes index (what to fix + where it's detailed), the
+                  current→next node reveals the escalera (the #1 fix). Free still
+                  sees only the #1 fix — the lock on the rest is preserved. */}
+              {mapSpine && openIndex === current && fixIndex.length > 0 && (
                 <div className="mt-2.5 border-t border-white/[0.05] pt-2.5">
-                  <p className="mb-1 text-[10px] uppercase tracking-[0.14em] text-white/40">
-                    {t("report.leaksHeading")}
+                  <p className="mb-1.5 text-[10px] uppercase tracking-[0.14em] text-white/40">
+                    {nextRank
+                      ? t("report.fixIndexHeading").replace("{next}", nextRank.material)
+                      : t("report.fixIndexHeadingTop")}
                   </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {leaks.map((l) => (
-                      <span
-                        key={l.key}
-                        className="rounded-md border border-white/[0.07] bg-white/[0.02] px-2 py-0.5 text-[11px] text-white/70"
+                  <div className="flex flex-col gap-1">
+                    {(isPaid ? fixIndex : fixIndex.slice(0, 1)).map((f, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => jumpToSection(f.section.id)}
+                        className="group flex items-center gap-2 rounded-md border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5 text-left transition-colors hover:border-signal-400/30 hover:bg-signal-500/[0.06]"
                       >
-                        {l.label}{" "}
-                        <span className="tnum text-white/40">{l.v}</span>
-                      </span>
+                        <span className="grid size-4 shrink-0 place-items-center rounded-full bg-white/[0.05] text-[9px] font-semibold text-white/45 group-hover:text-signal-200">
+                          {i + 1}
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-[12px] text-white/80">
+                          {f.title}
+                        </span>
+                        <span className="flex shrink-0 items-center gap-0.5 text-[10px] text-white/35 group-hover:text-signal-300">
+                          {f.section.label}
+                          <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
+                        </span>
+                      </button>
                     ))}
+                    {!isPaid && fixIndex.length > 1 && (
+                      <div className="mt-0.5 flex items-center gap-2 rounded-md border border-dashed border-white/[0.08] px-2.5 py-1.5">
+                        <Lock className="size-3 shrink-0 text-white/35" />
+                        <span className="text-[11px] text-signal-200/80">
+                          {t("report.climbMoreFixes").replace(
+                            "{count}",
+                            String(fixIndex.length - 1),
+                          )}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
