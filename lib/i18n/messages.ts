@@ -339,6 +339,9 @@ const en: Dict = {
     // Master brief §C — the current→next segment reveals the escalera (fixes).
     climbHeading: "How you climb",
     climbMoreFixes: "+{count} more fixes with Pro",
+    // Fixes brief FIX 2 — the prioritized action index in the assigned-rank band.
+    fixIndexHeading: "Fix these to reach {next}",
+    fixIndexHeadingTop: "Protect your lead — keep these tight",
     // Master brief §C — the ad-readiness semáforo that sits at the Wall.
     wallPrefix: "The Wall",
     wallAdReady: "Ad-ready",
@@ -973,6 +976,9 @@ const es: Dict = {
     // Master brief §C — el segmento actual→siguiente revela la escalera (fixes).
     climbHeading: "Cómo subes",
     climbMoreFixes: "+{count} arreglos más con Pro",
+    // Fixes brief FIX 2 — el índice de acción priorizado en la banda del rango.
+    fixIndexHeading: "Arregla esto para llegar a {next}",
+    fixIndexHeadingTop: "Protege tu ventaja — mantén esto afinado",
     // Master brief §C — el semáforo de ad-readiness que vive en el Muro.
     wallPrefix: "El Muro",
     wallAdReady: "Listo para ads",
