@@ -317,6 +317,33 @@ const en: Dict = {
     rerunTitle: "Keep climbing — re-run after every fix.",
     rerunBody:
       "Ranks are earned, not bought. Fix what the report flags, run the analyzer again, and repeat periodically — every pass moves your store up the map, from a leaky storefront to one that actually converts.",
+    // Master brief §B — the stage is the hero, the 0–100 drops to the engine.
+    // The face is now: current stage + how close you are to the next + the $
+    // potential band. {pts}/{pct}/{next}/{band} interpolated by the caller.
+    stageToNext: "{pts} pts to {next}",
+    stageProgressAria: "{pct}% of the way to {next}",
+    stageTopRank: "Top stage reached",
+    potentialBand: "Potential {band}",
+    // Master brief §B3 — the category radar reframed as where sales leak out.
+    leaksHeading: "Where you're leaking sales",
+    leaksSub:
+      "Your six conversion dimensions — the lowest are where cold traffic slips away before it buys.",
+    // Master brief §D — the return-visit "what changed" block. Issue-delta is the
+    // protagonist; the stage move is the secondary line. Dates/counts interpolated.
+    changedSince: "What changed since {date}",
+    changedResolved: "Fixed",
+    changedNew: "New since last run",
+    changedStillOpen: "{count} still open",
+    changedStageLine: "Stage: {from} → {to}",
+    changedStageFlat: "Same stage — but the bar moved.",
+    // Master brief §C — the current→next segment reveals the escalera (fixes).
+    climbHeading: "How you climb",
+    climbMoreFixes: "+{count} more fixes with Pro",
+    // Master brief §C — the ad-readiness semáforo that sits at the Wall.
+    wallPrefix: "The Wall",
+    wallAdReady: "Ad-ready",
+    wallAdAlmost: "Almost ad-ready",
+    wallAdNot: "Not ad-ready",
   },
   analyzerDemo: {
     heading: "A senior media buyer in a tab.",
@@ -924,6 +951,33 @@ const es: Dict = {
     rerunTitle: "Sigue subiendo — vuelve a correrlo tras cada arreglo.",
     rerunBody:
       "Los rangos se ganan, no se compran. Arregla lo que marca el reporte, corre el analizador otra vez y repítelo periódicamente — cada pasada sube tu tienda en el mapa, de un escaparate con fugas a uno que de verdad convierte.",
+    // Master brief §B — la etapa es el héroe; el 0–100 baja al motor. La cara
+    // ahora es: etapa actual + qué tan cerca está de la siguiente + el rango de
+    // $ como potencial. El llamador interpola {pts}/{pct}/{next}/{band}.
+    stageToNext: "{pts} pts para {next}",
+    stageProgressAria: "{pct}% del camino a {next}",
+    stageTopRank: "Etapa máxima alcanzada",
+    potentialBand: "Potencial {band}",
+    // Master brief §B3 — el radar de categorías reencuadrado como dónde se fuga la venta.
+    leaksHeading: "Dónde se te fuga la venta",
+    leaksSub:
+      "Tus seis dimensiones de conversión — las más bajas son por donde el tráfico frío se escapa antes de comprar.",
+    // Master brief §D — el bloque "qué cambió" de la re-visita. El delta de
+    // issues es el protagonista; el cambio de etapa es la línea secundaria.
+    changedSince: "Qué cambió desde {date}",
+    changedResolved: "Resuelto",
+    changedNew: "Nuevo desde la última corrida",
+    changedStillOpen: "{count} siguen abiertos",
+    changedStageLine: "Etapa: {from} → {to}",
+    changedStageFlat: "Misma etapa — pero la barra se movió.",
+    // Master brief §C — el segmento actual→siguiente revela la escalera (fixes).
+    climbHeading: "Cómo subes",
+    climbMoreFixes: "+{count} arreglos más con Pro",
+    // Master brief §C — el semáforo de ad-readiness que vive en el Muro.
+    wallPrefix: "El Muro",
+    wallAdReady: "Listo para ads",
+    wallAdAlmost: "Casi listo para ads",
+    wallAdNot: "No listo para ads",
   },
   analyzerDemo: {
     heading: "Un media buyer senior en una pestaña.",

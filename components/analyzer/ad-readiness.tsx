@@ -50,6 +50,7 @@ export function AdReadinessCard({
   data,
   overallScore,
   result,
+  semaphoreOnly = false,
 }: {
   data?: AdReadiness | null;
   /**
@@ -66,6 +67,12 @@ export function AdReadinessCard({
    * different words. Absent (e.g. the community page) → the raw blockers list.
    */
   result?: AnalysisResult | null;
+  /**
+   * Master brief §B2 — lead with the traffic-light verdict and HIDE the numeric
+   * ad_readiness.score (it competed with the overall and read as a second grade).
+   * The field stays in the schema for back-compat; we just stop painting it.
+   */
+  semaphoreOnly?: boolean;
 }) {
   const { t } = useT();
   // Guard every field: this object comes from a model, and an audit stored
@@ -133,7 +140,7 @@ export function AdReadinessCard({
             </span>
           </div>
           <div className="flex shrink-0 items-center gap-3">
-            {score !== null && (
+            {!semaphoreOnly && score !== null && (
               <span className="font-mono text-sm tabular-nums text-white/70">
                 {score}
                 <span className="text-white/35">/100</span>
@@ -151,7 +158,8 @@ export function AdReadinessCard({
         {/* Brief §1 — the bridge sentence: relate this score to the overall
             hero so they read as one audit through two lenses, not two rival
             numbers. Only shown when we know both scores. */}
-        {score !== null &&
+        {!semaphoreOnly &&
+          score !== null &&
           typeof overallScore === "number" &&
           Number.isFinite(overallScore) && (
             <p className="mt-2 text-xs leading-relaxed text-signal-200/80">

@@ -23,6 +23,10 @@ import type { AnalysisResult } from "@/lib/supabase/types";
 
 export type IssueSource = "fix" | "annotation" | "blocker";
 
+export type IssueSeverity = "low" | "medium" | "high";
+
+const SEVERITY_RANK: Record<IssueSeverity, number> = { low: 0, medium: 1, high: 2 };
+
 export interface LinkedIssueRef {
   source: IssueSource;
   /** Index into the corresponding source array on the AnalysisResult. */
@@ -34,6 +38,18 @@ export interface CanonicalIssue {
   issueId: string;
   /** The best display title (prefers a top_fix, then a blocker, then an annotation). */
   title: string;
+  /**
+   * Stable hash of the issue's salient stems (brief D1). Unlike `issueId` — which
+   * is POSITIONAL and only stable within one run — the fingerprint is stable
+   * ACROSS runs for the same underlying problem, so a later audit can recognize
+   * a resolved/new issue. Two slightly-reworded phrasings of the same problem
+   * hash differently, so the diff never trusts fingerprint EQUALITY — it uses the
+   * fuzzy `sameIssue` matcher (see diffIssues). The fingerprint is the compact
+   * thing we persist, not the equality test.
+   */
+  fingerprint: string;
+  /** Worst severity among the items that collapsed into this issue. */
+  severity: IssueSeverity;
   /** Every array item that collapsed into this issue. */
   refs: LinkedIssueRef[];
   /** True when at least one ad_readiness blocker maps here (the "fix before you spend" filter). */
@@ -83,6 +99,23 @@ function keywords(text: string): Set<string> {
   );
 }
 
+/**
+ * Stable fingerprint for an issue (brief D1): a hash of its salient stems,
+ * order-independent. Same problem → same fingerprint regardless of word order;
+ * a genuine rewording → different fingerprint (which is why the diff matches on
+ * `sameIssue`, not on this). Pure and deterministic — nothing is persisted for
+ * the mapping to stay stable. FNV-1a keeps it dependency-free and short.
+ */
+export function issueFingerprint(kw: Set<string>): string {
+  const key = [...kw].sort().join(" ");
+  let h = 0x811c9dc5;
+  for (let i = 0; i < key.length; i++) {
+    h ^= key.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return "f" + (h >>> 0).toString(16).padStart(8, "0");
+}
+
 /** Jaccard overlap of two keyword sets (0..1). */
 function overlap(a: Set<string>, b: Set<string>): number {
   if (a.size === 0 || b.size === 0) return 0;
@@ -121,13 +154,15 @@ function sameIssue(a: Set<string>, b: Set<string>): boolean {
  * wins as the canonical display text when items merge.
  */
 export function linkIssues(result: AnalysisResult): LinkedIssues {
-  const refs: { ref: LinkedIssueRef; kw: Set<string> }[] = [];
+  const refs: { ref: LinkedIssueRef; kw: Set<string>; severity: IssueSeverity }[] = [];
 
   (result.top_fixes ?? []).forEach((f, index) => {
     if (f?.title?.trim())
       refs.push({
         ref: { source: "fix", index, title: f.title.trim() },
         kw: keywords(f.title),
+        // A fix's leverage maps to how badly the issue leaks money.
+        severity: f.impact ?? "medium",
       });
   });
   (result.ad_readiness?.blockers ?? []).forEach((b, index) => {
@@ -135,6 +170,8 @@ export function linkIssues(result: AnalysisResult): LinkedIssues {
       refs.push({
         ref: { source: "blocker", index, title: b.title.trim() },
         kw: keywords(b.title),
+        // Anything that must be fixed BEFORE spending is high severity.
+        severity: "high",
       });
   });
   (result.annotations ?? []).forEach((a, index) => {
@@ -144,6 +181,7 @@ export function linkIssues(result: AnalysisResult): LinkedIssues {
       refs.push({
         ref: { source: "annotation", index, title },
         kw: keywords(title),
+        severity: a.severity ?? "medium",
       });
   });
 
@@ -156,10 +194,14 @@ export function linkIssues(result: AnalysisResult): LinkedIssues {
   };
   const groups: Group[] = [];
 
-  for (const { ref, kw } of refs) {
+  const worse = (a: IssueSeverity, b: IssueSeverity): IssueSeverity =>
+    SEVERITY_RANK[a] >= SEVERITY_RANK[b] ? a : b;
+
+  for (const { ref, kw, severity } of refs) {
     const match = groups.find((g) => sameIssue(g.kw, kw));
     if (match) {
       match.issue.refs.push(ref);
+      match.issue.severity = worse(match.issue.severity, severity);
       // Grow the group's keyword set so transitive matches still land.
       for (const w of kw) match.kw.add(w);
       if (ref.source === "blocker") match.issue.blocksPaidTraffic = true;
@@ -176,6 +218,8 @@ export function linkIssues(result: AnalysisResult): LinkedIssues {
         issue: {
           issueId: `issue-${groups.length + 1}`,
           title: ref.title,
+          fingerprint: "", // filled once the group's keyword set is final
+          severity,
           refs: [ref],
           blocksPaidTraffic: ref.source === "blocker",
         },
@@ -184,6 +228,10 @@ export function linkIssues(result: AnalysisResult): LinkedIssues {
       });
     }
   }
+
+  // Fingerprint from the FINAL keyword set (after all transitive merges), so it
+  // reflects the whole issue, not just the seed phrasing.
+  for (const g of groups) g.issue.fingerprint = issueFingerprint(g.kw);
 
   const issues = groups.map((g) => g.issue);
   const refToIssueId: Record<string, string> = {};
@@ -202,4 +250,74 @@ export function linkIssues(result: AnalysisResult): LinkedIssues {
  */
 export function paidTrafficBlockers(linked: LinkedIssues): CanonicalIssue[] {
   return linked.issues.filter((i) => i.blocksPaidTraffic);
+}
+
+/**
+ * The compact per-issue record persisted to growth_map_history (brief D3): just
+ * enough to recognize the same problem on a later run and narrate it. Kept tiny
+ * on purpose — it's stored as jsonb per placement point.
+ */
+export interface IssueSnapshot {
+  fingerprint: string;
+  title: string;
+  severity: IssueSeverity;
+}
+
+/** Reduce the linked issues to the snapshot we persist. */
+export function snapshotIssues(linked: LinkedIssues): IssueSnapshot[] {
+  return linked.issues.map((i) => ({
+    fingerprint: i.fingerprint,
+    title: i.title,
+    severity: i.severity,
+  }));
+}
+
+export interface IssueDiff {
+  /** In prev, gone in curr — the owner fixed these since last run. */
+  resolved: IssueSnapshot[];
+  /** In both runs — still to do. */
+  stillOpen: IssueSnapshot[];
+  /** New in curr — regressions or newly-surfaced issues. */
+  introduced: IssueSnapshot[];
+}
+
+/**
+ * Diff two runs' issue snapshots (brief D2). Alignment uses the SAME fuzzy
+ * `sameIssue` matcher the in-run linker uses — NOT fingerprint equality — because
+ * a genuine rewording of the same problem changes the fingerprint but is still
+ * the same issue; matching on re-derived keyword sets is what stops "reworded"
+ * from reading as "resolved + new". Greedy one-to-one so a single prev issue
+ * can't satisfy two curr issues.
+ *
+ * Pure and deterministic: 0 tokens, no AI, runs off already-persisted data.
+ */
+export function diffIssues(
+  prev: IssueSnapshot[],
+  curr: IssueSnapshot[],
+): IssueDiff {
+  const prevKw = prev.map((p) => keywords(p.title));
+  const usedPrev = new Set<number>();
+  const stillOpen: IssueSnapshot[] = [];
+  const introduced: IssueSnapshot[] = [];
+
+  for (const c of curr) {
+    const ckw = keywords(c.title);
+    let matchIdx = -1;
+    for (let i = 0; i < prev.length; i++) {
+      if (usedPrev.has(i)) continue;
+      if (sameIssue(prevKw[i], ckw)) {
+        matchIdx = i;
+        break;
+      }
+    }
+    if (matchIdx >= 0) {
+      usedPrev.add(matchIdx);
+      stillOpen.push(c);
+    } else {
+      introduced.push(c);
+    }
+  }
+
+  const resolved = prev.filter((_, i) => !usedPrev.has(i));
+  return { resolved, stillOpen, introduced };
 }

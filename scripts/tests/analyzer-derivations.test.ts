@@ -10,7 +10,13 @@ import {
   conversionScenarioBands,
   scenarioMidpoints,
 } from "../../lib/analyzer/conversion-scenarios";
-import { linkIssues, paidTrafficBlockers } from "../../lib/analyzer/link-issues";
+import {
+  linkIssues,
+  paidTrafficBlockers,
+  issueFingerprint,
+  diffIssues,
+  snapshotIssues,
+} from "../../lib/analyzer/link-issues";
 
 /**
  * The three deterministic derivations the refactor moved OUT of the model
@@ -208,4 +214,99 @@ test("§3 paidTrafficBlockers is a filtered view, not a regenerated list", () =>
   assert.match(filtered[0].title, /H1|offer/i);
   // It carries the roadmap fix ref, so the UI can point at "fix #1".
   assert.ok(filtered[0].refs.some((r) => r.source === "fix"));
+});
+
+// ── D1 issueFingerprint ─────────────────────────────────────────────────────
+
+test("D1 fingerprint is stable regardless of word order (same stems → same hash)", () => {
+  const a = issueFingerprint(new Set(["review", "count", "button"]));
+  const b = issueFingerprint(new Set(["button", "review", "count"]));
+  assert.equal(a, b, "reordering the stem set must not change the fingerprint");
+});
+
+test("D1 fingerprint distinguishes genuinely different issue stems", () => {
+  const reviews = issueFingerprint(new Set(["review", "count"]));
+  const price = issueFingerprint(new Set(["price", "hidden"]));
+  assert.notEqual(reviews, price);
+});
+
+test("D1 linkIssues assigns a non-empty fingerprint AND keeps the positional id", () => {
+  const result = makeResult({
+    top_fixes: [{ title: "Add customer review count", impact: "high", effort: "S" }],
+  });
+  const linked = linkIssues(result);
+  assert.equal(linked.issues[0].issueId, "issue-1", "positional id is untouched");
+  assert.match(linked.issues[0].fingerprint, /^f[0-9a-f]{8}$/);
+});
+
+// ── D2 diffIssues ───────────────────────────────────────────────────────────
+
+test("D2 diff classifies resolved / stillOpen / introduced", () => {
+  const prev = snapshotIssues(
+    linkIssues(
+      makeResult({
+        top_fixes: [
+          { title: "Add customer review count near the buy button", impact: "high", effort: "S" },
+          { title: "Move the price above the fold", impact: "high", effort: "S" },
+        ],
+      }),
+    ),
+  );
+  const curr = snapshotIssues(
+    linkIssues(
+      makeResult({
+        top_fixes: [
+          // price issue persists…
+          { title: "Move the price above the fold", impact: "high", effort: "S" },
+          // …a brand-new one appears; the review issue is gone (fixed).
+          { title: "Compress the oversized hero image", impact: "medium", effort: "S" },
+        ],
+      }),
+    ),
+  );
+
+  const diff = diffIssues(prev, curr);
+  assert.equal(diff.resolved.length, 1);
+  assert.match(diff.resolved[0].title, /review count/i);
+  assert.equal(diff.stillOpen.length, 1);
+  assert.match(diff.stillOpen[0].title, /price/i);
+  assert.equal(diff.introduced.length, 1);
+  assert.match(diff.introduced[0].title, /hero image/i);
+});
+
+test("D2 a reworded SAME issue is stillOpen — never 'resolved + new'", () => {
+  const prev = snapshotIssues(
+    linkIssues(
+      makeResult({
+        top_fixes: [{ title: "Add a visible customer review count", impact: "high", effort: "S" }],
+      }),
+    ),
+  );
+  const curr = snapshotIssues(
+    linkIssues(
+      makeResult({
+        top_fixes: [
+          { title: "Show the review count near the buy button", impact: "high", effort: "S" },
+        ],
+      }),
+    ),
+  );
+  const diff = diffIssues(prev, curr);
+  assert.equal(diff.resolved.length, 0, "a rewording must not read as resolved");
+  assert.equal(diff.introduced.length, 0, "…nor as newly introduced");
+  assert.equal(diff.stillOpen.length, 1, "it's the same issue, still open");
+});
+
+test("D2 diff is deterministic and empty-safe", () => {
+  assert.deepEqual(diffIssues([], []), { resolved: [], stillOpen: [], introduced: [] });
+  const snap = snapshotIssues(
+    linkIssues(makeResult({ top_fixes: [{ title: "Fix the H1 offer", impact: "high", effort: "S" }] })),
+  );
+  // Empty prev → by the D2 contract every current issue is "only in curr" =
+  // introduced. (In practice readGrowthMovement returns null when there's no
+  // prior row, so the diff isn't even shown on a first run.)
+  const diff = diffIssues([], snap);
+  assert.equal(diff.resolved.length, 0);
+  assert.equal(diff.stillOpen.length, 0);
+  assert.equal(diff.introduced.length, snap.length);
 });

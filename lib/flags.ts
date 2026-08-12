@@ -68,6 +68,35 @@ export function growthMapHistoryEnabled(): boolean {
 }
 
 /**
+ * Growth Map issue diff across runs (master brief §D).
+ *
+ * DEFAULT OFF. When ON — and the previous run for this domain persisted issue
+ * snapshots — the map opens the return visit with "what changed since {date}":
+ * resolved issues (with the stage they unlock), newly introduced ones, and the
+ * stage move as a secondary line. Requires growth_map_history.issues (migration
+ * 0025) and GROWTH_MAP_HISTORY on (so points accumulate). OFF ⇒ current
+ * behavior, byte-identical. Pure/deterministic: 0 tokens, no AI, no latency.
+ */
+export function growthMapIssueDiffEnabled(): boolean {
+  return enabled("GROWTH_MAP_ISSUE_DIFF", false);
+}
+
+/**
+ * Analyzer "map as the spine" UI (master brief §B/§C).
+ *
+ * DEFAULT OFF. When ON, the analyzer report reframes around the Growth Map: the
+ * stage (Copper→Ruby) + an intra-stage progress bar + the $ potential band
+ * become the face (the 0–100 drops to the engine), ad-readiness leads with its
+ * traffic-light verdict (the number is hidden), and the category radar reads as
+ * "where you're leaking sales". Pure presentation — no pipeline, scoring or
+ * gating change. OFF ⇒ the report is byte-identical to today, so we can revert
+ * the reframe without a deploy if it doesn't land.
+ */
+export function analyzerMapSpineEnabled(): boolean {
+  return enabled("ANALYZER_MAP_SPINE", false);
+}
+
+/**
  * Analyzer niche grounding (brief §2.3).
  *
  * DEFAULT OFF. Feeds the scoring pass a few precomputed `winning_sites` rows as

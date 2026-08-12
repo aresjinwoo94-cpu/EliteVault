@@ -6,7 +6,11 @@ import { ChevronDown, TrendingUp, RefreshCw } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { AnalysisResult } from "@/lib/supabase/types";
-import { computePlacement } from "@/lib/growth-map/placement";
+import {
+  computePlacement,
+  compositeOf,
+  progressToNextRank,
+} from "@/lib/growth-map/placement";
 import { scaffoldNodes, scaffoldDiagnosis } from "@/lib/growth-map/phrase-bank";
 import { resolveNicheLabel } from "@/lib/growth-map/niche";
 import { rankByIndex, RANKS } from "@/lib/growth-map/ranks";
@@ -33,11 +37,18 @@ export function GrowthMap({
   result,
   url,
   isPaid,
+  mapSpine = false,
 }: {
   analysisId: string;
   result: AnalysisResult;
   url: string | null;
   isPaid: boolean;
+  /**
+   * Master brief §B — when true the stage is the hero: the 0–100 badge is
+   * replaced by an intra-stage progress bar toward the next rank plus the $
+   * potential band. Off ⇒ the score badge renders exactly as before.
+   */
+  mapSpine?: boolean;
 }) {
   const { t } = useT();
   const domain = useMemo(() => {
@@ -129,6 +140,46 @@ export function GrowthMap({
   // Caret x for the detail band, clamped so it never runs off the card edge.
   const caretLeft = openPos ? Math.min(94, Math.max(6, openPos.xPct)) : 50;
   const displayScore = Math.round(result.score > 1 ? result.score : result.score * 100);
+  // §B/§A3 — intra-stage progress toward the next rank, the face that replaces
+  // the 0–100 badge when the map-spine flag is on. Pure, client-side.
+  const composite = compositeOf(result);
+  const progress = progressToNextRank(composite, current);
+  const nextRank = progress.nextRankKey ? rankByIndex(current + 1) : null;
+  const progressPct = Math.round(progress.pct * 100);
+
+  // §C — the modules that used to float loose now hang off the map by
+  // progressive disclosure: the CURRENT node reveals the leaks (why you're
+  // here), the current→next SEGMENT reveals the escalera (how you climb), and
+  // the Wall carries the ad-readiness semáforo. All derived from the result
+  // that's already here — no new data, no pipeline touch, and the SVG stays
+  // clean because the detail lives in the band, not inside the medallions.
+  const leaks = useMemo(() => {
+    const cats = result.category_scores as Record<string, number> | undefined;
+    const norm = (v: number | undefined) => {
+      const n = Number(v ?? 0);
+      if (!Number.isFinite(n)) return 0;
+      return Math.max(0, Math.min(100, n > 1 ? n : n * 100));
+    };
+    const LABELS: { key: string; label: string }[] = [
+      { key: "cro_principles", label: "Conversion fundamentals" },
+      { key: "niche_coherence", label: "Offer clarity" },
+      { key: "technical_optimization", label: "Technical health" },
+      { key: "layout_proportion", label: "Layout & hierarchy" },
+      { key: "image_quality", label: "Imagery" },
+      { key: "color_integration", label: "Visual cohesion" },
+    ];
+    return LABELS.map((l) => ({ ...l, v: Math.round(norm(cats?.[l.key])) }))
+      .filter((l) => l.v < 65)
+      .sort((a, b) => a.v - b.v)
+      .slice(0, 3);
+  }, [result]);
+  const nextFixTitle = result.top_fixes?.find((f) => f?.title?.trim())?.title?.trim() ?? null;
+  const wallVerdict = result.ad_readiness?.verdict;
+  const WALL_VERDICT_META: Record<string, { dot: string; label: string }> = {
+    ready: { dot: "#22C55E", label: t("report.wallAdReady") },
+    almost: { dot: "#EAB308", label: t("report.wallAdAlmost") },
+    not_ready: { dot: "#EF4444", label: t("report.wallAdNot") },
+  };
 
   return (
     <motion.div
@@ -138,6 +189,62 @@ export function GrowthMap({
     >
       <Card className="glow-card relative overflow-hidden p-4 md:p-6">
         <div className="pointer-events-none absolute -right-16 -top-20 size-64 rounded-full bg-signal-500/10 blur-3xl" />
+
+        {/* §D — the return visit OPENS with what changed. Issue-delta is the
+            protagonist (resolved / new); the stage move is the secondary line.
+            Deterministic copy, 0 tokens. Present only when the issue-diff flag is
+            on server-side AND a prior run persisted issue snapshots. */}
+        {movement?.issueDelta &&
+          (movement.issueDelta.resolved.length > 0 ||
+            movement.issueDelta.introduced.length > 0) && (
+            <div className="relative mb-4 overflow-hidden rounded-xl border border-signal-400/25 bg-signal-500/[0.05] px-4 py-3.5">
+              <p className="text-[10.5px] uppercase tracking-[0.18em] text-white/45">
+                {t("report.changedSince").replace(
+                  "{date}",
+                  new Date(movement.previousAt).toLocaleDateString(),
+                )}
+              </p>
+              <div className="mt-2 space-y-2">
+                {movement.issueDelta.resolved.length > 0 && (
+                  <div className="flex items-start gap-2">
+                    <span className="mt-[3px] shrink-0 rounded-full bg-[#22C55E]/15 px-2 py-[1px] text-[10px] font-semibold text-[#22C55E]">
+                      {t("report.changedResolved")}
+                    </span>
+                    <p className="min-w-0 text-[12px] leading-relaxed text-white/80">
+                      {movement.issueDelta.resolved.map((i) => i.title).join(" · ")}
+                    </p>
+                  </div>
+                )}
+                {movement.issueDelta.introduced.length > 0 && (
+                  <div className="flex items-start gap-2">
+                    <span className="mt-[3px] shrink-0 rounded-full bg-champagne-300/15 px-2 py-[1px] text-[10px] font-semibold text-champagne-200">
+                      {t("report.changedNew")}
+                    </span>
+                    <p className="min-w-0 text-[12px] leading-relaxed text-white/70">
+                      {movement.issueDelta.introduced.map((i) => i.title).join(" · ")}
+                    </p>
+                  </div>
+                )}
+              </div>
+              <p className="mt-2 text-[11px] text-white/45">
+                {movement.rankMoveConfident &&
+                movement.currentRankIndex !== movement.previousRankIndex
+                  ? t("report.changedStageLine")
+                      .replace("{from}", rankByIndex(movement.previousRankIndex).material)
+                      .replace("{to}", rankByIndex(movement.currentRankIndex).material)
+                  : t("report.changedStageFlat")}
+                {movement.issueDelta.stillOpen.length > 0 && (
+                  <span className="text-white/35">
+                    {" · "}
+                    {t("report.changedStillOpen").replace(
+                      "{count}",
+                      String(movement.issueDelta.stillOpen.length),
+                    )}
+                  </span>
+                )}
+              </p>
+            </div>
+          )}
 
         {/* Minimal header (spec §7/§8) — short headline; detail lives in popovers */}
         <div className="relative flex items-start justify-between gap-4 flex-wrap">
@@ -151,6 +258,19 @@ export function GrowthMap({
                 <span className="text-white/60"> — one step from The Wall</span>
               )}
             </h2>
+            {/* §C — the ad-readiness semáforo lives AT the Wall: clearing it is
+                what makes the store ad-ready. Just the light here; the full
+                blockers list stays in its own card below. */}
+            {mapSpine && wallVerdict && WALL_VERDICT_META[wallVerdict] && (
+              <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.02] px-2.5 py-1 text-[11px] text-white/70">
+                <span
+                  className="size-2 rounded-full"
+                  style={{ background: WALL_VERDICT_META[wallVerdict].dot }}
+                  aria-hidden
+                />
+                {t("report.wallPrefix")} · {WALL_VERDICT_META[wallVerdict].label}
+              </div>
+            )}
             {/* §1.3 — reads the map honestly: readiness, not revenue. */}
             <p className="mt-1.5 text-[11.5px] leading-snug text-white/45 max-w-[52ch]">
               {t("report.mapIntro")}
@@ -161,9 +281,18 @@ export function GrowthMap({
                   {domain}
                 </span>
               )}
-              <Badge variant="default" className="font-mono tnum">
-                {displayScore}/100
-              </Badge>
+              {mapSpine ? (
+                <Badge
+                  variant="default"
+                  className="font-mono tnum border-champagne-300/30 text-champagne-200"
+                >
+                  {t("report.potentialBand").replace("{band}", rank.band)}
+                </Badge>
+              ) : (
+                <Badge variant="default" className="font-mono tnum">
+                  {displayScore}/100
+                </Badge>
+              )}
               <Badge variant="ai">{data.nicheLabel}</Badge>
               {/* §1.2 — re-run movement: how far this store moved since last time. */}
               {movement && (
@@ -172,14 +301,54 @@ export function GrowthMap({
                   className="font-mono tnum border-signal-400/40 text-signal-200"
                 >
                   {movement.previousComposite} → {movement.currentComposite}
-                  {movement.crossedWall
+                  {movement.crossedWall && movement.rankMoveConfident
                     ? " · crossed The Wall"
-                    : movement.currentRankIndex > movement.previousRankIndex
+                    : movement.rankMoveConfident &&
+                        movement.currentRankIndex > movement.previousRankIndex
                       ? " · advanced"
                       : ""}
                 </Badge>
               )}
             </div>
+
+            {/* §B/§A3 — intra-stage progress bar: the visible face of a fix that
+                lifts the store without (yet) crossing a rank. Only in spine mode;
+                the score badge above is otherwise the face. */}
+            {mapSpine && (
+              <div className="mt-2.5 max-w-[320px]">
+                {nextRank ? (
+                  <>
+                    <div className="mb-1 flex items-center justify-between text-[11px]">
+                      <span className="text-white/55">
+                        {t("report.stageToNext")
+                          .replace("{pts}", String(progress.toNextEdge))
+                          .replace("{next}", nextRank.material)}
+                      </span>
+                      <span className="tnum text-white/40">{progressPct}%</span>
+                    </div>
+                    <div
+                      className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]"
+                      role="progressbar"
+                      aria-valuenow={progressPct}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label={t("report.stageProgressAria")
+                        .replace("{pct}", String(progressPct))
+                        .replace("{next}", nextRank.material)}
+                    >
+                      <div
+                        className="h-full rounded-full bg-[image:var(--grad-brand)]"
+                        style={{ width: `${Math.max(4, progressPct)}%` }}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <span className="text-[11px] text-white/45">
+                    {t("report.stageTopRank")}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
@@ -346,6 +515,47 @@ export function GrowthMap({
                   </motion.p>
                 )}
               </AnimatePresence>
+
+              {/* §C — progressive disclosure: the CURRENT node reveals the leaks
+                  (why you're here), the current→next node reveals the escalera
+                  (how you climb). Free still sees only the #1 fix — the lock on
+                  the rest is preserved. */}
+              {mapSpine && openIndex === current && leaks.length > 0 && (
+                <div className="mt-2.5 border-t border-white/[0.05] pt-2.5">
+                  <p className="mb-1 text-[10px] uppercase tracking-[0.14em] text-white/40">
+                    {t("report.leaksHeading")}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {leaks.map((l) => (
+                      <span
+                        key={l.key}
+                        className="rounded-md border border-white/[0.07] bg-white/[0.02] px-2 py-0.5 text-[11px] text-white/70"
+                      >
+                        {l.label}{" "}
+                        <span className="tnum text-white/40">{l.v}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {mapSpine && openIndex === current + 1 && nextFixTitle && (
+                <div className="mt-2.5 border-t border-white/[0.05] pt-2.5">
+                  <p className="mb-1 text-[10px] uppercase tracking-[0.14em] text-white/40">
+                    {t("report.climbHeading")}
+                  </p>
+                  <p className="text-[12px] leading-snug text-white/80">
+                    {nextFixTitle}
+                  </p>
+                  {!isPaid && (result.top_fixes?.length ?? 0) > 1 && (
+                    <p className="mt-1 text-[11px] text-signal-200/80">
+                      {t("report.climbMoreFixes").replace(
+                        "{count}",
+                        String((result.top_fixes?.length ?? 1) - 1),
+                      )}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

@@ -4,6 +4,7 @@ import { AnalysisView } from "@/components/analyzer/analysis-view";
 import { PLANS } from "@/lib/stripe/plans";
 import { getMetaRunUsage } from "@/lib/quota/guard";
 import { loadNicheWinnersModule } from "@/lib/library/niche-winners";
+import { analyzerMapSpineEnabled } from "@/lib/flags";
 
 export const dynamic = "force-dynamic";
 
@@ -135,6 +136,8 @@ export default async function AnalysisPage({
         canRunMeta,
         metaLimit: metaUsage.limit,
         metaUsed: metaUsage.used,
+        // Master brief §B/§C — "map as the spine" reframe (server-resolved flag).
+        mapSpine: analyzerMapSpineEnabled(),
       }}
       initialSimulation={initialSimulation}
       nicheWinners={nicheWinners}

@@ -17,6 +17,25 @@ const REPORT_KEYS = [
   "potentialBody",
   "rerunTitle",
   "rerunBody",
+  // Master brief §B/§C/§D — the map-spine + issue-diff copy, both locales.
+  "stageToNext",
+  "stageProgressAria",
+  "stageTopRank",
+  "potentialBand",
+  "leaksHeading",
+  "leaksSub",
+  "changedSince",
+  "changedResolved",
+  "changedNew",
+  "changedStillOpen",
+  "changedStageLine",
+  "changedStageFlat",
+  "climbHeading",
+  "climbMoreFixes",
+  "wallPrefix",
+  "wallAdReady",
+  "wallAdAlmost",
+  "wallAdNot",
 ] as const;
 
 test("report copy exists in both locales (en + es)", () => {

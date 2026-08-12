@@ -1,6 +1,10 @@
 import type { AnalysisResult } from "@/lib/supabase/types";
 import { RANKS, WALL_AFTER_INDEX, rankByIndex } from "./ranks";
-import type { GrowthMapPlacement, GrowthMapProjection } from "./types";
+import type {
+  GrowthMapPlacement,
+  GrowthMapProjection,
+  RankProgress,
+} from "./types";
 
 /**
  * Deterministic placement (spec §4/§6).
@@ -81,6 +85,59 @@ export function bandCompositeToIndex(composite: number): number {
           : composite < 96
             ? 4 // Diamond / Authority (90–96)
             : 5; // Ruby / Elite       (96+)
+}
+
+/**
+ * How far a composite has progressed through its CURRENT rank band toward the
+ * next rank's edge (brief A3). Pure, deterministic, zero-latency — rendered on
+ * the client.
+ *
+ * This is the piece that resolves the "brutal realism vs. re-run must move"
+ * tension: while most stores honestly live in the wide Steel band, a fix that
+ * lifts the composite WITHOUT crossing a rank still moves this bar, so the owner
+ * sees their work recognized instead of concluding the tool ignored it.
+ *
+ * The band edges are DERIVED from bandCompositeToIndex (the single source of
+ * truth) by probing — never re-declared here, so the thresholds can't drift.
+ * `rankIndex` is the DISPLAYED rank (which findings may demote below the
+ * composite's natural band): the bar reflects the stage the owner actually sees.
+ */
+export function progressToNextRank(
+  composite: number,
+  rankIndex: number,
+): RankProgress {
+  const c = Math.max(0, Math.min(100, Number.isFinite(composite) ? composite : 0));
+  const idx = Math.max(0, Math.min(RANKS.length - 1, Math.round(rankIndex)));
+
+  // Top rank — nothing above it to climb toward.
+  if (idx >= RANKS.length - 1) {
+    return { pct: 1, toNextEdge: 0, nextRankKey: null };
+  }
+
+  // Derive [lower, upper) for this band straight from bandCompositeToIndex, so
+  // the edges are the SAME table the placement uses, not a duplicated one.
+  let lower = 0;
+  for (let x = 0; x <= 100; x++) {
+    if (bandCompositeToIndex(x) === idx) {
+      lower = x;
+      break;
+    }
+  }
+  let upper = 100;
+  for (let x = lower; x <= 100; x++) {
+    if (bandCompositeToIndex(x) > idx) {
+      upper = x;
+      break;
+    }
+  }
+
+  const span = Math.max(1, upper - lower);
+  const within = Math.max(0, Math.min(span, c - lower));
+  return {
+    pct: within / span,
+    toNextEdge: Math.max(0, Math.ceil(upper - c)),
+    nextRankKey: rankByIndex(idx + 1).key,
+  };
 }
 
 export function computePlacement(result: AnalysisResult): GrowthMapPlacement {

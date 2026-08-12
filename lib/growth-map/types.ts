@@ -1,4 +1,5 @@
 import type { RankKey } from "./ranks";
+import type { IssueDiff } from "@/lib/analyzer/link-issues";
 
 /**
  * Shared types for the Growth Map (spec §5/§6). Kept dependency-free so the
@@ -21,6 +22,21 @@ export interface GrowthMapPlacement {
    * deterministic scaffold when the AI is unavailable.
    */
   signals: string[];
+}
+
+/**
+ * Intra-stage progress toward the next rank (brief A3). Pure, zero-latency and
+ * client-rendered — drives the "72% of the way to Silver / X from Steel" bar so
+ * a store's improvement is visible even before it crosses a rank (indispensable
+ * while most stores live in the wide Steel band).
+ */
+export interface RankProgress {
+  /** 0..1 progress through the current band toward its upper edge. */
+  pct: number;
+  /** Composite points left to cross into the next rank (0 once at/over the edge). */
+  toNextEdge: number;
+  /** The rank the store is climbing toward; null at the top rank (Ruby). */
+  nextRankKey: RankKey | null;
 }
 
 /**
@@ -54,6 +70,19 @@ export interface GrowthMapMovement {
   previousAt: string;
   /** True when the store crossed The Wall since the previous run. */
   crossedWall: boolean;
+  /**
+   * A4 hysteresis: true only when the composite moved beyond single-run vision
+   * noise (±3–4 pts). When false, a rank/Wall change is within noise and the UI
+   * must show intra-stage progress instead of narrating "advanced / crossed" —
+   * this is what kills the "you went up… no, down" flip-flop between runs.
+   */
+  rankMoveConfident: boolean;
+  /**
+   * Issue-level diff vs the previous run (master brief §D) — the PROTAGONIST of
+   * the "what changed" story; the stage move is the secondary line. Present only
+   * when the issue-diff flag is on AND the previous run persisted snapshots.
+   */
+  issueDelta?: IssueDiff;
 }
 
 /** One node's AI micro-feedback (spec §5). */

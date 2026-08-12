@@ -3,10 +3,17 @@ import type { AnalysisResult } from "@/lib/supabase/types";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { resolveNicheLabel } from "@/lib/growth-map/niche";
 import { runGrowthMapFeedback } from "@/ai/agents/growth-map-feedback-agent";
-import { growthMapHistoryEnabled } from "@/lib/flags";
+import { growthMapHistoryEnabled, growthMapIssueDiffEnabled } from "@/lib/flags";
+import {
+  linkIssues,
+  snapshotIssues,
+  diffIssues,
+  type IssueSnapshot,
+} from "@/lib/analyzer/link-issues";
 import { computePlacement, compositeOf } from "./placement";
 import { scaffoldNodes, scaffoldDiagnosis } from "./phrase-bank";
-import { RANKS, WALL_AFTER_INDEX } from "./ranks";
+import { RANKS } from "./ranks";
+import { isRankMoveConfident, crossedWall } from "./movement";
 import {
   GROWTH_MAP_VERSION,
   type GrowthMapData,
@@ -165,17 +172,23 @@ async function recordPlacementPoint(input: {
   if (!domain) return;
   try {
     const svc = createSupabaseServiceClient();
+    // §D — persist the canonical-issue snapshot alongside the point so a later
+    // run can diff against it. Deterministic, derived from the same result; the
+    // `issues` column is additive (migration 0025) and null-safe for old rows.
+    const issues = snapshotIssues(linkIssues(input.result));
     await svc.from("growth_map_history").insert({
       domain,
       user_id: input.userId,
       analysis_id: input.analysisId,
       composite: compositeOf(input.result),
       rank_index: input.rankIndex,
+      issues,
     } as never);
   } catch (err) {
     console.warn("[growth-map] history write failed:", (err as Error).message);
   }
 }
+
 
 /**
  * §1.2 — movement vs the previous run for this domain. Reads the most recent
@@ -186,6 +199,7 @@ async function recordPlacementPoint(input: {
 export async function readGrowthMovement(input: {
   analysisId: string;
   url: string | null;
+  result: AnalysisResult;
   currentComposite: number;
   currentRankIndex: number;
 }): Promise<GrowthMapMovement | null> {
@@ -196,7 +210,7 @@ export async function readGrowthMovement(input: {
     const svc = createSupabaseServiceClient();
     const { data } = await svc
       .from("growth_map_history")
-      .select("composite, rank_index, created_at, analysis_id")
+      .select("composite, rank_index, created_at, analysis_id, issues")
       .eq("domain", domain)
       .neq("analysis_id", input.analysisId)
       .order("created_at", { ascending: false })
@@ -206,18 +220,36 @@ export async function readGrowthMovement(input: {
       composite: number;
       rank_index: number;
       created_at: string;
+      issues: IssueSnapshot[] | null;
     } | null;
     if (!prev) return null;
-    return {
+
+    const movement: GrowthMapMovement = {
       previousComposite: prev.composite,
       currentComposite: input.currentComposite,
       previousRankIndex: prev.rank_index,
       currentRankIndex: input.currentRankIndex,
       previousAt: prev.created_at,
-      crossedWall:
-        prev.rank_index <= WALL_AFTER_INDEX &&
-        input.currentRankIndex > WALL_AFTER_INDEX,
+      crossedWall: crossedWall(prev.rank_index, input.currentRankIndex),
+      // A4 — only call a rank/Wall change "real" when the composite cleared the
+      // ±noise margin; otherwise the UI shows intra-stage progress, not a flip.
+      rankMoveConfident: isRankMoveConfident(
+        prev.composite,
+        input.currentComposite,
+        prev.rank_index,
+        input.currentRankIndex,
+      ),
     };
+
+    // §D — the issue-level diff is the protagonist of "what changed". Only when
+    // the flag is on and the previous run actually persisted snapshots (old rows
+    // have issues = null → no diff, just score movement).
+    if (growthMapIssueDiffEnabled() && Array.isArray(prev.issues) && prev.issues.length) {
+      const currentIssues = snapshotIssues(linkIssues(input.result));
+      movement.issueDelta = diffIssues(prev.issues, currentIssues);
+    }
+
+    return movement;
   } catch (err) {
     console.warn("[growth-map] history read failed:", (err as Error).message);
     return null;
