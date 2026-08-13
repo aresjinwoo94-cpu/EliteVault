@@ -188,6 +188,21 @@ export async function captureScreenshot(
     }
   }
 
+  // Provider 1.5: thum.io — FREE, no API key, and fast (measured 0.2–6.6s vs
+  // Microlink's 11–17s), because it renders + caches server-side. It's the free
+  // primary whenever ScreenshotOne is unavailable/exhausted, which is exactly
+  // the case that was refunding audits. Disable with SCREENSHOT_DISABLE_THUMIO
+  // if it ever misbehaves; the Microlink/mshots chain still follows.
+  if (!process.env.SCREENSHOT_DISABLE_THUMIO && remaining() >= MIN_USEFUL_MS) {
+    try {
+      return await captureWithThumIo(url, remaining());
+    } catch (err) {
+      const msg = (err as Error).message;
+      console.warn(`[screenshot] thum.io failed: ${msg}`);
+      errors.push(`thum.io: ${msg}`);
+    }
+  }
+
   // Provider 2: Microlink (free 50/day without a key — set MICROLINK_API_KEY
   // to stop this tier from being the bottleneck). Measured: captures stores
   // that refuse ScreenshotOne in ~8s, so it's the one that actually rescues
@@ -440,6 +455,39 @@ async function captureWithMicrolink(
     throw new Error(`Microlink returned tiny image (${buf.length}b)`);
   }
   const contentType = imgRes.headers.get("content-type") ?? "image/png";
+  return {
+    base64: buf.toString("base64"),
+    mediaType: contentType.includes("jpeg") ? "image/jpeg" : "image/png",
+  };
+}
+
+/**
+ * thum.io — free, keyless screenshot service. Fast because it renders and caches
+ * server-side (repeat hits for the same URL come back in ~0.2s). We request a
+ * 1440-wide viewport shot with a short settle wait and animations disabled, so
+ * the hero + above-the-fold — which is what the audit's "first impression" grades
+ * — is loaded. Deliberately NOT full-page: a viewport shot is small and fast,
+ * and the discovery step already supplies the below-fold text.
+ */
+async function captureWithThumIo(
+  url: string,
+  budgetMs = 20_000,
+): Promise<{ base64: string; mediaType: "image/png" | "image/jpeg" }> {
+  // Options are slash-separated before the raw URL. `wait/2` lets lazy hero
+  // images settle; `noanimate` freezes carousels/animations for a clean frame.
+  const endpoint = `https://image.thum.io/get/width/${VIEWPORT_W}/wait/2/noanimate/${url}`;
+  const res = await fetch(endpoint, {
+    headers: { "User-Agent": BROWSER_HEADERS["User-Agent"] },
+    signal: AbortSignal.timeout(Math.max(3_000, Math.min(25_000, budgetMs))),
+  });
+  if (!res.ok) throw new Error(`thum.io HTTP ${res.status}`);
+  const buf = Buffer.from(await res.arrayBuffer());
+  // Reuse the placeholder floor: thum.io returns a small error/blank graphic when
+  // it can't render, which this rejects so we degrade to the next provider.
+  if (buf.length < MIN_REAL_SHOT_BYTES) {
+    throw new Error(`thum.io returned tiny image (${buf.length}b)`);
+  }
+  const contentType = (res.headers.get("content-type") ?? "image/png").toLowerCase();
   return {
     base64: buf.toString("base64"),
     mediaType: contentType.includes("jpeg") ? "image/jpeg" : "image/png",
