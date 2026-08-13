@@ -339,9 +339,16 @@ const en: Dict = {
     // Master brief §C — the current→next segment reveals the escalera (fixes).
     climbHeading: "How you climb",
     climbMoreFixes: "+{count} more fixes with Pro",
-    // Fixes brief FIX 2 — the prioritized action index in the assigned-rank band.
+    // Fixes brief FIX 2 — the assigned-rank navigation index: three lenses on
+    // the store's own analysis, each deep-linking to its section. {n} counts and
+    // the weakest-dimension label are interpolated from the real result.
     fixIndexHeading: "Fix these to reach {next}",
     fixIndexHeadingTop: "Protect your lead — keep these tight",
+    lensFixes: "See your top fixes — ranked by leverage",
+    lensFixesHint: "{n} prioritized fixes, highest-leverage first",
+    lensAudit: "See the annotated audit",
+    lensAuditHint: "{n} issues marked on your store",
+    lensLeaks: "See where you're leaking sales",
     // Master brief §C — the ad-readiness semáforo that sits at the Wall.
     wallPrefix: "The Wall",
     wallAdReady: "Ad-ready",
@@ -976,9 +983,16 @@ const es: Dict = {
     // Master brief §C — el segmento actual→siguiente revela la escalera (fixes).
     climbHeading: "Cómo subes",
     climbMoreFixes: "+{count} arreglos más con Pro",
-    // Fixes brief FIX 2 — el índice de acción priorizado en la banda del rango.
+    // Fixes brief FIX 2 — el índice de navegación del rango: tres lentes sobre el
+    // análisis de la tienda, cada una con enlace a su sección. {n} y la dimensión
+    // más débil salen del resultado real.
     fixIndexHeading: "Arregla esto para llegar a {next}",
     fixIndexHeadingTop: "Protege tu ventaja — mantén esto afinado",
+    lensFixes: "Ve tus mejores arreglos — ordenados por leverage",
+    lensFixesHint: "{n} arreglos priorizados, mayor leverage primero",
+    lensAudit: "Ve el audit anotado",
+    lensAuditHint: "{n} problemas marcados en tu tienda",
+    lensLeaks: "Ve dónde se te fuga la venta",
     // Master brief §C — el semáforo de ad-readiness que vive en el Muro.
     wallPrefix: "El Muro",
     wallAdReady: "Listo para ads",
