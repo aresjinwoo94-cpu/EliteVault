@@ -490,7 +490,7 @@ export function AnalysisView({
                   result={data.result}
                 />
               </div>
-              <div className="min-w-0">
+              <div id="section-leaks" className="min-w-0 scroll-mt-24">
                 <CategoryRadar
                   scores={data.result.category_scores}
                   overall={data.result.score}
