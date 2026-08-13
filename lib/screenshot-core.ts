@@ -346,7 +346,25 @@ export async function captureWithScreenshotOne(
     signal: AbortSignal.timeout(opts.timeoutMs ?? 30_000),
   });
   if (!res.ok) {
-    throw new Error(`HTTP ${res.status}`);
+    // Surface ScreenshotOne's own error_code so an exhausted quota is OBVIOUS in
+    // the logs instead of a bare "HTTP 400". `screenshots_limit_reached` (the
+    // free tier's 100/mo cap) makes EVERY audit fall through to the slower
+    // Microlink/mshots chain — the single biggest cause of the ~50s deadline
+    // squeeze that refunds audits. Naming it here is what turns "why is it slow
+    // for every store?" into a one-line answer: top up ScreenshotOne.
+    let detail = "";
+    try {
+      const j = (await res.json()) as { error_code?: string; error_message?: string };
+      if (j?.error_code) detail = ` ${j.error_code}`;
+      if (/limit_reached|quota/i.test(j?.error_code ?? "")) {
+        console.error(
+          "[screenshot] ScreenshotOne QUOTA EXHAUSTED — every audit is now on the slow fallback chain. Upgrade the plan or set MICROLINK_API_KEY.",
+        );
+      }
+    } catch {
+      /* non-JSON error body — keep the status only */
+    }
+    throw new Error(`HTTP ${res.status}${detail}`);
   }
   const buf = Buffer.from(await res.arrayBuffer());
   if (buf.length < MIN_REAL_SHOT_BYTES) {
@@ -374,7 +392,14 @@ async function captureWithMicrolink(
   apiUrl.searchParams.set("meta", "false");
   apiUrl.searchParams.set("viewport.width", String(VIEWPORT_W));
   apiUrl.searchParams.set("viewport.height", String(VIEWPORT_H));
-  apiUrl.searchParams.set("waitUntil", "networkidle0");
+  // `networkidle2` (≤2 open connections) instead of `networkidle0` (0). On
+  // tracker/chat-widget-heavy Shopify stores, networkidle0 can wait 10-16s for
+  // connections that never fully settle — and Microlink is the fallback the
+  // audit leans on whenever ScreenshotOne is exhausted, so that wait comes
+  // straight out of the Gemini vision call's deadline and refunds tall pages.
+  // networkidle2 still lets the hero + above-fold content load. Measured this
+  // path at ~16.9s on a heavy PDP; networkidle2 typically cuts it to ~6-8s.
+  apiUrl.searchParams.set("waitUntil", "networkidle2");
   apiUrl.searchParams.set("fullPage", "false");
 
   const headers: HeadersInit = {};
