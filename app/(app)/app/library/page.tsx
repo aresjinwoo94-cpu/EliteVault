@@ -1,7 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { LibraryView } from "@/components/library/library-view";
 import { searchLibrary, getNiches, getLibraryStats } from "@/app/actions/search";
-import { getSavedSiteIds } from "@/app/actions/saved-sites";
+import { getSavedSiteIds, getSavedSites } from "@/app/actions/saved-sites";
 
 // NOTE: /app/* is disallowed in robots.txt (dashboard, not indexed), so this
 // description/keywords are for the browser tab + completeness, not Google
@@ -24,26 +24,31 @@ export default async function LibraryPage() {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ items }, niches, savedIds, stats, profile] = await Promise.all([
-    searchLibrary({ limit: 48 }),
-    getNiches(),
-    user ? getSavedSiteIds() : Promise.resolve(new Set<string>()),
-    getLibraryStats(),
-    user
-      ? supabase
-          .from("profiles")
-          .select("plan")
-          .eq("id", user.id)
-          .single()
-          .then(({ data }) => data)
-      : Promise.resolve(null),
-  ]);
+  const [{ items }, niches, savedIds, savedSites, stats, profile] =
+    await Promise.all([
+      searchLibrary({ limit: 48 }),
+      getNiches(),
+      user ? getSavedSiteIds() : Promise.resolve(new Set<string>()),
+      // Playbook (FASE B): explicit read of saved stores + status, so a saved
+      // store shows even when it isn't among the current search results.
+      user ? getSavedSites() : Promise.resolve([]),
+      getLibraryStats(),
+      user
+        ? supabase
+            .from("profiles")
+            .select("plan")
+            .eq("id", user.id)
+            .single()
+            .then(({ data }) => data)
+        : Promise.resolve(null),
+    ]);
 
   return (
     <LibraryView
       initialItems={items}
       niches={niches}
       savedIds={Array.from(savedIds)}
+      savedSites={savedSites}
       stats={stats}
       plan={profile?.plan ?? "free"}
     />

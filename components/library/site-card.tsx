@@ -6,6 +6,7 @@ import { Activity, ExternalLink, Info, Lock, Sparkles, TrendingUp } from "lucide
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SaveButton } from "./save-button";
+import { TeardownDialog } from "./teardown-dialog";
 import { cn, formatCompact } from "@/lib/utils";
 import type { WinningSiteCard } from "@/app/actions/search";
 
@@ -171,6 +172,12 @@ export function SiteCard({
             <p className="text-xs text-white/40 truncate">{site.domain}</p>
           </div>
           <div className="flex items-center gap-1 shrink-0">
+            {/* "Cómo convierte" — only for Pro+ (canSave) AND when this store
+                actually has a curated teardown. Degrades to hidden otherwise
+                (guardrail 7), never an empty placeholder. */}
+            {canSave && site.teardown && (
+              <TeardownDialog site={site} initialSaved={initialSaved} />
+            )}
             {canSave && (
               <SaveButton siteId={site.id} initialSaved={initialSaved} />
             )}

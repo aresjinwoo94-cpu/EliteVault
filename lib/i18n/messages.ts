@@ -653,6 +653,33 @@ const en: Dict = {
       "Start free with a store audit — it now includes a modeled ROAS range for your store. The full 7-day Campaign Scenario Modeler is included on Pro (1/month) and unlimited on Scale.",
     finalCta: "Start free",
   },
+  library: {
+    // Shared vocabulary with the Analyzer: these label the 6 canonical audit
+    // dimensions (AuditDimension) on teardown element badges.
+    dimension: {
+      color_integration: "Color",
+      layout_proportion: "Layout",
+      image_quality: "Image",
+      technical_optimization: "Technical",
+      niche_coherence: "Niche",
+      cro_principles: "CRO",
+    },
+    teardown: {
+      cta: "How it converts",
+      applyLabel: "Steal this:",
+      saveToPlaybook: "Save to my Playbook",
+      savedLabel: "Saved",
+      saved: "Saved to your Playbook",
+    },
+    playbook: {
+      tab: "My Playbook",
+      progress: "{applied} of {total} applied",
+      markApplied: "Mark as applied",
+      applied: "Applied",
+      reauditCta: "Re-audit your store to measure progress",
+      empty: "No saved stores yet. Tap the ★ on any card to save.",
+    },
+  },
 };
 
 const es: Dict = {
@@ -1296,6 +1323,33 @@ const es: Dict = {
     finalBody:
       "Empieza gratis con una auditoría de tienda — ahora incluye un rango modelado de ROAS para tu tienda. El Modelador de Escenarios de Campaña a 7 días completo viene incluido en Pro (1/mes) e ilimitado en Scale.",
     finalCta: "Empezar gratis",
+  },
+  library: {
+    // Vocabulario compartido con el Analyzer: etiquetan las 6 dimensiones
+    // canónicas (AuditDimension) en los badges del teardown.
+    dimension: {
+      color_integration: "Color",
+      layout_proportion: "Layout",
+      image_quality: "Imagen",
+      technical_optimization: "Técnico",
+      niche_coherence: "Nicho",
+      cro_principles: "CRO",
+    },
+    teardown: {
+      cta: "Cómo convierte",
+      applyLabel: "Aplícalo:",
+      saveToPlaybook: "Guardar en mi Playbook",
+      savedLabel: "Guardado",
+      saved: "Guardado en tu Playbook",
+    },
+    playbook: {
+      tab: "Mi Playbook",
+      progress: "{applied} de {total} aplicados",
+      markApplied: "Marcar como aplicado",
+      applied: "Aplicado",
+      reauditCta: "Re-audita tu tienda para medir el progreso",
+      empty: "Aún no guardas tiendas. Toca la ★ en cualquier card para guardar.",
+    },
   },
 };
 
