@@ -23,6 +23,7 @@ export interface WinningSiteCard {
   ad_signals?: Record<string, unknown> | null;
   ai_reason?: string;
   metrics_locked?: boolean;
+  teardown?: import("@/lib/supabase/types").Teardown | null;
 }
 
 /**
@@ -116,7 +117,7 @@ export async function searchLibrary(opts: {
   let q = supabase
     .from("winning_sites")
     .select(
-      "id, url, domain, title, niche, thumbnail_url, metrics, description, is_featured, is_preselected, ad_signals",
+      "id, url, domain, title, niche, thumbnail_url, metrics, description, is_featured, is_preselected, ad_signals, teardown",
     )
     .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false })

@@ -28,8 +28,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
 import { searchLibrary, type WinningSiteCard } from "@/app/actions/search";
+import {
+  setSavedStatus,
+  type PlaybookItem,
+  type PlaybookStatus,
+} from "@/app/actions/saved-sites";
 import { SiteCard } from "./site-card";
+import { PlaybookCard } from "./playbook-card";
+import { useT } from "@/components/i18n/locale-provider";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { PlanTier } from "@/lib/supabase/types";
@@ -38,15 +46,18 @@ export function LibraryView({
   initialItems,
   niches,
   savedIds: initialSavedIds,
+  savedSites,
   stats,
   plan,
 }: {
   initialItems: WinningSiteCard[];
   niches: string[];
   savedIds: string[];
+  savedSites: PlaybookItem[];
   stats: { total: number; niches: Record<string, number> };
   plan: PlanTier;
 }) {
+  const { t } = useT();
   const [items, setItems] = useState(initialItems);
   const [prompt, setPrompt] = useState("");
   const [niche, setNiche] = useState<string | null>(null);
@@ -55,8 +66,36 @@ export function LibraryView({
   const [aiUsed, setAiUsed] = useState(false);
   const [detectedNiche, setDetectedNiche] = useState<string | null>(null);
   const [detectedKeywords, setDetectedKeywords] = useState<string[]>([]);
-  const [tab, setTab] = useState<"all" | "saved">("all");
+  const [tab, setTab] = useState<"all" | "playbook">("all");
   const [savedIds] = useState(new Set(initialSavedIds));
+
+  // Playbook (FASE B): status is owned here so the progress bar can move
+  // optimistically. Seeded from the explicit server read (getSavedSites).
+  const [playbook, setPlaybook] = useState<PlaybookItem[]>(savedSites);
+  const [, startStatusTransition] = useTransition();
+
+  const appliedCount = playbook.filter((p) => p.status === "applied").length;
+  const playbookTotal = playbook.length;
+  const progressPct =
+    playbookTotal > 0 ? (appliedCount / playbookTotal) * 100 : 0;
+
+  function togglePlaybookStatus(siteId: string, current: PlaybookStatus) {
+    const next: PlaybookStatus = current === "applied" ? "to_apply" : "applied";
+    setPlaybook((prev) =>
+      prev.map((p) => (p.site.id === siteId ? { ...p, status: next } : p)),
+    );
+    startStatusTransition(async () => {
+      const res = await setSavedStatus(siteId, next);
+      if (!res.ok) {
+        setPlaybook((prev) =>
+          prev.map((p) =>
+            p.site.id === siteId ? { ...p, status: current } : p,
+          ),
+        );
+        toast.error(res.error);
+      }
+    });
+  }
 
   const isPaid = plan !== "free";
 
@@ -103,12 +142,9 @@ export function LibraryView({
     reader.readAsDataURL(file);
   }
 
-  // Filter items for "Saved" tab
-  const displayItems = useMemo(
-    () =>
-      tab === "saved" ? items.filter((it) => savedIds.has(it.id)) : items,
-    [items, tab, savedIds],
-  );
+  // "All stores" grid shows the current search result as-is. (The Playbook is
+  // a separate tab now, fed by an explicit server read — not a client filter.)
+  const displayItems = items;
 
   const topNiches = useMemo(
     () =>
@@ -291,52 +327,121 @@ export function LibraryView({
         </div>
       </div>
 
-      {/* All / Saved tabs (Pro+) */}
-      {isPaid && (
-        <Tabs value={tab} onValueChange={(v) => setTab(v as "all" | "saved")}>
-          <TabsList>
-            <TabsTrigger value="all">All stores</TabsTrigger>
-            <TabsTrigger value="saved">
-              <Star className="size-3 mr-1" />
-              Saved ({savedIds.size})
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      )}
+      {/* All stores grid + estimate disclaimer. Shared by the Free view (no
+          tabs) and the Pro "All stores" tab. */}
+      {(() => {
+        const allStores = (
+          <>
+            <motion.div
+              layout
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            >
+              {displayItems.length === 0 ? (
+                <div className="col-span-full text-center py-16 text-white/40">
+                  No matches. Try a different prompt.
+                </div>
+              ) : (
+                displayItems.map((s, i) => (
+                  <SiteCard
+                    key={s.id}
+                    site={s}
+                    index={i}
+                    canSave={isPaid}
+                    initialSaved={savedIds.has(s.id)}
+                  />
+                ))
+              )}
+            </motion.div>
 
-      {/* Grid */}
-      <motion.div
-        layout
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-      >
-        {displayItems.length === 0 ? (
-          <div className="col-span-full text-center py-16 text-white/40">
-            {tab === "saved"
-              ? "No saved stores yet. Tap the ★ on any card to save."
-              : "No matches. Try a different prompt."}
-          </div>
-        ) : (
-          displayItems.map((s, i) => (
-            <SiteCard
-              key={s.id}
-              site={s}
-              index={i}
-              canSave={isPaid}
-              initialSaved={savedIds.has(s.id)}
-            />
-          ))
-        )}
-      </motion.div>
+            {/* Estimate disclaimer — the CTR/ROI/conv./traffic figures on every
+                card are modeled from public traffic and behavior signals, not
+                numbers the brands report. Say so once, plainly, under the grid. */}
+            {displayItems.length > 0 && (
+              <p className="mt-6 text-center text-xs text-white/35 leading-relaxed">
+                Metrics are estimated by modeling public traffic and behavior
+                signals. They are not figures reported by the brands themselves.
+              </p>
+            )}
+          </>
+        );
 
-      {/* Estimate disclaimer — the CTR/ROI/conv./traffic figures on every
-          card are modeled from public traffic and behavior signals, not
-          numbers the brands report. Say so once, plainly, under the grid. */}
-      {displayItems.length > 0 && (
-        <p className="text-center text-xs text-white/35 leading-relaxed">
-          Metrics are estimated by modeling public traffic and behavior signals.
-          They are not figures reported by the brands themselves.
-        </p>
-      )}
+        if (!isPaid) return allStores;
+
+        return (
+          <Tabs
+            value={tab}
+            onValueChange={(v) => setTab(v as "all" | "playbook")}
+          >
+            <TabsList>
+              <TabsTrigger value="all">All stores</TabsTrigger>
+              <TabsTrigger value="playbook">
+                <Star className="size-3 mr-1" />
+                {t("library.playbook.tab")} ({playbookTotal})
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="all" className="mt-6">
+              {allStores}
+            </TabsContent>
+
+            <TabsContent value="playbook" className="mt-6 space-y-6">
+              {playbookTotal === 0 ? (
+                <div className="text-center py-16 text-white/40">
+                  {t("library.playbook.empty")}
+                </div>
+              ) : (
+                <>
+                  {/* Progress header */}
+                  <div className="rounded-2xl border border-white/[0.06] bg-card/40 p-4 md:p-5">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-white/70">
+                        {t("library.playbook.progress")
+                          .replace("{applied}", String(appliedCount))
+                          .replace("{total}", String(playbookTotal))}
+                      </span>
+                      <span className="num text-white/85">
+                        {Math.round(progressPct)}%
+                      </span>
+                    </div>
+                    <Progress value={progressPct} className="mt-3" />
+                  </div>
+
+                  {/* Saved stores with status control */}
+                  <motion.div
+                    layout
+                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                  >
+                    {playbook.map((p, i) => (
+                      <PlaybookCard
+                        key={p.site.id}
+                        site={p.site}
+                        index={i}
+                        status={p.status}
+                        onToggle={() =>
+                          togglePlaybookStatus(p.site.id, p.status)
+                        }
+                      />
+                    ))}
+                  </motion.div>
+
+                  {/* Close-the-loop CTA — re-audit to measure progress. */}
+                  <div className="rounded-2xl border border-champagne-400/20 bg-gradient-to-br from-champagne-400/[0.05] to-signal-600/[0.05] p-6 text-center">
+                    <h3 className="font-serif text-xl text-white">
+                      {t("library.playbook.reauditCta")}
+                    </h3>
+                    <Button asChild variant="ai" className="mt-4">
+                      <Link href="/app/analyzer">
+                        <Scan className="size-4" />
+                        Audit my store
+                      </Link>
+                    </Button>
+                  </div>
+                </>
+              )}
+            </TabsContent>
+          </Tabs>
+        );
+      })()}
 
       {plan === "free" && (
         <div className="rounded-2xl border border-champagne-400/20 bg-gradient-to-br from-champagne-400/[0.05] to-signal-600/[0.05] p-6 text-center">

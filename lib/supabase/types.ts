@@ -107,6 +107,46 @@ export interface RewriteResult {
   rationale: string;
 }
 
+/** Las 6 dimensiones canónicas del Analyzer (AnalysisResult.category_scores).
+ *  El teardown de la Library REUTILIZA estas claves para compartir vocabulario. */
+export type AuditDimension =
+  | "color_integration"
+  | "layout_proportion"
+  | "image_quality"
+  | "technical_optimization"
+  | "niche_coherence"
+  | "cro_principles";
+
+export interface TeardownElement {
+  /** Nombre del elemento observado, p.ej. "Hero CTA", "Ficha de producto". */
+  element: string;
+  /** Ata este elemento a una dimensión del Analyzer. Ver AuditDimension. */
+  dimension: AuditDimension;
+  /** Qué hace la tienda (observación factual). */
+  observation: string;
+  /** Qué robar / cómo aplicarlo a tu propia tienda. */
+  takeaway: string;
+}
+
+export interface Teardown {
+  /** Una línea: por qué esta tienda convierte. */
+  summary: string;
+  elements: TeardownElement[];
+}
+
+/** Etiqueta corta legible por dimensión (source-of-truth: EN). La UI de la
+ *  Library prefiere las claves i18n `library.dimension.*`; este mapa es el
+ *  fallback canónico y el que usará el futuro código no-UI. No inventar
+ *  categorías fuera de estas 6 (ver guardrails del brief de retención). */
+export const AUDIT_DIMENSION_LABELS: Record<AuditDimension, string> = {
+  cro_principles: "CRO",
+  layout_proportion: "Layout",
+  color_integration: "Color",
+  image_quality: "Image",
+  niche_coherence: "Niche",
+  technical_optimization: "Technical",
+};
+
 // v2 — Meta Ads + Community + API ──────────────────────────────────────────
 
 /** Estimated activity proxy from the public Meta Ad Library. */
@@ -358,6 +398,9 @@ export interface Database {
           added_by_ai: boolean;
           is_featured: boolean;
           created_at: string;
+          /** Desglose curado de conversión (FASE A). Nullable: la mayoría de
+           *  filas no lo tienen y la UI degrada a "sin botón". Ver Teardown. */
+          teardown: Teardown | null;
         };
         Insert: Partial<Database["public"]["Tables"]["winning_sites"]["Row"]> & {
           url: string;
