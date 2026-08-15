@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   Star,
@@ -12,15 +12,26 @@ import {
   Mail,
   X,
   AlertTriangle,
+  Upload,
 } from "lucide-react";
 import {
   updateReviewSettings,
   setReviewStatus,
   setReviewFeatured,
   deleteReview,
+  ownerUploadReviewPhoto,
+  ownerRemoveReviewPhoto,
 } from "@/app/actions/reviews";
 import type { AdminReview, ReviewSettings } from "@/lib/reviews/types";
 import { cn } from "@/lib/utils";
+
+/** On-the-fly resized render URL for a stored public photo, so panel previews
+ *  stay light (same trick as the Library images panel). */
+function reviewThumb(url: string, width = 120): string {
+  const marker = "/storage/v1/object/public/";
+  if (!url.includes(marker)) return url;
+  return `${url.replace(marker, "/storage/v1/render/image/public/")}?width=${width}&quality=60`;
+}
 
 export function OwnerReviews({
   initialSettings,
@@ -124,10 +135,17 @@ export function OwnerReviews({
           onChange={(v) => patch({ auto_approve: v })}
           disabled={pending || !settings.enabled}
         />
+        <Toggle
+          label="Permitir fotos en las reseñas"
+          help="Deja que los usuarios agreguen fotos a su propia reseña desde el sitio."
+          checked={settings.allow_photos}
+          onChange={(v) => patch({ allow_photos: v })}
+          disabled={pending || !settings.enabled}
+        />
       </div>
 
       {/* ── Numeric controls ─────────────────────────────────────────────── */}
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+      <div className="mt-3 grid gap-3 sm:grid-cols-3">
         <Stepper
           label="Cuántas mostrar"
           value={settings.display_count}
@@ -143,6 +161,14 @@ export function OwnerReviews({
           max={5}
           suffix="★"
           onChange={(v) => patch({ min_rating: v })}
+          disabled={pending || !settings.enabled}
+        />
+        <Stepper
+          label="Máx. fotos por reseña"
+          value={settings.max_photos}
+          min={0}
+          max={10}
+          onChange={(v) => patch({ max_photos: v })}
           disabled={pending || !settings.enabled}
         />
       </div>
@@ -161,6 +187,7 @@ export function OwnerReviews({
             <ReviewRow
               key={r.id}
               review={r}
+              maxPhotos={settings.max_photos}
               busy={busyId === r.id && pending}
               onApprove={() =>
                 moderate(() => setReviewStatus(r.id, "approved"), r.id)
@@ -193,6 +220,7 @@ export function OwnerReviews({
 
 function ReviewRow({
   review,
+  maxPhotos,
   busy,
   onApprove,
   onHide,
@@ -202,6 +230,7 @@ function ReviewRow({
   onDelete,
 }: {
   review: AdminReview;
+  maxPhotos: number;
   busy: boolean;
   onApprove: () => void;
   onHide: () => void;
@@ -280,6 +309,8 @@ function ReviewRow({
         )}
       </p>
 
+      <OwnerReviewPhotos reviewId={review.id} photos={review.photos} maxPhotos={maxPhotos} />
+
       <div className="mt-3 flex flex-wrap gap-2">
         {review.status !== "approved" && (
           <Action onClick={onApprove} icon={Check} className="text-success">
@@ -312,6 +343,93 @@ function ReviewRow({
           Eliminar
         </Action>
       </div>
+    </div>
+  );
+}
+
+/** Owner photo strip inside a review card: current thumbnails (each removable)
+ *  plus an "add photo" control. Uploading here never changes the review status. */
+function OwnerReviewPhotos({
+  reviewId,
+  photos,
+  maxPhotos,
+}: {
+  reviewId: string;
+  photos: { url: string; path: string }[];
+  maxPhotos: number;
+}) {
+  const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const atMax = photos.length >= maxPhotos;
+
+  function onPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(null);
+    const fd = new FormData();
+    fd.set("reviewId", reviewId);
+    fd.set("file", file);
+    startTransition(async () => {
+      const res = await ownerUploadReviewPhoto(fd);
+      if (res.ok) router.refresh();
+      else setError(res.error || "No se pudo subir");
+    });
+    e.target.value = "";
+  }
+
+  function remove(path: string) {
+    setError(null);
+    startTransition(async () => {
+      const res = await ownerRemoveReviewPhoto(reviewId, path);
+      if (res.ok) router.refresh();
+      else setError(res.error || "No se pudo quitar");
+    });
+  }
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2">
+      {photos.map((p) => (
+        <div
+          key={p.path}
+          className="relative size-14 overflow-hidden rounded-lg border border-white/[0.06] bg-black/30"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={reviewThumb(p.url)} alt="" className="size-full object-cover" />
+          <button
+            type="button"
+            onClick={() => remove(p.path)}
+            disabled={pending}
+            aria-label="Quitar foto"
+            className="absolute right-0.5 top-0.5 grid size-5 place-items-center rounded-md bg-black/70 text-white/80 hover:text-white disabled:opacity-50"
+          >
+            <X className="size-3" />
+          </button>
+        </div>
+      ))}
+
+      {maxPhotos > 0 && (
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={pending || atMax}
+          title={atMax ? `Máximo ${maxPhotos} fotos` : undefined}
+          className="glow-secondary inline-flex h-14 items-center gap-1.5 rounded-lg border border-dashed border-white/[0.12] px-3 text-xs text-white/60 hover:text-white disabled:opacity-40"
+        >
+          <Upload className="size-3.5" />
+          {pending ? "Subiendo…" : "Añadir foto"}
+        </button>
+      )}
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        onChange={onPick}
+        className="hidden"
+      />
+      {error && <p className="w-full text-[11px] text-destructive">{error}</p>}
     </div>
   );
 }

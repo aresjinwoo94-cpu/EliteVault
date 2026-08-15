@@ -1,12 +1,24 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Star, CheckCircle2, Trash2 } from "lucide-react";
-import { submitUserReview, deleteMyReview } from "@/app/actions/reviews";
-import type { MyReview } from "@/lib/reviews/types";
+import { Star, CheckCircle2, Trash2, Upload, X } from "lucide-react";
+import {
+  submitUserReview,
+  deleteMyReview,
+  uploadMyReviewPhoto,
+  removeMyReviewPhoto,
+} from "@/app/actions/reviews";
+import type { MyReview, ReviewPhoto } from "@/lib/reviews/types";
 import { useT } from "@/components/i18n/locale-provider";
 import { cn } from "@/lib/utils";
+
+/** On-the-fly resized render URL for a stored public photo (light previews). */
+function reviewThumb(url: string, width = 160): string {
+  const marker = "/storage/v1/object/public/";
+  if (!url.includes(marker)) return url;
+  return `${url.replace(marker, "/storage/v1/render/image/public/")}?width=${width}&quality=60`;
+}
 
 const MIN = 20;
 const MAX = 500;
@@ -20,9 +32,13 @@ const MAX = 500;
 export function UserReviewForm({
   defaultName,
   existing,
+  allowPhotos = false,
+  maxPhotos = 4,
 }: {
   defaultName: string;
   existing: MyReview | null;
+  allowPhotos?: boolean;
+  maxPhotos?: number;
 }) {
   const { t } = useT();
   const router = useRouter();
@@ -197,6 +213,22 @@ export function UserReviewForm({
         <Field label={t("reviews.storeUrl")} value={storeUrl} onChange={setStoreUrl} placeholder={t("reviews.storeUrlPlaceholder")} />
       </div>
 
+      {/* Photos — only when the owner enabled them (Part 2 switch) */}
+      {allowPhotos && (
+        <div className="mt-5">
+          <label className="text-xs uppercase tracking-wider text-white/40">
+            {t("reviews.photosLabel")}
+          </label>
+          {existing ? (
+            <MyReviewPhotos photos={existing.photos} maxPhotos={maxPhotos} />
+          ) : (
+            <p className="mt-1.5 text-xs text-white/40">
+              {t("reviews.photoSaveFirst")}
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Consent — required to publish */}
       <label className="mt-4 flex cursor-pointer items-start gap-2.5">
         <input
@@ -235,6 +267,87 @@ export function UserReviewForm({
         )}
       </div>
     </form>
+  );
+}
+
+/** Self-service photo strip for the user's own review. Adding a photo re-enters
+ *  moderation server-side; removing one does not. */
+function MyReviewPhotos({
+  photos,
+  maxPhotos,
+}: {
+  photos: ReviewPhoto[];
+  maxPhotos: number;
+}) {
+  const { t } = useT();
+  const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const atMax = photos.length >= maxPhotos;
+
+  function onPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(null);
+    const fd = new FormData();
+    fd.set("file", file);
+    startTransition(async () => {
+      const res = await uploadMyReviewPhoto(fd);
+      if (res.ok) router.refresh();
+      else setError(res.error || t("reviews.error"));
+    });
+    e.target.value = "";
+  }
+
+  function remove(path: string) {
+    setError(null);
+    startTransition(async () => {
+      const res = await removeMyReviewPhoto(path);
+      if (res.ok) router.refresh();
+      else setError(res.error || t("reviews.error"));
+    });
+  }
+
+  return (
+    <>
+      <p className="mt-1.5 text-xs text-white/35">
+        {t("reviews.photosHint").replace("{count}", String(maxPhotos))}
+      </p>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        {photos.map((p) => (
+          <div
+            key={p.path}
+            className="relative size-16 overflow-hidden rounded-lg border border-white/[0.06] bg-black/30"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={reviewThumb(p.url)} alt="" className="size-full object-cover" />
+            <button
+              type="button"
+              onClick={() => remove(p.path)}
+              disabled={pending}
+              aria-label={t("reviews.photoRemove")}
+              className="absolute right-0.5 top-0.5 grid size-5 place-items-center rounded-md bg-black/70 text-white/80 hover:text-white disabled:opacity-50"
+            >
+              <X className="size-3" />
+            </button>
+          </div>
+        ))}
+
+        {maxPhotos > 0 && (
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            disabled={pending || atMax}
+            className="glow-secondary inline-flex h-16 items-center gap-1.5 rounded-lg border border-dashed border-white/[0.12] px-3 text-xs text-white/60 hover:text-white disabled:opacity-40"
+          >
+            <Upload className="size-3.5" />
+            {pending ? t("reviews.photoUploading") : t("reviews.addPhoto")}
+          </button>
+        )}
+      </div>
+      {error && <p className="mt-1.5 text-xs text-destructive">{error}</p>}
+    </>
   );
 }
 

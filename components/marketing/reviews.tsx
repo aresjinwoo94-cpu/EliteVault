@@ -12,6 +12,14 @@ import type { PublicReview } from "@/lib/reviews/types";
  *  shown — below this it's not a meaningful statistic (landing brief §5). */
 const MIN_FOR_AGGREGATE = 5;
 
+/** On-the-fly resized render URL for a stored public photo, so the card never
+ *  downloads the full-size image. */
+function reviewThumb(url: string, width = 240): string {
+  const marker = "/storage/v1/object/public/";
+  if (!url.includes(marker)) return url;
+  return `${url.replace(marker, "/storage/v1/render/image/public/")}?width=${width}&quality=60`;
+}
+
 /**
  * Minimum number of APPROVED reviews before the testimonials section is
  * allowed to appear on the landing. An empty (or near-empty) testimonials
@@ -110,6 +118,20 @@ function ReviewCard({ review }: { review: PublicReview }) {
       <p className="mt-2 flex-1 text-sm text-white/60 leading-relaxed">
         {review.body}
       </p>
+      {review.photos.length > 0 && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {review.photos.slice(0, 4).map((p) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={p.path}
+              src={reviewThumb(p.url)}
+              alt=""
+              loading="lazy"
+              className="size-16 rounded-lg border border-white/[0.06] object-cover"
+            />
+          ))}
+        </div>
+      )}
       <p className="mt-4 text-xs font-medium text-white/45">
         — {review.author_name}
         {review.store_name && (
