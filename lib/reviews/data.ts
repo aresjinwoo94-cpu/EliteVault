@@ -11,7 +11,7 @@ import {
 
 /** Normalize a raw `photos` jsonb value into a clean {url, path}[] — tolerant
  *  of null / non-array / malformed entries so a bad row never breaks a query. */
-function normalizePhotos(raw: unknown): ReviewPhoto[] {
+export function normalizePhotos(raw: unknown): ReviewPhoto[] {
   if (!Array.isArray(raw)) return [];
   return raw
     .filter(

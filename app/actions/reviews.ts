@@ -7,7 +7,7 @@ import {
   createSupabaseServerClient,
 } from "@/lib/supabase/server";
 import { getOwner } from "@/lib/admin/guard";
-import { getReviewSettings } from "@/lib/reviews/data";
+import { getReviewSettings, normalizePhotos } from "@/lib/reviews/data";
 import { sendEmail } from "@/lib/email/resend";
 
 // ── Public: submit a review ─────────────────────────────────────────────────
@@ -285,6 +285,8 @@ const SettingsPatch = z.object({
   auto_approve: z.boolean().optional(),
   heading: z.string().max(120).nullable().optional(),
   subheading: z.string().max(240).nullable().optional(),
+  allow_photos: z.boolean().optional(),
+  max_photos: z.coerce.number().int().min(0).max(10).optional(),
 });
 
 export async function updateReviewSettings(
@@ -368,6 +370,270 @@ export async function deleteReview(
   revalidatePath("/");
   revalidatePath("/app/owner");
   return { ok: true };
+}
+
+// ── Review photos ───────────────────────────────────────────────────────────
+//
+// Reuses the existing public "screenshots" bucket (migration 0002) with a
+// `reviews/` prefix — the same pattern Library uses. NOTE: that bucket's
+// allowed_mime_types is png/jpeg/webp only (NO avif), so we validate against
+// exactly that set even though a sibling component's <input> loosely accepts
+// avif. Owner uploads never change status; user uploads re-enter moderation.
+
+const PHOTO_BUCKET = "screenshots";
+const PHOTO_PREFIX = "reviews";
+const PHOTO_MAX_BYTES = 8 * 1024 * 1024; // 8MB — same as library-images.ts
+
+const PHOTO_EXT: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/jpg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
+
+type PhotoFileOk = { ok: true; file: File; ext: string };
+type PhotoFileErr = { ok: false; error: string };
+
+/** Validate an uploaded photo against the bucket's real constraints (png/jpeg/
+ *  webp, ≤8MB). Same rejection messages spirit as uploadLibraryImage. */
+function validatePhotoFile(entry: FormDataEntryValue | null): PhotoFileOk | PhotoFileErr {
+  if (!(entry instanceof File) || entry.size === 0)
+    return { ok: false, error: "Elige una imagen" };
+  if (entry.size > PHOTO_MAX_BYTES)
+    return { ok: false, error: "La imagen es muy grande (máx. 8MB)" };
+  const ext = PHOTO_EXT[entry.type.toLowerCase()];
+  if (!ext) return { ok: false, error: "Usa una imagen JPG, PNG o WebP" };
+  return { ok: true, file: entry, ext };
+}
+
+type PhotoActionResult = { ok: boolean; error?: string };
+
+// ── Owner: add / remove a photo on ANY review ───────────────────────────────
+
+/**
+ * Owner-only: attach a photo to any review (approved / pending / hidden). The
+ * fast path that unblocks users today — the owner receives their photos out of
+ * band and uploads them here. Does NOT change the review's status: the owner is
+ * trusted, so an approved review stays public with the new photo immediately.
+ */
+export async function ownerUploadReviewPhoto(
+  formData: FormData,
+): Promise<PhotoActionResult> {
+  await assertOwner();
+  const reviewId = String(formData.get("reviewId") || "");
+  if (!reviewId) return { ok: false, error: "Falta el id de la reseña" };
+  const v = validatePhotoFile(formData.get("file"));
+  if (!v.ok) return v;
+
+  try {
+    const svc = createSupabaseServiceClient();
+    const settings = await getReviewSettings();
+    const { data: row } = await svc
+      .from("reviews")
+      .select("id, photos")
+      .eq("id", reviewId)
+      .maybeSingle();
+    if (!row) return { ok: false, error: "Reseña no encontrada" };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const current = normalizePhotos((row as any).photos);
+    if (current.length >= settings.max_photos)
+      return { ok: false, error: "Ya alcanzó el máximo de fotos" };
+
+    const path = `${PHOTO_PREFIX}/${reviewId}-${Date.now()}-${current.length}.${v.ext}`;
+    const buf = Buffer.from(await v.file.arrayBuffer());
+    const { error: upErr } = await svc.storage
+      .from(PHOTO_BUCKET)
+      .upload(path, buf, { contentType: v.file.type, upsert: true });
+    if (upErr) return { ok: false, error: `Error al subir: ${upErr.message}` };
+
+    const {
+      data: { publicUrl },
+    } = svc.storage.from(PHOTO_BUCKET).getPublicUrl(path);
+    const next = [...current, { url: publicUrl, path }];
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: updErr } = await (svc.from("reviews") as any)
+      .update({ photos: next })
+      .eq("id", reviewId);
+    if (updErr) {
+      // Don't leave an orphaned object behind if the row update failed.
+      await svc.storage.from(PHOTO_BUCKET).remove([path]).catch(() => {});
+      return { ok: false, error: `No se pudo guardar: ${updErr.message}` };
+    }
+
+    revalidatePath("/");
+    revalidatePath("/app/owner");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
+  }
+}
+
+/** Owner-only: remove a photo from any review (deletes the object too). */
+export async function ownerRemoveReviewPhoto(
+  reviewId: string,
+  path: string,
+): Promise<PhotoActionResult> {
+  await assertOwner();
+  if (!reviewId || !path) return { ok: false, error: "Datos incompletos" };
+  try {
+    const svc = createSupabaseServiceClient();
+    const { data: row } = await svc
+      .from("reviews")
+      .select("id, photos")
+      .eq("id", reviewId)
+      .maybeSingle();
+    if (!row) return { ok: false, error: "Reseña no encontrada" };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const next = normalizePhotos((row as any).photos).filter((p) => p.path !== path);
+    await svc.storage.from(PHOTO_BUCKET).remove([path]).catch(() => {});
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (svc.from("reviews") as any)
+      .update({ photos: next })
+      .eq("id", reviewId);
+    if (error) return { ok: false, error: error.message };
+
+    revalidatePath("/");
+    revalidatePath("/app/owner");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
+  }
+}
+
+// ── Signed-in users: add / remove photos on THEIR OWN review ─────────────────
+
+/** Resolve the signed-in user id, or null if there's no session. */
+async function currentUserId(): Promise<string | null> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return user?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Self-service: the signed-in user adds a photo to their OWN review. Gated by
+ * the owner's `allow_photos` switch. Requires an existing review (no photo
+ * without a review). Adding a photo re-enters moderation (status → pending)
+ * unless auto-approve is on — same rule submitUserReview applies to any edit.
+ */
+export async function uploadMyReviewPhoto(
+  formData: FormData,
+): Promise<PhotoActionResult> {
+  const userId = await currentUserId();
+  if (!userId) return { ok: false, error: "Inicia sesión para añadir fotos." };
+
+  const settings = await getReviewSettings();
+  if (!settings.enabled || !settings.allow_photos)
+    return { ok: false, error: "El propietario no habilitó las fotos por ahora." };
+
+  const v = validatePhotoFile(formData.get("file"));
+  if (!v.ok) return v;
+
+  try {
+    const svc = createSupabaseServiceClient();
+    const { data: row } = await svc
+      .from("reviews")
+      .select("id, photos")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (!row) return { ok: false, error: "Primero escribe tu reseña." };
+
+    const reviewId = String((row as { id: string }).id);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const current = normalizePhotos((row as any).photos);
+    if (current.length >= settings.max_photos)
+      return { ok: false, error: "Ya alcanzaste el máximo de fotos" };
+
+    const path = `${PHOTO_PREFIX}/${reviewId}-${Date.now()}-${current.length}.${v.ext}`;
+    const buf = Buffer.from(await v.file.arrayBuffer());
+    const { error: upErr } = await svc.storage
+      .from(PHOTO_BUCKET)
+      .upload(path, buf, { contentType: v.file.type, upsert: true });
+    if (upErr) return { ok: false, error: `Error al subir: ${upErr.message}` };
+
+    const {
+      data: { publicUrl },
+    } = svc.storage.from(PHOTO_BUCKET).getPublicUrl(path);
+    const next = [...current, { url: publicUrl, path }];
+
+    // New user content → re-moderate (unless auto-approve).
+    const status = settings.auto_approve ? "approved" : "pending";
+    const { error: updErr } = await (
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      svc.from("reviews") as any
+    )
+      .update({
+        photos: next,
+        status,
+        approved_at: status === "approved" ? new Date().toISOString() : null,
+      })
+      // Ownership: a user can only ever touch their own row.
+      .eq("user_id", userId);
+    if (updErr) {
+      await svc.storage.from(PHOTO_BUCKET).remove([path]).catch(() => {});
+      return { ok: false, error: `No se pudo guardar: ${updErr.message}` };
+    }
+
+    revalidatePath("/");
+    revalidatePath("/app/review");
+    revalidatePath("/app/owner");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
+  }
+}
+
+/**
+ * Self-service: the signed-in user removes one of their OWN photos. Ownership
+ * is enforced by the user_id filter AND by checking the path belongs to their
+ * review. Removing content does NOT re-enter moderation.
+ */
+export async function removeMyReviewPhoto(
+  path: string,
+): Promise<PhotoActionResult> {
+  const userId = await currentUserId();
+  if (!userId) return { ok: false, error: "Inicia sesión." };
+  if (!path) return { ok: false, error: "Datos incompletos" };
+
+  try {
+    const svc = createSupabaseServiceClient();
+    const { data: row } = await svc
+      .from("reviews")
+      .select("id, photos")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (!row) return { ok: false, error: "No encontramos tu reseña." };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const current = normalizePhotos((row as any).photos);
+    if (!current.some((p) => p.path === path))
+      return { ok: false, error: "Esa foto no es tuya." };
+
+    const next = current.filter((p) => p.path !== path);
+    await svc.storage.from(PHOTO_BUCKET).remove([path]).catch(() => {});
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (svc.from("reviews") as any)
+      .update({ photos: next })
+      .eq("user_id", userId);
+    if (error) return { ok: false, error: error.message };
+
+    revalidatePath("/");
+    revalidatePath("/app/review");
+    revalidatePath("/app/owner");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
+  }
 }
 
 function escapeHtml(s: string): string {
