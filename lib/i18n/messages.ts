@@ -470,7 +470,7 @@ const en: Dict = {
     finalCta: "Start free",
   },
   reviews: {
-    heading: "What founders say",
+    heading: "Reviews",
     subheading: "Real words from people who put their store through EliteVault.",
     outOf5: "out of 5",
     reviewsCount: "reviews",
@@ -1147,7 +1147,7 @@ const es: Dict = {
     finalCta: "Empezar gratis",
   },
   reviews: {
-    heading: "Lo que dicen los fundadores",
+    heading: "Reseñas",
     subheading: "Palabras reales de quienes pasaron su tienda por EliteVault.",
     outOf5: "de 5",
     reviewsCount: "reseñas",
