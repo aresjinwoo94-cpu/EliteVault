@@ -5,8 +5,22 @@ import {
   type AdminReview,
   type MyReview,
   type PublicReview,
+  type ReviewPhoto,
   type ReviewSettings,
 } from "./types";
+
+/** Normalize a raw `photos` jsonb value into a clean {url, path}[] — tolerant
+ *  of null / non-array / malformed entries so a bad row never breaks a query. */
+export function normalizePhotos(raw: unknown): ReviewPhoto[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter(
+      (p): p is { url: unknown; path: unknown } =>
+        !!p && typeof p === "object",
+    )
+    .map((p) => ({ url: String(p.url ?? ""), path: String(p.path ?? "") }))
+    .filter((p) => p.url && p.path);
+}
 
 /**
  * Read the single review_settings row. Falls back to safe defaults if the
@@ -22,7 +36,7 @@ export async function getReviewSettings(): Promise<ReviewSettings> {
     const { data, error } = await svc
       .from("review_settings")
       .select(
-        "enabled, show_form, show_list, display_count, min_rating, auto_approve, heading, subheading",
+        "enabled, show_form, show_list, display_count, min_rating, auto_approve, heading, subheading, allow_photos, max_photos",
       )
       .eq("id", true)
       .maybeSingle();
@@ -38,6 +52,8 @@ export async function getReviewSettings(): Promise<ReviewSettings> {
       auto_approve: !!d.auto_approve,
       heading: d.heading ?? null,
       subheading: d.subheading ?? null,
+      allow_photos: !!d.allow_photos,
+      max_photos: Number(d.max_photos ?? 4),
     };
   } catch {
     return hidden;
@@ -57,7 +73,7 @@ export async function getPublicReviews(
     const svc = createSupabaseServiceClient();
     const { data, error } = await svc
       .from("reviews")
-      .select("id, author_name, rating, title, body, store_name, featured, created_at")
+      .select("id, author_name, rating, title, body, store_name, featured, created_at, photos")
       .eq("status", "approved")
       // Only rows the author consented to publish (default true for legacy
       // testimonials; the signed-in form requires an explicit checkbox).
@@ -77,6 +93,7 @@ export async function getPublicReviews(
       store_name: r.store_name ?? null,
       featured: !!r.featured,
       created_at: String(r.created_at ?? ""),
+      photos: normalizePhotos(r.photos),
     }));
   } catch {
     return [];
@@ -118,7 +135,7 @@ export async function getAllReviewsForOwner(): Promise<AdminReview[]> {
     const { data, error } = await svc
       .from("reviews")
       .select(
-        "id, author_name, author_email, rating, title, body, store_name, store_url, featured, status, created_at, approved_at",
+        "id, author_name, author_email, rating, title, body, store_name, store_url, featured, status, created_at, approved_at, photos",
       )
       .order("created_at", { ascending: false })
       .limit(500);
@@ -137,6 +154,7 @@ export async function getAllReviewsForOwner(): Promise<AdminReview[]> {
       status: (r.status ?? "pending") as AdminReview["status"],
       created_at: String(r.created_at ?? ""),
       approved_at: r.approved_at ?? null,
+      photos: normalizePhotos(r.photos),
     }));
   } catch {
     return [];
@@ -154,7 +172,7 @@ export async function getMyReview(userId: string): Promise<MyReview | null> {
     const svc = createSupabaseServiceClient();
     const { data, error } = await svc
       .from("reviews")
-      .select("id, rating, body, author_name, store_name, store_url, status, created_at")
+      .select("id, rating, body, author_name, store_name, store_url, status, created_at, photos")
       .eq("user_id", userId)
       .maybeSingle();
     if (error || !data) return null;
@@ -169,6 +187,7 @@ export async function getMyReview(userId: string): Promise<MyReview | null> {
       store_url: r.store_url ?? null,
       status: (r.status ?? "pending") as MyReview["status"],
       created_at: String(r.created_at ?? ""),
+      photos: normalizePhotos(r.photos),
     };
   } catch {
     return null;

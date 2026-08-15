@@ -51,7 +51,12 @@ export default async function AppReviewPage() {
 
       <div className="mt-10">
         {formOpen ? (
-          <UserReviewForm defaultName={defaultName} existing={existing} />
+          <UserReviewForm
+            defaultName={defaultName}
+            existing={existing}
+            allowPhotos={settings.enabled && settings.allow_photos}
+            maxPhotos={settings.max_photos}
+          />
         ) : (
           <div className="rounded-2xl border border-white/[0.06] bg-card p-8 text-center shadow-card">
             <p className="text-sm leading-relaxed text-white/60">
