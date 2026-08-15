@@ -126,7 +126,6 @@ function ReviewCard({ review }: { review: PublicReview }) {
               key={p.path}
               src={reviewThumb(p.url)}
               alt=""
-              loading="lazy"
               className="size-16 rounded-lg border border-white/[0.06] object-cover"
             />
           ))}
