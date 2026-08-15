@@ -345,6 +345,14 @@ function MyReviewPhotos({
             {pending ? t("reviews.photoUploading") : t("reviews.addPhoto")}
           </button>
         )}
+
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={onPick}
+          className="hidden"
+        />
       </div>
       {error && <p className="mt-1.5 text-xs text-destructive">{error}</p>}
     </>
