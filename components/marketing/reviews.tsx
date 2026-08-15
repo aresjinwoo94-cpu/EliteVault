@@ -57,7 +57,7 @@ export async function Reviews() {
       <div className="container max-w-5xl">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="max-w-2xl">
-            <DataPill items={[t("reviews.pill1"), t("reviews.pill2")]} />
+            <DataPill items={[t("reviews.pillLanding")]} />
             <h2 className="mt-5 font-serif text-3xl md:text-4xl tracking-tight">
               {heading}
             </h2>
