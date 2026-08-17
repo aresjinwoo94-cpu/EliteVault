@@ -8,6 +8,11 @@ import {
 } from "@/lib/supabase/server";
 import { getOwner } from "@/lib/admin/guard";
 import { getReviewSettings, normalizePhotos } from "@/lib/reviews/data";
+import type { PotentialSnapshot } from "@/lib/reviews/types";
+import {
+  conversionScenarioBands,
+  scenarioMidpoints,
+} from "@/lib/analyzer/conversion-scenarios";
 import { sendEmail } from "@/lib/email/resend";
 
 // ── Public: submit a review ─────────────────────────────────────────────────
@@ -287,6 +292,7 @@ const SettingsPatch = z.object({
   subheading: z.string().max(240).nullable().optional(),
   allow_photos: z.boolean().optional(),
   max_photos: z.coerce.number().int().min(0).max(10).optional(),
+  show_review_stats: z.boolean().optional(),
 });
 
 export async function updateReviewSettings(
@@ -370,6 +376,229 @@ export async function deleteReview(
   revalidatePath("/");
   revalidatePath("/app/owner");
   return { ok: true };
+}
+
+// ── Owner-only: derive VERIFIED stats for a review (owner-driven, like photos) ─
+//
+// Money is NEVER invented: every figure is the exact number that reviewer
+// already saw in their own report. Two honest bases:
+//   • meta_sim    → two REAL scenarios from their latest Meta simulation
+//                   (conservative → aggressive 7-day revenue at their own
+//                   AOV/budget). Labeled with the timeframe so nothing implies
+//                   a made-up "monthly" figure.
+//   • cr_scenario → a clearly MODELED conversion-upside % range from
+//                   (score, niche), when no meta-sim exists. Always captioned
+//                   "estimate, not a promise" in the UI.
+
+/** Bare domain of a URL for matching a review's store_url to an analysis url —
+ *  lowercased, no scheme / www / path. Empty string if unparseable. */
+function bareDomain(raw: string | null | undefined): string {
+  if (!raw) return "";
+  let s = String(raw).trim().toLowerCase();
+  s = s.replace(/^[a-z]+:\/\//, ""); // scheme
+  s = s.replace(/^www\./, "");
+  s = s.split(/[/?#]/)[0] ?? ""; // path / query / hash
+  return s;
+}
+
+/** Revenue of one persisted meta-simulation scenario (SimulationScenario). The
+ *  exact integer USD the scenario card showed the user (totals.revenue). */
+function scenarioRevenue(s: unknown): number | null {
+  if (!s || typeof s !== "object") return null;
+  const totals = (s as { totals?: unknown }).totals;
+  if (!totals || typeof totals !== "object") return null;
+  const r = Number((totals as { revenue?: unknown }).revenue);
+  return Number.isFinite(r) && r > 0 ? Math.round(r) : null;
+}
+
+/** Build a meta_sim snapshot from a succeeded simulation row: current/potential
+ *  are the lowest/highest-revenue scenarios the user actually saw. Returns null
+ *  if no scenario carries a usable revenue. */
+function potentialFromSim(sim: {
+  conservative: unknown;
+  balanced: unknown;
+  aggressive: unknown;
+}): PotentialSnapshot | null {
+  const points: { label: string; revenue: number }[] = [];
+  for (const [label, s] of [
+    ["Conservador", sim.conservative],
+    ["Balanceado", sim.balanced],
+    ["Agresivo", sim.aggressive],
+  ] as const) {
+    const revenue = scenarioRevenue(s);
+    if (revenue != null) points.push({ label, revenue });
+  }
+  if (points.length === 0) return null;
+
+  const lo = points.reduce((a, b) => (b.revenue < a.revenue ? b : a));
+  const hi = points.reduce((a, b) => (b.revenue > a.revenue ? b : a));
+
+  const snap: PotentialSnapshot = {
+    currency: "USD",
+    basis: "meta_sim",
+    periodLabel: "Proyección Meta · 7 días",
+    note: "modelado, no una promesa",
+    potential: { label: hi.label, revenue: hi.revenue },
+  };
+  // Only show a "from → to" jump when there are two genuinely distinct points.
+  if (lo.label !== hi.label && lo.revenue !== hi.revenue) {
+    snap.current = { label: lo.label, revenue: lo.revenue };
+  }
+  return snap;
+}
+
+/** Fallback when there's no meta-sim: a MODELED conversion-upside % range from
+ *  the same deterministic (score, niche) functions the report itself uses —
+ *  the lift a well-run ("good") acquisition has over an average ("regular") one
+ *  at this store's level. Clearly labeled modeled; never a promise. */
+function potentialFromScenarios(
+  score: number,
+  niche: string | null,
+): PotentialSnapshot | null {
+  const mids = scenarioMidpoints(score, niche);
+  if (!(mids.meta_ads_regular > 0) || !(mids.meta_ads_good > 0)) return null;
+  const bands = conversionScenarioBands(score, niche);
+  const reg = bands.find((b) => b.key === "meta_ads_regular");
+  const good = bands.find((b) => b.key === "meta_ads_good");
+  if (!reg || !good || reg.low <= 0) return null;
+
+  const low = Math.max(0, Math.round((good.low / reg.high - 1) * 100));
+  const high = Math.round((good.high / reg.low - 1) * 100);
+  if (!(high > 0)) return null;
+
+  return {
+    currency: "USD",
+    basis: "cr_scenario",
+    upsidePct: { low, high: Math.max(high, low) },
+    note: "modelado a partir de tu score y nicho — estimación, no una promesa",
+  };
+}
+
+export type RefreshStatsResult =
+  | {
+      ok: true;
+      verified: boolean;
+      audits_run: number | null;
+      potential: PotentialSnapshot | null;
+    }
+  | { ok: false; error: string };
+
+/**
+ * Owner-only: (re)compute a review's verified stats from the author account's
+ * REAL data and persist the snapshot. Same owner-driven pattern as the photo
+ * flow. Public exposure is still gated by the show_review_stats switch.
+ */
+export async function refreshReviewStats(
+  reviewId: string,
+): Promise<RefreshStatsResult> {
+  await assertOwner();
+  if (!reviewId) return { ok: false, error: "Falta el id de la reseña" };
+
+  try {
+    const svc = createSupabaseServiceClient();
+
+    // 1) Load the review's private link fields.
+    const { data: review } = await svc
+      .from("reviews")
+      .select("id, user_id, store_url")
+      .eq("id", reviewId)
+      .maybeSingle();
+    if (!review) return { ok: false, error: "Reseña no encontrada" };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rv = review as any;
+    const userId: string | null = rv.user_id ?? null;
+    const storeUrl: string | null = rv.store_url ?? null;
+
+    const clearFlat = async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (svc.from("reviews") as any)
+        .update({
+          verified: false,
+          audits_run: null,
+          potential_snapshot: null,
+          verified_at: null,
+        })
+        .eq("id", reviewId);
+      revalidatePath("/");
+      revalidatePath("/app/owner");
+    };
+
+    // No linked account → cannot verify. Reset to a flat card.
+    if (!userId) {
+      await clearFlat();
+      return { ok: true, verified: false, audits_run: null, potential: null };
+    }
+
+    // 2) audits_run = # of succeeded analyses for this account.
+    const { count } = await svc
+      .from("analyses")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("status", "succeeded");
+    const auditsRun = count ?? 0;
+
+    // No real audits → not verifiable; flat card (same as today).
+    if (auditsRun <= 0) {
+      await clearFlat();
+      return { ok: true, verified: false, audits_run: null, potential: null };
+    }
+
+    // 3) Pick a representative succeeded analysis: domain-match store_url, else
+    //    the most recent one.
+    const { data: rows } = await svc
+      .from("analyses")
+      .select("id, url, result, detected_niche, created_at")
+      .eq("user_id", userId)
+      .eq("status", "succeeded")
+      .order("created_at", { ascending: false })
+      .limit(50);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const analyses = (Array.isArray(rows) ? rows : []) as any[];
+    let chosen = analyses[0] ?? null;
+    const target = bareDomain(storeUrl);
+    if (target) {
+      const match = analyses.find((a) => bareDomain(a.url) === target);
+      if (match) chosen = match;
+    }
+
+    // 4) Derive the money potential from that analysis (real numbers only).
+    let potential: PotentialSnapshot | null = null;
+    if (chosen) {
+      const { data: sims } = await svc
+        .from("meta_simulations")
+        .select("conservative, balanced, aggressive")
+        .eq("analysis_id", chosen.id)
+        .eq("status", "succeeded")
+        .order("created_at", { ascending: false })
+        .limit(1);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sim = (Array.isArray(sims) ? sims[0] : null) as any;
+      if (sim) potential = potentialFromSim(sim);
+      if (!potential) {
+        const score = Number((chosen.result as { score?: unknown })?.score ?? 0);
+        potential = potentialFromScenarios(score, chosen.detected_niche ?? null);
+      }
+    }
+
+    // Real audits exist → verified, even if the money snapshot is null.
+    const now = new Date().toISOString();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: updErr } = await (svc.from("reviews") as any)
+      .update({
+        verified: true,
+        audits_run: auditsRun,
+        potential_snapshot: potential,
+        verified_at: now,
+      })
+      .eq("id", reviewId);
+    if (updErr) return { ok: false, error: updErr.message };
+
+    revalidatePath("/");
+    revalidatePath("/app/owner");
+    return { ok: true, verified: true, audits_run: auditsRun, potential };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
+  }
 }
 
 // ── Review photos ───────────────────────────────────────────────────────────

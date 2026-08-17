@@ -33,12 +33,12 @@ export function normalizePotential(raw: unknown): PotentialSnapshot | null {
 
   const money = (
     v: unknown,
-  ): { label: string; revenueMonthly: number } | undefined => {
+  ): { label: string; revenue: number } | undefined => {
     if (!v || typeof v !== "object") return undefined;
     const m = v as Record<string, unknown>;
-    const rev = Number(m.revenueMonthly);
+    const rev = Number(m.revenue);
     if (!Number.isFinite(rev)) return undefined;
-    return { label: String(m.label ?? ""), revenueMonthly: rev };
+    return { label: String(m.label ?? ""), revenue: rev };
   };
   const pct = (v: unknown): { low: number; high: number } | undefined => {
     if (!v || typeof v !== "object") return undefined;
@@ -52,6 +52,7 @@ export function normalizePotential(raw: unknown): PotentialSnapshot | null {
   const snap: PotentialSnapshot = {
     currency: String(o.currency ?? "USD"),
     basis: o.basis,
+    periodLabel: o.periodLabel != null ? String(o.periodLabel) : undefined,
     note: o.note != null ? String(o.note) : undefined,
   };
   const cur = money(o.current);

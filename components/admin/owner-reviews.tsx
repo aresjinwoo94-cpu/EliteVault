@@ -13,6 +13,7 @@ import {
   X,
   AlertTriangle,
   Upload,
+  ShieldCheck,
 } from "lucide-react";
 import {
   updateReviewSettings,
@@ -21,6 +22,7 @@ import {
   deleteReview,
   ownerUploadReviewPhoto,
   ownerRemoveReviewPhoto,
+  refreshReviewStats,
 } from "@/app/actions/reviews";
 import type { AdminReview, ReviewSettings } from "@/lib/reviews/types";
 import { cn } from "@/lib/utils";
@@ -142,6 +144,13 @@ export function OwnerReviews({
           onChange={(v) => patch({ allow_photos: v })}
           disabled={pending || !settings.enabled}
         />
+        <Toggle
+          label="Mostrar estadísticas verificadas"
+          help="Publica el sello ‘Verificado’, el nº de auditorías y el mini-diagrama de dinero (solo en reseñas verificadas). Déjalo APAGADO hasta revisar los datos reales."
+          checked={settings.show_review_stats}
+          onChange={(v) => patch({ show_review_stats: v })}
+          disabled={pending || !settings.enabled}
+        />
       </div>
 
       {/* ── Numeric controls ─────────────────────────────────────────────── */}
@@ -202,6 +211,9 @@ export function OwnerReviews({
               onFeature={() =>
                 moderate(() => setReviewFeatured(r.id, !r.featured), r.id)
               }
+              onVerify={() =>
+                moderate(() => refreshReviewStats(r.id), r.id)
+              }
               onDelete={() => {
                 if (
                   confirm(
@@ -227,6 +239,7 @@ function ReviewRow({
   onReject,
   onPending,
   onFeature,
+  onVerify,
   onDelete,
 }: {
   review: AdminReview;
@@ -237,6 +250,7 @@ function ReviewRow({
   onReject: () => void;
   onPending: () => void;
   onFeature: () => void;
+  onVerify: () => void;
   onDelete: () => void;
 }) {
   const statusMeta = {
@@ -311,6 +325,45 @@ function ReviewRow({
 
       <OwnerReviewPhotos reviewId={review.id} photos={review.photos} maxPhotos={maxPhotos} />
 
+      {/* Verified-stats state (what refreshReviewStats derived). Public display
+          is still gated by the show_review_stats switch — this line always
+          shows the owner the raw truth. */}
+      {(() => {
+        const p = review.potential;
+        const money = (n: number) =>
+          `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+        let detail = "sin datos de dinero";
+        if (p?.basis === "meta_sim" && p.potential) {
+          const period = p.periodLabel ?? "Meta 7d";
+          detail = p.current
+            ? `${money(p.current.revenue)} → ${money(p.potential.revenue)} · ${period}`
+            : `${money(p.potential.revenue)} · ${period}`;
+        } else if (p?.basis === "cr_scenario" && p.upsidePct) {
+          detail = `+${p.upsidePct.low}%–${p.upsidePct.high}% upside (modelado)`;
+        }
+        return (
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px]">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full border px-2 py-0.5",
+                review.verified
+                  ? "border-champagne-400/30 bg-champagne-400/[0.08] text-champagne-300"
+                  : "border-white/[0.12] bg-white/[0.03] text-white/45",
+              )}
+            >
+              <ShieldCheck className="size-3" />
+              {review.verified ? "Verificado" : "Sin verificar"}
+            </span>
+            {review.audits_run != null && (
+              <span className="font-mono tabular-nums text-white/55">
+                {review.audits_run} auditorías
+              </span>
+            )}
+            <span className="text-white/40">{detail}</span>
+          </div>
+        );
+      })()}
+
       <div className="mt-3 flex flex-wrap gap-2">
         {review.status !== "approved" && (
           <Action onClick={onApprove} icon={Check} className="text-success">
@@ -338,6 +391,13 @@ function ReviewRow({
           className={review.featured ? "text-champagne-300" : ""}
         >
           {review.featured ? "Quitar destaque" : "Destacar"}
+        </Action>
+        <Action
+          onClick={onVerify}
+          icon={ShieldCheck}
+          className={review.verified ? "text-champagne-300" : ""}
+        >
+          {review.verified ? "Actualizar stats" : "Verificar stats"}
         </Action>
         <Action onClick={onDelete} icon={Trash2} className="text-destructive">
           Eliminar

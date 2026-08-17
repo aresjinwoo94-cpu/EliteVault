@@ -16,16 +16,24 @@ export interface ReviewPhoto {
  * report. Filled owner-side by refreshReviewStats and stored on
  * reviews.potential_snapshot (migration 0029).
  *
- *   basis "meta_sim"    → current/potential monthly revenue from their real
- *                         meta-simulation (AOV + budget anchored).
- *   basis "cr_scenario" → upside as an honest % range from conversion-scenarios
- *                         when no meta-sim exists.
+ *   basis "meta_sim"    → current/potential are two REAL scenarios from their
+ *                         most recent Meta simulation (e.g. conservative →
+ *                         aggressive 7-day revenue, at their own AOV + budget).
+ *                         `periodLabel` names the timeframe so nothing claims a
+ *                         made-up "monthly" figure. `revenue` is the exact USD
+ *                         the scenario card showed (integer, no fake decimals).
+ *   basis "cr_scenario" → upside as an honest, modeled % range derived from
+ *                         conversion-scenarios (score + niche) when no meta-sim
+ *                         exists. Always caption it "estimate, not a promise".
  */
 export interface PotentialSnapshot {
   currency: string;
   basis: "meta_sim" | "cr_scenario";
-  current?: { label: string; revenueMonthly: number };
-  potential?: { label: string; revenueMonthly: number };
+  /** Human timeframe for the money figures, e.g. "Meta projection · 7 days".
+   *  Present for basis="meta_sim"; keeps the numbers from implying "monthly". */
+  periodLabel?: string;
+  current?: { label: string; revenue: number };
+  potential?: { label: string; revenue: number };
   upsidePct?: { low: number; high: number };
   note?: string;
 }
