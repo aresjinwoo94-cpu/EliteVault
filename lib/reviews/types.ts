@@ -10,8 +10,31 @@ export interface ReviewPhoto {
   path: string;
 }
 
+/**
+ * A SNAPSHOT of the money-potential the analyzer already showed a reviewer's
+ * account — never invented, always the same numbers they saw in their own
+ * report. Filled owner-side by refreshReviewStats and stored on
+ * reviews.potential_snapshot (migration 0029).
+ *
+ *   basis "meta_sim"    → current/potential monthly revenue from their real
+ *                         meta-simulation (AOV + budget anchored).
+ *   basis "cr_scenario" → upside as an honest % range from conversion-scenarios
+ *                         when no meta-sim exists.
+ */
+export interface PotentialSnapshot {
+  currency: string;
+  basis: "meta_sim" | "cr_scenario";
+  current?: { label: string; revenueMonthly: number };
+  potential?: { label: string; revenueMonthly: number };
+  upsidePct?: { low: number; high: number };
+  note?: string;
+}
+
 /** Public-facing review shape (no private fields — never `author_email`,
- *  `user_id`, `store_url`, etc.). `author_name` is the chosen display name. */
+ *  `user_id`, `store_url`, etc.). `author_name` is the chosen display name.
+ *  The verified-stats trio (audits_run / potential / verified) is only ever
+ *  populated when the owner's `show_review_stats` switch is ON; otherwise it
+ *  stays null/null/false and the card renders exactly as before 0029. */
 export interface PublicReview {
   id: string;
   author_name: string;
@@ -22,6 +45,12 @@ export interface PublicReview {
   featured: boolean;
   created_at: string;
   photos: ReviewPhoto[];
+  /** # of real audits the author account has run (null until verified). */
+  audits_run: number | null;
+  /** Money-potential snapshot, or null when unverified / no real data. */
+  potential: PotentialSnapshot | null;
+  /** True only when tied to an account with real analyses. */
+  verified: boolean;
 }
 
 /** Full review row as the owner sees it (includes private + moderation data). */
@@ -59,6 +88,9 @@ export interface ReviewSettings {
   allow_photos: boolean;
   /** Per-review photo cap (0–10). */
   max_photos: number;
+  /** Owner master switch: show the verified badge + money mini-diagram + audit
+   *  count publicly on review cards? Default OFF until the data is reviewed. */
+  show_review_stats: boolean;
 }
 
 /** Defaults used when the settings row (or whole table) doesn't exist yet. */
@@ -73,4 +105,5 @@ export const DEFAULT_REVIEW_SETTINGS: ReviewSettings = {
   subheading: null,
   allow_photos: false,
   max_photos: 4,
+  show_review_stats: false,
 };

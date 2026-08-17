@@ -4,6 +4,7 @@ import {
   DEFAULT_REVIEW_SETTINGS,
   type AdminReview,
   type MyReview,
+  type PotentialSnapshot,
   type PublicReview,
   type ReviewPhoto,
   type ReviewSettings,
@@ -22,6 +23,49 @@ export function normalizePhotos(raw: unknown): ReviewPhoto[] {
     .filter((p) => p.url && p.path);
 }
 
+/** Coerce a raw `potential_snapshot` jsonb value into a clean PotentialSnapshot,
+ *  or null if it's missing / malformed / carries nothing renderable. Keeps the
+ *  "no real data → flat card" promise even if a row is half-filled. */
+export function normalizePotential(raw: unknown): PotentialSnapshot | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  if (o.basis !== "meta_sim" && o.basis !== "cr_scenario") return null;
+
+  const money = (
+    v: unknown,
+  ): { label: string; revenueMonthly: number } | undefined => {
+    if (!v || typeof v !== "object") return undefined;
+    const m = v as Record<string, unknown>;
+    const rev = Number(m.revenueMonthly);
+    if (!Number.isFinite(rev)) return undefined;
+    return { label: String(m.label ?? ""), revenueMonthly: rev };
+  };
+  const pct = (v: unknown): { low: number; high: number } | undefined => {
+    if (!v || typeof v !== "object") return undefined;
+    const p = v as Record<string, unknown>;
+    const low = Number(p.low);
+    const high = Number(p.high);
+    if (!Number.isFinite(low) || !Number.isFinite(high)) return undefined;
+    return { low, high };
+  };
+
+  const snap: PotentialSnapshot = {
+    currency: String(o.currency ?? "USD"),
+    basis: o.basis,
+    note: o.note != null ? String(o.note) : undefined,
+  };
+  const cur = money(o.current);
+  if (cur) snap.current = cur;
+  const pot = money(o.potential);
+  if (pot) snap.potential = pot;
+  const up = pct(o.upsidePct);
+  if (up) snap.upsidePct = up;
+
+  // Must carry something the UI can draw, else treat as no data (flat card).
+  if (!snap.current && !snap.potential && !snap.upsidePct) return null;
+  return snap;
+}
+
 /**
  * Read the single review_settings row. Falls back to safe defaults if the
  * row — or the whole table (migration 0016 not applied yet) — is missing,
@@ -36,7 +80,7 @@ export async function getReviewSettings(): Promise<ReviewSettings> {
     const { data, error } = await svc
       .from("review_settings")
       .select(
-        "enabled, show_form, show_list, display_count, min_rating, auto_approve, heading, subheading, allow_photos, max_photos",
+        "enabled, show_form, show_list, display_count, min_rating, auto_approve, heading, subheading, allow_photos, max_photos, show_review_stats",
       )
       .eq("id", true)
       .maybeSingle();
@@ -54,6 +98,7 @@ export async function getReviewSettings(): Promise<ReviewSettings> {
       subheading: d.subheading ?? null,
       allow_photos: !!d.allow_photos,
       max_photos: Number(d.max_photos ?? 4),
+      show_review_stats: !!d.show_review_stats,
     };
   } catch {
     return hidden;
@@ -69,11 +114,18 @@ export async function getPublicReviews(
   settings: ReviewSettings,
 ): Promise<PublicReview[]> {
   if (settings.display_count <= 0) return [];
+  // Verified stats are exposed ONLY when the owner switch is ON. When OFF we
+  // don't even select the columns, so the public query and the resulting cards
+  // are byte-for-byte what they were before migration 0029.
+  const statsOn = settings.show_review_stats === true;
+  const columns =
+    "id, author_name, rating, title, body, store_name, featured, created_at, photos" +
+    (statsOn ? ", audits_run, potential_snapshot, verified" : "");
   try {
     const svc = createSupabaseServiceClient();
     const { data, error } = await svc
       .from("reviews")
-      .select("id, author_name, rating, title, body, store_name, featured, created_at, photos")
+      .select(columns)
       .eq("status", "approved")
       // Only rows the author consented to publish (default true for legacy
       // testimonials; the signed-in form requires an explicit checkbox).
@@ -94,6 +146,11 @@ export async function getPublicReviews(
       featured: !!r.featured,
       created_at: String(r.created_at ?? ""),
       photos: normalizePhotos(r.photos),
+      // Gated: null/null/false whenever the owner switch is OFF.
+      audits_run:
+        statsOn && r.audits_run != null ? Number(r.audits_run) : null,
+      potential: statsOn ? normalizePotential(r.potential_snapshot) : null,
+      verified: statsOn ? !!r.verified : false,
     }));
   } catch {
     return [];
@@ -135,7 +192,7 @@ export async function getAllReviewsForOwner(): Promise<AdminReview[]> {
     const { data, error } = await svc
       .from("reviews")
       .select(
-        "id, author_name, author_email, rating, title, body, store_name, store_url, featured, status, created_at, approved_at, photos",
+        "id, author_name, author_email, rating, title, body, store_name, store_url, featured, status, created_at, approved_at, photos, audits_run, potential_snapshot, verified",
       )
       .order("created_at", { ascending: false })
       .limit(500);
@@ -155,6 +212,11 @@ export async function getAllReviewsForOwner(): Promise<AdminReview[]> {
       created_at: String(r.created_at ?? ""),
       approved_at: r.approved_at ?? null,
       photos: normalizePhotos(r.photos),
+      // Owner sees the raw verify state (NOT gated by show_review_stats — that
+      // switch only controls PUBLIC exposure).
+      audits_run: r.audits_run != null ? Number(r.audits_run) : null,
+      potential: normalizePotential(r.potential_snapshot),
+      verified: !!r.verified,
     }));
   } catch {
     return [];
