@@ -478,6 +478,14 @@ const en: Dict = {
     subheading: "Real words from people who put their store through EliteVault.",
     outOf5: "out of 5",
     reviewsCount: "reviews",
+    // Verified-stats layer (shown only on verified reviews, when the owner's
+    // show_review_stats switch is ON). Numbers are the reviewer's own — never
+    // invented; always captioned as a modeled estimate.
+    verified: "Verified",
+    auditsRun: "{n} audits run",
+    metaRange: "Projected 7-day Meta range",
+    upside: "Modeled conversion upside",
+    modeledNote: "Modeled by the analysis — an estimate, not a promise.",
     writeHeading: "Leave a review",
     writeSubheading: "Used EliteVault? Tell other founders what it showed you.",
     pageSubheading:
@@ -1160,6 +1168,14 @@ const es: Dict = {
     subheading: "Palabras reales de quienes pasaron su tienda por EliteVault.",
     outOf5: "de 5",
     reviewsCount: "reseñas",
+    // Capa de estadísticas verificadas (solo en reseñas verificadas, cuando el
+    // switch show_review_stats del propietario está ON). Los números son del
+    // propio reseñador — jamás inventados; siempre con caption de estimación.
+    verified: "Verificado",
+    auditsRun: "{n} auditorías",
+    metaRange: "Rango proyectado Meta · 7 días",
+    upside: "Upside de conversión modelado",
+    modeledNote: "Potencial modelado por el análisis — estimación, no una promesa.",
     writeHeading: "Deja una reseña",
     writeSubheading: "¿Usaste EliteVault? Cuéntale a otros fundadores qué te mostró.",
     pageSubheading:

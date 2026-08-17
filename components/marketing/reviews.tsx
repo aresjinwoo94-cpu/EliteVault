@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import { Star, Check } from "lucide-react";
 import { DataPill } from "@/components/ui/data-pill";
 import { ReviewPhotoGallery } from "@/components/reviews/review-photo-gallery";
 import {
@@ -7,7 +7,9 @@ import {
   getReviewStats,
 } from "@/lib/reviews/data";
 import { getT } from "@/lib/i18n/server";
-import type { PublicReview } from "@/lib/reviews/types";
+import type { PotentialSnapshot, PublicReview } from "@/lib/reviews/types";
+
+type Translate = (key: string) => string;
 
 /** Minimum approved sample before the credibility aggregate (avg + count) is
  *  shown — below this it's not a meaningful statistic (landing brief §5). */
@@ -82,7 +84,7 @@ export async function Reviews() {
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {reviews.map((r) => (
-            <ReviewCard key={r.id} review={r} />
+            <ReviewCard key={r.id} review={r} t={t} />
           ))}
         </div>
       </div>
@@ -90,20 +92,32 @@ export async function Reviews() {
   );
 }
 
-function ReviewCard({ review }: { review: PublicReview }) {
+function ReviewCard({ review, t }: { review: PublicReview; t: Translate }) {
   // Locale-stable short date (mono) — avoids server/client hydration drift.
   const date = review.created_at
     ? new Date(review.created_at).toISOString().slice(0, 10)
     : "";
+  // The enriched trio only appears on VERIFIED reviews (and only when the owner
+  // switch is ON — getPublicReviews already nulls these out otherwise). With no
+  // verified data the card is byte-for-byte what it was before 0029.
+  const showStats = review.verified;
   return (
     <div className="glow-card flex flex-col rounded-2xl border border-white/[0.06] bg-card p-5 shadow-card">
       <div className="flex items-center justify-between">
         <Stars value={review.rating} />
-        {date && (
-          <span className="font-mono text-xs tabular-nums text-white/30">
-            {date}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {showStats && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-champagne-400/30 bg-champagne-400/[0.08] px-2 py-0.5 text-[10px] font-medium text-champagne-300">
+              <Check className="size-3" />
+              {t("reviews.verified")}
+            </span>
+          )}
+          {date && (
+            <span className="font-mono text-xs tabular-nums text-white/30">
+              {date}
+            </span>
+          )}
+        </div>
       </div>
       {review.title && (
         <p className="mt-3 font-medium text-white leading-snug">{review.title}</p>
@@ -112,6 +126,20 @@ function ReviewCard({ review }: { review: PublicReview }) {
         {review.body}
       </p>
       <ReviewPhotoGallery photos={review.photos} authorName={review.author_name} />
+
+      {showStats && (
+        <div className="mt-4 border-t border-white/[0.06] pt-3">
+          {review.audits_run != null && (
+            <p className="font-mono text-[11px] tabular-nums text-white/50">
+              {t("reviews.auditsRun").replace("{n}", String(review.audits_run))}
+            </p>
+          )}
+          {review.potential && (
+            <PotentialDiagram p={review.potential} t={t} />
+          )}
+        </div>
+      )}
+
       <p className="mt-4 text-xs font-medium text-white/45">
         — {review.author_name}
         {review.store_name && (
@@ -120,6 +148,83 @@ function ReviewCard({ review }: { review: PublicReview }) {
       </p>
     </div>
   );
+}
+
+/** Money mini-diagram: "palitos y numeritos". Two honest shapes:
+ *   • meta_sim    → real scenario revenue (low → high) the reviewer saw, with a
+ *                   simple two-bar jump.
+ *   • cr_scenario → a modeled conversion-upside % range.
+ *  Both always carry the "estimate, not a promise" caption. */
+function PotentialDiagram({
+  p,
+  t,
+}: {
+  p: PotentialSnapshot;
+  t: Translate;
+}) {
+  const money = (n: number) =>
+    `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+
+  if (p.basis === "meta_sim" && p.potential) {
+    const hi = p.potential.revenue;
+    const lo = p.current?.revenue ?? null;
+    const loPct =
+      lo != null && hi > 0 ? Math.max(8, Math.min(100, (lo / hi) * 100)) : null;
+    return (
+      <div className="mt-2.5">
+        <div className="flex items-baseline gap-2 font-mono tabular-nums">
+          {lo != null && (
+            <>
+              <span className="text-sm text-white/45">{money(lo)}</span>
+              <span className="text-white/25">→</span>
+            </>
+          )}
+          <span className="text-lg text-white">{money(hi)}</span>
+        </div>
+        <div className="mt-2 space-y-1">
+          {loPct != null && (
+            <div
+              className="h-1.5 rounded-full bg-white/25"
+              style={{ width: `${Math.round(loPct)}%` }}
+            />
+          )}
+          <div className="h-1.5 w-full rounded-full bg-champagne-400/70" />
+        </div>
+        <p className="mt-1.5 text-[10px] uppercase tracking-wider text-white/35">
+          {t("reviews.metaRange")}
+        </p>
+        <p className="mt-1 text-[11px] leading-relaxed text-white/40">
+          {t("reviews.modeledNote")}
+        </p>
+      </div>
+    );
+  }
+
+  if (p.basis === "cr_scenario" && p.upsidePct) {
+    const { low, high } = p.upsidePct;
+    const pct = Math.max(8, Math.min(100, high));
+    return (
+      <div className="mt-2.5">
+        <div className="font-mono text-lg tabular-nums text-white">
+          +{low}%–{high}%
+        </div>
+        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/[0.06]">
+          <div
+            className="h-full rounded-full bg-champagne-400/70"
+            style={{ width: `${Math.round(pct)}%` }}
+          />
+        </div>
+        <p className="mt-1.5 text-[10px] uppercase tracking-wider text-white/35">
+          {t("reviews.upside")}
+        </p>
+        <p className="mt-1 text-[11px] leading-relaxed text-white/40">
+          {t("reviews.modeledNote")}
+        </p>
+      </div>
+    );
+  }
+
+  return null;
 }
 
 function Stars({ value }: { value: number }) {
