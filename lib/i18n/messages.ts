@@ -32,10 +32,14 @@ const en: Dict = {
     line1: "Before you lose thousands on Meta ads,",
     line2: "try this.",
     line3: "",
-    subPre:
-      "EliteVault audits your store like a senior media buyer and shows you — in 60 seconds — exactly why visitors ",
-    subHighlight: "bounce instead of buy",
-    subPost: ". Free, no login.",
+    // Brief §1.1 — subtitle leads with the money (what the owner cares about),
+    // then "ideal customer" + "how they see your site" (the analyzer's other two
+    // real deliverables), and closes by explaining the mechanism in plain words.
+    // "Free, no login" removed here — it already lives in anonMicro + trust below.
+    subPre: "See ",
+    subHighlight: "how much more money your store could be making",
+    subPost:
+      " — who your ideal customer is, and exactly how they see your site. All from a 60-second audit that reads your store like a senior media buyer.",
     ctaPrimary: "Audit my store free",
     ctaSecondary: "or see how it works first",
     trust: "No credit card · 1 free analysis · Cancel anytime.",
@@ -711,10 +715,14 @@ const es: Dict = {
     line1: "Antes de perder miles en anuncios de Meta,",
     line2: "pruébalo primero.",
     line3: "",
-    subPre:
-      "EliteVault audita tu tienda como un media buyer senior y te muestra —en 60 segundos— por qué tus visitantes ",
-    subHighlight: "se van sin comprar",
-    subPost: ". Gratis, sin registro.",
+    // Brief §1.1 — el subtítulo abre con el dinero (lo que le importa al dueño),
+    // luego "cliente ideal" + "cómo ve tu web" (los otros dos entregables reales
+    // del analyzer) y cierra explicando el mecanismo en simple. "Gratis, sin
+    // registro" se quita de aquí — ya vive en anonMicro + trust más abajo.
+    subPre: "Descubre ",
+    subHighlight: "cuánto más podría estar vendiendo tu tienda",
+    subPost:
+      " — quién es tu cliente ideal y cómo ve tu web exactamente. Todo con una auditoría de 60 segundos que revisa tu tienda como un media buyer senior.",
     ctaPrimary: "Audita mi tienda gratis",
     ctaSecondary: "o mira cómo funciona primero",
     trust: "Sin tarjeta · 1 análisis gratis · Cancela cuando quieras.",
