@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Brain, Eye, Scan, Target } from "lucide-react";
-import { AuditSnapshot } from "./audit-snapshot";
+import { AnalyzerCollage } from "./analyzer-collage";
 import { AnalyzerBg } from "./analyzer-bg";
 import { DataPill } from "@/components/ui/data-pill";
 import { useT } from "@/components/i18n/locale-provider";
@@ -94,10 +94,12 @@ export function AnalyzerDemo() {
           </div>
 
           {/*
-            v3.5 — The real teaser video moved up to the hero (highest
-            attention slot). This section now shows the static audit
-            snapshot instead: the four steps on the left tell "how it
-            works", the snapshot on the right shows "what you get".
+            §2 — The right column shows "what you get". Once the real product
+            screenshots are dropped into public/marketing/analyzer/ (and
+            COLLAGE_READY flipped on), AnalyzerCollage renders a bento of the
+            actual audit; until then it falls back to the AuditSnapshot mock so
+            the section is never broken. The four steps on the left tell "how it
+            works".
           */}
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }}
@@ -105,7 +107,7 @@ export function AnalyzerDemo() {
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease }}
           >
-            <AuditSnapshot />
+            <AnalyzerCollage />
           </motion.div>
         </div>
       </div>
