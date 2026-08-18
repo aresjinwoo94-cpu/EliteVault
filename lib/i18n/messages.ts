@@ -360,24 +360,23 @@ const en: Dict = {
     wallAdNot: "Not ad-ready",
   },
   analyzerDemo: {
-    heading: "A senior media buyer in a tab.",
-    subheadingPre:
-      "Paste a URL. In under a minute, EliteVault returns the kind of audit you'd otherwise pay",
-    subheadingPrice: "$1,500 for",
+    heading: "What $1,500 of CRO consulting looks like. Free.",
+    subheadingPre: "Paste a URL. In",
+    subheadingPrice: "60 seconds:",
     subheadingPost:
-      "— annotated screenshot, conversion-rate scenarios, persona reactions, and a brutal punch-list of fixes ranked by leverage. That's the report on the right.",
-    stepReadsTitle: "Reads your store like a human",
+      "an annotated screenshot, your leak map, and fixes ranked by leverage. That's the report on the right.",
+    stepReadsTitle: "Sees your store's real potential",
     stepReadsBody:
-      "AI vision parses your hero, product grid, copy, color system, and motion — exactly what a senior CRO consultant would clock in the first 5 seconds.",
-    stepScoresTitle: "Scores you against the rubric",
+      "Every store has a revenue ceiling it hasn't hit yet. AI vision reads your hero, product grid, copy, and color system to show what yours could sell once it's conversion-ready.",
+    stepScoresTitle: "One score, six reasons",
     stepScoresBody:
-      "Six categories — color, layout, imagery, technical, niche fit, CRO principles — calibrated against the brands actually scaling on paid social.",
+      "Color, layout, imagery, technical, niche fit, CRO principles — calibrated against the brands actually scaling on paid social.",
     stepPersonaTitle: "Simulates your buyer persona",
     stepPersonaBody:
-      "Pick a persona (or define one) and watch them react to your store in their own voice. 'I'd bounce' beats any heatmap.",
-    stepCampaignTitle: "Projects a 7-day campaign before you spend",
+      "Pick a persona (or define one) and watch them react to your store in their own voice. \"Looks like a low-quality dropshipping site\" beats any heatmap.",
+    stepCampaignTitle: "Every leak, marked and ranked",
     stepCampaignBody:
-      "Scale-plan add-on: feed in your AOV + daily budget and the modeler returns 3 honest 7-day scenarios — conservative, balanced, aggressive — with day-by-day spend, ROAS and risks.",
+      "Issues flagged directly on your own screenshot. Fixes ordered by leverage, not guesswork — so you know exactly what to fix first.",
     videoAria:
       "EliteVault analyzer demo: paste a URL and get a score, an annotated screenshot, and ranked fixes",
     videoPlay: "Play the analyzer demo",
@@ -1050,24 +1049,23 @@ const es: Dict = {
     wallAdNot: "No listo para ads",
   },
   analyzerDemo: {
-    heading: "Un media buyer senior en una pestaña.",
-    subheadingPre:
-      "Pega una URL. En menos de un minuto, EliteVault te devuelve el tipo de auditoría por la que de otro modo pagarías",
-    subheadingPrice: "$1,500",
+    heading: "Así se ve una consultoría CRO de $1,500. Gratis.",
+    subheadingPre: "Pega una URL. En",
+    subheadingPrice: "60 segundos:",
     subheadingPost:
-      "— captura anotada, escenarios de tasa de conversión, reacciones de personas y una lista brutal de arreglos ordenados por impacto. Ese es el informe que ves a la derecha.",
-    stepReadsTitle: "Lee tu tienda como un humano",
+      "una captura anotada, el mapa de tus fugas y arreglos ordenados por impacto. Ese es el informe que ves a la derecha.",
+    stepReadsTitle: "Ve el potencial real de tu tienda",
     stepReadsBody:
-      "La visión por IA analiza tu hero, la grilla de productos, los textos, el sistema de color y el movimiento — justo lo que un consultor CRO senior detectaría en los primeros 5 segundos.",
-    stepScoresTitle: "Te puntúa contra la rúbrica",
+      "Cada tienda tiene un techo de ingresos que aún no alcanzó. La visión por IA lee tu hero, la grilla de productos, los textos y el sistema de color para mostrar cuánto podría vender la tuya una vez lista para convertir.",
+    stepScoresTitle: "Un score, seis razones",
     stepScoresBody:
-      "Seis categorías — color, layout, imágenes, técnica, encaje con el nicho y principios de CRO — calibradas contra las marcas que de verdad escalan en paid social.",
+      "Color, layout, imágenes, técnica, encaje con el nicho y principios de CRO — calibrados contra las marcas que de verdad escalan en paid social.",
     stepPersonaTitle: "Simula a tu buyer persona",
     stepPersonaBody:
-      "Elige una persona (o define una) y mira cómo reacciona a tu tienda con su propia voz. Un 'me iría' vale más que cualquier mapa de calor.",
-    stepCampaignTitle: "Proyecta una campaña de 7 días antes de que gastes",
+      "Elige una persona (o define una) y mira cómo reacciona a tu tienda con su propia voz. Un \"parece un dropshipping de baja calidad\" vale más que cualquier mapa de calor.",
+    stepCampaignTitle: "Cada fuga, marcada y ordenada",
     stepCampaignBody:
-      "Complemento de plan de escala: ingresa tu AOV + presupuesto diario y el modelador devuelve 3 escenarios honestos de 7 días — conservador, equilibrado, agresivo — con gasto día a día, ROAS y riesgos.",
+      "Los problemas señalados directamente sobre tu propia captura. Arreglos ordenados por impacto, no por corazonada — para que sepas exactamente qué arreglar primero.",
     videoAria:
       "Demostración del analizador de EliteVault: pega una URL y obtén score, captura anotada y arreglos priorizados",
     videoPlay: "Reproducir la demo del analizador",
