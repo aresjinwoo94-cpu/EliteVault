@@ -9,6 +9,10 @@ import {
 } from "@/lib/screenshot-cache";
 import { discoverSite } from "@/lib/site-discovery";
 import { summarizeDiscovery } from "@/lib/analyzer/discovery-signals";
+import {
+  readDiscoveryCache,
+  writeDiscoveryCache,
+} from "@/lib/discovery-cache";
 import { runAnalyzerAgent } from "@/ai/agents/analyzer-agent";
 import { withDerivedScore } from "@/lib/analyzer/derive-score";
 import { scenarioMidpoints } from "@/lib/analyzer/conversion-scenarios";
@@ -246,6 +250,16 @@ export const analyzeWebsite = inngest.createFunction(
       step.run("discover-site", async () => {
         if (!url) return null;
         try {
+          // WP-1 — reuse the parsed page content for a store audited recently
+          // (same pattern as the screenshot cache above). A miss, an expired
+          // row, or a database without migration 0031 all return null and fall
+          // through to the normal fetch, so this can only ever save time.
+          const cached = await readDiscoveryCache(service, url);
+          if (cached) {
+            console.log("[analyzer] discovery cache hit");
+            await persistDiscoverySignals(service, analysisId, cached);
+            return cached;
+          }
           const found = await discoverSite(url);
           // WP-3 — persist the display-ready projection so the analyzing
           // screen can show what we already know while the vision call runs.
@@ -254,6 +268,7 @@ export const analyzeWebsite = inngest.createFunction(
           // write lands off the critical path. Best-effort in every sense —
           // see persistDiscoverySignals.
           await persistDiscoverySignals(service, analysisId, found);
+          await writeDiscoveryCache(service, url, found);
           return found;
         } catch (err) {
           console.warn("[analyzer] discovery skipped:", (err as Error).message);
