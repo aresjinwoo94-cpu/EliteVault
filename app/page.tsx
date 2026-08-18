@@ -214,11 +214,17 @@ export default async function HomePage() {
         <ScanDivider />
         <TwoPaths />
         <FeaturesShowcase />
+        {/* Verified proof paid EARLY: with the verified-stats layer, reviews are
+            hard evidence (real money + audit count + verified check), not vibes.
+            The skeptical reader sees that proof BEFORE the "us vs competitors"
+            table and the founder's close. Flow: product (AnalyzerDemo, Features)
+            → real proof (Reviews) → differentiation (Comparison) → founder
+            credibility (SocialProof) → pricing.
+            ALT (1-line swap if Ariel prefers the proof cluster kept together
+            just before price): ComparisonTable → Reviews → SocialProof → Pricing. */}
+        <Reviews />
         <ComparisonTable />
         <SocialProof />
-        {/* Social proof at the point of maximum conversion — the founder note,
-            then real approved reviews, immediately before Pricing. */}
-        <Reviews />
         <Pricing />
         <FAQ />
       </main>

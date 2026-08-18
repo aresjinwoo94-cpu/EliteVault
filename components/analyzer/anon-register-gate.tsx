@@ -50,7 +50,7 @@ export function AnonRegisterGate({ score }: { score: number | null }) {
 
   // Raise the modal exactly ONCE per session, and only after a long read
   // window — this is a serious tool, not a nag. A single, quiet, dismissible
-  // nudge ~45s in, never on arrival (that would bury the report they waited
+  // nudge ~40s in, never on arrival (that would bury the report they waited
   // for), never repeated. The persistent banner carries the ask the rest of
   // the time.
   useEffect(() => {
@@ -74,7 +74,7 @@ export function AnonRegisterGate({ score }: { score: number | null }) {
       } catch {
         /* ignore */
       }
-    }, 45_000);
+    }, 40_000);
     return () => clearTimeout(timer);
   }, [roundedScore]);
 
