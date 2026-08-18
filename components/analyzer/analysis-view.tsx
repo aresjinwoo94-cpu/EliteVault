@@ -46,6 +46,7 @@ import type {
   SimulationScenario,
 } from "@/lib/supabase/types";
 import type { NicheWinner } from "@/lib/library/niche-winners";
+import type { DiscoverySignals } from "@/lib/analyzer/discovery-signals";
 
 /** Serializable payload for the "Winners in your niche" module (Change 3). */
 interface NicheWinnersData {
@@ -90,6 +91,12 @@ type Analysis = {
   share_slug?: string | null;
   preview_score?: number | null;
   preview_summary?: string | null;
+  /**
+   * WP-3 — what the discovery step scraped, persisted by the pipeline and
+   * polled in mid-run so the analyzing screen can show real signals instead of
+   * a mute spinner. Optional: absent on audits created before migration 0030.
+   */
+  discovery_signals?: DiscoverySignals | null;
 };
 
 interface ViewerCtx {
@@ -310,6 +317,8 @@ export function AnalysisView({
             startedAt={data.started_at}
             previewScore={data.preview_score ?? null}
             previewSummary={data.preview_summary ?? null}
+            screenshotUrl={data.screenshot_url}
+            signals={data.discovery_signals ?? null}
           />
         </motion.div>
       )}

@@ -19,6 +19,29 @@ import { getAnonToken } from "@/lib/anon/session";
 
 const STALE_THRESHOLD_MS = 8 * 60 * 1000; // 8 minutes — matches the owned poller
 
+// screenshot_url joins the poll payload for WP-3: the capture step persists it
+// seconds into the run, so the anonymous waiting screen can show the visitor
+// their own store instead of a spinner. It's their FIRST experience of the
+// product, so the perceived-wait win matters most here.
+const BASE_COLUMNS =
+  "id, status, url, screenshot_url, preview_score, preview_summary, error, anon_id, user_id, started_at, created_at";
+
+/**
+ * `discovery_signals` (migration 0030) is optional for the same reason as the
+ * owned poller: a deploy that lands before the migration must degrade to the
+ * pre-WP-3 waiting screen, not 404 every poll. See app/api/analyses/[id].
+ */
+const OPTIONAL_COLUMNS = "discovery_signals";
+let discoverySignalsAvailable: boolean | null = null;
+
+function isUndefinedColumn(err: { code?: string; message?: string } | null) {
+  if (!err) return false;
+  return (
+    err.code === "42703" ||
+    /column .* does not exist|could not find the .* column/i.test(err.message ?? "")
+  );
+}
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -30,22 +53,34 @@ export async function GET(
   }
 
   const service = createSupabaseServiceClient();
-  const { data, error } = await service
-    .from("analyses")
-    .select(
-      "id, status, url, preview_score, preview_summary, error, anon_id, user_id, started_at, created_at",
-    )
-    .eq("id", id)
-    .single();
+  const read = (columns: string) =>
+    service.from("analyses").select(columns).eq("id", id).single();
+
+  const tryOptional = discoverySignalsAvailable !== false;
+  let { data, error } = await read(
+    tryOptional ? `${BASE_COLUMNS}, ${OPTIONAL_COLUMNS}` : BASE_COLUMNS,
+  );
+  if (tryOptional) {
+    if (!error) {
+      discoverySignalsAvailable = true;
+    } else if (isUndefinedColumn(error)) {
+      discoverySignalsAvailable = false;
+      console.warn(
+        "[anon-analyses] discovery_signals column missing — apply migration 0030 to enable the progressive reveal",
+      );
+      ({ data, error } = await read(BASE_COLUMNS));
+    }
+  }
 
   if (error || !data) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
-  const row = data as {
+  const row = data as unknown as {
     id: string;
     status: string;
     url: string | null;
+    screenshot_url: string | null;
     preview_score: number | null;
     preview_summary: string | null;
     error: string | null;
@@ -53,6 +88,7 @@ export async function GET(
     user_id: string | null;
     started_at: string | null;
     created_at: string;
+    discovery_signals?: unknown;
   };
 
   // Only the creating browser may view an anonymous audit. Once it's been
@@ -80,16 +116,21 @@ export async function GET(
     }
   }
 
-  // Minimal payload — the anon pending poller only needs the status to know
-  // when to refresh the page. The succeeded report is server-rendered from the
+  // Minimal payload — the anon pending poller needs the status to know when to
+  // refresh the page, plus (WP-3) the screenshot and the discovery signals it
+  // renders while waiting. The succeeded report is server-rendered from the
   // full row by /audit/[id] (the identical-to-free AnalysisView), so no audit
-  // content is served here.
+  // content — score, fixes, persona — is served here. The gate is unchanged:
+  // discovery signals are facts scraped from the visitor's OWN public store
+  // (platform, rating, trust claims), not any part of the paid analysis.
   return NextResponse.json(
     {
       id: row.id,
       status,
       url: row.url,
       error: errMsg,
+      screenshot_url: row.screenshot_url,
+      discovery_signals: row.discovery_signals ?? null,
       preview_score: row.preview_score,
       preview_summary: row.preview_summary,
     },

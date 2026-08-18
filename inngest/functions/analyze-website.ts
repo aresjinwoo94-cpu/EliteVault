@@ -8,6 +8,7 @@ import {
   writeScreenshotCache,
 } from "@/lib/screenshot-cache";
 import { discoverSite } from "@/lib/site-discovery";
+import { summarizeDiscovery } from "@/lib/analyzer/discovery-signals";
 import { runAnalyzerAgent } from "@/ai/agents/analyzer-agent";
 import { withDerivedScore } from "@/lib/analyzer/derive-score";
 import { scenarioMidpoints } from "@/lib/analyzer/conversion-scenarios";
@@ -245,7 +246,15 @@ export const analyzeWebsite = inngest.createFunction(
       step.run("discover-site", async () => {
         if (!url) return null;
         try {
-          return await discoverSite(url);
+          const found = await discoverSite(url);
+          // WP-3 — persist the display-ready projection so the analyzing
+          // screen can show what we already know while the vision call runs.
+          // Inside this step on purpose: it costs no extra Inngest round-trip,
+          // and this step runs in parallel with the (slower) capture, so the
+          // write lands off the critical path. Best-effort in every sense —
+          // see persistDiscoverySignals.
+          await persistDiscoverySignals(service, analysisId, found);
+          return found;
         } catch (err) {
           console.warn("[analyzer] discovery skipped:", (err as Error).message);
           return null;
@@ -594,6 +603,44 @@ export const analyzeWebsite = inngest.createFunction(
     return { analysisId, score: result.score };
   },
 );
+
+/**
+ * WP-3 — persist the compact discovery signals for the analyzing screen.
+ *
+ * Deliberately unable to fail the audit, on two independent levels:
+ *   1. `discovery_signals` comes from migration 0030, applied as a manual ops
+ *      step. On an un-migrated database the update returns a missing-column
+ *      ERROR rather than throwing — checked and logged, never propagated. This
+ *      is the same fail-open shape as persist-niche-match (migration 0022), and
+ *      the reason it isn't folded into a required write.
+ *   2. Anything unexpected is caught. A cosmetic waiting-screen enrichment must
+ *      never be the reason a paid audit refunds.
+ */
+async function persistDiscoverySignals(
+  service: ReturnType<typeof createSupabaseServiceClient>,
+  analysisId: string,
+  discovery: Awaited<ReturnType<typeof discoverSite>> | null,
+): Promise<void> {
+  try {
+    const signals = summarizeDiscovery(discovery);
+    if (!signals) return;
+    const { error } = await service
+      .from("analyses")
+      .update({ discovery_signals: signals } as never)
+      .eq("id", analysisId);
+    if (error) {
+      console.warn(
+        "[analyzer] discovery signals not persisted (migration 0030 applied?):",
+        error.message,
+      );
+    }
+  } catch (err) {
+    console.warn(
+      "[analyzer] discovery signals skipped:",
+      (err as Error).message,
+    );
+  }
+}
 
 /**
  * Cheap niche label from the store's hostname (e.g. "acme.com" → "acme"), with a
