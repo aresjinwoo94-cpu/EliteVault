@@ -15,13 +15,18 @@ import type { PlanTier } from "@/lib/supabase/types";
  *                             calendar month (Meta block runs; Pro = 1/mo).
  *   - 'trackedNiche'        → row count in tracked_niches  (Phase 2/3).
  *
- * IMPORTANT: only select columns that exist in the LIVE database. The
- * `profiles` table in production does NOT have `current_period_start` (it's
- * in migration 0001 but was never applied), so selecting it makes the whole
- * query error and the profile read null — which previously surfaced as a
- * spurious "Profile not found" on the Analyzer. The Meta-run window therefore
- * anchors to the 1st of the current UTC month, which is also the doc's primary
- * reset spec.
+ * On the month window (WP-6 correction): this used to say `profiles` was
+ * missing `current_period_start` because migration 0001 "was never applied".
+ * That diagnosis was wrong, and worth correcting because it taught everyone to
+ * distrust the migrations. 0001 defines `current_period_start` on
+ * `subscriptions`, not on `profiles`, and never has — so the original query was
+ * selecting a column from the wrong table. Selecting a non-existent column
+ * errors the whole query and makes the profile read null, which surfaced as a
+ * spurious "Profile not found" on the Analyzer.
+ *
+ * Anchoring the Meta-run window to the 1st of the current UTC month is correct
+ * regardless: it's the doc's primary reset spec. Verify the live schema against
+ * the migrations at any time with `npm run db:doctor`.
  */
 export type QuotaKind = "analysis" | "metaRun" | "trackedNiche";
 

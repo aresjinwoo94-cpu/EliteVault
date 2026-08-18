@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { EmailOtpType } from "@supabase/supabase-js";
+import type { CookiesToSet } from "@/lib/supabase/types";
 
 // v3.9.1 — edge runtime kills cold-start latency on the auth callback.
 // Node functions on Vercel can cold-start at 500-1000ms; edge starts
@@ -110,7 +111,7 @@ export async function GET(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: CookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, {
               ...options,

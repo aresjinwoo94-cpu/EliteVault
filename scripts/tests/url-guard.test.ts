@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { validatePublicStoreUrl } from "../../lib/security/url-guard.ts";
+import { validatePublicStoreUrl } from "../../lib/security/url-guard";
 
 /**
  * SSRF guard for the anonymous audit (activation funnel Tarea 1).

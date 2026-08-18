@@ -1,9 +1,35 @@
 /**
- * Hand-written Database types matching supabase/migrations/0001_init.sql.
- * If you regenerate with `supabase gen types typescript`, paste the output here.
+ * Hand-written Database types matching supabase/migrations/0001_init.sql —
+ * plus the domain types (AnalysisResult, BuyerPersona, …) that no schema
+ * generator can produce.
+ *
+ * The `Database` half is STALE: it stops at 0001 while the schema is on 0031,
+ * which is why `.from(...)` resolves to `never` in most pipelines and why
+ * next.config.mjs still has `typescript.ignoreBuildErrors`. Regenerate the
+ * schema half with `npm run db:types` (writes lib/supabase/database.types.ts,
+ * leaving this file's domain types alone) and see docs/infra-debt.md for the
+ * adoption sequence.
  */
+import type { CookieOptions } from "@supabase/ssr";
 
 export type PlanTier = "free" | "pro" | "scale";
+
+/**
+ * WP-6 — the shape @supabase/ssr hands to `setAll`.
+ *
+ * Spelled out rather than inferred: an incomplete `Database` makes
+ * `createServerClient<Database>` fall back to a looser overload where the
+ * callback parameter lands as an implicit `any`. Same root cause as the ~210
+ * `never` errors across the app, but unlike those it's fixable without
+ * regenerating the schema — and cookie handling is auth, the last place to
+ * want an untyped hole. Lives here rather than in server.ts so the edge
+ * middleware can import it without pulling in `server-only`.
+ */
+export type CookiesToSet = {
+  name: string;
+  value: string;
+  options?: CookieOptions;
+}[];
 
 export type SubscriptionStatus =
   | "trialing"

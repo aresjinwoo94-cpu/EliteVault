@@ -36,10 +36,23 @@ import {
  * the Google provider to be enabled in the Supabase Dashboard (Client ID
  * + Secret live there, not in this code).
  */
+/**
+ * The Credential Management API's PasswordCredential is Chromium-only, so it
+ * isn't in the DOM lib TypeScript ships. Declaring the shape we actually use
+ * (rather than referencing the global) keeps this typed without depending on a
+ * definition that doesn't exist in every browser or every TS version — the
+ * runtime guard below is what really decides whether it's available.
+ */
+type PasswordCredentialCtor = new (data: {
+  id: string;
+  password: string;
+  name?: string;
+}) => Credential;
+
 async function saveCredentialIfPossible(email: string, password: string) {
   if (typeof window === "undefined") return;
   const PC = (
-    window as unknown as { PasswordCredential?: typeof PasswordCredential }
+    window as unknown as { PasswordCredential?: PasswordCredentialCtor }
   ).PasswordCredential;
   if (!PC || !navigator.credentials?.store) return;
   try {
