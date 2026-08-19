@@ -10,6 +10,7 @@ import { BuyerPersonaSchema } from "@/ai/schemas";
 import { PLANS } from "@/lib/stripe/plans";
 import { assertQuota } from "@/lib/quota/guard";
 import { findReusableAnalysis } from "@/lib/analysis/reuse";
+import { validatePublicStoreUrl } from "@/lib/security/url-guard";
 
 const CreateAnalysisInput = z.object({
   url: z.string().min(3).optional(),
@@ -48,7 +49,20 @@ export async function createAnalysis(
   if (!parsed.data.url && !parsed.data.screenshotUrl) {
     return { ok: false, error: "Provide a URL or upload a screenshot" };
   }
-  const url = parsed.data.url ? normalizeUrl(parsed.data.url) : null;
+
+  // Validate BEFORE spending a credit or queueing a job. The anonymous action
+  // has always done this; the signed-in path only checked `min(3)`, so entries
+  // like "efootball", "dls" or "FC mobile" were accepted, charged, queued, and
+  // then spent ~200s failing through the whole capture chain and Inngest's
+  // retry ladder before refunding. The user waited three minutes to be told
+  // what a regex knew immediately. Same guard, same SSRF protections, and the
+  // rejection is now instant and costs nothing.
+  let url: string | null = null;
+  if (parsed.data.url) {
+    const guard = validatePublicStoreUrl(parsed.data.url);
+    if (!guard.ok) return { ok: false, error: guard.reason };
+    url = normalizeUrl(guard.url);
+  }
 
   // Idempotency — BEFORE the credit is touched. A double-submit or a repeat of
   // the same store should open the audit the user already has, not deduct a

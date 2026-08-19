@@ -29,6 +29,48 @@ const MODEL_FAST = process.env.GEMINI_MODEL_FAST ?? "gemini-3.1-flash-lite";
 // higher-capacity backend that completes the audit when they're all busy.
 const MODEL_STABLE = process.env.GEMINI_MODEL_STABLE ?? "gemini-2.5-flash";
 
+/**
+ * How many tokens the model may spend THINKING before it starts writing.
+ *
+ * Measured on production usage_events: `totalTokenCount` consistently exceeded
+ * `promptTokenCount + candidatesTokenCount` — by 357, 1158, and 2120 tokens on
+ * consecutive audits. That gap is `thoughtsTokenCount`. Nothing here ever set
+ * `thinkingConfig`, so the 3.x-family models were thinking as much as they
+ * liked, and thinking tokens are generated at output speed: 2000+ of them is
+ * tens of seconds spent before the first character of the report exists.
+ *
+ * Inside a 50s step budget (lib/deadline.ts, sized for Vercel Hobby's 60s
+ * ceiling) that is the difference between an audit that finishes and one that
+ * refunds — which is what production was doing on real DTC product pages.
+ *
+ * The default BOUNDS thinking rather than removing it: the audit is a
+ * structured extraction against a fixed schema, so a little deliberation helps
+ * and an unbounded amount mostly buys latency. Tune without a deploy:
+ *   GEMINI_THINKING_BUDGET=0     disable thinking entirely (fastest)
+ *   GEMINI_THINKING_BUDGET=-1    model default, i.e. unbounded (pre-fix behaviour)
+ *   GEMINI_THINKING_BUDGET=2048  more deliberation, slower
+ */
+const THINKING_BUDGET = (() => {
+  const raw = Number(process.env.GEMINI_THINKING_BUDGET);
+  return Number.isFinite(raw) ? Math.round(raw) : 512;
+})();
+
+/**
+ * Set once if a model rejects `thinkingConfig` (not every model accepts a
+ * budget, and some can't disable thinking at all). Same self-healing shape as
+ * the ScreenshotOne breaker: we learn it costs one retry, then stop sending it
+ * for the life of the lambda rather than failing audits over a tuning knob.
+ */
+let thinkingConfigRejected = false;
+
+/** True when the error is the model refusing our thinkingConfig, not real work failing. */
+export function isThinkingConfigError(raw: string): boolean {
+  return (
+    /thinking|thought/i.test(raw) &&
+    /invalid|unsupported|not supported|unknown|cannot be disabled/i.test(raw)
+  );
+}
+
 // ─── Multi-key rotation pool ────────────────────────────────────────────────
 //
 // Why: Gemini's free tier is 15 RPM + 1000 RPD, and the cap is enforced PER
@@ -248,6 +290,11 @@ async function generateStructured<T>(
         maxOutputTokens,
         responseMimeType: "application/json",
         responseSchema: toGeminiSchema(tool.schema),
+        // Bound the model's thinking time. -1 means "model default", which is
+        // what this used to do implicitly and what was blowing the step budget.
+        ...(THINKING_BUDGET >= 0 && !thinkingConfigRejected
+          ? { thinkingConfig: { thinkingBudget: THINKING_BUDGET } }
+          : {}),
         // Abort as soon as the budget is gone (or the caller cancels) so a
         // hanging generation can't run into the platform timeout.
         abortSignal: dl.signal({ parent: opts.signal }),
@@ -342,6 +389,17 @@ async function generateStructured<T>(
           return parseJsonText<T>(text);
         } catch (err) {
           const raw = errMsg(err);
+          // The model refused our thinkingConfig (not every model accepts a
+          // budget; some can't turn thinking off). Drop it for the rest of this
+          // lambda and retry the SAME key immediately — a latency knob must
+          // never be the reason a paid audit fails.
+          if (!thinkingConfigRejected && isThinkingConfigError(raw)) {
+            thinkingConfigRejected = true;
+            console.warn(
+              `[gemini] ${model} rejected thinkingConfig (${raw.slice(0, 80)}) — retrying without it and not sending it again`,
+            );
+            continue; // retry same key, now without the config
+          }
           if (is429(raw)) {
             console.warn(
               `[gemini] ${model} key #${idx + 1}/${KEYS.length} hit 429 — cooling down ${COOLDOWN_MS / 1000}s, trying next`,
@@ -504,7 +562,7 @@ function errMsg(err: unknown): string {
       : JSON.stringify(err);
 }
 
-function is429(raw: string): boolean {
+export function is429(raw: string): boolean {
   return /RESOURCE_EXHAUSTED|"code"\s*:\s*429|status.*429|rate.?limit|quota/i.test(
     raw,
   );
