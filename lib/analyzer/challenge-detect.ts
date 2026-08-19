@@ -28,9 +28,15 @@ export interface ChallengeDetection {
  * infrastructure isn't shipped on a normal storefront, so a hit here is
  * conclusive on its own.
  */
-const STRONG: ReadonlyArray<readonly [RegExp, string]> = [
+const STRONG: ReadonlyArray<readonly [RegExp, string | null]> = [
   [/cf-browser-verification/i, "Cloudflare"],
-  [/cdn-cgi\/challenge-platform/i, "Cloudflare"],
+  // ONLY the challenge orchestration path. A bare `cdn-cgi/challenge-platform`
+  // match is wrong: with JS Detections / Bot Fight Mode on, Cloudflare injects
+  // `/cdn-cgi/challenge-platform/scripts/jsd/main.js` into NORMALLY SERVED 200
+  // pages as passive fingerprinting. Verification caught this marking
+  // lush.com — a fully visible storefront — as blocked. The interstitial uses
+  // `/h/{b,g}/orchestrate/...`; the fingerprinting script never does.
+  [/cdn-cgi\/challenge-platform\/[^"'\s]*orchestrate/i, "Cloudflare"],
   [/__cf_chl_/i, "Cloudflare"],
   [/<title>\s*just a moment[.\s…]*<\/title>/i, "Cloudflare"],
   [/attention required!\s*\|\s*cloudflare/i, "Cloudflare"],
@@ -39,7 +45,8 @@ const STRONG: ReadonlyArray<readonly [RegExp, string]> = [
   [/distil_r_captcha/i, "Distil"],
   [/px-captcha/i, "PerimeterX"],
   [/geo\.captcha-delivery\.com/i, "DataDome"],
-  [/performing security verification/i, null as unknown as string],
+  // Generic wording several vendors share — worth flagging, but unattributable.
+  [/performing security verification/i, null],
 ];
 
 /**
@@ -51,17 +58,23 @@ const STRONG: ReadonlyArray<readonly [RegExp, string]> = [
  * refuse to audit a store we can actually see. They count only when the page
  * has essentially no other content, i.e. the captcha IS the page.
  */
-const WEAK: ReadonlyArray<readonly [RegExp, string]> = [
+const WEAK: ReadonlyArray<readonly [RegExp, string | null]> = [
   [/g-recaptcha/i, "reCAPTCHA"],
   [/h-captcha|hcaptcha\.com/i, "hCaptcha"],
 ];
 
 /**
  * Below this many characters of visible text, a page has nothing a shopper
- * could read — no product copy, no nav, no footer. A real storefront clears it
- * by an order of magnitude; a challenge page is a heading and a spinner.
+ * could read — no product copy, no nav, no footer.
+ *
+ * Calibrated against real measurements rather than intuition: live Cloudflare
+ * interstitials came in at ~58 visible characters, while the THINNEST real
+ * storefront sampled (us.oatly.com, heavily JS-rendered) still had 721. The
+ * first draft used 1000, which sat above that real store — a JS-rendered shop
+ * that also ships a captcha would have been called blocked. 400 keeps a wide
+ * margin over a genuine challenge and stays well under the thinnest real store.
  */
-const THIN_PAGE_CHARS = 1_000;
+const THIN_PAGE_CHARS = 400;
 
 /** Visible-text length, ignoring markup, scripts and styles. */
 function visibleTextLength(html: string): number {

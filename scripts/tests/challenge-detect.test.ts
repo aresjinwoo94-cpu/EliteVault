@@ -62,6 +62,53 @@ test("a real storefront is NOT flagged", () => {
   assert.deepEqual(detectChallenge(REAL_STORE), { detected: false, vendor: null });
 });
 
+test("Cloudflare's passive JS-detection script is NOT a challenge", () => {
+  // Regression, found by verification against 20 live stores. With JS
+  // Detections / Bot Fight Mode on, Cloudflare injects this into NORMALLY
+  // SERVED 200 pages as fingerprinting — lush.com ships it with a complete
+  // storefront. A bare `cdn-cgi/challenge-platform` match called that blocked,
+  // which both blanked the model's site context and could replace the whole
+  // report for a store we captured perfectly.
+  const html = REAL_STORE.replace(
+    "<nav>",
+    `<script>var a=document.createElement('script');` +
+      `a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';` +
+      `document.getElementsByTagName('head')[0].appendChild(a);</script><nav>`,
+  );
+  assert.deepEqual(detectChallenge(html), { detected: false, vendor: null });
+});
+
+test("Cloudflare's real challenge orchestration IS a challenge", () => {
+  // The other half of the same boundary — tightening the regex must not have
+  // made it blind to the interstitial it exists for.
+  const html =
+    `<html><body><script src="/cdn-cgi/challenge-platform/h/b/orchestrate/chl_page/v1"></script></body></html>`;
+  const r = detectChallenge(html);
+  assert.equal(r.detected, true);
+  assert.equal(r.vendor, "Cloudflare");
+  // The 'g' variant ships too.
+  assert.equal(
+    detectChallenge('<script src="/cdn-cgi/challenge-platform/h/g/orchestrate/jsch/v1">').detected,
+    true,
+  );
+});
+
+test("a thin but REAL storefront with a captcha is not flagged", () => {
+  // us.oatly.com measured 721 visible characters — a real, heavily JS-rendered
+  // store. The first threshold (1000) sat above it, so adding a captcha script
+  // would have called it blocked. Live challenge pages measured ~58.
+  const thinButReal = `<html><head><title>Oat — Shop</title></head><body>
+    <nav>Shop About Stockists</nav>
+    <h1>Oat drink, straight up</h1>
+    <p>${"Brewed from whole oats and nothing weird. ".repeat(11)}</p>
+    <div class="g-recaptcha"></div></body></html>`;
+  assert.ok(
+    thinButReal.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().length > 400,
+    "fixture should sit above the threshold, like the real store does",
+  );
+  assert.equal(detectChallenge(thinButReal).detected, false);
+});
+
 test("a store with a reCAPTCHA on its contact form is NOT flagged", () => {
   // THE false positive that matters. reCAPTCHA is on a huge share of normal
   // stores; treating it as conclusive would refuse to audit them.

@@ -358,6 +358,7 @@ const en: Dict = {
     // verification screen rather than the store. Says what happened and what to
     // do; never dresses a non-audit up as an audit.
     blockedTitle: "We couldn't see your real store",
+    blockedThisSite: "This site",
     blockedBody:
       "{domain} is protected by anti-bot verification, so all we captured was the verification screen — not your storefront. Nothing below would describe your actual store, so we're not guessing.",
     blockedBodyVendor:
@@ -1059,6 +1060,7 @@ const es: Dict = {
     // WP-A — se muestra EN LUGAR de los hallazgos cuando lo capturado fue una
     // pantalla de verificación anti-bot y no la tienda.
     blockedTitle: "No pudimos ver tu tienda real",
+    blockedThisSite: "Este sitio",
     blockedBody:
       "{domain} está protegido por verificación anti-bot, así que lo único que capturamos fue la pantalla de verificación — no tu tienda. Nada de lo que pusiéramos aquí describiría tu tienda de verdad, así que no lo adivinamos.",
     blockedBodyVendor:

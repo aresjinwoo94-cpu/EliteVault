@@ -278,7 +278,11 @@ export function AnalysisView({
         <div className="flex items-center gap-2 shrink-0">
           {/* P0.3 — share the public, read-only audit. Owner-only, hidden in
               the anonymous view (it calls an auth-gated server action). */}
-          {isDone && !isAnon && (
+          {/* WP-A — nothing that PUBLISHES or SHARES a blocked run: its score
+              and summary describe a verification screen, and the public share
+              and community pages don't know about capture_blocked, so they'd
+              present an interstitial's ~50/100 as a real audit of the domain. */}
+          {isDone && !isAnon && !captureBlocked.blocked && (
             <ShareButton
               analysisId={data.id}
               initialSlug={data.share_slug ?? null}
@@ -297,10 +301,18 @@ export function AnalysisView({
       {/* Anonymous banner — the primary activation push: create a free account
           to save this report, run more audits and browse the Library. Sits
           above the report so it's the first thing after the header. */}
-      {isDone && isAnon && <AnonRegisterGate score={data.result?.score ?? null} />}
+      {/* WP-A — on a blocked run the score is derived from an interstitial, so
+          the anonymous hook ("your store scored N") would be a fabricated
+          number shown on the highest-traffic path in the product. Pass null so
+          the gate renders its scoreless variant. */}
+      {isDone && isAnon && (
+        <AnonRegisterGate
+          score={captureBlocked.blocked ? null : (data.result?.score ?? null)}
+        />
+      )}
 
       {/* Prominent Publish-to-Community callout (Pro/Scale only, succeeded only) */}
-      {isDone && viewer.canPublish && (
+      {isDone && viewer.canPublish && !captureBlocked.blocked && (
         <PublishCallout
           analysisId={data.id}
           defaultDisplayName={viewer.fullName}

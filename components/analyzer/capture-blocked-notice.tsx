@@ -40,7 +40,7 @@ export function CaptureBlockedNotice({
   const { t } = useT();
 
   const domain = (() => {
-    if (!url) return "This site";
+    if (!url) return t("report.blockedThisSite");
     try {
       return new URL(url).hostname.replace(/^www\./, "");
     } catch {
@@ -48,6 +48,9 @@ export function CaptureBlockedNotice({
     }
   })();
 
+  // Name the vendor only when discovery actually identified one. Claiming
+  // "protected by Cloudflare" from a layer-2-only detection would be a guess
+  // presented as a fact, in a card whose entire purpose is not guessing.
   const body = (vendor ? t("report.blockedBodyVendor") : t("report.blockedBody"))
     .replace("{domain}", domain)
     .replace("{vendor}", vendor ?? "");

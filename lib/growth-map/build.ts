@@ -10,6 +10,7 @@ import {
   diffIssues,
   type IssueSnapshot,
 } from "@/lib/analyzer/link-issues";
+import { resolveCaptureBlocked } from "@/lib/analyzer/challenge-detect";
 import { computePlacement, compositeOf } from "./placement";
 import { scaffoldNodes, scaffoldDiagnosis } from "./phrase-bank";
 import { RANKS } from "./ranks";
@@ -172,7 +173,7 @@ async function recordPlacementPoint(input: {
   // FUTURE runs diff against. Recording it would poison the comparison twice
   // over: once now, and again on the next real audit, which would then report
   // the store's genuine issues as "new since last run".
-  if (input.result.capture_blocked?.detected) {
+  if (resolveCaptureBlocked({ fromModel: input.result.capture_blocked }).blocked) {
     console.warn(
       "[growth-map] skipping history point — the capture was blocked, so this run saw a verification screen, not the store",
     );
@@ -260,7 +261,7 @@ export async function readGrowthMovement(input: {
     // bot verification blocks visitors") when nothing there changed at all.
     if (
       growthMapIssueDiffEnabled() &&
-      !input.result.capture_blocked?.detected &&
+      !resolveCaptureBlocked({ fromModel: input.result.capture_blocked }).blocked &&
       Array.isArray(prev.issues) &&
       prev.issues.length
     ) {

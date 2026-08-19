@@ -150,10 +150,15 @@ export async function discoverSite(rootUrl: string): Promise<DiscoverySummary> {
     // WP-A — read the body BEFORE deciding on the status. An anti-bot
     // interstitial is served WITH a refusal status (403/503 are the common
     // pair), so the old `if (!res.ok) return out` threw away the single most
-    // diagnostic thing we fetch: the challenge HTML itself. Bounded, because a
-    // hostile response shouldn't be able to hand us an unbounded body.
-    const body = (await res.text()).slice(0, 400_000);
-    const challenge = detectChallenge(body);
+    // diagnostic thing we fetch: the challenge HTML itself.
+    const body = await res.text();
+    // Only the CHALLENGE CHECK is capped. A first draft capped the body itself,
+    // which silently truncated normal stores: measured across 20 real sites, 13
+    // exceeded the cap, and gymshark/everlane lost their JSON-LD rating and FAQ
+    // blocks entirely while mejuri's cut landed mid-`<script>`, leaking raw JS
+    // into the text used for trust signals. A challenge page is a few KB, so the
+    // cap costs the detector nothing while extraction keeps the full document.
+    const challenge = detectChallenge(body.slice(0, 200_000));
     if (challenge.detected) {
       out.challengeDetected = true;
       out.challengeVendor = challenge.vendor;
@@ -166,7 +171,7 @@ export async function discoverSite(rootUrl: string): Promise<DiscoverySummary> {
       return out;
     }
     if (!res.ok) return out;
-    html = body;
+    html = body; // full document — extraction below depends on the tail
   } catch (err) {
     console.warn("[discovery] fetch failed:", (err as Error).message);
     return out;
