@@ -120,6 +120,14 @@ function exhaustedCooldownMs(): number {
   return minutes * 60_000;
 }
 
+/**
+ * ScreenshotOne's own vocabulary for "you're out of captures". Matched against
+ * its `error_code`, and against the message we throw carrying that code.
+ */
+function isQuotaError(text: string | undefined): boolean {
+  return /limit_reached|quota/i.test(text ?? "");
+}
+
 let screenshotOneExhaustedUntil = 0;
 
 export const screenshotOneCircuit = {
@@ -239,10 +247,16 @@ export async function captureScreenshot(
         const msg = (err as Error).message;
         console.warn(`[screenshot] ScreenshotOne failed (${candidate}): ${msg}`);
         errors.push(`ScreenshotOne(${candidate}): ${msg}`);
-        // WP-2 — if THAT failure was the quota running out, the www-flip retry
+        // WP-2 — if THIS failure was the quota running out, the www-flip retry
         // is guaranteed to be refused too (the cap is per account, not per
         // host). Stop here instead of spending another ~2s proving it.
-        if (screenshotOneCircuit.isOpen()) break;
+        //
+        // Keyed off the error WE just caught, not off the shared breaker: a
+        // concurrent audit in the same lambda could have tripped that between
+        // our two attempts, and then an unrelated failure here (the documented
+        // www.burrow.com HTTP 500) would skip the alt-host retry that was
+        // about to succeed.
+        if (isQuotaError(msg)) break;
         // otherwise fall through: try the alt host, then the next provider
       }
     }
@@ -431,7 +445,7 @@ export async function captureWithScreenshotOne(
     try {
       const j = (await res.json()) as { error_code?: string; error_message?: string };
       if (j?.error_code) detail = ` ${j.error_code}`;
-      if (/limit_reached|quota/i.test(j?.error_code ?? "")) {
+      if (isQuotaError(j?.error_code)) {
         console.error(
           "[screenshot] ScreenshotOne QUOTA EXHAUSTED — every audit is now on the slow fallback chain. Upgrade the plan or set MICROLINK_API_KEY.",
         );

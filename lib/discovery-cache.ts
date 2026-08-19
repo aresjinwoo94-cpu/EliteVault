@@ -44,7 +44,7 @@ export async function readDiscoveryCache(
   try {
     const freshAfter = new Date(Date.now() - ttlMs).toISOString();
     const { data } = await (
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       service.from("discovery_cache") as any
     )
       .select("payload")
@@ -74,7 +74,7 @@ export async function writeDiscoveryCache(
   if (discoveryCacheTtlMs() <= 0) return;
   try {
     await (
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       service.from("discovery_cache") as any
     ).upsert(
       {

@@ -132,6 +132,31 @@ test("one exhausted audit spares every following audit the same refusal", async 
   assert.equal(afterSecond, afterFirst, "the second audit must not re-ask");
 });
 
+test("an unrelated failure still gets its www-flip retry", async () => {
+  // The break after a failed capture must key off THIS error, not the shared
+  // breaker: a concurrent audit in the same lambda could trip that between the
+  // two attempts, and www.burrow.com → 500 / burrow.com → 200 is a real store
+  // we'd otherwise lose to a hostname detail.
+  const seen: string[] = [];
+  globalThis.fetch = (async (input: RequestInfo | URL) => {
+    const url = String(input);
+    seen.push(url);
+    if (url.includes("api.screenshotone.com")) {
+      // A concurrent audit exhausts the quota between our two attempts.
+      screenshotOneCircuit.trip();
+      return new Response("upstream boom", { status: 500 });
+    }
+    return new Response(REAL_IMAGE, {
+      status: 200,
+      headers: { "content-type": "image/png" },
+    });
+  }) as typeof fetch;
+
+  await captureScreenshot("https://www.store.com");
+  const attempts = seen.filter((u) => u.includes("api.screenshotone.com"));
+  assert.equal(attempts.length, 2, "the flipped-www host should still be tried");
+});
+
 test("the breaker heals on its own when the cooldown expires", async () => {
   // Self-healing matters: a topped-up plan must not stay locked out until the
   // lambda happens to cold-start.

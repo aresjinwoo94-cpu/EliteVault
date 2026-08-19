@@ -107,6 +107,26 @@ test("a single price is a point, not a range", () => {
   assert.equal(s?.priceRange, "$49");
 });
 
+test("locale separators are read, not guessed at", () => {
+  // `.` and `,` swap roles between locales and discovery scrapes whatever the
+  // page wrote, so getting this wrong is a 1000x error on the waiting screen.
+  const range = (price: string) =>
+    summarizeDiscovery(base({ prices: [price] }))?.priceRange;
+
+  assert.equal(range("$1,299"), "$1,299"); // en thousands
+  assert.equal(range("€1.299,00"), "€1,299"); // de thousands + decimal
+  assert.equal(range("$1.234.567,89"), "$1,234,567.89"); // repeated thousands
+  assert.equal(range("$29.99"), "$29.99"); // plain decimal
+  assert.equal(range("€1.299"), "€1,299"); // lone dot, real thousands group
+  // …but "0" is not a thousands group, so this is nine-tenths, not 999.
+  assert.equal(range("$0.999"), "$1.00");
+});
+
+test("an ISO currency code doesn't run into the number", () => {
+  const s = summarizeDiscovery(base({ prices: ["USD 1,299"] }));
+  assert.equal(s?.priceRange, "USD 1,299");
+});
+
 test("unparseable prices never produce a broken range", () => {
   const s = summarizeDiscovery(base({ prices: ["USD", "$"], platform: "shopify" }));
   assert.equal(s?.priceRange, null);

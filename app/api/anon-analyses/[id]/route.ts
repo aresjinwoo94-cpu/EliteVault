@@ -32,7 +32,10 @@ const BASE_COLUMNS =
  * pre-WP-3 waiting screen, not 404 every poll. See app/api/analyses/[id].
  */
 const OPTIONAL_COLUMNS = "discovery_signals";
-let discoverySignalsAvailable: boolean | null = null;
+
+/** Re-checked on a timer so applying 0030 after the deploy heals itself. */
+const MISSING_COLUMN_RECHECK_MS = 10 * 60_000;
+let discoverySignalsMissingUntil = 0;
 
 function isUndefinedColumn(err: { code?: string; message?: string } | null) {
   if (!err) return false;
@@ -56,20 +59,16 @@ export async function GET(
   const read = (columns: string) =>
     service.from("analyses").select(columns).eq("id", id).single();
 
-  const tryOptional = discoverySignalsAvailable !== false;
+  const tryOptional = Date.now() >= discoverySignalsMissingUntil;
   let { data, error } = await read(
     tryOptional ? `${BASE_COLUMNS}, ${OPTIONAL_COLUMNS}` : BASE_COLUMNS,
   );
-  if (tryOptional) {
-    if (!error) {
-      discoverySignalsAvailable = true;
-    } else if (isUndefinedColumn(error)) {
-      discoverySignalsAvailable = false;
-      console.warn(
-        "[anon-analyses] discovery_signals column missing — apply migration 0030 to enable the progressive reveal",
-      );
-      ({ data, error } = await read(BASE_COLUMNS));
-    }
+  if (tryOptional && error && isUndefinedColumn(error)) {
+    discoverySignalsMissingUntil = Date.now() + MISSING_COLUMN_RECHECK_MS;
+    console.warn(
+      "[anon-analyses] discovery_signals column missing — apply migration 0030 to enable the progressive reveal",
+    );
+    ({ data, error } = await read(BASE_COLUMNS));
   }
 
   if (error || !data) {

@@ -43,7 +43,17 @@ const BASE_COLUMNS =
  * a code deploy that lands BEFORE the migration harmless instead of fatal.
  */
 const OPTIONAL_COLUMNS = "discovery_signals";
-let discoverySignalsAvailable: boolean | null = null;
+
+/**
+ * The "column isn't there" answer is cached, but only for a while. A permanent
+ * latch would mean that applying migration 0030 AFTER the deploy leaves warm
+ * lambdas serving the pre-WP-3 waiting screen until they happen to cold-start.
+ * Self-healing on a timer — same idea as the ScreenshotOne breaker — costs one
+ * extra query every 10 minutes in the un-migrated case and nothing once the
+ * column exists.
+ */
+const MISSING_COLUMN_RECHECK_MS = 10 * 60_000;
+let discoverySignalsMissingUntil = 0;
 
 function isUndefinedColumn(err: { code?: string; message?: string } | null) {
   if (!err) return false;
@@ -72,20 +82,16 @@ export async function GET(
       .eq("user_id", user.id)
       .single();
 
-  const tryOptional = discoverySignalsAvailable !== false;
+  const tryOptional = Date.now() >= discoverySignalsMissingUntil;
   let { data, error } = await read(
     tryOptional ? `${BASE_COLUMNS}, ${OPTIONAL_COLUMNS}` : BASE_COLUMNS,
   );
-  if (tryOptional) {
-    if (!error) {
-      discoverySignalsAvailable = true;
-    } else if (isUndefinedColumn(error)) {
-      discoverySignalsAvailable = false;
-      console.warn(
-        "[analyses] discovery_signals column missing — apply migration 0030 to enable the progressive reveal",
-      );
-      ({ data, error } = await read(BASE_COLUMNS));
-    }
+  if (tryOptional && error && isUndefinedColumn(error)) {
+    discoverySignalsMissingUntil = Date.now() + MISSING_COLUMN_RECHECK_MS;
+    console.warn(
+      "[analyses] discovery_signals column missing — apply migration 0030 to enable the progressive reveal",
+    );
+    ({ data, error } = await read(BASE_COLUMNS));
   }
 
   if (error || !data) {

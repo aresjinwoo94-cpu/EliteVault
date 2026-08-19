@@ -51,7 +51,7 @@ function fakeService(opts: {
     gte: [string, unknown][];
     upsert?: Record<string, unknown>;
   } = { eq: [], gte: [] };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const chain: any = {
     select() {
       if (opts.throwOn === "select") throw new Error("relation does not exist");
@@ -74,7 +74,7 @@ function fakeService(opts: {
       return { error: null };
     },
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const service: any = {
     from(table: string) {
       calls.table = table;

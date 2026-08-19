@@ -97,24 +97,14 @@ export function summarizeDiscovery(
 }
 
 /**
- * Turn discovery's raw price strings ("$29.99", "€1,299", "USD") into one
- * display range. Returns null when nothing parses — a half-formed "$ – " on the
- * waiting screen reads as a bug.
+ * Turn discovery's raw price strings ("$29.99", "€1.299,00", "USD 1,299") into
+ * one display range. Returns null when nothing parses — a half-formed "$ – " on
+ * the waiting screen reads as a bug.
  */
 function priceRange(prices: string[]): string | null {
-  const parsed: { value: number; symbol: string }[] = [];
-  for (const raw of prices) {
-    // The currency marker as written on the page: a symbol, or an ISO code
-    // that we render as-is (site-discovery matches USD/EUR/GBP too).
-    const symbol = raw.match(/[$€£]|USD|EUR|GBP/)?.[0] ?? "";
-    const numeric = raw.replace(/[^\d.,]/g, "");
-    if (!numeric) continue;
-    // Strip thousands separators, keep the last separator as the decimal point.
-    const normalized = numeric.replace(/[.,](?=\d{3}\b)/g, "");
-    const value = Number(normalized.replace(",", "."));
-    if (!Number.isFinite(value) || value <= 0) continue;
-    parsed.push({ value, symbol });
-  }
+  const parsed = prices
+    .map(parsePrice)
+    .filter((p): p is { value: number; symbol: string } => p !== null);
   if (parsed.length === 0) return null;
 
   parsed.sort((a, b) => a.value - b.value);
@@ -122,7 +112,66 @@ function priceRange(prices: string[]): string | null {
   const high = parsed[parsed.length - 1];
   // One symbol for both ends — a "€19 – $300" range is a scraping artifact of
   // a page listing two currencies, not a real span. Anchor on the low end.
-  const fmt = (n: number) =>
-    `${low.symbol}${n % 1 === 0 ? n : n.toFixed(2)}`;
-  return low.value === high.value ? fmt(low.value) : `${fmt(low.value)} – ${fmt(high.value)}`;
+  const fmt = (n: number) => format(n, low.symbol);
+  return low.value === high.value
+    ? fmt(low.value)
+    : `${fmt(low.value)} – ${fmt(high.value)}`;
+}
+
+/**
+ * Read one scraped price string.
+ *
+ * The hard part is that `.` and `,` swap roles between locales, and discovery
+ * scrapes whatever the page wrote. Guessing wrong is a 1000x error on the
+ * waiting screen, so the rules are explicit rather than a single regex:
+ *
+ *   • both separators present → the LAST one is the decimal ("1.234.567,89")
+ *   • the same separator more than once → all thousands ("1.234.567")
+ *   • one separator, not followed by exactly 3 digits → decimal ("29.99")
+ *   • one separator followed by exactly 3 digits → genuinely ambiguous:
+ *       - a comma reads as thousands ("1,299"); a comma decimal is virtually
+ *         always 2 places ("1,50"), not 3
+ *       - a dot reads as thousands ("1.299") UNLESS the part before it is a
+ *         lone zero, since "0" is not a thousands group — that's what makes
+ *         "0.999" nine-tenths and not nine hundred and ninety-nine
+ */
+function parsePrice(raw: string): { value: number; symbol: string } | null {
+  // The currency marker as written on the page: a symbol, or an ISO code
+  // (site-discovery matches USD/EUR/GBP too).
+  const symbol = raw.match(/[$€£]|USD|EUR|GBP/)?.[0] ?? "";
+  const numeric = raw.replace(/[^\d.,]/g, "");
+  if (!/\d/.test(numeric)) return null;
+
+  const separators = numeric.match(/[.,]/g) ?? [];
+  const lastIdx = Math.max(numeric.lastIndexOf("."), numeric.lastIndexOf(","));
+  const head = numeric.slice(0, lastIdx);
+  const tail = numeric.slice(lastIdx + 1);
+  const mixed = numeric.includes(".") && numeric.includes(",");
+
+  let decimalIsLast: boolean;
+  if (separators.length === 0) decimalIsLast = false;
+  else if (mixed) decimalIsLast = true;
+  else if (separators.length > 1) decimalIsLast = false;
+  else if (tail.length !== 3) decimalIsLast = true;
+  else if (numeric[lastIdx] === ",") decimalIsLast = false;
+  else decimalIsLast = head === "0";
+
+  const digitsOf = (s: string) => s.replace(/[.,]/g, "");
+  const value = decimalIsLast
+    ? Number(`${digitsOf(head) || "0"}.${tail}`)
+    : Number(digitsOf(numeric));
+
+  if (!Number.isFinite(value) || value <= 0) return null;
+  return { value, symbol };
+}
+
+/** Group digits for readability, and keep an ISO code off the number. */
+function format(n: number, symbol: string): string {
+  const body = n.toLocaleString("en-US", {
+    minimumFractionDigits: Number.isInteger(n) ? 0 : 2,
+    maximumFractionDigits: 2,
+  });
+  // "$29" reads fine; "USD29" doesn't.
+  const gap = /^[A-Z]{3}$/.test(symbol) ? " " : "";
+  return `${symbol}${gap}${body}`;
 }
