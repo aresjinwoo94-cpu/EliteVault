@@ -72,6 +72,18 @@ The ledger is a **record, not a lock**: idempotency is still the real
 guarantee, and `--all` exists precisely so a suspected-drifted database can be
 brought back in line by replaying the lot.
 
+The runner now **stops at the first failure**. It used to continue, which was
+survivable when it replayed everything every time — but migrations are ordered
+and later ones assume earlier ones landed, so continuing past a failure gives
+you a half-applied schema *and* a ledger that disagrees with it. A failed file
+is never recorded, so re-running after a fix picks up exactly where it stopped.
+
+One caveat worth knowing: "a failed migration is never recorded" rests on the
+Management API returning a non-2xx for failed SQL. That holds for every failure
+observed so far, but it hasn't been proven for every error shape. If a
+migration ever appears applied but clearly isn't, `npm run db:doctor` is the
+check that doesn't depend on the ledger at all.
+
 ## 2. Typecheck — where it stands and what unblocks it
 
 `next.config.mjs` still has `typescript.ignoreBuildErrors: true` and

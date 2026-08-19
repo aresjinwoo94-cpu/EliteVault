@@ -171,11 +171,21 @@ if (dryRun) {
 console.log(`\nRunning ${files.length} migration(s) against ${ref}…\n`);
 
 let okCount = 0;
+let failed = null;
 for (const f of files) {
   const sql = readFileSync(f, "utf8");
   const name = basename(f);
   const result = await query(sql, name);
-  if (result === null) continue;
+  if (result === null) {
+    // STOP on the first failure. The old runner kept going, which was
+    // survivable when it replayed everything every time — but migrations are
+    // ordered and later ones assume earlier ones landed, so continuing past a
+    // failure produces a half-applied schema AND a ledger that disagrees with
+    // it. Failing loudly at the first bad file is what makes `--status`
+    // trustworthy afterwards.
+    failed = name;
+    break;
+  }
   console.log(`✓ ${name}`);
   okCount++;
   // Record only after the migration itself succeeded, so a failed run never
@@ -190,4 +200,11 @@ for (const f of files) {
 }
 
 console.log(`\n${okCount}/${files.length} applied.`);
-process.exit(okCount === files.length ? 0 : 2);
+if (failed) {
+  console.error(
+    `\n✗ stopped at ${failed}. Nothing after it was attempted, and it was NOT\n` +
+      `  recorded in the ledger. Fix the migration, then re-run — the files that\n` +
+      `  already succeeded will be skipped. \`--status\` shows where you are.`,
+  );
+}
+process.exit(failed ? 2 : 0);
