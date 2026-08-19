@@ -65,12 +65,37 @@ migration.
 | `npm run db:migrate` | applies only what the ledger hasn't recorded |
 | `npm run db:migrate -- --status` | reports, changes nothing |
 | `npm run db:migrate -- --dry-run` | lists what would run, changes nothing |
-| `npm run db:migrate -- --all` | replays everything (safe — see idempotency above) |
+| `npm run db:migrate -- --all` | re-runs everything — **read the warning below** |
+| `npm run db:migrate -- --mark-applied` | records everything WITHOUT running it |
 | `npm run db:migrate -- <file.sql>` | applies one file |
 
-The ledger is a **record, not a lock**: idempotency is still the real
-guarantee, and `--all` exists precisely so a suspected-drifted database can be
-brought back in line by replaying the lot.
+### ⚠ Idempotent DDL is not idempotent DML
+
+The idempotency test covers schema statements. It does **not** claim the data
+statements are replayable, and at least one isn't. `0017_library_expansion.sql`
+contains:
+
+```sql
+update public.winning_sites set status = 'published' where status = 'draft';
+```
+
+That was a no-op the day it was written — nothing was in draft. Today new
+Library stores start as `draft` **on purpose**, pending verification, so
+re-running it would publish every unverified store to users. A migration's DML
+replays against *today's* data, not the data it was written for.
+
+So `--all` is for a database you are certain is empty or fresh. To adopt the
+ledger on an existing database, use `--mark-applied` — it records history
+without executing it — and then prove the schema really matches with:
+
+```bash
+npm run db:doctor
+```
+
+`db:doctor` reads the live schema and doesn't trust the ledger at all, which is
+what makes the recorded claim worth anything.
+
+The ledger is a **record, not a lock**.
 
 The runner now **stops at the first failure**. It used to continue, which was
 survivable when it replayed everything every time — but migrations are ordered

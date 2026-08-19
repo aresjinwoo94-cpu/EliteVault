@@ -5,8 +5,28 @@
  *   npm run db:migrate                    apply every migration not yet recorded
  *   npm run db:migrate -- --status        show what's applied / pending, change nothing
  *   npm run db:migrate -- --dry-run       list what WOULD run, change nothing
- *   npm run db:migrate -- --all           re-apply every migration (they're idempotent)
+ *   npm run db:migrate -- --all           re-run every migration — SEE THE WARNING BELOW
+ *   npm run db:migrate -- --mark-applied  record every migration WITHOUT running it
  *   npm run db:migrate -- <file.sql>      apply one file (always runs, always records)
+ *
+ * # ⚠ --all is NOT safe on a database with real data
+ * The DDL in every migration is idempotent (enforced by
+ * scripts/tests/migrations-idempotent.test.ts). The DML is not, and that check
+ * deliberately doesn't claim otherwise. The clearest example is
+ * 0017_library_expansion.sql:
+ *
+ *     update public.winning_sites set status = 'published' where status = 'draft';
+ *
+ * That was a no-op when it was written (nothing was in draft). Today new
+ * Library stores start as `draft` ON PURPOSE, pending verification — so
+ * re-running it would publish every unverified store to users. Re-running a
+ * migration replays its DML against TODAY's data, not the data it was written
+ * for.
+ *
+ * So: `--all` is for a database you are certain is empty or fresh. To adopt the
+ * ledger on an EXISTING database, use `--mark-applied` (records history without
+ * executing it) and then prove the schema really matches with `npm run db:doctor`,
+ * which reads the live schema and doesn't trust the ledger at all.
  *
  * The Management API needs a Personal Access Token (SUPABASE_PAT in
  * .env.local) — that's how the dashboard SQL editor authenticates too.
@@ -74,6 +94,7 @@ const explicitFile = argv.find((a) => !a.startsWith("--"));
 const statusOnly = flags.has("--status");
 const dryRun = flags.has("--dry-run");
 const runAll = flags.has("--all");
+const markApplied = flags.has("--mark-applied");
 
 // ── The ledger ─────────────────────────────────────────────────────────────
 // Created before anything else, and itself idempotent, so a database that has
@@ -138,6 +159,40 @@ if (statusOnly) {
     );
   }
   process.exit(0);
+}
+
+// ── --mark-applied: adopt the ledger on an existing database ───────────────
+// Records history WITHOUT executing it. This is how you start using the ledger
+// on a database that has already had these migrations run by hand — the
+// alternative (`--all`) would replay their DML against today's data. Verify the
+// claim afterwards with `npm run db:doctor`, which reads the live schema and
+// doesn't trust the ledger.
+if (markApplied) {
+  const toMark = allFiles.filter((f) => !applied.has(f));
+  if (toMark.length === 0) {
+    console.log("\nEvery migration is already recorded — nothing to mark.\n");
+    process.exit(0);
+  }
+  console.log(`\nRecording ${toMark.length} migration(s) as applied WITHOUT running them.\n`);
+  let marked = 0;
+  for (const f of toMark) {
+    const sql = readFileSync(join("supabase/migrations", f), "utf8");
+    const ok = await query(
+      `insert into public.schema_migrations (filename, checksum)
+       values ('${f.replace(/'/g, "''")}', '${checksum(sql)}')
+       on conflict (filename) do nothing;`,
+      `ledger: mark ${f}`,
+    );
+    if (ok !== null) {
+      console.log(`· recorded ${f}`);
+      marked++;
+    }
+  }
+  console.log(
+    `\n${marked}/${toMark.length} recorded. Nothing was executed.\n` +
+      `Now run \`npm run db:doctor\` to verify the live schema actually matches.\n`,
+  );
+  process.exit(marked === toMark.length ? 0 : 2);
 }
 
 // ── Choose the work ────────────────────────────────────────────────────────
