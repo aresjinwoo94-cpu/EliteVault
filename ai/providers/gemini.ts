@@ -60,6 +60,25 @@ const MODEL_STABLE = process.env.GEMINI_MODEL_STABLE ?? "gemini-2.5-flash";
 // time to recover anyway, and the worst case is we hit 429 once and
 // re-mark the cooldown.
 
+/**
+ * Drop repeated key VALUES.
+ *
+ * The same key pasted into two env slots is pure cost: rotation treats them as
+ * two independent chances, so a 429 on one is followed by a guaranteed 429 on
+ * the other — a real API round-trip spent proving something already known,
+ * inside a step budget the vision call needs.
+ *
+ * This can only catch LITERAL duplicates. It cannot catch the more common and
+ * more expensive mistake: several DIFFERENT keys minted inside the SAME Google
+ * project. Those look distinct here but share one 15 RPM bucket, so rotation
+ * burns one round-trip per key discovering the same exhausted quota. Nothing in
+ * the key string reveals its project, so the guard for that is the warning in
+ * the rotation path plus the setup note above: one key per project.
+ */
+export function dedupeKeys(keys: string[]): string[] {
+  return [...new Set(keys.map((k) => k.trim()).filter(Boolean))];
+}
+
 function loadKeys(): string[] {
   const keys: string[] = [];
   const primary = process.env.GEMINI_API_KEY;
@@ -68,7 +87,14 @@ function loadKeys(): string[] {
     const k = process.env[`GEMINI_API_KEY_${i}`];
     if (k && k.trim()) keys.push(k.trim());
   }
-  return keys;
+  const unique = dedupeKeys(keys);
+  if (unique.length < keys.length) {
+    console.warn(
+      `[gemini] ${keys.length - unique.length} duplicate API key value(s) ignored — ` +
+        `rotation only helps when each key is a DIFFERENT key in a DIFFERENT Google project.`,
+    );
+  }
+  return unique;
 }
 
 const KEYS = loadKeys();
@@ -341,6 +367,23 @@ async function generateStructured<T>(
           throw err;
         }
       }
+    }
+
+    // Every key in the pool answered 429 for this model. With keys spread one
+    // per Google project that means the account is genuinely saturated — but it
+    // is ALSO exactly what a misconfigured pool looks like, because free-tier
+    // quota is per PROJECT: several keys minted inside one project share a
+    // single 15 RPM bucket, so rotation pays a round-trip per key to rediscover
+    // the same exhaustion. That misconfiguration is invisible in the Vercel env
+    // list (the names look right) and invisible in the AI Studio key list (the
+    // keys are real). This log is the one place it can surface, so say it here
+    // rather than leave it to be diagnosed from a latency graph weeks later.
+    if (attemptedKeys >= KEYS.length && KEYS.length > 1) {
+      console.warn(
+        `[gemini] all ${KEYS.length} keys returned 429 for ${model}. If they are not each ` +
+          `in a SEPARATE Google project they share one 15 RPM quota, and the pool is ` +
+          `spending ${KEYS.length} round-trips to learn that. See ai/providers/gemini.ts setup notes.`,
+      );
     }
 
     // ── All keys are on cooldown. Wait for soonest recovery + 1 retry. ──
