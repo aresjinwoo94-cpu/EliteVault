@@ -10,7 +10,12 @@ import {
 } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
-import { PLANS, type PlanTier, type Interval } from "@/lib/stripe/plans";
+import {
+  PLANS,
+  type PlanTier,
+  type Interval,
+  type PlanFeature,
+} from "@/lib/stripe/plans";
 import { EmbeddedCheckoutForm } from "@/components/billing/embedded-checkout";
 import { formatCurrency } from "@/lib/utils";
 
@@ -145,9 +150,9 @@ export default async function CheckoutPage({
               </p>
               <ul className="space-y-2.5">
                 {plan.features
-                  .filter((f) => f.included)
+                  .filter((f: PlanFeature) => f.included)
                   .slice(0, 6)
-                  .map((f) => (
+                  .map((f: PlanFeature) => (
                     <li
                       key={f.text}
                       className="flex items-start gap-2.5 text-sm text-white/80"

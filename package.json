@@ -14,6 +14,8 @@
     "stripe:seed": "tsx scripts/seed-stripe.ts",
     "db:seed": "tsx scripts/seed-db.ts",
     "db:migrate": "node scripts/db-migrate.mjs",
+    "db:doctor": "node scripts/db-doctor.mjs",
+    "db:types": "node scripts/db-types.mjs",
     "inngest:dev": "npx inngest-cli@latest dev",
     "library:expand": "tsx scripts/expand-library.ts",
     "library:thumbs": "tsx scripts/snapshot-library-thumbnails.mts",

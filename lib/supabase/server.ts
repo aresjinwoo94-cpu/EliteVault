@@ -1,7 +1,7 @@
 import "server-only";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { type Database } from "./types";
+import { type Database, type CookiesToSet } from "./types";
 
 /**
  * Server-side Supabase client bound to the current request's cookies.
@@ -18,7 +18,7 @@ export async function createSupabaseServerClient() {
         getAll() {
           return cookieStore.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: CookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options as CookieOptions),
