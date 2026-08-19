@@ -70,12 +70,22 @@ export function growthMapHistoryEnabled(): boolean {
 /**
  * Growth Map issue diff across runs (master brief §D).
  *
- * DEFAULT OFF. When ON — and the previous run for this domain persisted issue
- * snapshots — the map opens the return visit with "what changed since {date}":
- * resolved issues (with the stage they unlock), newly introduced ones, and the
- * stage move as a secondary line. Requires growth_map_history.issues (migration
- * 0025) and GROWTH_MAP_HISTORY on (so points accumulate). OFF ⇒ current
- * behavior, byte-identical. Pure/deterministic: 0 tokens, no AI, no latency.
+ * DEFAULT OFF — and as of WP-D, turning it ON no longer shows anything.
+ *
+ * It used to open the return visit with a "what changed since {date}" banner.
+ * That banner was removed: the diff compares issues the MODEL reported between
+ * two runs, so a run that never saw the store (a Cloudflare interstitial
+ * captured instead of the site) turned hallucinated findings into what read as
+ * a factual changelog.
+ *
+ * The flag and its data path are deliberately left in place — build.ts still
+ * computes movement.issueDelta from the migration-0025 snapshots — because the
+ * diff itself is sound; what it needed was a way to know the run was blind.
+ * WP-A adds exactly that signal (capture_blocked), which is what a future
+ * re-introduction would have to gate on.
+ *
+ * Until then, ON only costs a DB read and some CPU whose output nothing
+ * renders. If it's set to true in the hosting environment, set it to false.
  */
 export function growthMapIssueDiffEnabled(): boolean {
   return enabled("GROWTH_MAP_ISSUE_DIFF", false);

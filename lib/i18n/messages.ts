@@ -352,7 +352,10 @@ const en: Dict = {
     // first-time user it's unexplained jargon, so the visible copy now says what
     // it means. The HBR statistic stays (it's evidence); only the NAME goes.
     // Kept short: this is a badge prefix rendered as "{wallPrefix} · Ad-ready".
-    wallPrefix: "Where stores stall",
+    // Short and neutral on purpose: it renders as "{wallPrefix} · Ad-ready", and
+    // a second-person phrasing there ("Where you stall · Ad-ready") reads as a
+    // contradiction rather than a label followed by a verdict.
+    wallPrefix: "Stall point",
     wallAdReady: "Ad-ready",
     wallAdAlmost: "Almost ad-ready",
     wallAdNot: "Not ad-ready",
@@ -1046,15 +1049,21 @@ const es: Dict = {
     // visible ahora dice lo que quiere decir. El dato de HBR se queda (es
     // evidencia); lo que se va es el NOMBRE. Corto: es el prefijo de un badge
     // que se renderiza como "{wallPrefix} · Listo para ads".
-    wallPrefix: "Donde te estancas",
+    // Mismo registro que el inglés: es una etiqueta seguida de un veredicto
+    // ("Punto de estancamiento · Listo para ads"), no una frase dirigida al
+    // lector — en segunda persona el badge se lee como una contradicción.
+    wallPrefix: "Punto de estancamiento",
     wallAdReady: "Listo para ads",
     wallAdAlmost: "Casi listo para ads",
     wallAdNot: "No listo para ads",
     // WP-E — estas tres estaban hardcodeadas en inglés en growth-map.tsx y
     // nunca pasaban por t(), así que un lector en español las veía en inglés.
     wallOneStep: "— a un paso de donde te estancas",
-    wallCrossed: "· ya pasaste el estancamiento",
-    movementAdvanced: "· avanzó",
+    // Ambas salen del MISMO badge, en ramas hermanas del ternario, así que
+    // tienen que hablarle al lector con la misma voz: "superaste"/"avanzaste",
+    // no "superaste"/"avanzó". Y "superar" es lo idiomático aquí, no "pasar".
+    wallCrossed: "· ya superaste el estancamiento",
+    movementAdvanced: "· avanzaste",
     youreAtPrefix: "Estás en",
   },
   analyzerDemo: {

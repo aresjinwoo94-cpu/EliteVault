@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { messages } from "../../lib/i18n/messages";
 
@@ -19,13 +19,20 @@ import { messages } from "../../lib/i18n/messages";
 
 const ROOT = process.cwd();
 
-/** Files whose string content reaches a user's screen. */
+/**
+ * Files whose string content reaches a user's screen.
+ *
+ * The growth-map components are enumerated from disk rather than listed, so a
+ * component added later is covered automatically — a hardcoded list silently
+ * stops guarding the moment someone adds a file to that directory.
+ */
+const GROWTH_MAP_DIR = "components/analyzer/growth-map";
 const RENDER_SURFACES = [
   "lib/i18n/messages.ts",
   "lib/growth-map/phrase-bank.ts",
-  "components/analyzer/growth-map/growth-map.tsx",
-  "components/analyzer/growth-map/map-canvas.tsx",
-  "components/analyzer/growth-map/node-card.tsx",
+  ...readdirSync(join(ROOT, GROWTH_MAP_DIR))
+    .filter((f) => f.endsWith(".tsx"))
+    .map((f) => `${GROWTH_MAP_DIR}/${f}`),
 ];
 
 /**
@@ -104,7 +111,14 @@ test("the Spanish locale no longer inherits English for the map hooks", () => {
 
 test("WP-D: growth-map.tsx no longer renders the 'what changed' banner", () => {
   const src = strippedSource("components/analyzer/growth-map/growth-map.tsx");
-  for (const key of ["changedSince", "changedResolved", "changedNew", "changedStageLine"]) {
+  for (const key of [
+    "changedSince",
+    "changedResolved",
+    "changedNew",
+    "changedStillOpen",
+    "changedStageLine",
+    "changedStageFlat",
+  ]) {
     assert.doesNotMatch(
       src,
       new RegExp(key),
