@@ -40,11 +40,10 @@
  * lib/quota/guard.ts survived unnoticed. `public.schema_migrations` makes the
  * applied set a fact you can query instead of a belief.
  *
- * The ledger is a RECORD, not a lock. Idempotency stays the real guarantee —
- * `--all` exists so a suspected-drifted database can be brought back in line by
- * replaying everything, and `scripts/tests/migrations-idempotent.test.ts` keeps
- * that safe. A checksum is stored per file so an edited migration is reported
- * rather than silently skipped.
+ * The ledger is a RECORD, not a lock — see the --all warning above for why it
+ * is not a substitute for knowing what a migration's DML does. A checksum is
+ * stored per file so an edited migration is reported rather than silently
+ * skipped.
  */
 import { readFileSync, readdirSync } from "node:fs";
 import { join, basename } from "node:path";
@@ -192,6 +191,9 @@ if (markApplied) {
     `\n${marked}/${toMark.length} recorded. Nothing was executed.\n` +
       `Now run \`npm run db:doctor\` to verify the live schema actually matches.\n`,
   );
+  // exit(), not exitCode: this is top-level module code, so there is no return
+  // to fall back on — setting exitCode alone would drop through into the
+  // apply path below and actually run the migrations we just chose not to.
   process.exit(marked === toMark.length ? 0 : 2);
 }
 

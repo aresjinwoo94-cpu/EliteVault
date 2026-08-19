@@ -119,11 +119,18 @@ for (const file of readdirSync("supabase/migrations")
 }
 
 // ── What the database really has ───────────────────────────────────────────
+// BASE TABLE only. Views are derived objects created with `create or replace
+// view`, so they're never in the expected set and would otherwise every one of
+// them show up as EXTRA — noise that makes a clean report look dirty.
 const rows = await query(
-  `select table_name, column_name
-     from information_schema.columns
-    where table_schema = 'public'
-    order by table_name, ordinal_position;`,
+  `select c.table_name, c.column_name
+     from information_schema.columns c
+     join information_schema.tables t
+       on t.table_schema = c.table_schema
+      and t.table_name = c.table_name
+    where c.table_schema = 'public'
+      and t.table_type = 'BASE TABLE'
+    order by c.table_name, c.ordinal_position;`,
 );
 
 const actual = new Map();
@@ -149,7 +156,11 @@ for (const [table, cols] of [...expected].sort()) {
   for (const c of [...live].sort()) if (!cols.has(c)) extraColumns.push(`${table}.${c}`);
 }
 
-const extraTables = [...actual.keys()].filter((t) => !expected.has(t)).sort();
+// The ledger is created by the migration RUNNER, not by a migration, so it is
+// expected to be here and is not worth reporting as a surprise.
+const extraTables = [...actual.keys()]
+  .filter((t) => !expected.has(t) && t !== "schema_migrations")
+  .sort();
 
 if (missingTables.length) {
   console.log("MISSING TABLES — the migrations define these, the database doesn't have them:");
@@ -178,4 +189,7 @@ if (drift === 0) {
 } else {
   console.log("\n✗ Drift found. Fix with `npm run db:migrate`, then re-run this.\n");
 }
-process.exit(drift === 0 ? 0 : 1);
+// exitCode, not process.exit(): forcing exit while the fetch keep-alive socket
+// is still open trips a libuv assertion on Windows, which turns a clean report
+// into a scary-looking crash. Let the event loop drain instead.
+process.exitCode = drift === 0 ? 0 : 1;
