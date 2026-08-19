@@ -94,6 +94,63 @@ const DEFAULT_CAPTURE_BUDGET_MS = (() => {
   return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 45_000;
 })();
 
+/**
+ * WP-2 — in-memory circuit breaker for an EXHAUSTED ScreenshotOne quota.
+ *
+ * On the free tier (100 captures/month) every audit past the cap still pays a
+ * full request to ScreenshotOne just to be refused — ~2s, doubled by the
+ * www-flip retry below — before falling through to thum.io. That's ~4s of
+ * guaranteed-wasted budget on EVERY audit, taken straight out of the 50s step
+ * deadline that the vision call needs.
+ *
+ * Once ScreenshotOne itself tells us the quota is gone (`screenshots_limit_reached`),
+ * we stop asking for a while. Same shape as the Gemini provider's per-key
+ * `cooldownUntil`: module state, so it's per-lambda, self-healing on expiry and
+ * automatically clean on a cold start. It changes no OUTPUT — the skipped call
+ * was going to fail — only how long we wait to learn that.
+ *
+ * Tune with SCREENSHOTONE_EXHAUSTED_COOLDOWN_MINUTES; 0 disables the breaker
+ * and always tries ScreenshotOne (the pre-WP-2 behaviour).
+ */
+function exhaustedCooldownMs(): number {
+  // Read at call time, not module load, so the cooldown can be changed on the
+  // hosting platform without a rebuild — same rule as lib/flags.ts.
+  const raw = Number(process.env.SCREENSHOTONE_EXHAUSTED_COOLDOWN_MINUTES);
+  const minutes = Number.isFinite(raw) && raw >= 0 ? raw : 10;
+  return minutes * 60_000;
+}
+
+/**
+ * ScreenshotOne's own vocabulary for "you're out of captures". Matched against
+ * its `error_code`, and against the message we throw carrying that code.
+ */
+function isQuotaError(text: string | undefined): boolean {
+  return /limit_reached|quota/i.test(text ?? "");
+}
+
+let screenshotOneExhaustedUntil = 0;
+
+export const screenshotOneCircuit = {
+  /** True while we're skipping ScreenshotOne because its quota is spent. */
+  isOpen(): boolean {
+    return Date.now() < screenshotOneExhaustedUntil;
+  },
+  /** Called when ScreenshotOne reports the quota is gone. */
+  trip(): void {
+    const cooldown = exhaustedCooldownMs();
+    if (cooldown <= 0) return;
+    screenshotOneExhaustedUntil = Date.now() + cooldown;
+  },
+  /**
+   * Called on any successful ScreenshotOne capture. Matters because the offline
+   * library jobs call captureWithScreenshotOne directly and can therefore prove
+   * the quota is back before the breaker would have expired on its own.
+   */
+  reset(): void {
+    screenshotOneExhaustedUntil = 0;
+  },
+};
+
 // Empirically, real screenshots at 1440x900 are 80KB-2MB. The mshots
 // "Generating Preview..." placeholder is ~16-22KB. Anything under this
 // threshold is almost certainly a placeholder or a corrupt download.
@@ -165,7 +222,14 @@ export async function captureScreenshot(
   const MIN_USEFUL_MS = 5_000;
 
   // Provider 1: ScreenshotOne (paid, best quality)
-  if (process.env.SCREENSHOTONE_ACCESS_KEY) {
+  if (process.env.SCREENSHOTONE_ACCESS_KEY && screenshotOneCircuit.isOpen()) {
+    // WP-2 — quota already known to be spent. Skipping straight to thum.io
+    // hands the ~4s this would have burned back to the vision call.
+    console.warn(
+      "[screenshot] ScreenshotOne skipped — quota exhausted, cooling down",
+    );
+    errors.push("ScreenshotOne: skipped (quota exhausted, cooling down)");
+  } else if (process.env.SCREENSHOTONE_ACCESS_KEY) {
     // Retry once on the flipped-www host before degrading to a weaker
     // provider. Measured: www.burrow.com → HTTP 500 but burrow.com → 200 with
     // a 3.6MB shot. A store recorded on the "wrong" host would otherwise fall
@@ -183,7 +247,17 @@ export async function captureScreenshot(
         const msg = (err as Error).message;
         console.warn(`[screenshot] ScreenshotOne failed (${candidate}): ${msg}`);
         errors.push(`ScreenshotOne(${candidate}): ${msg}`);
-        // fall through: try the alt host, then the next provider
+        // WP-2 — if THIS failure was the quota running out, the www-flip retry
+        // is guaranteed to be refused too (the cap is per account, not per
+        // host). Stop here instead of spending another ~2s proving it.
+        //
+        // Keyed off the error WE just caught, not off the shared breaker: a
+        // concurrent audit in the same lambda could have tripped that between
+        // our two attempts, and then an unrelated failure here (the documented
+        // www.burrow.com HTTP 500) would skip the alt-host retry that was
+        // about to succeed.
+        if (isQuotaError(msg)) break;
+        // otherwise fall through: try the alt host, then the next provider
       }
     }
   }
@@ -371,10 +445,12 @@ export async function captureWithScreenshotOne(
     try {
       const j = (await res.json()) as { error_code?: string; error_message?: string };
       if (j?.error_code) detail = ` ${j.error_code}`;
-      if (/limit_reached|quota/i.test(j?.error_code ?? "")) {
+      if (isQuotaError(j?.error_code)) {
         console.error(
           "[screenshot] ScreenshotOne QUOTA EXHAUSTED — every audit is now on the slow fallback chain. Upgrade the plan or set MICROLINK_API_KEY.",
         );
+        // WP-2 — stop paying for this refusal on every subsequent audit.
+        screenshotOneCircuit.trip();
       }
     } catch {
       /* non-JSON error body — keep the status only */
@@ -385,6 +461,8 @@ export async function captureWithScreenshotOne(
   if (buf.length < MIN_REAL_SHOT_BYTES) {
     throw new Error(`Suspiciously small response (${buf.length}b)`);
   }
+  // WP-2 — proof the quota is available; close the breaker if it was open.
+  screenshotOneCircuit.reset();
   return { base64: buf.toString("base64"), mediaType: "image/jpeg" };
 }
 

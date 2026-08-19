@@ -6,6 +6,14 @@ import { AnalysisView } from "@/components/analyzer/analysis-view";
 import { AnonPending } from "@/components/analyzer/anon-pending";
 import { loadNicheWinnersModule } from "@/lib/library/niche-winners";
 import { analyzerMapSpineEnabled } from "@/lib/flags";
+import type { DiscoverySignals } from "@/lib/analyzer/discovery-signals";
+
+/**
+ * The row is read as a loose `Record<string, unknown>` (see below), so the
+ * WP-3 signals column arrives untyped. It's written only by our own pipeline
+ * from a typed value, and the component renders each field defensively.
+ */
+type AnonPendingSignals = DiscoverySignals | null;
 
 // A per-session result page — never indexed, always fresh.
 export const metadata: Metadata = {
@@ -77,6 +85,12 @@ export default async function AnonAuditPage({
           id: row.id,
           status: row.status,
           url: row.url,
+          // WP-3 — seed the waiting screen from the row we already read, so a
+          // page refresh mid-run shows the capture immediately instead of
+          // waiting for the next poll.
+          screenshot_url: (row.screenshot_url as string | null) ?? null,
+          discovery_signals:
+            (row.discovery_signals as AnonPendingSignals) ?? null,
           preview_score: row.preview_score ?? null,
           preview_summary: row.preview_summary ?? null,
           error: row.error ?? null,

@@ -8,6 +8,11 @@ import {
   writeScreenshotCache,
 } from "@/lib/screenshot-cache";
 import { discoverSite } from "@/lib/site-discovery";
+import { summarizeDiscovery } from "@/lib/analyzer/discovery-signals";
+import {
+  readDiscoveryCache,
+  writeDiscoveryCache,
+} from "@/lib/discovery-cache";
 import { runAnalyzerAgent } from "@/ai/agents/analyzer-agent";
 import { withDerivedScore } from "@/lib/analyzer/derive-score";
 import { scenarioMidpoints } from "@/lib/analyzer/conversion-scenarios";
@@ -19,7 +24,7 @@ import { buildNicheWinnersFromScreenshot } from "@/lib/library/niche-winners";
 // auto-run on every analysis.
 import type { BuyerPersona } from "@/lib/supabase/types";
 import { startDeadline, isDeadlineError } from "@/lib/deadline";
-import { quickScoreEnabled } from "@/lib/flags";
+import { quickScoreEnabled, nicheWinnersEnabled } from "@/lib/flags";
 
 /**
  * How many audits may run at once, globally.
@@ -144,6 +149,17 @@ export const analyzeWebsite = inngest.createFunction(
     });
     const service = createSupabaseServiceClient();
 
+    // WP-4 — deliberately left as its OWN step rather than folded into the
+    // start of capture-screenshot.
+    //
+    // The fusion would save one orchestration round-trip (~300ms), but
+    // capture-screenshot is the step most likely to be RETRIED (bot-blocked
+    // stores, provider timeouts). Folding the write in would re-stamp
+    // started_at on each attempt, which moves two things the client can see:
+    // the "Ns elapsed" counter on the analyzing screen, and the 8-minute
+    // stale-job threshold in app/api/analyses/[id]. Durability beats 300ms —
+    // and this is the one write whose whole job is to say "we started when we
+    // said we started".
     await step.run("mark-running", async () => {
       await service
         .from("analyses")
@@ -245,7 +261,26 @@ export const analyzeWebsite = inngest.createFunction(
       step.run("discover-site", async () => {
         if (!url) return null;
         try {
-          return await discoverSite(url);
+          // WP-1 — reuse the parsed page content for a store audited recently
+          // (same pattern as the screenshot cache above). A miss, an expired
+          // row, or a database without migration 0031 all return null and fall
+          // through to the normal fetch, so this can only ever save time.
+          const cached = await readDiscoveryCache(service, url);
+          if (cached) {
+            console.log("[analyzer] discovery cache hit");
+            await persistDiscoverySignals(service, analysisId, cached);
+            return cached;
+          }
+          const found = await discoverSite(url);
+          // WP-3 — persist the display-ready projection so the analyzing
+          // screen can show what we already know while the vision call runs.
+          // Inside this step on purpose: it costs no extra Inngest round-trip,
+          // and this step runs in parallel with the (slower) capture, so the
+          // write lands off the critical path. Best-effort in every sense —
+          // see persistDiscoverySignals.
+          await persistDiscoverySignals(service, analysisId, found);
+          await writeDiscoveryCache(service, url, found);
+          return found;
         } catch (err) {
           console.warn("[analyzer] discovery skipped:", (err as Error).message);
           return null;
@@ -492,9 +527,18 @@ export const analyzeWebsite = inngest.createFunction(
     // Detects the store's niche from the screenshot and ranks the genuinely
     // closest Library winners against it. Best-effort and self-contained: a
     // failure yields null and the (already-succeeded) audit stands.
-    // buildNicheWinnersFromScreenshot short-circuits when the winners flag is
-    // off, so it costs zero AI calls in the default configuration.
-    const nicheMatch = await step.run("match-niche-winners", async () => {
+    //
+    // WP-4 — the FLAG is now checked before the step, not just inside it.
+    // buildNicheWinnersFromScreenshot already short-circuits on the flag, so
+    // this cost no AI calls when off — but the step still ran, which meant an
+    // orchestration round-trip AND re-downloading the multi-MB screenshot to
+    // hand it to a function that immediately returns null. That doesn't delay
+    // THIS user (save-result already fired), it holds the global concurrency
+    // slot open, which under a burst is what makes the NEXT user queue. Same
+    // gating shape as quick-score above.
+    const nicheMatch = !nicheWinnersEnabled()
+      ? null
+      : await step.run("match-niche-winners", async () => {
       try {
         const base64 = await urlToBase64(screenshot.publicUrl);
         const match = await buildNicheWinnersFromScreenshot({
@@ -519,7 +563,7 @@ export const analyzeWebsite = inngest.createFunction(
         );
         return null;
       }
-    });
+        });
 
     // Persist the real niche match (tech-fixes §2) in a SEPARATE, best-effort
     // write — deliberately AFTER the audit is already marked succeeded and
@@ -556,10 +600,15 @@ export const analyzeWebsite = inngest.createFunction(
     // Activation (Phase 5): stamp time-to-first-value the first time a user
     // reaches a successful audit, and kick off the delayed follow-up email.
     // Additive — never affects the audit result itself.
-    const firstValue = await step.run("mark-first-value", async () => {
-      // Anonymous audits (userId null) have no profile to stamp and no
-      // activation email to send — they haven't converted to an account yet.
-      if (!userId) return false;
+    //
+    // WP-4 — the userId check moved OUT of the step. An anonymous audit has no
+    // profile to stamp, so this was a step whose entire body was `return false`
+    // and which still cost a full orchestration round-trip. Anonymous audits
+    // are the top of the activation funnel and the highest-volume path, so
+    // that's the one where the wasted round-trip mattered most.
+    const firstValue = !userId
+      ? false
+      : await step.run("mark-first-value", async () => {
       const { data: prof } = await service
         .from("profiles")
         .select("first_value_at")
@@ -575,11 +624,11 @@ export const analyzeWebsite = inngest.createFunction(
         return true;
       }
       return false;
-    });
+        });
 
     if (firstValue) {
-      // `firstValue` is only true for an OWNED audit (mark-first-value returns
-      // false when userId is null), so userId is non-null here.
+      // `firstValue` is only true for an OWNED audit (the step above doesn't
+      // run at all when userId is null), so userId is non-null here.
       await step.sendEvent("activation-first-value", {
         name: "activation/first-value",
         data: {
@@ -594,6 +643,44 @@ export const analyzeWebsite = inngest.createFunction(
     return { analysisId, score: result.score };
   },
 );
+
+/**
+ * WP-3 — persist the compact discovery signals for the analyzing screen.
+ *
+ * Deliberately unable to fail the audit, on two independent levels:
+ *   1. `discovery_signals` comes from migration 0030, applied as a manual ops
+ *      step. On an un-migrated database the update returns a missing-column
+ *      ERROR rather than throwing — checked and logged, never propagated. This
+ *      is the same fail-open shape as persist-niche-match (migration 0022), and
+ *      the reason it isn't folded into a required write.
+ *   2. Anything unexpected is caught. A cosmetic waiting-screen enrichment must
+ *      never be the reason a paid audit refunds.
+ */
+async function persistDiscoverySignals(
+  service: ReturnType<typeof createSupabaseServiceClient>,
+  analysisId: string,
+  discovery: Awaited<ReturnType<typeof discoverSite>> | null,
+): Promise<void> {
+  try {
+    const signals = summarizeDiscovery(discovery);
+    if (!signals) return;
+    const { error } = await service
+      .from("analyses")
+      .update({ discovery_signals: signals } as never)
+      .eq("id", analysisId);
+    if (error) {
+      console.warn(
+        "[analyzer] discovery signals not persisted (migration 0030 applied?):",
+        error.message,
+      );
+    }
+  } catch (err) {
+    console.warn(
+      "[analyzer] discovery signals skipped:",
+      (err as Error).message,
+    );
+  }
+}
 
 /**
  * Cheap niche label from the store's hostname (e.g. "acme.com" → "acme"), with a

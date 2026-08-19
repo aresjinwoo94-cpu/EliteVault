@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import { Layers } from "lucide-react";
+import { Layers, ShieldCheck, Star, Store, Tag } from "lucide-react";
+import type { DiscoverySignals } from "@/lib/analyzer/discovery-signals";
 
 // v3.9.3 — phase list reflects the FULL audit pipeline so the user
 // understands the analyzer doesn't just look at the screenshot, it also
@@ -25,6 +26,8 @@ export function AnalyzingState({
   startedAt,
   previewScore,
   previewSummary,
+  screenshotUrl,
+  signals,
 }: {
   status: "queued" | "running";
   startedAt: string | null;
@@ -32,6 +35,18 @@ export function AnalyzingState({
   // audit (20-60s) is still running, to cut abandonment on the wait.
   previewScore?: number | null;
   previewSummary?: string | null;
+  /**
+   * WP-3 — progressive reveal. Both of these land within the first seconds of
+   * the run and are polled in, so the wait stops being a blank spinner:
+   * `screenshotUrl` is persisted by the capture step (the user sees their own
+   * store), `signals` by the discovery step (what we already read off the page).
+   *
+   * Neither costs an AI call — they're already-paid-for work, previously just
+   * invisible until the very end. Both are optional: when they're absent this
+   * component renders exactly as it did before.
+   */
+  screenshotUrl?: string | null;
+  signals?: DiscoverySignals | null;
 }) {
   const [phaseIdx, setPhaseIdx] = useState(0);
   const [secs, setSecs] = useState(0);
@@ -88,6 +103,15 @@ export function AnalyzingState({
           </p>
         )}
 
+        {/* WP-3 — the capture lands seconds in; show it. Seeing your own store
+            being scanned is the difference between "is this working?" and
+            "it's working". Nothing here changes the audit. */}
+        {screenshotUrl && <CapturedShot url={screenshotUrl} />}
+
+        {/* WP-3 — what discovery already read off the page. Facts, not
+            estimates: the module drops anything it couldn't actually find. */}
+        {signals && <SignalChips signals={signals} />}
+
         {/*
           P1.2 — instant teaser. The moment the fast preliminary score
           lands (a few seconds in), we surface it here so the user sees a
@@ -142,6 +166,123 @@ export function AnalyzingState({
       </div>
     </Card>
   );
+}
+
+/**
+ * WP-3 — the captured screenshot, mid-audit.
+ *
+ * The capture step persists `screenshot_url` and the report page polls every
+ * 1.5s, so this appears ~5-15s into a run that takes ~30-50s. Deliberately
+ * presented as work-in-progress: dimmed, with a scan sweep passing over it, so
+ * it reads as "we're looking at this" and never as a finished report.
+ *
+ * Capped in height — a full-page capture is up to 4500px tall and would push
+ * the phase text and the elapsed timer off screen.
+ */
+function CapturedShot({ url }: { url: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="mt-8 mx-auto max-w-2xl"
+    >
+      <div className="relative overflow-hidden rounded-xl border border-white/10 bg-obsidian-950 max-h-64 md:max-h-80">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={url}
+          alt="Screenshot captured from your store, being analyzed"
+          className="block w-full h-auto opacity-60"
+        />
+        {/* Fade the bottom edge — a tall capture is cropped, and a hard cut
+            looks like a broken image rather than a deliberate crop. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-obsidian-950 to-transparent" />
+        <motion.div
+          aria-hidden
+          animate={{ y: ["-10%", "110%"] }}
+          transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+          className="pointer-events-none absolute inset-x-0 h-16 bg-gradient-to-b from-transparent via-signal-500/20 to-transparent"
+        />
+      </div>
+      <p className="mt-2 text-[11px] text-white/35">
+        Captured — reading the page now
+      </p>
+    </motion.div>
+  );
+}
+
+/**
+ * WP-3 — the facts discovery already pulled off the page, as chips.
+ *
+ * Every value here was scraped, not estimated (see
+ * lib/analyzer/discovery-signals.ts), which is why it can be shown before the
+ * audit finishes without competing with the final score: none of it IS the
+ * score. It's evidence that the analyzer is reading the whole store, not just
+ * the screenshot — the same reassurance the "entire page" pill makes in words.
+ */
+function SignalChips({ signals }: { signals: DiscoverySignals }) {
+  const chips: { icon: ReactNode; label: string }[] = [];
+
+  if (signals.rating) {
+    chips.push({
+      icon: <Star className="size-3 text-champagne-300" />,
+      label: signals.rating,
+    });
+  }
+  if (signals.priceRange) {
+    chips.push({
+      icon: <Tag className="size-3 text-champagne-300" />,
+      label: signals.priceRange,
+    });
+  }
+  if (signals.platform && signals.platform !== "custom") {
+    chips.push({
+      icon: <Store className="size-3 text-champagne-300" />,
+      label: capitalize(signals.platform),
+    });
+  }
+  for (const claim of signals.trust) {
+    chips.push({
+      icon: <ShieldCheck className="size-3 text-champagne-300" />,
+      label: claim,
+    });
+  }
+  if (signals.pages > 1) {
+    chips.push({
+      icon: <Layers className="size-3 text-champagne-300" />,
+      label: `${signals.pages} pages read`,
+    });
+  }
+
+  if (chips.length === 0) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="mt-5"
+    >
+      <p className="text-[10px] uppercase tracking-widest text-white/30">
+        Detected so far
+      </p>
+      <div className="mt-2.5 flex flex-wrap items-center justify-center gap-2">
+        {chips.map((chip) => (
+          <span
+            key={chip.label}
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[11px] text-white/65"
+          >
+            {chip.icon}
+            {chip.label}
+          </span>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function BackgroundOrbs() {

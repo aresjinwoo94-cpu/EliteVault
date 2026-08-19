@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AnalyzingState } from "./analyzing-state";
 import { useT } from "@/components/i18n/locale-provider";
+import type { DiscoverySignals } from "@/lib/analyzer/discovery-signals";
 
 /**
  * Pending / failed state for an anonymous audit. While the audit runs it polls
@@ -22,6 +23,8 @@ export function AnonPending({
     id: string;
     status: "queued" | "running" | "failed" | "refunded";
     url: string | null;
+    screenshot_url?: string | null;
+    discovery_signals?: DiscoverySignals | null;
     preview_score: number | null;
     preview_summary: string | null;
     error: string | null;
@@ -33,6 +36,21 @@ export function AnonPending({
   const isWorking = initial.status === "queued" || initial.status === "running";
   const isFailed = initial.status === "failed" || initial.status === "refunded";
 
+  /**
+   * WP-3 — the poller used to throw away everything but `status`. The screenshot
+   * and the discovery signals arrive seconds into the run, well before the audit
+   * finishes, so we now keep them: this is a cold visitor's first experience of
+   * the product and the wait is where they leave. Purely additive — no extra
+   * request (same poll, same endpoint), no AI call.
+   */
+  const [live, setLive] = useState<{
+    screenshotUrl: string | null;
+    signals: DiscoverySignals | null;
+  }>({
+    screenshotUrl: initial.screenshot_url ?? null,
+    signals: initial.discovery_signals ?? null,
+  });
+
   useEffect(() => {
     if (!isWorking) return;
     let alive = true;
@@ -42,8 +60,18 @@ export function AnonPending({
           cache: "no-store",
         });
         if (!res.ok) return;
-        const next = (await res.json()) as { status: string };
+        const next = (await res.json()) as {
+          status: string;
+          screenshot_url?: string | null;
+          discovery_signals?: DiscoverySignals | null;
+        };
         if (!alive) return;
+        setLive((prev) => ({
+          // Never un-reveal: once shown, a null on a later poll (or a row read
+          // mid-write) must not blank the screen back out.
+          screenshotUrl: next.screenshot_url ?? prev.screenshotUrl,
+          signals: next.discovery_signals ?? prev.signals,
+        }));
         if (next.status !== "queued" && next.status !== "running") {
           // Terminal — let the server page re-render (succeeded → AnalysisView).
           router.refresh();
@@ -80,6 +108,8 @@ export function AnonPending({
           startedAt={null}
           previewScore={initial.preview_score}
           previewSummary={initial.preview_summary}
+          screenshotUrl={live.screenshotUrl}
+          signals={live.signals}
         />
       )}
 
