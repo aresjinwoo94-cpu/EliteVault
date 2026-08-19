@@ -31,10 +31,15 @@ const MODEL_STABLE = process.env.GEMINI_MODEL_STABLE ?? "gemini-2.5-flash";
 
 // ─── Multi-key rotation pool ────────────────────────────────────────────────
 //
-// Why: Gemini's free tier is 15 RPM + 1000 RPD PER API KEY. With one key
-// any moderately-active testing trips the cap fast. With N keys we get
-// effectively N × the quota at zero cost — keys are free to generate
-// in AI Studio (one per Google account, or per project).
+// Why: Gemini's free tier is 15 RPM + 1000 RPD, and the cap is enforced PER
+// GOOGLE PROJECT — not per key. With one project any moderately-active testing
+// trips it fast, and a rate-limited key waits out a ~65s cooldown that doesn't
+// fit Vercel Hobby's 60s step ceiling, so the audit times out and refunds.
+//
+// ⚠ N keys only give N × the quota when they come from N DIFFERENT projects.
+// Generating several keys inside one AI Studio project looks like a bigger pool
+// in the env var list and buys you nothing — they all draw on the same 15 RPM.
+// One key per Google account is the safest way to be sure.
 //
 // Setup: in Vercel env vars, set:
 //   GEMINI_API_KEY         (primary, required)
