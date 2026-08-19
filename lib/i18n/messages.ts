@@ -354,6 +354,19 @@ const en: Dict = {
     lensAuditHint: "{n} issues marked on your store",
     lensLeaks: "See where you're leaking sales",
     // Master brief §C — the ad-readiness semáforo that sits at the Wall.
+    // WP-A — shown INSTEAD of the findings when the capture was an anti-bot
+    // verification screen rather than the store. Says what happened and what to
+    // do; never dresses a non-audit up as an audit.
+    blockedTitle: "We couldn't see your real store",
+    blockedBody:
+      "{domain} is protected by anti-bot verification, so all we captured was the verification screen — not your storefront. Nothing below would describe your actual store, so we're not guessing.",
+    blockedBodyVendor:
+      "{domain} is protected by {vendor}, so all we captured was the verification screen — not your storefront. Nothing below would describe your actual store, so we're not guessing.",
+    blockedWhat: "What you can do",
+    blockedRetry:
+      "Try again in a minute — these checks often pass on a second attempt.",
+    blockedAllowlist:
+      "If it's your store, allowlist automated screenshot tools in your security settings and re-run.",
     wallPrefix: "The Wall",
     wallAdReady: "Ad-ready",
     wallAdAlmost: "Almost ad-ready",
@@ -1043,6 +1056,18 @@ const es: Dict = {
     lensAuditHint: "{n} problemas marcados en tu tienda",
     lensLeaks: "Ve dónde se te fuga la venta",
     // Master brief §C — el semáforo de ad-readiness que vive en el Muro.
+    // WP-A — se muestra EN LUGAR de los hallazgos cuando lo capturado fue una
+    // pantalla de verificación anti-bot y no la tienda.
+    blockedTitle: "No pudimos ver tu tienda real",
+    blockedBody:
+      "{domain} está protegido por verificación anti-bot, así que lo único que capturamos fue la pantalla de verificación — no tu tienda. Nada de lo que pusiéramos aquí describiría tu tienda de verdad, así que no lo adivinamos.",
+    blockedBodyVendor:
+      "{domain} está protegido por {vendor}, así que lo único que capturamos fue la pantalla de verificación — no tu tienda. Nada de lo que pusiéramos aquí describiría tu tienda de verdad, así que no lo adivinamos.",
+    blockedWhat: "Qué puedes hacer",
+    blockedRetry:
+      "Inténtalo de nuevo en un minuto — estas verificaciones suelen pasar al segundo intento.",
+    blockedAllowlist:
+      "Si la tienda es tuya, permite las herramientas automáticas de captura en tu configuración de seguridad y vuelve a lanzarlo.",
     wallPrefix: "El Muro",
     wallAdReady: "Listo para ads",
     wallAdAlmost: "Casi listo para ads",

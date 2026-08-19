@@ -47,6 +47,8 @@ import type {
 } from "@/lib/supabase/types";
 import type { NicheWinner } from "@/lib/library/niche-winners";
 import type { DiscoverySignals } from "@/lib/analyzer/discovery-signals";
+import { resolveCaptureBlocked } from "@/lib/analyzer/challenge-detect";
+import { CaptureBlockedNotice } from "./capture-blocked-notice";
 
 /** Serializable payload for the "Winners in your niche" module (Change 3). */
 interface NicheWinnersData {
@@ -214,6 +216,14 @@ export function AnalysisView({
     };
   }, [data.id, isAnon]);
 
+  // WP-A — did this audit actually see the store? The model's verdict wins over
+  // discovery's pre-check when it spoke, because the capture providers run real
+  // browsers and often clear a challenge the plain fetch tripped on.
+  const captureBlocked = resolveCaptureBlocked({
+    fromModel: data.result?.capture_blocked ?? null,
+    fromDiscovery: data.discovery_signals ?? null,
+  });
+
   const isDone = data.status === "succeeded";
   const isWorking = data.status === "queued" || data.status === "running";
   const isFailed = data.status === "failed" || data.status === "refunded";
@@ -378,7 +388,19 @@ export function AnalysisView({
           </motion.div>
         )}
 
-      {isDone && data.result && (
+      {/* WP-A — the capture was a verification screen, not the store. This
+          REPLACES the report rather than sitting above it: a score, annotations
+          and "top fixes" derived from a Cloudflare interstitial aren't a weaker
+          audit, they're a fabricated one. */}
+      {isDone && captureBlocked.blocked && (
+        <CaptureBlockedNotice
+          url={data.url}
+          vendor={captureBlocked.vendor}
+          reason={captureBlocked.reason}
+        />
+      )}
+
+      {isDone && data.result && !captureBlocked.blocked && (
         <motion.div
           key="done"
           initial={{ opacity: 0, y: 8 }}

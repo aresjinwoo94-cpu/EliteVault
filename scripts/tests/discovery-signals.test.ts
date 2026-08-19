@@ -26,6 +26,8 @@ function base(over: Partial<DiscoverySummary> = {}): DiscoverySummary {
     faqQuestions: [],
     ctaTexts: [],
     imageAlts: [],
+    challengeDetected: false,
+    challengeVendor: null,
     ...over,
   };
 }

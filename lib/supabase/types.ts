@@ -115,6 +115,13 @@ export interface AnalysisResult {
    * before v3.4 don't have it, so every consumer must handle its absence.
    */
   ad_readiness?: AdReadiness;
+  /**
+   * WP-A layer 2 — the model's verdict on whether the screenshot showed the
+   * store or an anti-bot verification screen. Optional: audits stored before
+   * this existed have no opinion, and absent must read as "not blocked".
+   * Reconcile it with discovery's pre-check via resolveCaptureBlocked().
+   */
+  capture_blocked?: { detected: boolean; reason?: string | null };
 }
 
 export interface AdReadiness {
