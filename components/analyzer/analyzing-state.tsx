@@ -24,9 +24,15 @@ const PHASES = [
 /**
  * When a run stops being "normal" and the waiting copy should say so.
  *
- * Set just past the measured healthy band (8-12s on a warm provider, ~39s on a
- * genuinely tall page that still completed) so it fires on the runs that really
- * are unusual, not on every slightly-slow one.
+ * 40s sits just under the 50s step budget (lib/deadline.ts), so the message
+ * appears while there is still a chance of finishing rather than as a eulogy.
+ *
+ * The BASE copy deliberately keeps its original "30-90 seconds" range. An
+ * earlier draft tightened it to "about 30 seconds" — which is a firmer promise
+ * than the previous wording and one the measurements do not support: in two
+ * independent runs of scripts/measure-analyzer-latency.mts only 1 of 3 and 2 of
+ * 3 audits finished inside the production budget. Tightening a claim while
+ * removing the evidence for it is the exact failure this work exists to stop.
  */
 const SLOW_RUN_SECONDS = 40;
 
@@ -171,7 +177,7 @@ export function AnalyzingState({
         <p className="mt-8 text-xs text-white/30 max-w-md mx-auto">
           {secs >= SLOW_RUN_SECONDS
             ? "Still going — the AI provider is busy right now, which is the usual reason a run takes longer. If it can't finish, your credit is refunded automatically."
-            : "Most audits finish in about 30 seconds. If anything fails, your credit is refunded automatically."}
+            : "Typical analyses complete in 30-90 seconds. If anything fails, your credit is refunded automatically."}
         </p>
 
         {/*

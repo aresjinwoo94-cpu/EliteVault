@@ -28,15 +28,24 @@ const ANALYZER_TEMPERATURE = (() => {
  *
  * Exposed as an env so the experiment can be re-run against real traffic
  * without a deploy, and so a measurement can be taken rather than argued about.
- * Bounded to a sane range: below ~4k a normal audit truncates every time, and
- * above the provider's own retry cap (32768) the value does nothing.
+ *
+ * The upper bound is 16384, NOT the provider's 32768 retry cap. Setting it to
+ * exactly 32768 would silently disable truncation recovery: the retry computes
+ * `wider = min(base * 2, 32768)` and only fires when `wider > base`
+ * (ai/providers/gemini.ts), so at the cap there is no wider ceiling to retry
+ * with and a recoverable truncation becomes a hard failure and a refund. 16384
+ * keeps a full doubling of headroom.
  */
+const ANALYZER_MAX_TOKENS_MAX = 16_384;
 const ANALYZER_MAX_TOKENS = (() => {
   const raw = Number(process.env.ANALYZER_MAX_TOKENS);
-  return Number.isFinite(raw) && raw >= 4096 && raw <= 32_768
+  return Number.isFinite(raw) && raw >= 4096 && raw <= ANALYZER_MAX_TOKENS_MAX
     ? Math.round(raw)
     : 8192;
 })();
+
+/** Test-only view of the resolved ceiling — see scripts/tests/analyzer-max-tokens. */
+export const ANALYZER_MAX_TOKENS_FOR_TEST = ANALYZER_MAX_TOKENS;
 
 export interface SiteInfo {
   title: string | null;

@@ -23,6 +23,18 @@
  * hitting the 8192 ceiling and paying a full second call for it. Those two
  * claims can't both be the whole story, and the default should follow the
  * measurement rather than either argument.
+ *
+ * # KNOWN LIMITS — read before trusting a number out of this
+ *  • It measures the VISION CALL ONLY. The fixtures are stored screenshots, so
+ *    capture, discovery and the DB writes are excluded. It therefore cannot
+ *    say anything about capture-side tuning, which is what WP-C proposed.
+ *  • n=1 per cell, sequential and non-interleaved. Worse, `cooldownUntil` in
+ *    ai/providers/gemini.ts is MODULE state that the per-ceiling re-import does
+ *    not fork, so the second arm inherits the first arm's key cooldowns.
+ *  • It uses whatever key .env.local holds. Two independent runs disagreed
+ *    (1/3 vs 2/3 completing), and in one of them every call was 429'd onto a
+ *    fallback model — timing the degraded chain, not the normal path.
+ * Fixing the first three is what would make this a real before/after harness.
  */
 import { readFileSync } from "node:fs";
 
