@@ -104,6 +104,86 @@ Once O-4 is done, in this order:
 
 Reversing is symmetrical: lower the env values first, then `maxDuration`.
 
+## 4b. WP-C — NOT COMPLETE, and what the measurement does and doesn't show
+
+**Status: WP-C's acceptance criteria are not met.** No adaptive budget was
+built. This section records what was measured, what it supports, and — more
+importantly — what it does not, because an earlier draft of it overclaimed.
+
+```bash
+npx tsx --tsconfig scripts/tests/tsconfig.json scripts/measure-analyzer-latency.mts
+```
+
+### What the harness measures
+
+The vision call only. It feeds a **stored screenshot** straight into
+`runAnalyzerAgent` under `STEP_BUDGET_MS` — the real 50s production budget,
+which matters because every earlier measurement in this repo used a generous
+deadline and so hid the only failure mode that counts: at 50s an 88s audit
+doesn't run slowly, it **refunds**.
+
+### What it does NOT measure — and why that matters
+
+**It never runs the capture pipeline.** WP-C's two proposed levers are both
+capture-side: the provider `delay`/wait, and `SCREENSHOT_FULL_PAGE_MAX_HEIGHT`.
+A benchmark that starts from an already-captured image cannot say anything about
+either. An earlier version of this section concluded "the brief's WP-C premise
+doesn't hold" from exactly that benchmark. **That conclusion was not supported,
+and it contradicted section 1 of this same document**, which lists capture as
+the largest single cost and calls image height "the knob most likely to give the
+time back". Those two claims were never reconciled because the second one was
+wrong to make.
+
+### The numbers, with their caveat stated first
+
+Two independent runs of the same harness disagree:
+
+| ceiling | run A | run B |
+|---|---|---|
+| 8192 (default) | 1/3 completed, avg 38.8s | 2/3 completed, avg 27.6s |
+| 16384 | 1/3 completed, avg 44.3s | 2/3 completed, avg 31.9s |
+
+Different fixtures completed in each. In run B, **all six calls hit `429` on the
+primary model and were served by fallback models** — so that run timed the
+degraded chain, not the path production normally takes. Run A very likely did
+too. `scripts/verify-capture-blocked.mts` and this harness both use whatever key
+`.env.local` holds, and a local key is not the production pool.
+
+What survives from this honestly:
+
+- **Higher is not better** for the output-token ceiling: no arm completed more
+  audits than the other. `ANALYZER_MAX_TOKENS` exists so the experiment can be
+  re-run on real traffic without a deploy; **the default is unchanged at 8192**.
+- **A local run tells you nothing about production's key pool.** Read the
+  production env, never `.env.local`, before drawing a conclusion about quota.
+
+### What is still missing for WP-C
+
+1. A capture-side benchmark — the pipeline the WP actually targets.
+2. The brief's 5-store reference set (this harness uses 3, and omits the
+   Cloudflare and fallback categories) with real `finished_at − started_at`
+   from the `analyses` table, not an isolated agent call.
+3. Repeats per cell. The A/B is n=1, sequential and non-interleaved, and
+   `cooldownUntil` in `ai/providers/gemini.ts` is module state that the second
+   arm inherits from the first. Given a spread this wide, n=1 cannot resolve a
+   ceiling effect.
+4. A measurement taken against the production key pool, not a local key.
+
+Until those exist, **no budget should be changed**, and none was: `lib/deadline.ts`,
+`lib/screenshot-core.ts`, `app/api/inngest/route.ts` and `lib/flags.ts` have zero
+diff. The brief's own rule stands — *an audit that takes 40s and works beats one
+that aims for 30s and 504s* — but "we didn't measure it properly yet" is the
+honest reason here, not "we measured it and the premise was wrong".
+
+### One sub-item worth retiring rather than building
+
+The brief suggests lowering `SCREENSHOT_FULL_PAGE_MAX_HEIGHT` per audit "when
+the page is detectably short". That saves nothing: the setting is a **cap**, so
+a page already shorter than it is unaffected. The version that would save real
+time is lowering the cap on TALL pages, which is a content tradeoff the brief's
+own red line forbids. Worth deciding deliberately rather than leaving as an
+open suggestion.
+
 ## 5. How to verify a latency change
 
 Numbers or it didn't happen. Per audit, `finished_at - started_at` on the

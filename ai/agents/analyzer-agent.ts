@@ -23,6 +23,31 @@ const ANALYZER_TEMPERATURE = (() => {
   return Number.isFinite(raw) && raw >= 0 && raw <= 1 ? raw : 0.2;
 })();
 
+/**
+ * Output-token ceiling for the audit. Default UNCHANGED at 8192 — see the long
+ * note at the call site for why raising it was tried once and reverted.
+ *
+ * Exposed as an env so the experiment can be re-run against real traffic
+ * without a deploy, and so a measurement can be taken rather than argued about.
+ *
+ * The upper bound is 16384, NOT the provider's 32768 retry cap. Setting it to
+ * exactly 32768 would silently disable truncation recovery: the retry computes
+ * `wider = min(base * 2, 32768)` and only fires when `wider > base`
+ * (ai/providers/gemini.ts), so at the cap there is no wider ceiling to retry
+ * with and a recoverable truncation becomes a hard failure and a refund. 16384
+ * keeps a full doubling of headroom.
+ */
+const ANALYZER_MAX_TOKENS_MAX = 16_384;
+const ANALYZER_MAX_TOKENS = (() => {
+  const raw = Number(process.env.ANALYZER_MAX_TOKENS);
+  return Number.isFinite(raw) && raw >= 4096 && raw <= ANALYZER_MAX_TOKENS_MAX
+    ? Math.round(raw)
+    : 8192;
+})();
+
+/** Test-only view of the resolved ceiling — see scripts/tests/analyzer-max-tokens. */
+export const ANALYZER_MAX_TOKENS_FOR_TEST = ANALYZER_MAX_TOKENS;
+
 export interface SiteInfo {
   title: string | null;
   description: string | null;
@@ -157,7 +182,14 @@ export async function runAnalyzerAgent(opts: {
     // truncation for timeouts. The real fix is bounding OUTPUT size (capped
     // annotation/fix counts in the prompt + schema) so a rich store still fits
     // under 8192 — which both avoids truncation and finishes in time.
-    maxTokens: 8192,
+    //
+    // WP-C made it tunable WITHOUT changing that default. Live measurement
+    // showed 2 of 3 real stores hitting the ceiling and paying a full extra
+    // call, so the tradeoff is worth re-measuring on real traffic — but the
+    // note above is a recorded experiment, not a guess, and the brief's rule is
+    // to prefer not-failing over hitting 30s. Set ANALYZER_MAX_TOKENS to
+    // re-run that experiment in production without a deploy.
+    maxTokens: ANALYZER_MAX_TOKENS,
     // P1.1 — free audits run on the cheap/fast model tier.
     fast: opts.fast,
     signal: opts.signal,

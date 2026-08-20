@@ -21,6 +21,21 @@ const PHASES = [
   "Drafting top-impact fixes ranked by leverage…",
 ];
 
+/**
+ * When a run stops being "normal" and the waiting copy should say so.
+ *
+ * 40s sits just under the 50s step budget (lib/deadline.ts), so the message
+ * appears while there is still a chance of finishing rather than as a eulogy.
+ *
+ * The BASE copy deliberately keeps its original "30-90 seconds" range. An
+ * earlier draft tightened it to "about 30 seconds" — which is a firmer promise
+ * than the previous wording and one the measurements do not support: in two
+ * independent runs of scripts/measure-analyzer-latency.mts only 1 of 3 and 2 of
+ * 3 audits finished inside the production budget. Tightening a claim while
+ * removing the evidence for it is the exact failure this work exists to stop.
+ */
+const SLOW_RUN_SECONDS = 40;
+
 export function AnalyzingState({
   status,
   startedAt,
@@ -145,9 +160,24 @@ export function AnalyzingState({
           </motion.div>
         )}
 
+        {/*
+          WP-C — an honest expectation instead of an open-ended range.
+
+          The copy changes with elapsed time rather than with anything about the
+          store, because measurement says the store isn't what decides it: the
+          SAME screenshot, same settings, same budget, ran in 8.4s, 10.4s and
+          11.3s and then hung past 120s minutes later. The spread is the AI
+          provider under load, not the page.
+
+          So an "this page looks heavy, expect longer" message would blame the
+          wrong thing and would often be wrong. Saying "usually ~30s" and then,
+          only once a run is genuinely long, naming the real reason is the
+          version that stays true in both cases.
+        */}
         <p className="mt-8 text-xs text-white/30 max-w-md mx-auto">
-          Typical analyses complete in 30-90 seconds. If anything fails, your
-          credit is refunded automatically.
+          {secs >= SLOW_RUN_SECONDS
+            ? "Still going — the AI provider is busy right now, which is the usual reason a run takes longer. If it can't finish, your credit is refunded automatically."
+            : "Typical analyses complete in 30-90 seconds. If anything fails, your credit is refunded automatically."}
         </p>
 
         {/*
