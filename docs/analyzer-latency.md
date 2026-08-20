@@ -104,6 +104,56 @@ Once O-4 is done, in this order:
 
 Reversing is symmetrical: lower the env values first, then `maxDuration`.
 
+## 4b. WP-C measurement — what actually decides the wait
+
+Run it yourself:
+
+```bash
+npx tsx --tsconfig scripts/tests/tsconfig.json scripts/measure-analyzer-latency.mts
+```
+
+Every run uses `STEP_BUDGET_MS`, the real production budget. That matters: past
+measurements in this repo used a generous deadline, which hides the only failure
+mode that counts — production gives each Inngest step 50s, so an audit that
+takes 88s doesn't run slowly, it **refunds**.
+
+**The page is not the variable.** The same stored screenshot, same settings,
+same 50s budget, run five times:
+
+| run | budget | time | outcome |
+|---|---|---|---|
+| 1 | 50s | 8.4s | ok |
+| 2 | 50s | 10.4s | ok |
+| 3 | 50s | 11.3s | ok |
+| 4 | 120s | 120.0s | aborted |
+| 5 | 120s | 21.7s | ok |
+
+Identical input, 8.4s to past 120s. And minutes earlier, in a burst of six
+sequential calls, that same fixture exhausted its 50s budget twice while the
+*tallest* page in the set completed in 38.8s. The spread is the AI provider
+under load — 503s, cooldowns, queueing — not page weight.
+
+**So the brief's WP-C premise doesn't hold, and no budget was changed.** Tuning
+capture height or provider wait by "page heaviness" would optimise a variable
+that measurement shows is not the dominant one, while carrying real risk of
+failing audits that currently pass. The brief's own rule applies: *an audit that
+takes 40s and works beats one that aims for 30s and 504s.*
+
+The output-token ceiling was A/B'd for the same reason and also left alone:
+
+| ceiling | completed | avg of those that did |
+|---|---|---|
+| 8192 (default) | 1/3 | 38.8s |
+| 16384 | 1/3 | 44.3s |
+
+Higher is not better. `ANALYZER_MAX_TOKENS` now exists so the experiment can be
+re-run on real traffic without a deploy, but **the default is unchanged**.
+
+**What this leaves as the real levers** — all of them the ops prerequisites in
+section 2, none of them code: more Gemini projects (O-2) so a burst doesn't
+queue behind one quota, `ANALYZER_CONCURRENCY` matched to them (O-3), and
+Vercel Pro (O-4) so a 60s ceiling stops turning a slow provider into a refund.
+
 ## 5. How to verify a latency change
 
 Numbers or it didn't happen. Per audit, `finished_at - started_at` on the
