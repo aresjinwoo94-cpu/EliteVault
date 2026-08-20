@@ -47,6 +47,8 @@ import type {
 } from "@/lib/supabase/types";
 import type { NicheWinner } from "@/lib/library/niche-winners";
 import type { DiscoverySignals } from "@/lib/analyzer/discovery-signals";
+import { resolveCaptureBlocked } from "@/lib/analyzer/challenge-detect";
+import { CaptureBlockedNotice } from "./capture-blocked-notice";
 
 /** Serializable payload for the "Winners in your niche" module (Change 3). */
 interface NicheWinnersData {
@@ -214,6 +216,14 @@ export function AnalysisView({
     };
   }, [data.id, isAnon]);
 
+  // WP-A — did this audit actually see the store? The model's verdict wins over
+  // discovery's pre-check when it spoke, because the capture providers run real
+  // browsers and often clear a challenge the plain fetch tripped on.
+  const captureBlocked = resolveCaptureBlocked({
+    fromModel: data.result?.capture_blocked ?? null,
+    fromDiscovery: data.discovery_signals ?? null,
+  });
+
   const isDone = data.status === "succeeded";
   const isWorking = data.status === "queued" || data.status === "running";
   const isFailed = data.status === "failed" || data.status === "refunded";
@@ -268,7 +278,11 @@ export function AnalysisView({
         <div className="flex items-center gap-2 shrink-0">
           {/* P0.3 — share the public, read-only audit. Owner-only, hidden in
               the anonymous view (it calls an auth-gated server action). */}
-          {isDone && !isAnon && (
+          {/* WP-A — nothing that PUBLISHES or SHARES a blocked run: its score
+              and summary describe a verification screen, and the public share
+              and community pages don't know about capture_blocked, so they'd
+              present an interstitial's ~50/100 as a real audit of the domain. */}
+          {isDone && !isAnon && !captureBlocked.blocked && (
             <ShareButton
               analysisId={data.id}
               initialSlug={data.share_slug ?? null}
@@ -287,10 +301,18 @@ export function AnalysisView({
       {/* Anonymous banner — the primary activation push: create a free account
           to save this report, run more audits and browse the Library. Sits
           above the report so it's the first thing after the header. */}
-      {isDone && isAnon && <AnonRegisterGate score={data.result?.score ?? null} />}
+      {/* WP-A — on a blocked run the score is derived from an interstitial, so
+          the anonymous hook ("your store scored N") would be a fabricated
+          number shown on the highest-traffic path in the product. Pass null so
+          the gate renders its scoreless variant. */}
+      {isDone && isAnon && (
+        <AnonRegisterGate
+          score={captureBlocked.blocked ? null : (data.result?.score ?? null)}
+        />
+      )}
 
       {/* Prominent Publish-to-Community callout (Pro/Scale only, succeeded only) */}
-      {isDone && viewer.canPublish && (
+      {isDone && viewer.canPublish && !captureBlocked.blocked && (
         <PublishCallout
           analysisId={data.id}
           defaultDisplayName={viewer.fullName}
@@ -378,7 +400,19 @@ export function AnalysisView({
           </motion.div>
         )}
 
-      {isDone && data.result && (
+      {/* WP-A — the capture was a verification screen, not the store. This
+          REPLACES the report rather than sitting above it: a score, annotations
+          and "top fixes" derived from a Cloudflare interstitial aren't a weaker
+          audit, they're a fabricated one. */}
+      {isDone && captureBlocked.blocked && (
+        <CaptureBlockedNotice
+          url={data.url}
+          vendor={captureBlocked.vendor}
+          reason={captureBlocked.reason}
+        />
+      )}
+
+      {isDone && data.result && !captureBlocked.blocked && (
         <motion.div
           key="done"
           initial={{ opacity: 0, y: 8 }}

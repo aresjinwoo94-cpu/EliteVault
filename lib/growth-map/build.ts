@@ -10,6 +10,7 @@ import {
   diffIssues,
   type IssueSnapshot,
 } from "@/lib/analyzer/link-issues";
+import { resolveCaptureBlocked } from "@/lib/analyzer/challenge-detect";
 import { computePlacement, compositeOf } from "./placement";
 import { scaffoldNodes, scaffoldDiagnosis } from "./phrase-bank";
 import { RANKS } from "./ranks";
@@ -168,6 +169,16 @@ async function recordPlacementPoint(input: {
   rankIndex: number;
 }): Promise<void> {
   if (!growthMapHistoryEnabled()) return;
+  // WP-A — a run that never saw the store must not become the baseline that
+  // FUTURE runs diff against. Recording it would poison the comparison twice
+  // over: once now, and again on the next real audit, which would then report
+  // the store's genuine issues as "new since last run".
+  if (resolveCaptureBlocked({ fromModel: input.result.capture_blocked }).blocked) {
+    console.warn(
+      "[growth-map] skipping history point — the capture was blocked, so this run saw a verification screen, not the store",
+    );
+    return;
+  }
   const domain = domainOf(input.url);
   if (!domain) return;
   try {
@@ -244,7 +255,16 @@ export async function readGrowthMovement(input: {
     // §D — the issue-level diff is the protagonist of "what changed". Only when
     // the flag is on and the previous run actually persisted snapshots (old rows
     // have issues = null → no diff, just score movement).
-    if (growthMapIssueDiffEnabled() && Array.isArray(prev.issues) && prev.issues.length) {
+    // WP-A — never diff FROM a run that didn't see the store. On a blocked
+    // capture the model's issues describe a verification screen, so the delta
+    // would read as real change at the store ("New since last run: Cloudflare
+    // bot verification blocks visitors") when nothing there changed at all.
+    if (
+      growthMapIssueDiffEnabled() &&
+      !resolveCaptureBlocked({ fromModel: input.result.capture_blocked }).blocked &&
+      Array.isArray(prev.issues) &&
+      prev.issues.length
+    ) {
       const currentIssues = snapshotIssues(linkIssues(input.result));
       movement.issueDelta = diffIssues(prev.issues, currentIssues);
     }

@@ -36,6 +36,14 @@ export interface DiscoverySignals {
   reviews: number;
   /** Count of FAQ questions found. */
   faqs: number;
+  /**
+   * WP-A layer 1 — the plain-fetch pre-check hit an anti-bot interstitial.
+   * Persisted so the report can reconcile it with the model's own
+   * `capture_blocked` verdict without re-fetching anything.
+   */
+  challengeDetected?: boolean;
+  /** Vendor behind the challenge, when identifiable. */
+  challengeVendor?: string | null;
 }
 
 /**
@@ -78,7 +86,19 @@ export function summarizeDiscovery(
     priceRange: priceRange(discovery.prices),
     reviews: discovery.reviewSnippets.length,
     faqs: discovery.faqQuestions.length,
+    ...(discovery.challengeDetected
+      ? {
+          challengeDetected: true,
+          challengeVendor: discovery.challengeVendor,
+        }
+      : {}),
   };
+
+  // WP-A — a detected challenge is worth persisting on its own, even though a
+  // challenge page yields no other signal by definition (discoverSite returns
+  // early on one). Without this the row would look like a store we simply
+  // couldn't read, losing the reason.
+  if (discovery.challengeDetected) return signals;
 
   // "Nothing worth showing": discovery ran but came back empty-handed —
   // typically a bot-blocked store that refused the fetch. `platform: "custom"`

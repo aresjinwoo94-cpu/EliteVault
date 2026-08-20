@@ -1,4 +1,5 @@
 import "server-only";
+import { detectChallenge } from "@/lib/analyzer/challenge-detect";
 
 /**
  * Multi-page site discovery + full-page content extraction.
@@ -100,6 +101,18 @@ export interface DiscoverySummary {
   ctaTexts: string[];
   /** Image alt texts (first 12) — useful for trust badges and product imagery. */
   imageAlts: string[];
+
+  // ── WP-A layer 1 — anti-bot challenge pre-check ───────────────────────
+  /**
+   * True when the fetched HTML was a security-verification interstitial rather
+   * than the store. A SIGNAL, never an error: the audit continues, because the
+   * capture providers run real browsers and often clear a challenge this plain
+   * fetch could not. It exists so that when the CAPTURE is blocked too, the
+   * report can say so instead of inventing findings about a page it never saw.
+   */
+  challengeDetected: boolean;
+  /** Best guess at the vendor (Cloudflare, DataDome, …), or null. */
+  challengeVendor: string | null;
 }
 
 export async function discoverSite(rootUrl: string): Promise<DiscoverySummary> {
@@ -118,6 +131,8 @@ export async function discoverSite(rootUrl: string): Promise<DiscoverySummary> {
     faqQuestions: [],
     ctaTexts: [],
     imageAlts: [],
+    challengeDetected: false,
+    challengeVendor: null,
   };
 
   let html = "";
@@ -131,8 +146,32 @@ export async function discoverSite(rootUrl: string): Promise<DiscoverySummary> {
       // Don't hang the pipeline if a site is slow — 10s max for full-page fetch.
       signal: AbortSignal.timeout(10_000),
     });
+
+    // WP-A — read the body BEFORE deciding on the status. An anti-bot
+    // interstitial is served WITH a refusal status (403/503 are the common
+    // pair), so the old `if (!res.ok) return out` threw away the single most
+    // diagnostic thing we fetch: the challenge HTML itself.
+    const body = await res.text();
+    // Only the CHALLENGE CHECK is capped. A first draft capped the body itself,
+    // which silently truncated normal stores: measured across 20 real sites, 13
+    // exceeded the cap, and gymshark/everlane lost their JSON-LD rating and FAQ
+    // blocks entirely while mejuri's cut landed mid-`<script>`, leaking raw JS
+    // into the text used for trust signals. A challenge page is a few KB, so the
+    // cap costs the detector nothing while extraction keeps the full document.
+    const challenge = detectChallenge(body.slice(0, 200_000));
+    if (challenge.detected) {
+      out.challengeDetected = true;
+      out.challengeVendor = challenge.vendor;
+      console.warn(
+        `[discovery] anti-bot challenge detected on ${rootUrl}` +
+          `${challenge.vendor ? ` (${challenge.vendor})` : ""} — the capture may be a verification screen`,
+      );
+      // Nothing below can parse a store out of a challenge page, and doing so
+      // would fabricate "signals" from the interstitial's own markup.
+      return out;
+    }
     if (!res.ok) return out;
-    html = await res.text();
+    html = body; // full document — extraction below depends on the tail
   } catch (err) {
     console.warn("[discovery] fetch failed:", (err as Error).message);
     return out;

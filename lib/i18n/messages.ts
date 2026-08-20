@@ -347,13 +347,26 @@ const en: Dict = {
     lensAudit: "See the annotated audit",
     lensAuditHint: "{n} issues marked on your store",
     lensLeaks: "See where you're leaking sales",
-    // Master brief §C — the ad-readiness semáforo that sits at the Wall.
-    // WP-E — "The Wall" was internal shorthand borrowed from HBR research. To a
-    // first-time user it's unexplained jargon, so the visible copy now says what
-    // it means. The HBR statistic stays (it's evidence); only the NAME goes.
-    // Kept short: this is a badge prefix rendered as "{wallPrefix} · Ad-ready".
-    // Short and neutral on purpose: it renders as "{wallPrefix} · Ad-ready", and
-    // a second-person phrasing there ("Where you stall · Ad-ready") reads as a
+    // WP-A — shown INSTEAD of the findings when the capture was an anti-bot
+    // verification screen rather than the store. Says what happened and what to
+    // do; never dresses a non-audit up as an audit.
+    blockedTitle: "We couldn't see your real store",
+    blockedThisSite: "This site",
+    blockedBody:
+      "{domain} is protected by anti-bot verification, so all we captured was the verification screen — not your storefront. Nothing below would describe your actual store, so we're not guessing.",
+    blockedBodyVendor:
+      "{domain} is protected by {vendor}, so all we captured was the verification screen — not your storefront. Nothing below would describe your actual store, so we're not guessing.",
+    blockedWhat: "What you can do",
+    blockedRetry:
+      "Try again in a minute — these checks often pass on a second attempt.",
+    blockedAllowlist:
+      "If it's your store, allowlist automated screenshot tools in your security settings and re-run.",
+    // Master brief §C — the ad-readiness semáforo that sits at the stall point.
+    // WP-E — "The Wall" was internal shorthand borrowed from HBR research; to a
+    // first-time user it was unexplained jargon, so the visible copy now says
+    // what it means. The HBR statistic stays (it's evidence); only the NAME
+    // went. Short and neutral on purpose: this renders as
+    // "{wallPrefix} · Ad-ready", where a second-person phrasing would read as a
     // contradiction rather than a label followed by a verdict.
     wallPrefix: "Stall point",
     wallAdReady: "Ad-ready",
@@ -1043,15 +1056,26 @@ const es: Dict = {
     lensAudit: "Ve el audit anotado",
     lensAuditHint: "{n} problemas marcados en tu tienda",
     lensLeaks: "Ve dónde se te fuga la venta",
-    // Master brief §C — el semáforo de ad-readiness que vive en el Muro.
-    // WP-E — "El Muro" era jerga interna tomada de una investigación de HBR.
-    // Para alguien que entra por primera vez no significa nada, así que el copy
-    // visible ahora dice lo que quiere decir. El dato de HBR se queda (es
-    // evidencia); lo que se va es el NOMBRE. Corto: es el prefijo de un badge
-    // que se renderiza como "{wallPrefix} · Listo para ads".
-    // Mismo registro que el inglés: es una etiqueta seguida de un veredicto
-    // ("Punto de estancamiento · Listo para ads"), no una frase dirigida al
-    // lector — en segunda persona el badge se lee como una contradicción.
+    // WP-A — se muestra EN LUGAR de los hallazgos cuando lo capturado fue una
+    // pantalla de verificación anti-bot y no la tienda.
+    blockedTitle: "No pudimos ver tu tienda real",
+    blockedThisSite: "Este sitio",
+    blockedBody:
+      "{domain} está protegido por verificación anti-bot, así que lo único que capturamos fue la pantalla de verificación — no tu tienda. Nada de lo que pusiéramos aquí describiría tu tienda de verdad, así que no lo adivinamos.",
+    blockedBodyVendor:
+      "{domain} está protegido por {vendor}, así que lo único que capturamos fue la pantalla de verificación — no tu tienda. Nada de lo que pusiéramos aquí describiría tu tienda de verdad, así que no lo adivinamos.",
+    blockedWhat: "Qué puedes hacer",
+    blockedRetry:
+      "Inténtalo de nuevo en un minuto — estas verificaciones suelen pasar al segundo intento.",
+    blockedAllowlist:
+      "Si la tienda es tuya, permite las herramientas automáticas de captura en tu configuración de seguridad y vuelve a lanzarlo.",
+    // Master brief §C — el semáforo de ad-readiness, en el punto de estancamiento.
+    // WP-E — "El Muro" era jerga interna tomada de una investigación de HBR y
+    // para alguien que entra por primera vez no significaba nada. El dato de HBR
+    // se queda (es evidencia); lo que se fue es el NOMBRE. Mismo registro que el
+    // inglés: es una etiqueta seguida de un veredicto ("Punto de estancamiento ·
+    // Listo para ads"), no una frase dirigida al lector — en segunda persona el
+    // badge se leería como una contradicción.
     wallPrefix: "Punto de estancamiento",
     wallAdReady: "Listo para ads",
     wallAdAlmost: "Casi listo para ads",

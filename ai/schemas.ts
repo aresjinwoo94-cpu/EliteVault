@@ -121,6 +121,18 @@ export const PersonaResponseSchema = z.object({
   reasons: z.array(z.string().max(220)).max(12),
 });
 
+/**
+ * WP-A layer 2 — "was I shown the store, or a bouncer?"
+ *
+ * `reason` is what the model actually saw, in its own words, so the report can
+ * be specific ("a Cloudflare 'Checking your browser' screen") rather than
+ * generic. Kept short: it's a label, not an analysis.
+ */
+export const CaptureBlockedSchema = z.object({
+  detected: z.boolean(),
+  reason: z.string().max(300).nullable().optional(),
+});
+
 export const AnalysisResultSchema = z.object({
   /**
    * Brief §1/§2 — `score` and `scenarios` are NO LONGER emitted by the model.
@@ -145,6 +157,20 @@ export const AnalysisResultSchema = z.object({
   summary: z.string().min(10).max(2000),
   top_fixes: z.array(TopFixSchema).max(12),
   ad_readiness: AdReadinessSchema.optional(),
+  /**
+   * WP-A layer 2 — the model's own verdict on whether it was shown the store at
+   * all, or an anti-bot verification screen instead.
+   *
+   * This is the AUTHORITATIVE layer: discovery's HTML pre-check can only see
+   * what a plain fetch got, while the capture providers drive real browsers and
+   * frequently clear a challenge that pre-check tripped on. The model is the
+   * only party that saw the actual pixels the audit was written from.
+   *
+   * OPTIONAL on purpose: audits stored before this field existed must still
+   * open, and a generation that omits it must not fail validation into the
+   * repair pass. Absent is read as "not blocked".
+   */
+  capture_blocked: CaptureBlockedSchema.optional(),
 });
 export type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
 
@@ -254,6 +280,18 @@ export const ANALYSIS_TOOL_SCHEMA = {
         },
       },
       required: ["verdict", "score", "summary", "blockers"],
+    },
+    // WP-A layer 2 — see CaptureBlockedSchema. Declared in `properties` but
+    // deliberately NOT in `required`: forcing it would make every generation
+    // spend tokens on it, and an older model that ignores it would fail
+    // validation for a field that only matters on blocked pages.
+    capture_blocked: {
+      type: "object",
+      properties: {
+        detected: { type: "boolean" },
+        reason: { type: "string" },
+      },
+      required: ["detected"],
     },
   },
   required: [
