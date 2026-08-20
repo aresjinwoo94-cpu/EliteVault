@@ -206,6 +206,8 @@ export function buildAnalyzerUserMessage(opts: {
     ctaTexts?: string[];
     imageAlts?: string[];
   } | null;
+  /** WP-B — what the audited URL actually is: home, product, collection, other. */
+  pageKind?: "home" | "product" | "collection" | "other" | null;
   /** URLs of extra screenshots passed as additional image parts. */
   extraScreenshotUrls?: string[];
   /**
@@ -218,6 +220,25 @@ export function buildAnalyzerUserMessage(opts: {
   const lines: string[] = [];
   lines.push("Audit this ecommerce store and call `submit_analysis`.");
   if (opts.url) lines.push(`URL: ${opts.url}`);
+
+  // WP-B — say WHAT this page is. Without it every audit was framed as "your
+  // store", so a single product page got marked down for missing things only a
+  // homepage has (full nav, catalogue, brand story) — criticism the owner can't
+  // act on because the page was never meant to carry them.
+  if (opts.pageKind && opts.pageKind !== "home" && opts.pageKind !== "other") {
+    const label =
+      opts.pageKind === "product"
+        ? "a SINGLE PRODUCT PAGE"
+        : "a COLLECTION / CATEGORY PAGE";
+    lines.push("");
+    lines.push(`PAGE TYPE: this URL is ${label}, not the store's homepage.`);
+    lines.push(
+      "Judge it as that page. Do NOT mark it down for lacking things that " +
+        "belong on a homepage (full catalogue navigation, brand story, " +
+        "category grid) — its job is to convert the visitor who landed on it. " +
+        "Say so plainly in `summary` so the owner knows what was audited.",
+    );
+  }
 
   // Multi-screenshot context note
   if (opts.extraScreenshotUrls && opts.extraScreenshotUrls.length > 0) {

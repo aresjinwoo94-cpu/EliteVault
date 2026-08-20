@@ -1,4 +1,5 @@
 import type { DiscoverySummary } from "@/lib/site-discovery";
+import { isSinglePage, type PageKind } from "@/lib/analyzer/page-kind";
 
 /**
  * WP-3 — the "we already know this about your store" chips shown WHILE the
@@ -44,6 +45,11 @@ export interface DiscoverySignals {
   challengeDetected?: boolean;
   /** Vendor behind the challenge, when identifiable. */
   challengeVendor?: string | null;
+  /**
+   * WP-B — "home" | "product" | "collection" | "other". Persisted so the report
+   * can frame itself honestly without re-deriving from a URL it may not have.
+   */
+  pageKind?: PageKind;
 }
 
 /**
@@ -86,6 +92,7 @@ export function summarizeDiscovery(
     priceRange: priceRange(discovery.prices),
     reviews: discovery.reviewSnippets.length,
     faqs: discovery.faqQuestions.length,
+    pageKind: discovery.pageKind,
     ...(discovery.challengeDetected
       ? {
           challengeDetected: true,
@@ -94,11 +101,18 @@ export function summarizeDiscovery(
       : {}),
   };
 
-  // WP-A — a detected challenge is worth persisting on its own, even though a
-  // challenge page yields no other signal by definition (discoverSite returns
-  // early on one). Without this the row would look like a store we simply
-  // couldn't read, losing the reason.
-  if (discovery.challengeDetected) return signals;
+  // Two reasons to persist even when nothing else was found, and they compose:
+  //
+  // WP-A — a detected challenge is worth keeping on its own, because a challenge
+  // page yields no other signal by definition (discoverSite returns early on
+  // one). Without this the row would look like a store we simply couldn't read,
+  // losing the reason.
+  //
+  // WP-B — so is knowing the audit is pointed at ONE page. It's what stops the
+  // report calling a single product page "your store".
+  if (discovery.challengeDetected || isSinglePage(discovery.pageKind)) {
+    return signals;
+  }
 
   // "Nothing worth showing": discovery ran but came back empty-handed —
   // typically a bot-blocked store that refused the fetch. `platform: "custom"`

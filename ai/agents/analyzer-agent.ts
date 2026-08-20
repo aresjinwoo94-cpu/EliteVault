@@ -6,6 +6,7 @@ import {
   type AnalysisResult,
 } from "@/ai/schemas";
 import { ANALYZER_SYSTEM, buildAnalyzerUserMessage } from "@/ai/prompts";
+import { classifyPageKind } from "@/lib/analyzer/page-kind";
 import type { BuyerPersona } from "@/lib/supabase/types";
 import { deadlineAt, isDeadlineError } from "@/lib/deadline";
 import {
@@ -127,6 +128,10 @@ export async function runAnalyzerAgent(opts: {
       persona: (opts.persona as Record<string, unknown> | null) ?? null,
       htmlExcerpt: opts.htmlExcerpt,
       siteInfo: opts.siteInfo ?? null,
+      // WP-B — derived from the URL rather than threaded through the caller, so
+      // it's correct even when discovery returned nothing (a blocked or
+      // unreachable page still knows what KIND of page it was).
+      pageKind: classifyPageKind(opts.url ?? null),
       extraScreenshotUrls: extraUrls,
       groundingBlock: grounding ? renderGroundingBlock(grounding) : null,
     }),

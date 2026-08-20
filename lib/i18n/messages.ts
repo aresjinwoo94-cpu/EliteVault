@@ -369,6 +369,13 @@ const en: Dict = {
     // "{wallPrefix} · Ad-ready", where a second-person phrasing would read as a
     // contradiction rather than a label followed by a verdict.
     wallPrefix: "Stall point",
+    // WP-B — shown under the map when the audit was pointed at ONE page. The
+    // stage is computed from that page alone, so presenting it as a read of the
+    // whole business would be the same kind of overclaim WP-A removed.
+    pageKindProduct:
+      "This reads one product page, not your whole store — so the stage below is a projection from that page, not a full read of the business.",
+    pageKindCollection:
+      "This reads one collection page, not your whole store — so the stage below is a projection from that page, not a full read of the business.",
     wallAdReady: "Ad-ready",
     wallAdAlmost: "Almost ad-ready",
     wallAdNot: "Not ad-ready",
@@ -1077,6 +1084,11 @@ const es: Dict = {
     // Listo para ads"), no una frase dirigida al lector — en segunda persona el
     // badge se leería como una contradicción.
     wallPrefix: "Punto de estancamiento",
+    // WP-B — se muestra bajo el mapa cuando la auditoría apuntó a UNA página.
+    pageKindProduct:
+      "Analizamos solo una página de producto, no tu tienda completa — así que la etapa de abajo es una proyección a partir de esa página, no una lectura del negocio entero.",
+    pageKindCollection:
+      "Analizamos solo una página de colección, no tu tienda completa — así que la etapa de abajo es una proyección a partir de esa página, no una lectura del negocio entero.",
     wallAdReady: "Listo para ads",
     wallAdAlmost: "Casi listo para ads",
     wallAdNot: "No listo para ads",

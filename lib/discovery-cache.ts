@@ -1,6 +1,7 @@
 import "server-only";
 import type { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { urlHash } from "@/lib/image-hash";
+import { classifyPageKind } from "@/lib/analyzer/page-kind";
 import type { DiscoverySummary } from "@/lib/site-discovery";
 
 /**
@@ -60,7 +61,14 @@ export async function readDiscoveryCache(
     // fields would be a silent quality regression, so we insist on the one
     // field every consumer indexes into.
     if (!payload || !Array.isArray(payload.pageUrls)) return null;
-    return payload as DiscoverySummary;
+    // WP-B — rows written before pageKind existed deserialize without it, which
+    // would be a type lie for up to the TTL. Backfill from the URL rather than
+    // widening the type: the classifier is pure and the answer is the same one
+    // discovery would have computed.
+    return {
+      ...payload,
+      pageKind: payload.pageKind ?? classifyPageKind(url),
+    } as DiscoverySummary;
   } catch {
     return null;
   }

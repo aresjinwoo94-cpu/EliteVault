@@ -1,5 +1,6 @@
 import "server-only";
 import { detectChallenge } from "@/lib/analyzer/challenge-detect";
+import { classifyPageKind, type PageKind } from "@/lib/analyzer/page-kind";
 
 /**
  * Multi-page site discovery + full-page content extraction.
@@ -113,6 +114,13 @@ export interface DiscoverySummary {
   challengeDetected: boolean;
   /** Best guess at the vendor (Cloudflare, DataDome, …), or null. */
   challengeVendor: string | null;
+
+  /**
+   * WP-B — what KIND of page the audit was pointed at. Derived from the URL
+   * alone (lib/analyzer/page-kind.ts), so it's available even when the fetch
+   * fails and costs nothing. Drives copy only, never scoring.
+   */
+  pageKind: PageKind;
 }
 
 export async function discoverSite(rootUrl: string): Promise<DiscoverySummary> {
@@ -133,6 +141,11 @@ export async function discoverSite(rootUrl: string): Promise<DiscoverySummary> {
     imageAlts: [],
     challengeDetected: false,
     challengeVendor: null,
+    // Set up front, from the URL alone, so it survives every early return
+    // below — a bot-blocked or unreachable page still knows what it WAS. That
+    // matters most on the WP-A path: a challenged page returns early, and the
+    // report should still know whether it was a product page or a storefront.
+    pageKind: classifyPageKind(rootUrl),
   };
 
   let html = "";

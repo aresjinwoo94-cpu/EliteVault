@@ -38,6 +38,7 @@ function summary(over: Partial<DiscoverySummary> = {}): DiscoverySummary {
     imageAlts: [],
     challengeDetected: false,
     challengeVendor: null,
+    pageKind: "home" as const,
     ...over,
   };
 }
