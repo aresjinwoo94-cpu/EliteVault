@@ -282,7 +282,7 @@ export function MapCanvas({
 
         {/* pointer + label */}
         <text x={wallX} y={wallY + 74} textAnchor="middle" className="font-display" fontSize={9.5} fontWeight={600} fill="#F6C9C9">
-          THE WALL · most stores quit here
+          WHERE STORES STALL · growth flattens here
         </text>
         <text x={wallX} y={wallY + 85} textAnchor="middle" className="font-mono" fontSize={7.5} fill="#EF4444" letterSpacing="0.03em">
           87% stall here · HBR &rsquo;08

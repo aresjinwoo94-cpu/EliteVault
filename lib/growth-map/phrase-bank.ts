@@ -15,7 +15,7 @@ const CURRENT_LEAD: Record<RankKey, string> = {
   copper:
     "You're at the Foundation. The basics aren't landing yet — a visitor can't tell what you sell or why to trust it.",
   steel:
-    "You're at Traction. The fundamentals work, but leaks are bleeding conversions right before The Wall.",
+    "You're at Traction. The fundamentals work, but leaks are bleeding conversions right before the point where most stores stall.",
   silver:
     "You're at Optimization. Solid base, real structure — now it's about squeezing the funnel, not rebuilding it.",
   gold:
@@ -28,7 +28,8 @@ const CURRENT_LEAD: Record<RankKey, string> = {
 /** Per-rank teaser for the NEXT node (locked for Free). */
 const NEXT_TEASER: Record<RankKey, string> = {
   copper: "Reach Traction: make the offer legible in 2 seconds and earn first trust.",
-  steel: "Cross The Wall into Optimization: close the CRO leaks 87% of stores never fix.",
+  steel:
+    "Push past the stall point into Optimization: close the CRO leaks 87% of stores never fix.",
   silver: "Reach Scale: turn a converting store into a paid-traffic machine.",
   gold: "Reach Authority: brand gravity that lowers CAC on its own.",
   diamond: "Reach Elite: market leadership and defensible moat.",
@@ -64,7 +65,7 @@ export function scaffoldDiagnosis(
     : "";
   const wall =
     placement.atWallEdge
-      ? " You're one step from The Wall, where HBR found ~87% of companies stall."
+      ? " You're one step from where growth usually flattens — HBR found ~87% of companies stall there."
       : "";
   return `${lead}${evidenceLine}${nicheClause(nicheLabel)}${wall}`.trim();
 }

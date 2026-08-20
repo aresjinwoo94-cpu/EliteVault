@@ -243,61 +243,23 @@ export function GrowthMap({
       <Card className="glow-card relative overflow-hidden p-4 md:p-6">
         <div className="pointer-events-none absolute -right-16 -top-20 size-64 rounded-full bg-signal-500/10 blur-3xl" />
 
-        {/* §D — the return visit OPENS with what changed. Issue-delta is the
-            protagonist (resolved / new); the stage move is the secondary line.
-            Deterministic copy, 0 tokens. Present only when the issue-diff flag is
-            on server-side AND a prior run persisted issue snapshots. */}
-        {movement?.issueDelta &&
-          (movement.issueDelta.resolved.length > 0 ||
-            movement.issueDelta.introduced.length > 0) && (
-            <div className="relative mb-4 overflow-hidden rounded-xl border border-signal-400/25 bg-signal-500/[0.05] px-4 py-3.5">
-              <p className="text-[10.5px] uppercase tracking-[0.18em] text-white/45">
-                {t("report.changedSince").replace(
-                  "{date}",
-                  new Date(movement.previousAt).toLocaleDateString(),
-                )}
-              </p>
-              <div className="mt-2 space-y-2">
-                {movement.issueDelta.resolved.length > 0 && (
-                  <div className="flex items-start gap-2">
-                    <span className="mt-[3px] shrink-0 rounded-full bg-[#22C55E]/15 px-2 py-[1px] text-[10px] font-semibold text-[#22C55E]">
-                      {t("report.changedResolved")}
-                    </span>
-                    <p className="min-w-0 text-[12px] leading-relaxed text-white/80">
-                      {movement.issueDelta.resolved.map((i) => i.title).join(" · ")}
-                    </p>
-                  </div>
-                )}
-                {movement.issueDelta.introduced.length > 0 && (
-                  <div className="flex items-start gap-2">
-                    <span className="mt-[3px] shrink-0 rounded-full bg-champagne-300/15 px-2 py-[1px] text-[10px] font-semibold text-champagne-200">
-                      {t("report.changedNew")}
-                    </span>
-                    <p className="min-w-0 text-[12px] leading-relaxed text-white/70">
-                      {movement.issueDelta.introduced.map((i) => i.title).join(" · ")}
-                    </p>
-                  </div>
-                )}
-              </div>
-              <p className="mt-2 text-[11px] text-white/45">
-                {movement.rankMoveConfident &&
-                movement.currentRankIndex !== movement.previousRankIndex
-                  ? t("report.changedStageLine")
-                      .replace("{from}", rankByIndex(movement.previousRankIndex).material)
-                      .replace("{to}", rankByIndex(movement.currentRankIndex).material)
-                  : t("report.changedStageFlat")}
-                {movement.issueDelta.stillOpen.length > 0 && (
-                  <span className="text-white/35">
-                    {" · "}
-                    {t("report.changedStillOpen").replace(
-                      "{count}",
-                      String(movement.issueDelta.stillOpen.length),
-                    )}
-                  </span>
-                )}
-              </p>
-            </div>
-          )}
+        {/* WP-D — the "What changed since {date}" banner used to open the return
+            visit here, driven by movement.issueDelta.
+
+            Removed at the owner's request, and the brilliantearth.com case shows
+            why it was worth removing rather than just switching off: the diff
+            compares issues the MODEL reported between two runs, so when a run
+            never actually saw the store — a Cloudflare interstitial captured
+            instead of the site — the banner presented hallucinated findings as a
+            factual changelog ("New since last run: Cloudflare bot verification
+            blocks visitors instantly"). A diff is only as truthful as the two
+            snapshots under it.
+
+            The data path (lib/growth-map/movement.ts, the GROWTH_MAP_ISSUE_DIFF
+            flag, the persisted issue snapshots from migration 0025) is left
+            intact and untouched — nothing else renders it today, but WP-A adds
+            the capture_blocked signal that would have to gate it before this
+            banner could ever come back. */}
 
         {/* Minimal header (spec §7/§8) — short headline; detail lives in popovers */}
         <div className="relative flex items-start justify-between gap-4 flex-wrap">
@@ -305,10 +267,15 @@ export function GrowthMap({
             <p className="text-[10.5px] uppercase tracking-[0.2em] text-white/40">
               EliteVault Growth Map
             </p>
+            {/* WP-E — this whole line used to be hardcoded English, so a Spanish
+                reader got "You're at Steel — one step from The Wall" verbatim.
+                Both halves are keyed now: translating only the suffix would have
+                produced a worse, half-Spanish sentence. */}
             <h2 className="mt-1 font-display text-xl md:text-2xl tracking-tight leading-tight">
-              You&apos;re at <span className="text-gold-gradient">{rank.material}</span>
+              {t("report.youreAtPrefix")}{" "}
+              <span className="text-gold-gradient">{rank.material}</span>
               {data.placement.atWallEdge && (
-                <span className="text-white/60"> — one step from The Wall</span>
+                <span className="text-white/60"> {t("report.wallOneStep")}</span>
               )}
             </h2>
             {/* §C — the ad-readiness semáforo lives AT the Wall: clearing it is
@@ -354,11 +321,14 @@ export function GrowthMap({
                   className="font-mono tnum border-signal-400/40 text-signal-200"
                 >
                   {movement.previousComposite} → {movement.currentComposite}
+                  {/* WP-E — all three branches were hardcoded English. " · advanced"
+                      is keyed too: leaving its sibling untranslated would just move
+                      the same bug one line down. */}
                   {movement.crossedWall && movement.rankMoveConfident
-                    ? " · crossed The Wall"
+                    ? ` ${t("report.wallCrossed")}`
                     : movement.rankMoveConfident &&
                         movement.currentRankIndex > movement.previousRankIndex
-                      ? " · advanced"
+                      ? ` ${t("report.movementAdvanced")}`
                       : ""}
                 </Badge>
               )}
@@ -640,9 +610,9 @@ export function GrowthMap({
         <div className="mt-4 flex flex-wrap items-end justify-between gap-3 border-t border-white/[0.06] pt-3">
           <p className="text-[10.5px] leading-relaxed text-white/40 max-w-[60ch]">
             Stages after Churchill &amp; Lewis, “The Five Stages of Small Business
-            Growth” (HBR 1983). The Wall: Olson et al., “When Growth Stalls” (HBR
-            2008) — ~87% of companies stall. Dollar bands are EliteVault’s
-            approximate overlay, not a claim about your revenue.
+            Growth” (HBR 1983). The stall point: Olson et al., “When Growth
+            Stalls” (HBR 2008) — ~87% of companies stall. Dollar bands are
+            EliteVault’s approximate overlay, not a claim about your revenue.
           </p>
           <ExportButton
             getSvg={() => svgWrapRef.current?.querySelector("svg") ?? null}

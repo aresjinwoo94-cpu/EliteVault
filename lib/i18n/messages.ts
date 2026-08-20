@@ -332,14 +332,8 @@ const en: Dict = {
     leaksHeading: "Where you're leaking sales",
     leaksSub:
       "Your six conversion dimensions — the lowest are where cold traffic slips away before it buys.",
-    // Master brief §D — the return-visit "what changed" block. Issue-delta is the
-    // protagonist; the stage move is the secondary line. Dates/counts interpolated.
-    changedSince: "What changed since {date}",
-    changedResolved: "Fixed",
-    changedNew: "New since last run",
-    changedStillOpen: "{count} still open",
-    changedStageLine: "Stage: {from} → {to}",
-    changedStageFlat: "Same stage — but the bar moved.",
+    // (WP-D removed the return-visit "what changed" block and its six
+    // changed* keys — nothing renders them any more.)
     // Master brief §C — the current→next segment reveals the escalera (fixes).
     climbHeading: "How you climb",
     climbMoreFixes: "+{count} more fixes with Pro",
@@ -354,10 +348,23 @@ const en: Dict = {
     lensAuditHint: "{n} issues marked on your store",
     lensLeaks: "See where you're leaking sales",
     // Master brief §C — the ad-readiness semáforo that sits at the Wall.
-    wallPrefix: "The Wall",
+    // WP-E — "The Wall" was internal shorthand borrowed from HBR research. To a
+    // first-time user it's unexplained jargon, so the visible copy now says what
+    // it means. The HBR statistic stays (it's evidence); only the NAME goes.
+    // Kept short: this is a badge prefix rendered as "{wallPrefix} · Ad-ready".
+    // Short and neutral on purpose: it renders as "{wallPrefix} · Ad-ready", and
+    // a second-person phrasing there ("Where you stall · Ad-ready") reads as a
+    // contradiction rather than a label followed by a verdict.
+    wallPrefix: "Stall point",
     wallAdReady: "Ad-ready",
     wallAdAlmost: "Almost ad-ready",
     wallAdNot: "Not ad-ready",
+    // WP-E — these three were hardcoded English in growth-map.tsx and never
+    // passed through t(), so a Spanish reader saw them in English. Now keyed.
+    wallOneStep: "— one step from where stores stall",
+    wallCrossed: "· past the stall point",
+    movementAdvanced: "· advanced",
+    youreAtPrefix: "You're at",
   },
   analyzerDemo: {
     heading: "What $1,500 of CRO consulting looks like. Free.",
@@ -1021,14 +1028,8 @@ const es: Dict = {
     leaksHeading: "Dónde se te fuga la venta",
     leaksSub:
       "Tus seis dimensiones de conversión — las más bajas son por donde el tráfico frío se escapa antes de comprar.",
-    // Master brief §D — el bloque "qué cambió" de la re-visita. El delta de
-    // issues es el protagonista; el cambio de etapa es la línea secundaria.
-    changedSince: "Qué cambió desde {date}",
-    changedResolved: "Resuelto",
-    changedNew: "Nuevo desde la última corrida",
-    changedStillOpen: "{count} siguen abiertos",
-    changedStageLine: "Etapa: {from} → {to}",
-    changedStageFlat: "Misma etapa — pero la barra se movió.",
+    // (WP-D quitó el bloque "qué cambió" de la re-visita y sus seis claves
+    // changed* — ya nada las renderiza.)
     // Master brief §C — el segmento actual→siguiente revela la escalera (fixes).
     climbHeading: "Cómo subes",
     climbMoreFixes: "+{count} arreglos más con Pro",
@@ -1043,10 +1044,27 @@ const es: Dict = {
     lensAuditHint: "{n} problemas marcados en tu tienda",
     lensLeaks: "Ve dónde se te fuga la venta",
     // Master brief §C — el semáforo de ad-readiness que vive en el Muro.
-    wallPrefix: "El Muro",
+    // WP-E — "El Muro" era jerga interna tomada de una investigación de HBR.
+    // Para alguien que entra por primera vez no significa nada, así que el copy
+    // visible ahora dice lo que quiere decir. El dato de HBR se queda (es
+    // evidencia); lo que se va es el NOMBRE. Corto: es el prefijo de un badge
+    // que se renderiza como "{wallPrefix} · Listo para ads".
+    // Mismo registro que el inglés: es una etiqueta seguida de un veredicto
+    // ("Punto de estancamiento · Listo para ads"), no una frase dirigida al
+    // lector — en segunda persona el badge se lee como una contradicción.
+    wallPrefix: "Punto de estancamiento",
     wallAdReady: "Listo para ads",
     wallAdAlmost: "Casi listo para ads",
     wallAdNot: "No listo para ads",
+    // WP-E — estas tres estaban hardcodeadas en inglés en growth-map.tsx y
+    // nunca pasaban por t(), así que un lector en español las veía en inglés.
+    wallOneStep: "— a un paso de donde te estancas",
+    // Ambas salen del MISMO badge, en ramas hermanas del ternario, así que
+    // tienen que hablarle al lector con la misma voz: "superaste"/"avanzaste",
+    // no "superaste"/"avanzó". Y "superar" es lo idiomático aquí, no "pasar".
+    wallCrossed: "· ya superaste el estancamiento",
+    movementAdvanced: "· avanzaste",
+    youreAtPrefix: "Estás en",
   },
   analyzerDemo: {
     heading: "Así se ve una consultoría CRO de $1,500. Gratis.",

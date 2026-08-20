@@ -24,12 +24,8 @@ const REPORT_KEYS = [
   "potentialBand",
   "leaksHeading",
   "leaksSub",
-  "changedSince",
-  "changedResolved",
-  "changedNew",
-  "changedStillOpen",
-  "changedStageLine",
-  "changedStageFlat",
+  // The six changed* keys were removed with the "What changed since" banner
+  // (WP-D) — the parity guard must not demand copy that nothing renders.
   "climbHeading",
   "climbMoreFixes",
   "fixIndexHeading",
@@ -44,6 +40,35 @@ const REPORT_KEYS = [
   "wallAdAlmost",
   "wallAdNot",
 ] as const;
+
+test("WP-D: the 'what changed' banner copy is gone from both locales", () => {
+  // Acceptance: the banner must not appear for ANY movement data. The strongest
+  // static guarantee is that the copy it rendered no longer exists — a future
+  // re-wire would fail here rather than silently ship the banner again.
+  //
+  // It was removed because the diff is only as truthful as the two snapshots
+  // under it: on a run that captured a Cloudflare interstitial instead of the
+  // store, it presented hallucinated findings as a factual changelog.
+  const REMOVED = [
+    "changedSince",
+    "changedResolved",
+    "changedNew",
+    "changedStillOpen",
+    "changedStageLine",
+    "changedStageFlat",
+  ];
+  for (const locale of ["en", "es"] as const) {
+    const report = (messages[locale] as Record<string, Record<string, unknown>>)
+      .report;
+    for (const key of REMOVED) {
+      assert.equal(
+        report[key],
+        undefined,
+        `[${locale}] report.${key} should have been removed with the banner`,
+      );
+    }
+  }
+});
 
 test("report copy exists in both locales (en + es)", () => {
   for (const locale of ["en", "es"] as const) {
