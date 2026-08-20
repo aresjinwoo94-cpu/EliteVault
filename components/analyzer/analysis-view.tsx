@@ -412,6 +412,7 @@ export function AnalysisView({
                 url={data.url}
                 isPaid={viewer.isPaid}
                 mapSpine={viewer.mapSpine ?? false}
+                storedPageKind={data.discovery_signals?.pageKind}
               />
             </div>
 

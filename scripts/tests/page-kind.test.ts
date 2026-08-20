@@ -89,6 +89,39 @@ test("classification ignores case and query noise", () => {
   );
 });
 
+test("a marker only counts where a platform actually puts it", () => {
+  // Regression: matching these anywhere in the path put a confidently false
+  // sentence in BOTH the prompt and the report at once — the audit would tell
+  // someone their About page was "a single product page".
+  for (const url of [
+    "https://acme.com/shop/about",
+    "https://acme.com/pages/shop/about",
+    "https://acme.com/blog/p/how-we-make-rings",
+    "https://acme.com/help/p/faq",
+    "https://acme.com/support/product/warranty",
+    "https://acme.com/blog/collections/spring-lookbook",
+  ]) {
+    assert.notEqual(classifyPageKind(url), "product", url);
+  }
+});
+
+test("locale prefixes are routing, not structure", () => {
+  // Extremely common on DTC stores, and both halves have to hold.
+  assert.equal(classifyPageKind("https://acme.com/en-us/products/ring"), "product");
+  assert.equal(classifyPageKind("https://acme.com/de/collections/schuhe"), "collection");
+  assert.equal(classifyPageKind("https://acme.com/en-gb/"), "home");
+  assert.equal(classifyPageKind("https://acme.com/fr"), "home");
+});
+
+test("a shop archive is a listing, not a product", () => {
+  // WooCommerce's /shop/ IS the catalogue page; its products live at /product/.
+  assert.equal(classifyPageKind("https://acme.com/shop"), "collection");
+  assert.equal(classifyPageKind("https://acme.com/shop/"), "collection");
+  assert.equal(classifyPageKind("https://acme.com/product-category/shirts"), "collection");
+  // …but a real Woo/generic product slug under /shop/ still reads as one.
+  assert.equal(classifyPageKind("https://acme.com/shop/blue-widget"), "product");
+});
+
 test("a word merely CONTAINING a keyword isn't a match", () => {
   // "/shopping-guide" is editorial, not a product; "/production" is not
   // "/product/". Substring matching here would mislabel content pages.

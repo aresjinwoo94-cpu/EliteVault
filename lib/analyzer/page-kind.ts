@@ -19,29 +19,42 @@
 export type PageKind = "home" | "product" | "collection" | "other";
 
 /**
- * Product paths, mirroring PRODUCT_PATTERNS in lib/site-discovery.ts — the same
- * shapes it already uses to FIND product pages, now applied to the URL we were
- * handed. Each requires a slug after the segment, so a bare `/products` listing
- * isn't mistaken for a product.
+ * Segment names that introduce a product, keyed by where they're allowed.
+ *
+ * Matching these ANYWHERE in the path was the first implementation and it was
+ * wrong: `/shop/about`, `/blog/p/how-we-make-rings` and
+ * `/support/product/warranty` all came back "product", which put a confidently
+ * false sentence in the prompt AND in the report at the same time. A marker
+ * only means "product" in the position a platform actually puts it.
  */
-const PRODUCT_PATHS: RegExp[] = [
-  /\/products\/[^/]+/i, // Shopify
-  /\/product\/[^/]+/i, // WooCommerce
-  /\/shop\/[^/]+/i,
-  /\/catalog\/product\//i, // Magento
-  /\/p\/[^/]+/i,
-];
+const PRODUCT_MARKERS = new Set(["products", "product", "p", "shop"]);
+
+/** Segment names that introduce a listing. */
+const COLLECTION_MARKERS = new Set([
+  "collections",
+  "collection",
+  "category",
+  "categories",
+  "product-category", // WooCommerce
+]);
 
 /**
- * Category/listing paths. Checked AFTER products on purpose: Shopify's
- * canonical product URL nests under a collection
- * (`/collections/wedding/products/beveled-ring`), and that is a product page.
+ * Slugs that are never a product, however the path is shaped.
+ *
+ * `/shop/` and `/p/` are the genuinely ambiguous markers — plenty of stores use
+ * `/shop/<slug>` for products and plenty use it for content. Position alone
+ * can't separate `/shop/tote-bag` from `/shop/about`, so this closes the
+ * realistic remainder rather than pretending the ambiguity isn't there.
  */
-const COLLECTION_PATHS: RegExp[] = [
-  /\/collections?\/[^/]+/i,
-  /\/categor(?:y|ies)\/[^/]+/i,
-  /\/shop-all\b/i,
-];
+const NEVER_A_PRODUCT = new Set([
+  "about", "about-us", "contact", "contact-us", "faq", "faqs", "help",
+  "support", "terms", "privacy", "policies", "policy", "legal", "blog",
+  "news", "press", "cart", "checkout", "account", "login", "register",
+  "search", "sitemap", "returns", "shipping", "stockists", "wholesale",
+]);
+
+/** A locale prefix like `en`, `de`, `en-gb`, `fr-fr`. */
+const LOCALE_SEGMENT = /^[a-z]{2}(?:-[a-z]{2})?$/i;
 
 export function classifyPageKind(url: string | null | undefined): PageKind {
   if (!url) return "other";
@@ -50,17 +63,58 @@ export function classifyPageKind(url: string | null | undefined): PageKind {
   try {
     const u = new URL(url);
     if (!u.hostname) return "other";
+    if (u.protocol !== "http:" && u.protocol !== "https:") return "other";
     path = u.pathname;
   } catch {
     return "other";
   }
 
+  const segments = path
+    .split("/")
+    .filter(Boolean)
+    .map((s) => decodeURIComponent(s).toLowerCase());
+
+  // A leading locale is routing, not structure — `/en-gb/products/ring` is a
+  // product page and `/en-gb/` is the front door, exactly like their unprefixed
+  // forms. Dropping it here is what makes both true.
+  if (segments.length > 0 && LOCALE_SEGMENT.test(segments[0])) segments.shift();
+
   // The front door. Query strings and hashes are campaign noise, not structure,
   // and `new URL()` has already stripped them from pathname.
-  if (path === "" || path === "/") return "home";
+  if (segments.length === 0) return "home";
 
-  for (const re of PRODUCT_PATHS) if (re.test(path)) return "product";
-  for (const re of COLLECTION_PATHS) if (re.test(path)) return "collection";
+  // Magento's product URL: /catalog/product/view/id/42
+  if (segments[0] === "catalog" && segments[1] === "product") return "product";
+
+  /**
+   * A marker counts in the FIRST position, or nested under a collection.
+   *
+   * The nesting check has to look TWO back, not one: Shopify's canonical
+   * product URL is /collections/<collection-slug>/products/<product-slug>, so
+   * the segment before `products` is the collection's SLUG, not the marker.
+   * Checking only one back silently classified every nested Shopify product
+   * URL — the most common shape there is — as a collection.
+   */
+  const positioned = (i: number) =>
+    i === 0 ||
+    COLLECTION_MARKERS.has(segments[i - 1]) ||
+    (i >= 2 && COLLECTION_MARKERS.has(segments[i - 2]));
+
+  // PRODUCTS ARE SCANNED FIRST, across the whole path. Returning on the first
+  // marker of either kind would classify that same Shopify URL as a collection,
+  // because `collections` comes before `products` in it.
+  for (let i = 0; i < segments.length - 1; i++) {
+    if (!positioned(i)) continue;
+    if (PRODUCT_MARKERS.has(segments[i]) && !NEVER_A_PRODUCT.has(segments[i + 1])) {
+      return "product";
+    }
+  }
+  for (let i = 0; i < segments.length - 1; i++) {
+    if (positioned(i) && COLLECTION_MARKERS.has(segments[i])) return "collection";
+  }
+
+  // Listing pages that are a single segment rather than a marker + slug.
+  if (segments[0] === "shop-all" || segments[0] === "shop") return "collection";
 
   return "other";
 }

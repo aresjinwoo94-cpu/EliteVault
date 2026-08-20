@@ -39,6 +39,9 @@ const REPORT_KEYS = [
   "lensAudit",
   "lensAuditHint",
   "lensLeaks",
+  // WP-B — the single-page framing, both locales.
+  "pageKindProduct",
+  "pageKindCollection",
   "wallPrefix",
   "wallAdReady",
   "wallAdAlmost",

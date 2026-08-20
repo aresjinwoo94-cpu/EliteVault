@@ -14,7 +14,7 @@ import {
 import { scaffoldNodes, scaffoldDiagnosis } from "@/lib/growth-map/phrase-bank";
 import { resolveNicheLabel } from "@/lib/growth-map/niche";
 import { rankByIndex, RANKS } from "@/lib/growth-map/ranks";
-import { classifyPageKind } from "@/lib/analyzer/page-kind";
+import { classifyPageKind, type PageKind } from "@/lib/analyzer/page-kind";
 import { gateForViewer } from "@/lib/growth-map/gate";
 import type { GrowthMapData } from "@/lib/growth-map/types";
 import { useT } from "@/components/i18n/locale-provider";
@@ -39,6 +39,7 @@ export function GrowthMap({
   url,
   isPaid,
   mapSpine = false,
+  storedPageKind,
 }: {
   analysisId: string;
   result: AnalysisResult;
@@ -50,12 +51,23 @@ export function GrowthMap({
    * potential band. Off ⇒ the score badge renders exactly as before.
    */
   mapSpine?: boolean;
+  /**
+   * WP-B — the page kind the PIPELINE recorded for this audit (from the
+   * persisted discovery signals). Undefined on older audits, which fall back to
+   * classifying the URL.
+   */
+  storedPageKind?: PageKind;
 }) {
   const { t } = useT();
-  // WP-B — derived here from the same pure classifier the server uses, rather
-  // than plumbed through props: one source of truth, and it works for audits
-  // stored before pageKind was persisted.
-  const pageKind = useMemo(() => classifyPageKind(url), [url]);
+  // WP-B — prefer what the AUDIT recorded, and only re-derive when it didn't.
+  // The stored value is what the pipeline actually concluded at run time, so a
+  // later change to the classifier can't retroactively relabel an old report;
+  // the fallback covers audits from before pageKind was persisted (and any
+  // database without migration 0030 applied).
+  const pageKind = useMemo(
+    () => storedPageKind ?? classifyPageKind(url),
+    [storedPageKind, url],
+  );
   const domain = useMemo(() => {
     if (!url) return null;
     try {
