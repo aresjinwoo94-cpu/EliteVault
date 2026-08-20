@@ -1,4 +1,5 @@
 import "server-only";
+import { classifyPageKind, type PageKind } from "@/lib/analyzer/page-kind";
 
 /**
  * Multi-page site discovery + full-page content extraction.
@@ -100,6 +101,13 @@ export interface DiscoverySummary {
   ctaTexts: string[];
   /** Image alt texts (first 12) — useful for trust badges and product imagery. */
   imageAlts: string[];
+
+  /**
+   * WP-B — what KIND of page the audit was pointed at. Derived from the URL
+   * alone (lib/analyzer/page-kind.ts), so it's available even when the fetch
+   * fails and costs nothing. Drives copy only, never scoring.
+   */
+  pageKind: PageKind;
 }
 
 export async function discoverSite(rootUrl: string): Promise<DiscoverySummary> {
@@ -118,6 +126,9 @@ export async function discoverSite(rootUrl: string): Promise<DiscoverySummary> {
     faqQuestions: [],
     ctaTexts: [],
     imageAlts: [],
+    // Set up front, from the URL alone, so it survives every early return
+    // below — a bot-blocked or unreachable page still knows what it WAS.
+    pageKind: classifyPageKind(rootUrl),
   };
 
   let html = "";

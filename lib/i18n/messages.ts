@@ -354,6 +354,13 @@ const en: Dict = {
     lensAuditHint: "{n} issues marked on your store",
     lensLeaks: "See where you're leaking sales",
     // Master brief §C — the ad-readiness semáforo that sits at the Wall.
+    // WP-B — shown under the map when the audit was pointed at ONE page. The
+    // stage is computed from that page alone, so presenting it as a read of the
+    // whole business would be the same kind of overclaim WP-A removed.
+    pageKindProduct:
+      "This reads one product page, not your whole store — so the stage below is a projection from that page, not a full read of the business.",
+    pageKindCollection:
+      "This reads one collection page, not your whole store — so the stage below is a projection from that page, not a full read of the business.",
     wallPrefix: "The Wall",
     wallAdReady: "Ad-ready",
     wallAdAlmost: "Almost ad-ready",
@@ -1043,6 +1050,11 @@ const es: Dict = {
     lensAuditHint: "{n} problemas marcados en tu tienda",
     lensLeaks: "Ve dónde se te fuga la venta",
     // Master brief §C — el semáforo de ad-readiness que vive en el Muro.
+    // WP-B — se muestra bajo el mapa cuando la auditoría apuntó a UNA página.
+    pageKindProduct:
+      "Esto lee una página de producto, no tu tienda completa — así que la etapa de abajo es una proyección desde esa página, no una lectura completa del negocio.",
+    pageKindCollection:
+      "Esto lee una página de colección, no tu tienda completa — así que la etapa de abajo es una proyección desde esa página, no una lectura completa del negocio.",
     wallPrefix: "El Muro",
     wallAdReady: "Listo para ads",
     wallAdAlmost: "Casi listo para ads",

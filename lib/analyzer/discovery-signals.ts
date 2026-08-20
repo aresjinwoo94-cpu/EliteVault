@@ -1,4 +1,5 @@
 import type { DiscoverySummary } from "@/lib/site-discovery";
+import { isSinglePage, type PageKind } from "@/lib/analyzer/page-kind";
 
 /**
  * WP-3 — the "we already know this about your store" chips shown WHILE the
@@ -36,6 +37,11 @@ export interface DiscoverySignals {
   reviews: number;
   /** Count of FAQ questions found. */
   faqs: number;
+  /**
+   * WP-B — "home" | "product" | "collection" | "other". Persisted so the report
+   * can frame itself honestly without re-deriving from a URL it may not have.
+   */
+  pageKind?: PageKind;
 }
 
 /**
@@ -78,7 +84,13 @@ export function summarizeDiscovery(
     priceRange: priceRange(discovery.prices),
     reviews: discovery.reviewSnippets.length,
     faqs: discovery.faqQuestions.length,
+    pageKind: discovery.pageKind,
   };
+
+  // WP-B — knowing the audit is pointed at ONE page is worth persisting on its
+  // own, even from a store that yielded no other signal. It's what stops the
+  // report calling a single product page "your store".
+  if (isSinglePage(discovery.pageKind)) return signals;
 
   // "Nothing worth showing": discovery ran but came back empty-handed —
   // typically a bot-blocked store that refused the fetch. `platform: "custom"`

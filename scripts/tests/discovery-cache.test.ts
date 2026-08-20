@@ -36,6 +36,7 @@ function summary(over: Partial<DiscoverySummary> = {}): DiscoverySummary {
     faqQuestions: [],
     ctaTexts: [],
     imageAlts: [],
+    pageKind: "home" as const,
     ...over,
   };
 }

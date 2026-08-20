@@ -14,6 +14,7 @@ import {
 import { scaffoldNodes, scaffoldDiagnosis } from "@/lib/growth-map/phrase-bank";
 import { resolveNicheLabel } from "@/lib/growth-map/niche";
 import { rankByIndex, RANKS } from "@/lib/growth-map/ranks";
+import { classifyPageKind } from "@/lib/analyzer/page-kind";
 import { gateForViewer } from "@/lib/growth-map/gate";
 import type { GrowthMapData } from "@/lib/growth-map/types";
 import { useT } from "@/components/i18n/locale-provider";
@@ -51,6 +52,10 @@ export function GrowthMap({
   mapSpine?: boolean;
 }) {
   const { t } = useT();
+  // WP-B — derived here from the same pure classifier the server uses, rather
+  // than plumbed through props: one source of truth, and it works for audits
+  // stored before pageKind was persisted.
+  const pageKind = useMemo(() => classifyPageKind(url), [url]);
   const domain = useMemo(() => {
     if (!url) return null;
     try {
@@ -328,6 +333,18 @@ export function GrowthMap({
             <p className="mt-1.5 text-[11.5px] leading-snug text-white/45 max-w-[52ch]">
               {t("report.mapIntro")}
             </p>
+            {/* WP-B — the map places a STORE on a stage, but the audit may have
+                been pointed at a single page. Saying so is the difference
+                between a projection and an overclaim about the business. */}
+            {pageKind === "product" || pageKind === "collection" ? (
+              <p className="mt-1.5 text-[11.5px] leading-snug text-champagne-300/70 max-w-[52ch]">
+                {t(
+                  pageKind === "product"
+                    ? "report.pageKindProduct"
+                    : "report.pageKindCollection",
+                )}
+              </p>
+            ) : null}
             <div className="mt-2 flex items-center gap-2 flex-wrap">
               {domain && (
                 <span className="font-mono text-[11px] text-white/45 truncate max-w-[200px]">
