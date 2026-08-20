@@ -155,6 +155,9 @@ function discovery(over: Partial<DiscoverySummary> = {}): DiscoverySummary {
     faqQuestions: [],
     ctaTexts: [],
     imageAlts: [],
+    // WP-A's fields, required on DiscoverySummary since the two WPs merged.
+    challengeDetected: false,
+    challengeVendor: null,
     pageKind: "home",
     ...over,
   };
