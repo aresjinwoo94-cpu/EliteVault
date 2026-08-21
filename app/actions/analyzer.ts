@@ -11,6 +11,7 @@ import { PLANS } from "@/lib/stripe/plans";
 import { assertQuota } from "@/lib/quota/guard";
 import { findReusableAnalysis } from "@/lib/analysis/reuse";
 import { validatePublicStoreUrl } from "@/lib/security/url-guard";
+import { isBareIpHost, BARE_IP_REASON } from "@/lib/analyzer/store-url-policy";
 
 const CreateAnalysisInput = z.object({
   url: z.string().min(3).optional(),
@@ -61,6 +62,10 @@ export async function createAnalysis(
   if (parsed.data.url) {
     const guard = validatePublicStoreUrl(parsed.data.url);
     if (!guard.ok) return { ok: false, error: guard.reason };
+    // A PUBLIC bare IP passes the security guard (fetching one is not an SSRF
+    // risk) but is never a storefront. Measured: 1-3 a day, each burning
+    // 130-207s through the capture chain and retry ladder before refunding.
+    if (isBareIpHost(guard.url)) return { ok: false, error: BARE_IP_REASON };
     url = normalizeUrl(guard.url);
   }
 
