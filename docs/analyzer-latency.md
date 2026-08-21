@@ -39,18 +39,23 @@ one hypothesis is dead. Check it yourself any time:
 curl "https://api.screenshotone.com/usage?access_key=$SCREENSHOTONE_ACCESS_KEY"
 ```
 
-**O-2 cannot be settled by inspection.** Nothing in a key string reveals its
-project and Vercel marks the values Sensitive, so "are `_2` and `_3` in
-different projects?" is answerable only by behaviour:
+**O-2 is VERIFIED DONE (2026-08-20): the three keys are three independent
+projects.** Measured, not assumed — `scripts/gemini-pool-check.mts` saturated
+one key until it rate-limited, then probed the others immediately; both answered
+200, so neither shares the first one's quota. The pool is real, ~45 RPM.
+
+Note this could not be answered by inspection: nothing in a key string reveals
+its project, and Vercel marks these values **Sensitive**, which makes them
+write-only — neither the dashboard nor `vercel env pull` will return them. The
+keys have to come from AI Studio, where they were created. To re-check later:
 
 ```bash
-vercel env pull .env.production.local
-ENV_FILE=.env.production.local npx tsx --tsconfig scripts/tests/tsconfig.json scripts/gemini-pool-check.mts
+ENV_FILE=<file with the keys> npx tsx --tsconfig scripts/tests/tsconfig.json scripts/gemini-pool-check.mts
 ```
 
-It saturates one key until it rate-limits, then probes the others immediately: a
-key that also 429s shares that project's quota and is adding rotation cost
-without adding throughput.
+**And more keys are not the remaining lever.** Run C in §4b was taken with this
+real 3-project pool and still saw 8.5s → 50s+ on identical input, plus a Google
+`503`. The residual variance is the provider's, not the quota's.
 
 O-2 is free and takes minutes: create additional Google Cloud projects, mint a
 Gemini key in each, and set them as `GEMINI_API_KEY_2`, `GEMINI_API_KEY_3`, …
@@ -222,41 +227,59 @@ What survives from this honestly:
 - **A local run tells you nothing about production's key pool.** Read the
   production env, never `.env.local`, before drawing a conclusion about quota.
 
-### What is still missing for WP-C — updated after the capture work
+### Criterion 1 — the measurement is complete; the TARGET is not met
 
-1. ~~A capture-side benchmark~~ — **done**, see §4a. n=5 per store, cold,
-   mean + p95, all five reference categories.
-2. ~~Real `finished_at − started_at` from `analyses`~~ — **done**, see §4a.
-3. ~~Repeats per cell~~ — **done for capture** (n=5, tight variance). For the
-   VISION call, repeats do not rescue the measurement — see below.
-4. **A measurement against the production key pool — still missing, and it is
-   the blocker.**
+All four missing pieces are now done:
 
-### Why the vision half cannot be measured from a dev machine
+1. ~~Capture-side benchmark~~ — §4a. n=5 per store, cold, all five categories.
+2. ~~Real `finished_at − started_at` from `analyses`~~ — §4a. 30 days, n=108.
+3. ~~Repeats per cell~~ — n=5 capture, n=5 vision, interleaved and paced.
+4. ~~A measurement against the real key pool~~ — run C below, 3 independent
+   projects (verified by `scripts/gemini-pool-check.mts`).
 
-The image-height question — the one lever that would work inside a fixed 60s —
-was measured twice with `scripts/measure-image-height.mts`, interleaved and
-paced, on the same captured bytes:
+**And the target is still not met, for a reason the measurement now explains
+rather than guesses at.** The brief wanted normal and fast stores near ~30s by
+adapting capture wait and image height to page weight. Measurement says:
 
-| run | 4500px (521KB) | 2500px (285KB) |
-|---|---|---|
-| A (n=4, interleaved, 20s pause) | 44.4s, **3 of 4 failed** | 15.2s, 0 failed |
-| B (n=3, interleaved, 15s pause) | **17.7s, 0 failed** | 36.1s, 2 failed |
+- capture is 6–19s cold for every category, so there is no capture time to win;
+- image height has no measurable effect on vision time (three runs, three
+  different winners);
+- the vision call varies 8.5s → past 50s **on identical input with a healthy
+  key pool**, which is Google-side queueing, not anything we feed it.
 
-**The effect does not replicate — it reverses.** Interleaving fixed the
-scheduling confound and the result still flipped, which means the variance from
-a single rate-limited local key is *larger than the effect being measured*. No
-number of local repeats fixes that; the noise source is the key, not the sample
-size.
+There is no page property that predicts the wait, so there is nothing to adapt
+the budget *to*. WP-C's proposed mechanism does not exist. Saying "criterion 1
+met" would require inventing a number; it isn't, and this is why.
 
-So the honest state of criterion 1: the capture half is measured and clean, the
-vision half is **not measurable here**. Anyone who reruns these scripts locally
-will get a different answer each time, and none of them mean anything about
-production. Run them with `vercel env pull` against the real pool, or don't
-quote them.
+### Image height is NOT the lever — measured three times, against the real pool
 
-**Nothing about image height has been changed**, because nothing about it has
-been established.
+This document asserted for a long time that "height is what the vision call is
+both billed and timed on", and WP-C proposed tuning it. It was never measured.
+`scripts/measure-image-height.mts` measures it: the same page captured at
+several heights, then the same vision call repeated on each — arms
+**interleaved** so both sit in the same part of the provider's load curve, and
+paced so a key can recover between calls.
+
+| run | pool | n | 4500px (521KB) | 3500px (427KB) | 2500px (285KB) |
+|---|---|---|---|---|---|
+| A | 1 key | 4 | 44.4s, 3 failed | — | **15.2s, 0 failed** |
+| B | 1 key | 3 | **17.7s, 0 failed** | 33.9s, 1 failed | 36.1s, 2 failed |
+| C | **3 keys** | 5 | 29.6s, 2 failed | **16.9s, 0 failed** | 38.6s, 2 failed |
+
+**Every run crowns a different winner, including the run with a real 3-project
+pool.** In run C the *smallest* image was the *slowest* — which cannot be true
+if height drove the time.
+
+The variance on identical input is the finding. Run C's 4500px arm, same bytes
+five times: `50.0, 25.8, 50.0, 8.5, 13.6`. **8.5s to past 50s on one image**,
+with a healthy pool, and one run failed with an explicit Google `503`.
+
+So the noise is **provider-side** — model queueing and overload on Google's end
+— not quota and not page weight. More keys don't damp it (run C proves that),
+and neither would a shorter image.
+
+**Nothing about image height was changed.** Lowering the cap would cost report
+coverage and buy nothing measurable.
 
 Until those exist, **no budget should be changed**, and none was: `lib/deadline.ts`,
 `lib/screenshot-core.ts`, `app/api/inngest/route.ts` and `lib/flags.ts` have zero

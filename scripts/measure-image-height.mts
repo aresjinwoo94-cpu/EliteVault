@@ -24,12 +24,38 @@
  */
 import { readFileSync } from "node:fs";
 
-for (const line of readFileSync(".env.local", "utf8").split("\n")) {
-  if (!line || line.startsWith("#") || !line.includes("=")) continue;
-  const k = line.slice(0, line.indexOf("=")).trim();
-  const v = line.slice(line.indexOf("=") + 1).trim();
-  if (!process.env[k]) process.env[k] = v;
+/**
+ * ENV_FILE lets this run against the REAL key pool instead of the single key in
+ * .env.local. That distinction decides whether the output means anything: with
+ * one rate-limited key the variance is larger than the effect being measured,
+ * and the same A/B has been observed to reverse between runs.
+ *
+ * The extra pool file is read FIRST so its keys win, then .env.local fills in
+ * everything else (Supabase, ScreenshotOne) without overriding them.
+ */
+for (const file of [process.env.ENV_FILE, ".env.local"].filter(Boolean) as string[]) {
+  let contents: string;
+  try {
+    contents = readFileSync(file, "utf8");
+  } catch {
+    continue;
+  }
+  for (const line of contents.split("\n")) {
+    if (!line || line.trimStart().startsWith("#") || !line.includes("=")) continue;
+    const k = line.slice(0, line.indexOf("=")).trim();
+    let v = line.slice(line.indexOf("=") + 1).trim();
+    if (v.startsWith('"') && v.endsWith('"')) v = v.slice(1, -1);
+    if (!process.env[k] && v) process.env[k] = v;
+  }
 }
+console.log(
+  `Key pool: ${
+    [
+      process.env.GEMINI_API_KEY,
+      ...Array.from({ length: 9 }, (_, i) => process.env[`GEMINI_API_KEY_${i + 2}`]),
+    ].filter(Boolean).length
+  } key(s)`,
+);
 
 const { captureWithScreenshotOne } = await import("../lib/screenshot-core");
 const { runAnalyzerAgent } = await import("../ai/agents/analyzer-agent");
