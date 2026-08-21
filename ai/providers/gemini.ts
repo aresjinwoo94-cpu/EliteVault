@@ -150,6 +150,45 @@ let rrCursor = 0;
 const COOLDOWN_MS = 65_000; // per-minute window + small buffer
 
 /**
+ * How long to wait for a call before firing a hedge on a second key.
+ *
+ * 0 disables hedging entirely, which is the DEFAULT: the projected benefit is
+ * large but it is a projection from 15 samples, and it doubles AI calls on the
+ * slow tail. See the comment on `callWithKey` for the numbers and the caveat.
+ *
+ * A sensible first value is 12000. Measured, a third of calls finish under 15s
+ * and would pay nothing extra, while the slow tail gets a second independent
+ * draw with most of the step budget still in hand.
+ */
+const HEDGE_AFTER_MS = (() => {
+  const raw = Number(process.env.GEMINI_HEDGE_AFTER_MS);
+  // Floor of 2s — hedging sooner than that just doubles every call.
+  return Number.isFinite(raw) && raw >= 2_000 ? Math.round(raw) : 0;
+})();
+
+/**
+ * Resolve with the first promise to FULFILL; reject only if both reject.
+ *
+ * `Promise.race` is the wrong primitive here — it settles on the first
+ * REJECTION too, which would let one bad draw decide the run, exactly what
+ * hedging exists to prevent. The FIRST error is the one propagated so the
+ * caller's retry ladder still sees the error shape it expects (429, 503,
+ * empty response…) when neither call worked.
+ */
+export function firstFulfilled<T>(a: Promise<T>, b: Promise<T>): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    let rejections = 0;
+    let firstError: unknown;
+    const onReject = (err: unknown) => {
+      if (rejections === 0) firstError = err;
+      if (++rejections === 2) reject(firstError);
+    };
+    a.then(resolve, onReject);
+    b.then(resolve, onReject);
+  });
+}
+
+/**
  * Pick the next non-cooled-down key in round-robin order.
  * Returns the index into CLIENTS, or null if every key is on cooldown.
  */
@@ -280,7 +319,12 @@ async function generateStructured<T>(
 
   const baseMaxTokens = opts.maxTokens ?? 8192;
 
-  const callWithKey = (keyIdx: number, model: string, maxOutputTokens: number) =>
+  const callOnce = (
+    keyIdx: number,
+    model: string,
+    maxOutputTokens: number,
+    extraSignal?: AbortSignal,
+  ) =>
     CLIENTS[keyIdx].models.generateContent({
       model,
       contents,
@@ -297,9 +341,84 @@ async function generateStructured<T>(
           : {}),
         // Abort as soon as the budget is gone (or the caller cancels) so a
         // hanging generation can't run into the platform timeout.
-        abortSignal: dl.signal({ parent: opts.signal }),
+        abortSignal: dl.signal({ parent: extraSignal ?? opts.signal }),
       } as never,
     });
+
+  /**
+   * Deferred hedge — the one strategy that attacks the VARIANCE.
+   *
+   * Measured against a healthy 3-project pool, the same image took 7.4s to past
+   * 50s across 15 calls: 33% under 15s, 27% never finishing inside the budget.
+   * Nothing we send changes that; the spread is Google-side queueing. So the
+   * lever isn't making a call faster, it's not being stuck with one bad draw.
+   *
+   * After HEDGE_AFTER_MS with no answer, a SECOND call goes out on a DIFFERENT
+   * key and whichever answers first wins. Deferred rather than immediate on
+   * purpose: the third of calls that are already fast cost nothing extra, so
+   * the 2x is paid only on the tail that's actually slow.
+   *
+   * Projected from those samples (scripts/analyze-vision-latency.mts):
+   * completion 73% → 93%, and finishing within 30s 53% → 78%. Those are
+   * PROJECTIONS from n=15 assuming the two draws are independent — which is
+   * false when Google is globally overloaded, and that run did see a 503. At a
+   * correlation of 0.6 the benefit is still 81% / 63%.
+   *
+   * DEFAULT OFF. It doubles AI calls on the slow tail, and it has not been
+   * measured live — only projected. Set GEMINI_HEDGE_AFTER_MS to turn it on.
+   */
+  const callWithKey = async (
+    keyIdx: number,
+    model: string,
+    maxOutputTokens: number,
+  ) => {
+    // Not enough keys to hedge onto, feature off, or not enough budget left for
+    // the wait plus a second call to be worth starting.
+    if (
+      HEDGE_AFTER_MS <= 0 ||
+      CLIENTS.length < 2 ||
+      !dl.has(HEDGE_AFTER_MS + MIN_CALL_MS)
+    ) {
+      return callOnce(keyIdx, model, maxOutputTokens);
+    }
+
+    const primaryCtl = new AbortController();
+    const hedgeCtl = new AbortController();
+    const primary = callOnce(keyIdx, model, maxOutputTokens, primaryCtl.signal);
+
+    let settled = false;
+    const hedge = new Promise<Awaited<ReturnType<typeof callOnce>>>(
+      (resolve, reject) => {
+        const timer = setTimeout(() => {
+          if (settled) return;
+          const alt = pickAvailableKey();
+          // Only hedge onto a DIFFERENT key — a second call on the same one
+          // shares its quota and its queue, so it isn't an independent draw.
+          if (alt === null || alt === keyIdx) return;
+          console.warn(
+            `[gemini] ${model} key #${keyIdx + 1} slow past ${HEDGE_AFTER_MS / 1000}s — hedging onto key #${alt + 1}`,
+          );
+          callOnce(alt, model, maxOutputTokens, hedgeCtl.signal).then(
+            resolve,
+            reject,
+          );
+        }, HEDGE_AFTER_MS);
+        // Don't hold the event loop open on a hedge that never fires.
+        (timer as unknown as { unref?: () => void }).unref?.();
+      },
+    );
+
+    try {
+      // First to SUCCEED wins. A rejection from one side must not cancel the
+      // other — the whole point is that one bad draw shouldn't decide the run.
+      return await firstFulfilled(primary, hedge);
+    } finally {
+      settled = true;
+      // Stop whichever lost. A generation nobody will read is pure quota.
+      primaryCtl.abort();
+      hedgeCtl.abort();
+    }
+  };
 
   // Google 503 ("model experiencing high demand") is server-side, not
   // key-side — rotating keys won't help because they all hit the same
