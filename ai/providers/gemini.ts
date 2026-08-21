@@ -167,6 +167,27 @@ const HEDGE_AFTER_MS = (() => {
 })();
 
 /**
+ * Ceiling on ONE generation, so a single bad draw can't spend the whole step.
+ *
+ * ON by default at 25s, which is the change of behaviour here — see the long
+ * note on `callCapMs`. 25s sits above the measured fast band (a third of calls
+ * finish under 15s) and still leaves the rest of a 50s step for a second try.
+ *
+ * Projected from the same 15 samples the hedge was sized on: step completion is
+ * about unchanged (~72% vs 73%), while the share finishing within 30s goes from
+ * 53% to ~72% — because the time a doomed call used to waste now buys a second
+ * draw instead of an Inngest step retry.
+ *
+ * Set GEMINI_CALL_CAP_MS=0 to restore the previous behaviour without a deploy.
+ */
+const CALL_CAP_MS = (() => {
+  const raw = Number(process.env.GEMINI_CALL_CAP_MS);
+  if (Number.isFinite(raw) && raw === 0) return 0; // explicit opt-out
+  // Floor of 8s: below that a normal call is cut off before it can finish.
+  return Number.isFinite(raw) && raw >= 8_000 ? Math.round(raw) : 25_000;
+})();
+
+/**
  * Resolve with the first promise to FULFILL; reject only if both reject.
  *
  * `Promise.race` is the wrong primitive here — it settles on the first
@@ -319,6 +340,37 @@ async function generateStructured<T>(
 
   const baseMaxTokens = opts.maxTokens ?? 8192;
 
+  /**
+   * How long ONE call may run before it's abandoned — as opposed to how long
+   * the whole step has.
+   *
+   * `lib/deadline.ts` has always supported this and nothing ever passed it, so
+   * a single generation could spend the entire 50s step budget. That is what
+   * makes a bad audit cost ~120s instead of ~50s: the call hangs, the step dies
+   * at its deadline, and Inngest retries the WHOLE STEP — a fresh serverless
+   * invocation that re-fetches the screenshot and pays the backoff again.
+   * Production is visibly bimodal because of it: recent audits landed at 37s,
+   * 38s, 46s (step succeeded first time) or 121s, 123s, 124s (step retried),
+   * with nothing in between.
+   *
+   * Capping turns one 50s dead end into two chances inside the SAME step, where
+   * a second try costs no orchestration at all. The existing ladder already
+   * knows what to do with a failed call — rotate to another key, fall to the
+   * next model — it just never got the chance because the first call had eaten
+   * everything.
+   *
+   * Deliberately NOT applied when the remaining budget can't fit two attempts:
+   * on the last chance a call should use everything that's left rather than
+   * being cut short for a retry there's no room for.
+   *
+   * Tunable with GEMINI_CALL_CAP_MS; 0 restores the old "one call may take the
+   * whole step" behaviour.
+   */
+  const callCapMs = (): number | undefined => {
+    if (CALL_CAP_MS <= 0) return undefined;
+    return dl.remaining() >= CALL_CAP_MS * 2 ? CALL_CAP_MS : undefined;
+  };
+
   const callOnce = (
     keyIdx: number,
     model: string,
@@ -340,8 +392,13 @@ async function generateStructured<T>(
           ? { thinkingConfig: { thinkingBudget: THINKING_BUDGET } }
           : {}),
         // Abort as soon as the budget is gone (or the caller cancels) so a
-        // hanging generation can't run into the platform timeout.
-        abortSignal: dl.signal({ parent: extraSignal ?? opts.signal }),
+        // hanging generation can't run into the platform timeout — AND cap any
+        // single call so it can't spend the whole step on one bad draw. See
+        // callCapMs().
+        abortSignal: dl.signal({
+          capMs: callCapMs(),
+          parent: extraSignal ?? opts.signal,
+        }),
       } as never,
     });
 
