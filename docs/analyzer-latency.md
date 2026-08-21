@@ -30,14 +30,32 @@ can do**, and together they outweigh everything in section 3.
 | O-3 | Raise `ANALYZER_CONCURRENCY` as the key pool grows | Unset → default 5 | Medium |
 | O-4 | Move to Vercel Pro (`maxDuration` 300s vs 60s) | **Not done** — `app/api/inngest/route.ts` is pinned at `maxDuration = 60`, the Hobby maximum | **High, structural** |
 
-**Check ScreenshotOne's remaining quota:**
+**O-1 is settled: ScreenshotOne is not the problem and funding it buys nothing.**
+Measured — 6 of 100 captures used in a month across 108 audits, and capture
+costs 6–19s cold whichever provider serves it (§4a). The original brief's number
+one hypothesis is dead. Check it yourself any time:
 
 ```bash
 curl "https://api.screenshotone.com/usage?access_key=$SCREENSHOTONE_ACCESS_KEY"
 ```
 
-If it's spent, that is the number one finding: every audit is on the slow
-fallback chain, and WP-2 below only stops us from paying to be told so.
+**O-2 is VERIFIED DONE (2026-08-20): the three keys are three independent
+projects.** Measured, not assumed — `scripts/gemini-pool-check.mts` saturated
+one key until it rate-limited, then probed the others immediately; both answered
+200, so neither shares the first one's quota. The pool is real, ~45 RPM.
+
+Note this could not be answered by inspection: nothing in a key string reveals
+its project, and Vercel marks these values **Sensitive**, which makes them
+write-only — neither the dashboard nor `vercel env pull` will return them. The
+keys have to come from AI Studio, where they were created. To re-check later:
+
+```bash
+ENV_FILE=<file with the keys> npx tsx --tsconfig scripts/tests/tsconfig.json scripts/gemini-pool-check.mts
+```
+
+**And more keys are not the remaining lever.** Run C in §4b was taken with this
+real 3-project pool and still saw 8.5s → 50s+ on identical input, plus a Google
+`503`. The residual variance is the provider's, not the quota's.
 
 O-2 is free and takes minutes: create additional Google Cloud projects, mint a
 Gemini key in each, and set them as `GEMINI_API_KEY_2`, `GEMINI_API_KEY_3`, …
@@ -104,6 +122,58 @@ Once O-4 is done, in this order:
 
 Reversing is symmetrical: lower the env values first, then `maxDuration`.
 
+## 4a. Where the 60s actually goes — measured
+
+`maxDuration = 60` is a **fixed constraint**, not a dial. There is no Vercel Pro
+and there won't be, so anything that needs more than 60s per step is a design
+problem to solve inside the limit.
+
+### Production reality, 30 days, from the `analyses` table
+
+| status | n | mean | p50 | p95 | max |
+|---|---|---|---|---|---|
+| succeeded | 51 | 98.3s | **79.5s** | 211.5s | 436s |
+| refunded | 57 | 231.8s | 207.2s | 406.9s | 534.9s |
+
+Success rate **47%**. The target was ~30s; the median *successful* audit is 79.5s.
+
+### How many audits fit in one step budget
+
+| total time | means | n | share |
+|---|---|---|---|
+| ≤50s | one step | 17 | 32% |
+| 50–110s | ≥2 steps | 20 | 38% |
+| >110s | ≥3 steps, i.e. retries | 16 | 30% |
+
+**68% of the audits that succeed exceed a single step budget.** Since each
+Inngest step gets its own 50s, that means most successful audits are already
+paying for at least one retry. That is the shape of the problem: not one slow
+step, but a step that fails and is re-run.
+
+### Capture is NOT the bottleneck — measured, n=5 per store, cold
+
+`scripts/measure-capture-latency.mts`, cache-busted so no provider can serve a
+stored copy (the state a real audit of a new URL is in):
+
+| reference store | mean | p95 | served by |
+|---|---|---|---|
+| Shopify normal (allbirds) | 10.7s | 11.0s | ScreenshotOne |
+| anti-bot (aesop, Cloudflare) | 6.2s | 6.6s | thum.io |
+| very tall PDP (brilliantearth) | 12.7s | 15.7s | thum.io |
+| fast / light (vitalliving) | 14.0s | 18.8s | ScreenshotOne |
+| heavy DTC (gymshark) | 12.8s | 15.2s | ScreenshotOne |
+
+**6–19s across every category, with no pathological tail.** Against a 79.5s
+median that leaves ~60s to the vision call and orchestration. Discovery runs in
+parallel with capture and is capped at 10s, so it costs nothing on this path.
+
+Two things worth knowing from the same run:
+- Repeats of the same URL cost **0** ScreenshotOne quota and return in ~0.2s —
+  their 24h cache works. Real audits are new URLs, so the cold column is the
+  one the product pays.
+- ScreenshotOne **refused 2 of the 5** (Cloudflare, and `host_returned_error`
+  on brilliantearth). Those fell through to thum.io and were still fast.
+
 ## 4b. WP-C — NOT COMPLETE, and what the measurement does and doesn't show
 
 **Status: WP-C's acceptance criteria are not met.** No adaptive budget was
@@ -157,17 +227,59 @@ What survives from this honestly:
 - **A local run tells you nothing about production's key pool.** Read the
   production env, never `.env.local`, before drawing a conclusion about quota.
 
-### What is still missing for WP-C
+### Criterion 1 — the measurement is complete; the TARGET is not met
 
-1. A capture-side benchmark — the pipeline the WP actually targets.
-2. The brief's 5-store reference set (this harness uses 3, and omits the
-   Cloudflare and fallback categories) with real `finished_at − started_at`
-   from the `analyses` table, not an isolated agent call.
-3. Repeats per cell. The A/B is n=1, sequential and non-interleaved, and
-   `cooldownUntil` in `ai/providers/gemini.ts` is module state that the second
-   arm inherits from the first. Given a spread this wide, n=1 cannot resolve a
-   ceiling effect.
-4. A measurement taken against the production key pool, not a local key.
+All four missing pieces are now done:
+
+1. ~~Capture-side benchmark~~ — §4a. n=5 per store, cold, all five categories.
+2. ~~Real `finished_at − started_at` from `analyses`~~ — §4a. 30 days, n=108.
+3. ~~Repeats per cell~~ — n=5 capture, n=5 vision, interleaved and paced.
+4. ~~A measurement against the real key pool~~ — run C below, 3 independent
+   projects (verified by `scripts/gemini-pool-check.mts`).
+
+**And the target is still not met, for a reason the measurement now explains
+rather than guesses at.** The brief wanted normal and fast stores near ~30s by
+adapting capture wait and image height to page weight. Measurement says:
+
+- capture is 6–19s cold for every category, so there is no capture time to win;
+- image height has no measurable effect on vision time (three runs, three
+  different winners);
+- the vision call varies 8.5s → past 50s **on identical input with a healthy
+  key pool**, which is Google-side queueing, not anything we feed it.
+
+There is no page property that predicts the wait, so there is nothing to adapt
+the budget *to*. WP-C's proposed mechanism does not exist. Saying "criterion 1
+met" would require inventing a number; it isn't, and this is why.
+
+### Image height is NOT the lever — measured three times, against the real pool
+
+This document asserted for a long time that "height is what the vision call is
+both billed and timed on", and WP-C proposed tuning it. It was never measured.
+`scripts/measure-image-height.mts` measures it: the same page captured at
+several heights, then the same vision call repeated on each — arms
+**interleaved** so both sit in the same part of the provider's load curve, and
+paced so a key can recover between calls.
+
+| run | pool | n | 4500px (521KB) | 3500px (427KB) | 2500px (285KB) |
+|---|---|---|---|---|---|
+| A | 1 key | 4 | 44.4s, 3 failed | — | **15.2s, 0 failed** |
+| B | 1 key | 3 | **17.7s, 0 failed** | 33.9s, 1 failed | 36.1s, 2 failed |
+| C | **3 keys** | 5 | 29.6s, 2 failed | **16.9s, 0 failed** | 38.6s, 2 failed |
+
+**Every run crowns a different winner, including the run with a real 3-project
+pool.** In run C the *smallest* image was the *slowest* — which cannot be true
+if height drove the time.
+
+The variance on identical input is the finding. Run C's 4500px arm, same bytes
+five times: `50.0, 25.8, 50.0, 8.5, 13.6`. **8.5s to past 50s on one image**,
+with a healthy pool, and one run failed with an explicit Google `503`.
+
+So the noise is **provider-side** — model queueing and overload on Google's end
+— not quota and not page weight. More keys don't damp it (run C proves that),
+and neither would a shorter image.
+
+**Nothing about image height was changed.** Lowering the cap would cost report
+coverage and buy nothing measurable.
 
 Until those exist, **no budget should be changed**, and none was: `lib/deadline.ts`,
 `lib/screenshot-core.ts`, `app/api/inngest/route.ts` and `lib/flags.ts` have zero

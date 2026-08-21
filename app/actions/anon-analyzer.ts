@@ -3,6 +3,7 @@
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { inngest } from "@/inngest/client";
 import { validatePublicStoreUrl } from "@/lib/security/url-guard";
+import { isBareIpHost, BARE_IP_REASON } from "@/lib/analyzer/store-url-policy";
 import { getOrCreateAnonToken } from "@/lib/anon/session";
 import { checkAnonAuditRate } from "@/lib/anon/rate-limit";
 
@@ -32,6 +33,12 @@ export async function createAnonAnalysis(input: {
   const guard = validatePublicStoreUrl(input.url ?? "");
   if (!guard.ok) {
     return { ok: false, error: guard.reason };
+  }
+  // A PUBLIC bare IP clears the security guard but is never a storefront. The
+  // anonymous path needs this most: it's the highest-volume entry point and the
+  // one where a stranger pastes whatever they have.
+  if (isBareIpHost(guard.url)) {
+    return { ok: false, error: BARE_IP_REASON };
   }
 
   // 2) Anti-abuse: per-IP daily cap. Over the limit → a soft, honest message
