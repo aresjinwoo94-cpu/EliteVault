@@ -107,6 +107,27 @@ export function analyzerMapSpineEnabled(): boolean {
 }
 
 /**
+ * Liquid Blocks — the /app/liquid tool (its own brief, separate from the
+ * Analyzer).
+ *
+ * DEFAULT OFF, and off for a specific reason rather than as caution: the tool
+ * needs migration 0032 (`blocks_projects`), and a deploy that lands before the
+ * migration runs would otherwise put a working-looking nav entry in front of
+ * every user, leading to a page whose every action fails at the database. The
+ * flag makes the deploy order not matter — ship the code any time, switch the
+ * entry point on once `npm run db:doctor` reports no drift.
+ *
+ * Off only hides the NAVIGATION. The routes themselves stay reachable by URL so
+ * the owner can verify the tool live before exposing it, which is the same
+ * shape as shipping behind a flag everywhere else here.
+ *
+ * Turn on with LIQUID_BLOCKS=true (read per request — no rebuild needed).
+ */
+export function liquidBlocksEnabled(): boolean {
+  return enabled("LIQUID_BLOCKS", false);
+}
+
+/**
  * Analyzer niche grounding (brief §2.3).
  *
  * DEFAULT OFF. Feeds the scoring pass a few precomputed `winning_sites` rows as

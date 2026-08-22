@@ -8,16 +8,28 @@ import { useT } from "@/components/i18n/locale-provider";
 import { Logo } from "@/components/brand/logo";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { BASE_NAV, isNavItemActive } from "@/components/dashboard/nav-items";
+import { visibleNav, isNavItemActive } from "@/components/dashboard/nav-items";
 import type { Database } from "@/lib/supabase/types";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"] | null;
 
-export function AppSidebar({ profile }: { profile: Profile }) {
+export function AppSidebar({
+  profile,
+  liquidEnabled = false,
+}: {
+  profile: Profile;
+  /**
+   * Resolved server-side in app/(app)/layout.tsx — this is a client component
+   * and lib/flags.ts reads process.env, which isn't available here. Defaults to
+   * hidden so a caller that forgets to pass it can't expose a tool whose
+   * migration may not have run yet.
+   */
+  liquidEnabled?: boolean;
+}) {
   const path = usePathname();
   const { t } = useT();
   const isScale = PLANS[profile?.plan ?? "free"].unlocksScale;
-  const NAV = BASE_NAV.filter((item) => !item.scaleOnly || isScale);
+  const NAV = visibleNav({ isScale, liquidEnabled });
 
   return (
     <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-white/[0.04] bg-obsidian-950/40 backdrop-blur-xl">

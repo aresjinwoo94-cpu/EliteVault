@@ -13,8 +13,10 @@
  * DIFFERENT product and render a block full of confidently wrong prices. So
  * anything ambiguous returns null and the caller says "Shopify only, for now".
  *
- * No `server-only` guard: this is pure string work with no secrets, and the
- * client-side launcher can use it to give instant feedback before a round-trip.
+ * No `server-only` guard: this is pure string work with no secrets, so it stays
+ * importable from a client component if the launcher ever wants to pre-empt the
+ * round-trip. (It doesn't today — the server owns every rejection so there's
+ * exactly one place the wording lives.)
  */
 
 export interface ShopifyProductRef {

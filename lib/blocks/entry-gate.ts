@@ -30,12 +30,17 @@ export type BlocksUrlResult =
   | { ok: false; code: BlocksUrlRejection; error: string };
 
 /**
- * Shown when the URL is a real page but not a product one. Names the shape we
- * want rather than only what's wrong — "not a product page" alone leaves
- * someone staring at a URL that looks fine to them.
+ * Shown when the URL isn't recognisably one product page.
+ *
+ * Worded as what WE need, not as what the user got wrong. The classifier is
+ * Shopify/Woo-shaped, so a platform with flat product URLs
+ * (store.com/blue-widget — BigCommerce, most headless setups) lands here even
+ * though the user really did paste a product page. Telling that person "that's
+ * your homepage" would be flatly false; naming the shape we can read is true
+ * either way, and it's also the honest answer for an actual homepage.
  */
 const NOT_PRODUCT_MESSAGE =
-  "Paste the URL of a product page — not your homepage or a collection. It looks like yourstore.com/products/your-product-name.";
+  "We need a Shopify product page URL — the kind that looks like yourstore.com/products/your-product-name. A homepage or a collection has no single product to build a block around.";
 
 /**
  * Shown when the page IS a product but not on Shopify. Deliberately says what

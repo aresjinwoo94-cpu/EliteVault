@@ -21,7 +21,14 @@ import type { Database } from "@/lib/supabase/types";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"] | null;
 
-export function AppTopbar({ profile }: { profile: Profile }) {
+export function AppTopbar({
+  profile,
+  liquidEnabled = false,
+}: {
+  profile: Profile;
+  /** Passed straight through to the mobile drawer. See AppSidebar. */
+  liquidEnabled?: boolean;
+}) {
   const { t } = useT();
   const [isMac, setIsMac] = useState(false);
   useEffect(() => {
@@ -38,7 +45,7 @@ export function AppTopbar({ profile }: { profile: Profile }) {
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center justify-between px-4 md:px-6 border-b border-white/[0.04] bg-obsidian-950/60 backdrop-blur-2xl">
       <div className="flex min-w-0 items-center gap-2">
-        <AppMobileNav profile={profile} />
+        <AppMobileNav profile={profile} liquidEnabled={liquidEnabled} />
         <button
           onClick={() =>
             window.dispatchEvent(new CustomEvent("ev:open-command-menu"))

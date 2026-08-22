@@ -76,9 +76,19 @@ export async function createBlocksProject(
     .single();
 
   if (error || !row) {
+    // Postgres' own words are for the log, not for a toast. The one case worth
+    // naming out loud is a deploy that landed ahead of migration 0032: without
+    // it, every submission fails at the insert and "relation does not exist"
+    // tells the user nothing they can act on.
+    console.error("[blocks] project insert failed:", error);
+    const missingTable =
+      error?.code === "42P01" || /blocks_projects/i.test(error?.message ?? "");
     return {
       ok: false,
-      error: error?.message ?? "Could not start this project.",
+      code: missingTable ? "NOT_PROVISIONED" : "INSERT_FAILED",
+      error: missingTable
+        ? "Liquid Blocks isn't switched on for this workspace yet. It needs one database migration that hasn't run here — nothing you did wrong."
+        : "We couldn't start that project. Try again in a moment.",
     };
   }
 

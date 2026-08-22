@@ -4,6 +4,7 @@ import { AppSidebar } from "@/components/dashboard/sidebar";
 import { AppTopbar } from "@/components/dashboard/topbar";
 import { CommandMenu } from "@/components/dashboard/command-menu";
 import { PostHogIdentify } from "@/components/analytics/posthog-identify";
+import { liquidBlocksEnabled } from "@/lib/flags";
 
 export default async function AppLayout({
   children,
@@ -22,6 +23,11 @@ export default async function AppLayout({
     .eq("id", user.id)
     .single();
 
+  // Read here, in the one server component both nav surfaces hang off, because
+  // lib/flags.ts reads process.env at call time and the sidebar/drawer are
+  // client components.
+  const liquidEnabled = liquidBlocksEnabled();
+
   return (
     <div className="min-h-screen flex">
       {/* Tag the PostHog session with this user's id + plan so the
@@ -33,9 +39,9 @@ export default async function AppLayout({
         plan={profile?.plan ?? "free"}
         fullName={profile?.full_name ?? null}
       />
-      <AppSidebar profile={profile ?? null} />
+      <AppSidebar profile={profile ?? null} liquidEnabled={liquidEnabled} />
       <div className="flex-1 flex flex-col min-w-0">
-        <AppTopbar profile={profile ?? null} />
+        <AppTopbar profile={profile ?? null} liquidEnabled={liquidEnabled} />
         <main className="flex-1 min-w-0">{children}</main>
       </div>
       <CommandMenu />

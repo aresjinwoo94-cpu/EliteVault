@@ -10,7 +10,7 @@ import { useT } from "@/components/i18n/locale-provider";
 import { Logo } from "@/components/brand/logo";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { BASE_NAV, isNavItemActive } from "@/components/dashboard/nav-items";
+import { visibleNav, isNavItemActive } from "@/components/dashboard/nav-items";
 import type { Database } from "@/lib/supabase/types";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"] | null;
@@ -21,12 +21,19 @@ type Profile = Database["public"]["Tables"]["profiles"]["Row"] | null;
  * reach Overview / Analyzer / Trends / Library / Community / Billing / Settings.
  * Mounted on the left of the topbar (`md:hidden`).
  */
-export function AppMobileNav({ profile }: { profile: Profile }) {
+export function AppMobileNav({
+  profile,
+  liquidEnabled = false,
+}: {
+  profile: Profile;
+  /** See AppSidebar — resolved server-side, hidden by default. */
+  liquidEnabled?: boolean;
+}) {
   const { t } = useT();
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const isScale = PLANS[profile?.plan ?? "free"].unlocksScale;
-  const NAV = BASE_NAV.filter((item) => !item.scaleOnly || isScale);
+  const NAV = visibleNav({ isScale, liquidEnabled });
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
