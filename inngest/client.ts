@@ -43,6 +43,18 @@ type Events = {
       notes?: string | null;
     };
   };
+  // Liquid Blocks — calibrate the store's design and render the before/after.
+  // Free: no credit is charged for a preview, so there is no refund branch and
+  // a failure costs the user nothing but a retry.
+  "blocks/preview.requested": {
+    data: {
+      projectId: string;
+      userId: string;
+      // Plan snapshot for inference-cost metering (usage_events), same as the
+      // analyzer's. Optional so an older queued event still validates.
+      plan?: string | null;
+    };
+  };
   // Phase 2 — manual trigger to refresh the weekly Trends cache on demand
   // (the same function also runs on a weekly cron). Optional fields let an
   // operator target a single niche or force a re-run of the current week.

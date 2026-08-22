@@ -5,6 +5,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import type { BlocksProduct } from "@/lib/blocks/product-json";
+import { PreviewPanel, type PreviewProject } from "@/components/blocks/preview-panel";
 
 export const metadata = { title: "Liquid Blocks — project" };
 
@@ -35,7 +36,9 @@ export default async function LiquidProjectPage({
   // intent readable and keeps the query honest if policies are ever relaxed.
   const { data: project } = await supabase
     .from("blocks_projects")
-    .select("id, product_url, product_handle, product_json, design_tokens, status, error, created_at")
+    .select(
+      "id, product_url, product_handle, product_json, design_tokens, preview_before_url, preview_after_url, status, error, created_at",
+    )
     .eq("id", id)
     .eq("user_id", user!.id)
     .single();
@@ -75,11 +78,11 @@ export default async function LiquidProjectPage({
         </a>
       </div>
 
-      {row.error && (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-          {row.error}
-        </div>
-      )}
+      {/*
+        The failure message lives inside PreviewPanel, next to the retry button
+        that acts on it. Repeating it here as a banner too would say the same
+        thing twice and separate the problem from its remedy.
+      */}
 
       {/*
         What we READ from the store, shown back verbatim. This is the feature's
@@ -132,18 +135,22 @@ export default async function LiquidProjectPage({
       </section>
 
       {/*
-        WP-B lands the design-token calibration and the before/after preview
-        here; WP-C the block catalogue; WP-D the paid export. Saying so beats a
-        blank panel that reads as a broken page.
+        WP-C turns the measured tokens into editable fields and adds the four
+        MVP block types; WP-D adds the paid export. What renders today is the
+        calibration and its proof.
       */}
       <section>
         <h2 className="text-sm font-medium text-white/70 mb-3">Preview</h2>
-        <Card className="p-6 md:p-10 text-center border-white/[0.04]">
-          <p className="text-sm text-white/40">
-            Measuring your page&apos;s colours and type, then rendering the
-            before/after, arrives with the preview engine.
-          </p>
-        </Card>
+        <PreviewPanel
+          initial={{
+            id: row.id,
+            status: row.status,
+            design_tokens: row.design_tokens,
+            preview_before_url: row.preview_before_url,
+            preview_after_url: row.preview_after_url,
+            error: row.error,
+          } satisfies PreviewProject}
+        />
       </section>
     </div>
   );

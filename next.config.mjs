@@ -14,7 +14,15 @@ const config = {
   },
   // Allow long-running streamed responses for the analyzer.
   // Fluid Compute on Vercel handles up to 300s for hobby/pro.
-  serverExternalPackages: ["@anthropic-ai/sdk"],
+  // puppeteer-core and the Chromium shim must NOT be bundled: the shim resolves
+  // a native binary at runtime and reads files from disk, both of which a
+  // bundler breaks. Liquid Blocks (WP-B) is the only thing that imports them,
+  // and only from inside the Inngest worker.
+  serverExternalPackages: [
+    "@anthropic-ai/sdk",
+    "puppeteer-core",
+    "@sparticuz/chromium-min",
+  ],
 
   // MVP pragmatism: the Supabase Database type doesn't yet include all
   // tables added in 0003/0004 (community_analyses, saved_sites, etc.),
