@@ -443,6 +443,9 @@ const en: Dict = {
   sidebar: {
     navOverview: "Overview",
     navAnalyzer: "Analyzer",
+    // Product name, not a translated phrase — "Liquid" is Shopify's template
+    // language and stays as-is in both locales, the same way "API keys" does.
+    navLiquid: "Liquid Blocks",
     navTrends: "Trends",
     navLibrary: "Library",
     navCommunity: "Community",
@@ -1159,6 +1162,7 @@ const es: Dict = {
   sidebar: {
     navOverview: "Resumen",
     navAnalyzer: "Analizador",
+    navLiquid: "Liquid Blocks",
     navTrends: "Tendencias",
     navLibrary: "Biblioteca",
     navCommunity: "Comunidad",

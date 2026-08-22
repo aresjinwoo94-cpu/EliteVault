@@ -1,4 +1,5 @@
 import {
+  Blocks,
   CreditCard,
   Compass,
   Globe,
@@ -25,6 +26,10 @@ export type NavItem = {
 export const BASE_NAV: NavItem[] = [
   { key: "sidebar.navOverview", href: "/app", icon: Compass },
   { key: "sidebar.navAnalyzer", href: "/app/analyzer", icon: Scan, highlight: true },
+  // Liquid Blocks is its own tool, not a step of the audit — it sits beside the
+  // Analyzer rather than under it, which is also why it has no plan gate here
+  // (the preview is free; the charge is at export, see WP-D).
+  { key: "sidebar.navLiquid", href: "/app/liquid", icon: Blocks },
   { key: "sidebar.navTrends", href: "/app/trends", icon: TrendingUp },
   { key: "sidebar.navLibrary", href: "/app/library", icon: Library },
   { key: "sidebar.navCommunity", href: "/app/community", icon: Globe },
