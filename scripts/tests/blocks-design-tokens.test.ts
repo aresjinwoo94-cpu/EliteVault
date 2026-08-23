@@ -240,6 +240,78 @@ test("a dark store keeps its dark background instead of being lightened", () => 
   assert.deepEqual(t.fallbacks, []);
 });
 
+test("text and its background are never left unreadable against each other", () => {
+  // Measured live on liquiddeath.com: surface came back #000000 from a dark
+  // card while the body's own colour also read as black, and the block rendered
+  // black text on a black panel. Each token was individually a valid reading;
+  // the COMBINATION was unusable, and nothing was checking the combination.
+  //
+  // The resolution keeps the store's colour and re-derives the one that has to
+  // give — and says so, because a store whose real text colour we overrode
+  // deserves to know.
+  const t = normalizeDesignTokens({
+    ...SAMPLE,
+    bodyColor: "rgb(0, 0, 0)",
+    bodyBackground: "rgb(0, 0, 0)",
+    surfaceBackground: "rgb(0, 0, 0)",
+  });
+  assert.equal(t.palette.surface, "#000000", "the store's measured surface is kept");
+  assert.notEqual(t.palette.textPrimary, "#000000", "text must not match its background");
+  assert.ok(
+    t.fallbacks.includes("palette.textPrimary"),
+    "overriding a measured colour has to be disclosed",
+  );
+});
+
+test("a legible pairing is left exactly as measured", () => {
+  // The guard must not fire on normal stores — a contrast fix that rewrote
+  // every palette would be its own kind of invention.
+  for (const [bg, fg] of [
+    ["rgb(255, 255, 255)", "rgb(18, 18, 18)"],
+    ["rgb(10, 10, 12)", "rgb(240, 240, 240)"],
+    ["rgb(245, 240, 230)", "rgb(60, 40, 20)"],
+  ]) {
+    const t = normalizeDesignTokens({
+      ...SAMPLE,
+      bodyBackground: bg,
+      bodyColor: fg,
+      surfaceBackground: bg,
+    });
+    assert.ok(
+      !t.fallbacks.includes("palette.textPrimary"),
+      `${fg} on ${bg} is legible and should have been left alone`,
+    );
+  }
+});
+
+test("the accent's own text stays readable on the accent", () => {
+  // Same failure one layer down: a store whose button is dark grey with
+  // near-black label text would give a badge nobody can read.
+  const t = normalizeDesignTokens({
+    ...SAMPLE,
+    buttonBackground: "rgb(20, 20, 20)",
+    buttonColor: "rgb(30, 30, 30)",
+  });
+  assert.notEqual(t.palette.accentText, "#1e1e1e");
+  assert.ok(t.fallbacks.includes("palette.accentText"));
+});
+
+test("a shadow we never got to look at is declared unmeasured", () => {
+  // `none` and "we found no card to read" are different facts. The first is the
+  // store telling us it uses flat cards; the second is us not knowing. Only the
+  // second belongs in fallbacks.
+  const notFound = normalizeDesignTokens({ ...SAMPLE, cardShadow: null });
+  assert.equal(notFound.shape.cardShadow, null);
+  assert.ok(notFound.fallbacks.includes("shape.cardShadow"));
+
+  const flat = normalizeDesignTokens({ ...SAMPLE, cardShadow: "none" });
+  assert.equal(flat.shape.cardShadow, null);
+  assert.ok(
+    !flat.fallbacks.includes("shape.cardShadow"),
+    "`none` is a measurement, not a gap",
+  );
+});
+
 test("the border colour is derived from the measured palette, not picked", () => {
   // A hairline that's a blend of text and background sits correctly on both a
   // white and a near-black store. Picking `#e5e5e5` would vanish on the latter.

@@ -221,3 +221,33 @@ test("selectorsOf finds what it claims to find", () => {
   assert.ok(found.includes(".ev-blk__grid"), "selectors inside @media must be checked too");
   assert.ok(!found.some((s) => s.startsWith("@")), "at-rules are not selectors");
 });
+
+test("a statement before a rule doesn't swallow the selector that follows it", () => {
+  // The containment check is only worth anything if it FAILS CLOSED. An earlier
+  // version dropped the whole head whenever it contained a `;`, so a leading
+  // `@import` or `@charset` made the very next rule invisible to the check —
+  // `body{}` could sit one line under an @import and be reported as nothing at
+  // all. That matters from WP-C on, where this function is the gate on CSS the
+  // model wrote rather than CSS we wrote.
+  for (const [css, expected] of [
+    ['@import url(evil.css);\nbody{color:red}', "body"],
+    ['@charset "utf-8";\n* { margin: 0 }', "*"],
+    ['@namespace svg url(http://www.w3.org/2000/svg);\nimg{width:1px}', "img"],
+  ] as const) {
+    const found = selectorsOf(css);
+    assert.ok(
+      found.includes(expected),
+      `"${expected}" was swallowed — found ${JSON.stringify(found)}`,
+    );
+  }
+});
+
+test("an at-rule is never reported as a selector, however it's written", () => {
+  const found = selectorsOf(`
+    @media (max-width:600px){ .ev-blk{color:red} }
+    @supports (display:grid){ .ev-blk__grid{display:grid} }
+  `);
+  assert.ok(!found.some((s) => s.startsWith("@")), JSON.stringify(found));
+  assert.ok(found.includes(".ev-blk"));
+  assert.ok(found.includes(".ev-blk__grid"));
+});

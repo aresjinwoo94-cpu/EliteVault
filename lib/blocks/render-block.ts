@@ -97,16 +97,24 @@ export function selectorsOf(css: string): string[] {
   // selector, then read what precedes each `{`.
   const withoutComments = css.replace(/\/\*[\s\S]*?\*\//g, "");
   for (const m of withoutComments.matchAll(/([^{}]+)\{/g)) {
-    const head = m[1].trim();
+    // A `;` ends a statement, so only what FOLLOWS the last one is the selector
+    // for this block — `@import url(x);\nbody` is an import statement and then
+    // a `body` rule.
+    //
+    // The previous version discarded any head containing a `;` outright, which
+    // made this function fail OPEN: a stylesheet could hide a global `body{}`
+    // rule behind a leading @import and the containment check would report
+    // nothing wrong. That's the wrong direction for a guard whose entire job is
+    // to catch a selector that escapes the block, and it matters from WP-C on,
+    // where this vets CSS the model wrote rather than CSS we wrote.
+    const head = m[1].split(";").pop()!.trim();
     if (!head) continue;
-    // `@media …` / `@supports …` are at-rules, not selectors; their nested
+    // `@media …` / `@supports …` introduce a nested block; their inner
     // selectors are matched by later iterations of this same loop.
     if (head.startsWith("@")) continue;
     for (const part of head.split(",")) {
       const sel = part.trim();
-      // A stray declaration tail (`;`-terminated) is not a selector.
-      if (!sel || sel.includes(";")) continue;
-      out.push(sel);
+      if (sel) out.push(sel);
     }
   }
   return out;
@@ -201,7 +209,12 @@ function productFactsHtml(
   if (discountPct !== null && discountPct > 0) {
     stats.push({ label: "You save", value: `${discountPct}%` });
   }
-  if (product.variants.length > 1) {
+  // Only when at least one option is actually available. Rendering "0 of 13"
+  // is perfectly true and actively harmful — it's a conversion block, and the
+  // merchant does not need us advertising that nothing is buyable. Omitting a
+  // stat isn't a lie; asserting a discouraging one nobody asked for is a choice
+  // we shouldn't make on their behalf. (Seen live on a real out-of-stock PDP.)
+  if (product.variants.length > 1 && inStock > 0) {
     stats.push({ label: "Options in stock", value: `${inStock} of ${product.variants.length}` });
   }
   if (product.productType) {

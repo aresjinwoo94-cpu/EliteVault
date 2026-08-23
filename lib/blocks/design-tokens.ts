@@ -162,6 +162,32 @@ function luminance({ r, g, b }: Rgb): number {
   return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
 }
 
+/** WCAG contrast ratio between two colours, 1 (identical) to 21 (black/white). */
+function contrastRatio(a: Rgb, b: Rgb): number {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+/**
+ * The minimum contrast a text/background pair must clear before we'll emit it.
+ *
+ * 3.0 rather than WCAG AA's 4.5 on purpose: this is a REPAIR threshold, not a
+ * quality bar. Overriding a store's measured colour is itself a small betrayal
+ * of "we show you your own design", so it should only happen when the result is
+ * genuinely unusable — not merely when it would fail an audit.
+ */
+const MIN_READABLE_CONTRAST = 3.0;
+
+/**
+ * Black or white, whichever is legible on `background`. Arithmetic on a
+ * measured colour, so it's a derivation rather than an invention — but callers
+ * still record it, because a store whose real colour we overrode deserves to
+ * be told which one.
+ */
+function readableOn(background: Rgb): string {
+  return luminance(background) > 0.5 ? "#000000" : "#ffffff";
+}
+
 function mix(a: Rgb, b: Rgb, weight: number): Rgb {
   return {
     r: a.r + (b.r - a.r) * weight,
@@ -269,7 +295,7 @@ export function normalizeDesignTokens(raw: RawTokenSample): DesignTokens {
     "palette.pageBackground",
     LAST_RESORT.pageBackground,
   );
-  const textPrimary = measured(
+  const measuredText = measured(
     hexOf(raw.bodyColor),
     "palette.textPrimary",
     LAST_RESORT.textPrimary,
@@ -289,15 +315,47 @@ export function normalizeDesignTokens(raw: RawTokenSample): DesignTokens {
   // declared, because a theme with deliberately low-contrast buttons would come
   // out looking different from the real thing.
   const measuredAccentText = hexOf(raw.buttonColor);
+  // Kept only if it's actually legible ON the accent. A button measured as dark
+  // grey with near-black label text is a reading we can reproduce faithfully
+  // and nobody can read.
   const accentText =
-    measuredAccentText ??
-    measured(null, "palette.accentText", luminance(parseHex(accent)) > 0.5 ? "#000000" : "#ffffff");
+    measuredAccentText !== null &&
+    contrastRatio(parseHex(measuredAccentText), parseHex(accent)) >= MIN_READABLE_CONTRAST
+      ? measuredAccentText
+      : measured(null, "palette.accentText", readableOn(parseHex(accent)));
 
   const surface = measured(
     hexOf(raw.surfaceBackground),
     "palette.surface",
     pageBackground,
   );
+
+  /**
+   * The pairing check.
+   *
+   * Every token above is validated in isolation, and that was not enough. Read
+   * live off liquiddeath.com: `surface` came back #000000 from a dark card and
+   * `bodyColor` also read as black (the store paints on a wrapper, so `body`
+   * itself carries the default), and the block rendered black text on a black
+   * panel. Both readings were individually valid. Their combination was
+   * unusable, and nothing was looking at combinations.
+   *
+   * The store's own BACKGROUND wins, because that's the colour the visitor sees
+   * and the one the block has to sit inside. Text is the value that gives — and
+   * the override is recorded, because silently replacing a colour we did
+   * measure is exactly the behaviour this module exists to prevent.
+   */
+  const textPrimary = (() => {
+    const onSurface = contrastRatio(parseHex(measuredText), parseHex(surface));
+    const onPage = contrastRatio(parseHex(measuredText), parseHex(pageBackground));
+    if (onSurface >= MIN_READABLE_CONTRAST && onPage >= MIN_READABLE_CONTRAST) {
+      return measuredText;
+    }
+    if (!fallbacks.includes("palette.textPrimary")) {
+      fallbacks.push("palette.textPrimary");
+    }
+    return readableOn(parseHex(surface));
+  })();
 
   // A hairline blended from the two colours we measured, so it sits correctly on
   // a white store AND on a near-black one. A fixed light grey would disappear on
@@ -347,9 +405,13 @@ export function normalizeDesignTokens(raw: RawTokenSample): DesignTokens {
     "shape.containerMaxWidthPx",
     LAST_RESORT.containerMaxWidthPx,
   );
-  // `none` means this store uses flat cards. That's an answer, not a gap, so it
-  // stays null and isn't recorded as a fallback.
+  // `none` means this store uses flat cards — an answer, not a gap. A null raw
+  // value means the collector found no card to read at all, which IS a gap and
+  // is declared as one. Both produce no shadow; only the second is our doing.
   const cardShadow = safeShadow(raw.cardShadow);
+  if (raw.cardShadow === null || raw.cardShadow === undefined) {
+    fallbacks.push("shape.cardShadow");
+  }
 
   return {
     palette: { pageBackground, textPrimary, accent, accentText, surface, border },

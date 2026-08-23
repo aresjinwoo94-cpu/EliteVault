@@ -12,12 +12,19 @@ import {
 } from "@/lib/blocks/browser";
 import {
   collectDesignTokens,
+  dismissOverlays,
   injectBlock,
+  productPageIsReady,
   removeBlock,
-  scrollToAnchor,
+  frameBlock,
+  scrollToPosition,
   ANCHOR_SELECTORS,
+  BUY_BUTTON_ATTR,
   BUY_BUTTON_SELECTORS,
+  BUY_BUTTON_TEXT,
   CONTAINER_SELECTORS,
+  CROSS_SELL_CONTAINERS,
+  OVERLAY_SELECTORS,
   SURFACE_SELECTORS,
 } from "@/lib/blocks/collect-tokens";
 import { normalizeDesignTokens } from "@/lib/blocks/design-tokens";
@@ -81,8 +88,8 @@ const GLOBAL_CONCURRENCY = (() => {
   return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 2;
 })();
 
-/** Pixels of context above the anchor, so the "before" shot shows the seam. */
-const ANCHOR_OFFSET_PX = 220;
+/** Pixels of page kept above the block, so the shot shows what it attaches to. */
+const BLOCK_OFFSET_PX = 220;
 
 const STYLE_ID = "ev-blocks-preview-style";
 const BUCKET = "screenshots";
@@ -102,8 +109,20 @@ function humanize(err: unknown): string {
   return "We couldn't build the preview for that page. Try again in a minute.";
 }
 
-async function shoot(page: Page): Promise<Buffer> {
-  const shot = await page.screenshot({ type: "jpeg", quality: 82, fullPage: false });
+/**
+ * Screenshot a rectangle of the CURRENT viewport. Both shots of a pair use the
+ * identical clip, which is what makes them a comparison.
+ */
+async function shoot(
+  page: Page,
+  clip?: { x: number; y: number; width: number; height: number },
+): Promise<Buffer> {
+  const shot = await page.screenshot({
+    type: "jpeg",
+    quality: 82,
+    fullPage: false,
+    ...(clip ? { clip, captureBeyondViewport: false } : {}),
+  });
   return Buffer.from(shot);
 }
 
@@ -191,6 +210,19 @@ export const blocksPreview = inngest.createFunction(
         const page = await browser.newPage();
         await page.setUserAgent(BLOCKS_USER_AGENT);
         await page.setViewport(BLOCKS_VIEWPORT);
+
+        // The functions below are serialized and run inside the store's page.
+        // esbuild's keepNames transform can wrap inner arrow functions in a
+        // module-scope `__name()` helper that doesn't exist in a browser, and
+        // when it does every page.evaluate here throws `__name is not defined`
+        // — at runtime, in production, with nothing in the test suite able to
+        // see it. The current production bundle happens to come out clean, but
+        // that's a property of the minifier rather than of our code. A two-line
+        // identity polyfill makes it not matter either way.
+        await page.evaluateOnNewDocument(() => {
+          const w = window as unknown as { __name?: (f: unknown) => unknown };
+          if (typeof w.__name !== "function") w.__name = (f: unknown) => f;
+        });
         // The store's own scripts are what produce the computed styles we're
         // here to read, so JS stays ON. Only the page's own noise is skipped.
         page.setDefaultTimeout(Math.min(NAV_TIMEOUT_MS, dl.remaining()));
@@ -208,53 +240,125 @@ export const blocksPreview = inngest.createFunction(
         await page
           .evaluate(() => document.fonts?.ready)
           .catch(() => undefined);
-        await new Promise((r) => setTimeout(r, 1_200));
+
+        // Wait for the page to be worth measuring rather than for a fixed
+        // number of seconds. Measured across five real storefronts: on the
+        // JS-heavy ones the buy button, price and product form all still had
+        // zero size several seconds after DOMContentLoaded, so calibration read
+        // an unlaid-out page and found nothing. Best-effort — a store that
+        // never satisfies it is still measured, just with whatever is there.
+        await page
+          .waitForFunction(
+            productPageIsReady,
+            { timeout: Math.min(12_000, Math.max(3_000, dl.remaining() - 60_000)), polling: 400 },
+            {
+              buttonSelectors: BUY_BUTTON_SELECTORS,
+              buttonTextPattern: BUY_BUTTON_TEXT.source,
+              crossSellContainers: CROSS_SELL_CONTAINERS,
+            },
+          )
+          .catch(() =>
+            console.warn("[blocks] product page never reported ready — measuring as-is"),
+          );
+        await new Promise((r) => setTimeout(r, 800));
+
+        // A redirect can leave the origin we validated. WP-A closes exactly this
+        // hole for the JSON fetch (lib/blocks/fetch-product.ts) because the URL
+        // guard is syntactic and never resolves DNS; the same reasoning applies
+        // with more force here, since this page is RENDERED, screenshotted, and
+        // the result uploaded to a public bucket.
+        const landedOn = page.url();
+        if (new URL(landedOn).origin !== new URL(guard.url).origin) {
+          throw new Error(
+            `Refusing to render ${landedOn}: it redirected away from ${new URL(guard.url).origin}.`,
+          );
+        }
+
+        // Modals and cookie bars sit between the reader and the proof. The
+        // Analyzer deliberately keeps them in frame — an aggressive popup is a
+        // CRO finding there — but this screenshot has one job and it isn't
+        // auditing the store.
+        await page.keyboard.press("Escape").catch(() => undefined);
+        const hidden = await page.evaluate(dismissOverlays, OVERLAY_SELECTORS);
+        if (hidden > 0) console.log(`[blocks] hid ${hidden} overlay(s)`);
 
         dl.assert("blocks-calibrate");
 
         // ── 1. Calibration ────────────────────────────────────────────────
         const raw = await page.evaluate(collectDesignTokens, {
           buttonSelectors: BUY_BUTTON_SELECTORS,
+          buttonTextPattern: BUY_BUTTON_TEXT.source,
+          crossSellContainers: CROSS_SELL_CONTAINERS,
           surfaceSelectors: SURFACE_SELECTORS,
           containerSelectors: CONTAINER_SELECTORS,
           anchorSelectors: ANCHOR_SELECTORS,
+          buyButtonAttr: BUY_BUTTON_ATTR,
         });
         const tokens = normalizeDesignTokens(raw);
 
-        // ── 2. Framing ────────────────────────────────────────────────────
-        // Scroll BEFORE the "before" shot and leave it there. The block is
-        // inserted after the anchor, so nothing above moves and the two images
-        // are a true comparison rather than two differently-shifted pages.
-        await page.evaluate(scrollToAnchor, {
-          anchorSelectors: ANCHOR_SELECTORS,
-          offsetPx: ANCHOR_OFFSET_PX,
-        });
-        await new Promise((r) => setTimeout(r, 400));
-
-        const before = await shoot(page);
-
-        // ── 3. Injection + after ──────────────────────────────────────────
         const rendered = renderBlock({
           spec: { type: "product_facts" },
           tokens,
           product: row.product_json,
           currency: row.product_json.currency ?? null,
         });
-        const injected = await page.evaluate(injectBlock, {
+        const injectArgs = {
           html: rendered.html,
           css: rendered.css,
           anchorSelectors: ANCHOR_SELECTORS,
+          buyButtonAttr: BUY_BUTTON_ATTR,
           styleId: STYLE_ID,
-        });
+        };
+
+        // ── 2. Inject, then frame on the block itself ─────────────────────
+        // AFTER is captured first, and that inversion is the whole fix. Framing
+        // on the anchor and hoping the block landed in view failed on three of
+        // five real stores — a block goes in after the anchor's ENTIRE height,
+        // so a tall wrapper pushed it ~1700px down, out of frame, and the
+        // "after" came back pixel-identical to the "before". Capturing from the
+        // block's own measured position makes it impossible to miss.
+        const injected = await page.evaluate(injectBlock, injectArgs);
         if (!injected.ok) {
-          throw new Error("We couldn't find a place on that page to put the block.");
+          throw new Error(
+            "We placed the block on that page but it rendered with no height — the theme's layout collapsed it.",
+          );
         }
-        await new Promise((r) => setTimeout(r, 400));
+
+        await page.evaluate(scrollToPosition, {
+          top: injected.blockTop,
+          offsetPx: BLOCK_OFFSET_PX,
+        });
+        // Settle FIRST, then frame. Lazy images above the block finish loading
+        // after the scroll and push it down — measured live, a 269px block that
+        // the arithmetic put fully in view was 150px cut off by the time the
+        // shutter opened. Centring after everything has moved is what holds.
+        await new Promise((r) => setTimeout(r, 700));
+        const framed = await page.evaluate(frameBlock);
+        // Only a paint tick here, deliberately: a longer wait would reopen the
+        // window this reordering exists to close.
+        await new Promise((r) => setTimeout(r, 150));
+        console.log(
+          `[blocks] block ${framed.visiblePx}/${framed.height}px visible, anchor=${injected.anchor}`,
+        );
+
         const after = await shoot(page);
 
-        // Leave the page as we found it. Costs nothing and means a future step
-        // added to this session can't inherit a mutated DOM.
-        await page.evaluate(removeBlock, STYLE_ID).catch(() => undefined);
+        // ── 3. The same frame, without the block ──────────────────────────
+        // Nothing ABOVE the insertion point moves when the block is removed, so
+        // re-pinning the scroll gives the identical frame minus the block.
+        //
+        // Deliberately NOT a clipped capture: clipping to the block's rectangle
+        // read better on paper, but the second shot kept failing with "cannot
+        // take screenshot with 0 height" once the block was gone and the
+        // document reflowed. A full viewport at a pinned scroll has no such
+        // failure mode, and the block is centred in it either way.
+        await page.evaluate(removeBlock, STYLE_ID);
+        await page.evaluate((y: number) => window.scrollTo(0, y), framed.scrollY);
+        await new Promise((r) => setTimeout(r, 400));
+        const before = await shoot(page);
+
+        // (The block was already removed to take the "before" shot, so the page
+        // is back to its original state at this point.)
 
         dl.assert("blocks-upload");
 
