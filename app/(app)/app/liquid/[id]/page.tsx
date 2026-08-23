@@ -8,6 +8,9 @@ import type { BlocksProduct } from "@/lib/blocks/product-json";
 import { PreviewPanel, type PreviewProject } from "@/components/blocks/preview-panel";
 import { BlockComposer } from "@/components/blocks/block-composer";
 import { TokenEditor } from "@/components/blocks/token-editor";
+import { ExportPanel } from "@/components/blocks/export-panel";
+import { confirmExportPayment, getExportStatus } from "@/app/actions/blocks-export";
+import { EXPORT_NOT_CONFIGURED } from "@/lib/blocks/export-pricing";
 
 export const metadata = { title: "Liquid Blocks — project" };
 
@@ -25,10 +28,31 @@ function money(cents: number, currency: string | null): string {
 
 export default async function LiquidProjectPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ checkout?: string }>;
 }) {
   const { id } = await params;
+  const sp = await searchParams;
+
+  /**
+   * Settle the purchase the moment they land back here, from Stripe's own copy
+   * of the session — before anything renders.
+   *
+   * The webhook does this too, and normally gets there first. This exists for
+   * the case that actually costs money: a delivery that is lost, or that fails
+   * after `stripe_events` has already recorded the event id, at which point
+   * Stripe's retry is deduped into a no-op and the customer is left having paid
+   * for a download they can't reach. Both paths converge on one row because
+   * `stripe_session_id` is unique.
+   */
+  if (sp.checkout) {
+    await confirmExportPayment(id, sp.checkout).catch((err) =>
+      console.warn("[blocks] eager export confirm failed:", (err as Error).message),
+    );
+  }
+
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -51,6 +75,9 @@ export default async function LiquidProjectPage({
   // See app/actions/blocks.ts for the full note.
   const row = project as any;
   const product = row.product_json as (BlocksProduct & { currency: string | null }) | null;
+  // Read after the eager confirmation above, so a customer returning from
+  // Stripe sees the download rather than the buy button.
+  const exportStatus = await getExportStatus(id);
 
   return (
     <div className="p-6 md:p-10 lg:p-12 pt-10 md:pt-14 max-w-5xl mx-auto space-y-8">
@@ -179,6 +206,25 @@ export default async function LiquidProjectPage({
               projectId={row.id}
               tokens={row.design_tokens}
               savedOverrides={row.token_overrides ?? {}}
+            />
+          </section>
+
+          {/*
+            Last, and only once there is a block to buy. Selling the download
+            above the proof would be asking for money before showing anything —
+            the preview is the argument, and this is what it argues for.
+          */}
+          <section>
+            <h2 className="text-sm font-medium text-white/70 mb-3">
+              Take it to your theme
+            </h2>
+            <ExportPanel
+              projectId={row.id}
+              paid={exportStatus.paid}
+              configured={exportStatus.configured}
+              priceLabel={exportStatus.price?.formatted ?? null}
+              hasBlock={Boolean(row.block_spec)}
+              notConfiguredMessage={EXPORT_NOT_CONFIGURED}
             />
           </section>
         </>

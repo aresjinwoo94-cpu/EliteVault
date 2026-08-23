@@ -10,6 +10,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import posthog from "posthog-js";
+import { startExportCheckout } from "@/app/actions/blocks-export";
 
 /**
  * Embedded Stripe Checkout (v3.8.3).
@@ -51,9 +52,21 @@ function csMode(cs: string): "live" | "test" | null {
 export function EmbeddedCheckoutForm({
   plan,
   interval,
+  exportProjectId,
 }: {
   plan: "pro" | "scale";
   interval: "month" | "year";
+  /**
+   * Liquid Blocks WP-D. When set, this buys ONE export for that project
+   * instead of a subscription — a `mode: "payment"` session, open to any user
+   * on any plan.
+   *
+   * Added as an optional prop rather than by forking this component: the
+   * genuinely valuable parts here are the guards below (ad-blocker detection,
+   * test/live mode mismatch), which took real incidents to write and must not
+   * exist in two copies that drift. The existing call site is unchanged.
+   */
+  exportProjectId?: string;
 }) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -86,10 +99,21 @@ export function EmbeddedCheckoutForm({
     // between "signup" and "plan_upgraded" in the conversion funnel.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (typeof window !== "undefined" && (posthog as any).__loaded) {
-      posthog.capture("checkout_started", { plan, interval });
+      posthog.capture(
+        "checkout_started",
+        // An export purchase isn't a plan upgrade — reporting it as one would
+        // put one-off downloads in the middle of the subscription funnel.
+        exportProjectId ? { kind: "liquid_export" } : { plan, interval },
+      );
     }
     (async () => {
       try {
+        if (exportProjectId) {
+          const res = await startExportCheckout(exportProjectId);
+          if (!res.ok) throw new Error(res.error);
+          if (!cancelled) setClientSecret(res.clientSecret);
+          return;
+        }
         const res = await fetch("/api/stripe/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -112,7 +136,7 @@ export function EmbeddedCheckoutForm({
     return () => {
       cancelled = true;
     };
-  }, [plan, interval]);
+  }, [plan, interval, exportProjectId]);
 
   // Config guards — turn a silent blank/broken iframe into a precise message.
   // (1) No publishable key baked into the build. NEXT_PUBLIC_* is inlined at
@@ -140,10 +164,10 @@ export function EmbeddedCheckoutForm({
       <div className="rounded-2xl border border-destructive/30 bg-destructive/[0.04] p-6 text-center">
         <p className="text-sm text-destructive">{shownError}</p>
         <button
-          onClick={() => router.push("/app/billing")}
+          onClick={() => router.push(exportProjectId ? `/app/liquid/${exportProjectId}` : "/app/billing")}
           className="mt-4 text-xs text-white/55 hover:text-white"
         >
-          ← Back to billing
+          ← Back
         </button>
       </div>
     );

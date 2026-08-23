@@ -8,6 +8,7 @@ import { sendEmail } from "@/lib/email/resend";
 import { buildReceipt } from "@/lib/email/receipt";
 import { buildPaymentFailed } from "@/lib/email/payment-failed";
 import { buildCancellation } from "@/lib/email/cancellation";
+import { settleExport } from "@/app/actions/blocks-export";
 
 export const runtime = "nodejs";
 
@@ -92,7 +93,25 @@ export async function POST(req: NextRequest) {
 
   try {
     switch (event.type) {
-      case "checkout.session.completed":
+      case "checkout.session.completed": {
+        // A one-time purchase is not a subscription event. syncSubscription
+        // early-returns on `!session.subscription`, so before this branch a
+        // Liquid Blocks payment was recorded in stripe_events and then silently
+        // did nothing. Routed first, and deliberately NOT falling through.
+        const session = event.data.object as Stripe.Checkout.Session;
+        if (
+          session.mode === "payment" &&
+          session.metadata?.purchase === "liquid_export"
+        ) {
+          // Idempotent on the session id, independently of the event-level
+          // dedupe above — the same session can arrive under two different
+          // event ids and must still unlock exactly one export.
+          await settleExport(session);
+          break;
+        }
+        await syncSubscription(event, service);
+        break;
+      }
       case "customer.subscription.created":
       case "customer.subscription.updated":
       case "customer.subscription.deleted":
