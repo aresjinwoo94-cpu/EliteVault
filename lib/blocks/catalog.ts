@@ -150,6 +150,21 @@ function filled(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+/** A plain object we can read fields off without throwing. */
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+/**
+ * Liquid delimiters in a merchant's own copy.
+ *
+ * The renderer neutralises these too (see `esc`), so this is defence in depth —
+ * but it's the half that TELLS them. Silently turning their braces into
+ * entities would leave someone wondering why the page shows the characters
+ * literally; refusing here explains it before they publish.
+ */
+const LIQUID_DELIMITERS = /\{\{|\}\}|\{%|%\}/;
+
 /** True for something a stats block can legitimately plot. */
 function isNumeric(value: string): boolean {
   return /^-?\d{1,9}(\.\d{1,4})?$/.test(value.trim());
@@ -167,8 +182,37 @@ function httpsOrNull(raw: string | null): boolean {
 export function validateBlockSpec(spec: BlockSpecInput): ValidateResult {
   const missing: string[] = [];
   const warnings: string[] = [];
+
+  /**
+   * Fail closed on anything unrecognised.
+   *
+   * The switch below used to have no default, so a spec with an unknown or
+   * missing `type` validated clean, was persisted, and then rendered as
+   * product_facts — the merchant approved one block and their theme received a
+   * different one. A validator that doesn't understand its input has exactly
+   * one correct answer.
+   */
+  if (!isRecord(spec)) {
+    return { ok: false, missing: ["That isn't a block."] };
+  }
+  const KNOWN: string[] = BLOCK_CATALOG.map((b) => b.id);
+  if (typeof spec.type !== "string" || !KNOWN.includes(spec.type)) {
+    return { ok: false, missing: ["Pick one of the block types."] };
+  }
+
   const tooLong = (what: string, value: string, cap: number) => {
     if (value.trim().length > cap) missing.push(`${what} is too long (max ${cap} characters)`);
+  };
+  /** Every merchant-typed string goes through here. */
+  const text = (what: string, value: unknown, cap: number): string | null => {
+    if (!filled(value)) return null;
+    tooLong(what, value, cap);
+    if (LIQUID_DELIMITERS.test(value)) {
+      missing.push(
+        `${what}: remove the {{ }} or {% %} — those are Liquid tags and they'd break your theme.`,
+      );
+    }
+    return value;
   };
 
   switch (spec.type) {
@@ -181,19 +225,35 @@ export function validateBlockSpec(spec: BlockSpecInput): ValidateResult {
         missing.push(`Too many trust items (max ${MAX_ITEMS.trust})`);
       }
       spec.items.forEach((item, i) => {
+        if (!isRecord(item)) {
+          missing.push(`Trust item ${i + 1} is malformed.`);
+          return;
+        }
         // The label IS the claim, so it's the one required part. The detail
         // line only elaborates, and plenty of merchants have nothing to add.
-        if (!filled(item.label)) missing.push(`Trust item ${i + 1}: what does it say?`);
-        else tooLong(`Trust item ${i + 1}`, item.label, MAX.label);
-        if (filled(item.detail)) tooLong(`Trust item ${i + 1} detail`, item.detail, MAX.detail);
+        if (!text(`Trust item ${i + 1}`, item.label, MAX.label)) {
+          missing.push(`Trust item ${i + 1}: what does it say?`);
+        }
+        if (item.detail !== undefined && item.detail !== null) {
+          text(`Trust item ${i + 1} detail`, item.detail, MAX.detail);
+        }
+        // An unrecognised icon used to fall back to the shipping truck, so
+        // "Made in Italy" rendered beside a delivery van — a signal the
+        // merchant never chose, on a block whose entire job is trust.
+        if (!TRUST_ICONS.includes(item.icon as TrustIcon)) {
+          missing.push(`Trust item ${i + 1}: pick an icon from the list.`);
+        }
       });
       break;
     }
 
     case "brand_cards": {
-      if (!filled(spec.promise)) missing.push("Your promise, in one sentence");
-      else tooLong("The promise", spec.promise, MAX.promise);
+      if (!text("The promise", spec.promise, MAX.promise)) {
+        missing.push("Your promise, in one sentence");
+      }
 
+      // `.filter(filled)` also drops non-strings, so a benefit of `5` becomes
+      // "too few benefits" rather than a crash in the renderer.
       const benefits = Array.isArray(spec.benefits) ? spec.benefits.filter(filled) : [];
       if (benefits.length < 3) {
         missing.push("At least three benefits (a card with one line looks unfinished)");
@@ -201,7 +261,13 @@ export function validateBlockSpec(spec: BlockSpecInput): ValidateResult {
       if (benefits.length > MAX_ITEMS.benefits) {
         missing.push(`Too many benefits (max ${MAX_ITEMS.benefits})`);
       }
-      benefits.forEach((b, i) => tooLong(`Benefit ${i + 1}`, b, MAX.benefit));
+      benefits.forEach((b, i) => text(`Benefit ${i + 1}`, b, MAX.benefit));
+      // A non-string in the list is silently excluded above, which would let a
+      // malformed payload through as "three benefits" while the renderer sees
+      // four and throws on the fourth.
+      if (Array.isArray(spec.benefits) && spec.benefits.some((b) => typeof b !== "string")) {
+        missing.push("One of the benefits isn't text.");
+      }
 
       if (!httpsOrNull(spec.logoUrl)) {
         missing.push("The logo must be an https:// image URL");
@@ -210,23 +276,30 @@ export function validateBlockSpec(spec: BlockSpecInput): ValidateResult {
     }
 
     case "comparison": {
-      if (!filled(spec.competitorName)) {
+      if (!text("The competitor name", spec.competitorName, MAX.competitor)) {
         // A comparison is a claim ABOUT SOMEONE. It needs a subject the
         // merchant chose deliberately — that's both honest and their legal
         // exposure, not ours to guess at.
         missing.push("Competitor: what you're comparing against, by name");
-      } else tooLong("The competitor name", spec.competitorName, MAX.competitor);
+      }
 
       const rows = Array.isArray(spec.rows) ? spec.rows : [];
       if (rows.length === 0) missing.push("At least one row to compare");
       if (rows.length > MAX_ITEMS.rows) missing.push(`Too many rows (max ${MAX_ITEMS.rows})`);
       rows.forEach((row, i) => {
-        if (!filled(row.label)) missing.push(`Row ${i + 1}: what are you comparing?`);
-        if (!filled(row.ours)) missing.push(`Row ${i + 1}: your value`);
-        if (!filled(row.theirs)) missing.push(`Row ${i + 1}: their value`);
-        tooLong(`Row ${i + 1} label`, row.label ?? "", MAX.statLabel);
-        tooLong(`Row ${i + 1} (yours)`, row.ours ?? "", MAX.cellValue);
-        tooLong(`Row ${i + 1} (theirs)`, row.theirs ?? "", MAX.cellValue);
+        if (!isRecord(row)) {
+          missing.push(`Row ${i + 1} is malformed.`);
+          return;
+        }
+        if (!text(`Row ${i + 1} label`, row.label, MAX.statLabel)) {
+          missing.push(`Row ${i + 1}: what are you comparing?`);
+        }
+        if (!text(`Row ${i + 1} (yours)`, row.ours, MAX.cellValue)) {
+          missing.push(`Row ${i + 1}: your value`);
+        }
+        if (!text(`Row ${i + 1} (theirs)`, row.theirs, MAX.cellValue)) {
+          missing.push(`Row ${i + 1}: their value`);
+        }
       });
 
       // Allowed — it might be true — but a table the competitor loses outright
@@ -250,14 +323,24 @@ export function validateBlockSpec(spec: BlockSpecInput): ValidateResult {
       }
       if (stats.length > MAX_ITEMS.stats) missing.push(`Too many stats (max ${MAX_ITEMS.stats})`);
       stats.forEach((stat, i) => {
-        if (!filled(stat.label)) missing.push(`Stat ${i + 1}: what does the number measure?`);
-        else tooLong(`Stat ${i + 1} label`, stat.label, MAX.statLabel);
+        if (!isRecord(stat)) {
+          missing.push(`Stat ${i + 1} is malformed.`);
+          return;
+        }
+        if (!text(`Stat ${i + 1} label`, stat.label, MAX.statLabel)) {
+          missing.push(`Stat ${i + 1}: what does the number measure?`);
+        }
         if (!filled(stat.value) || !isNumeric(stat.value)) {
           // "Loved by everyone" is not a statistic. Letting prose in turns a
           // chart into a claims block wearing a chart's clothes.
           missing.push(`Stat ${i + 1}: a number (prose belongs in Brand cards)`);
         } else tooLong(`Stat ${i + 1} value`, stat.value, MAX.statValue);
-        if (filled(stat.unit)) tooLong(`Stat ${i + 1} unit`, stat.unit, MAX.unit);
+        // Optional, but it must be TEXT if present — `undefined` reaching the
+        // renderer threw on `.trim()`.
+        if (stat.unit !== undefined && stat.unit !== null) {
+          if (typeof stat.unit !== "string") missing.push(`Stat ${i + 1}: the unit isn't text.`);
+          else text(`Stat ${i + 1} unit`, stat.unit, MAX.unit);
+        }
       });
       break;
     }

@@ -191,6 +191,89 @@ test("a logo must be an https URL if given at all", () => {
   );
 });
 
+test("a spec with an unknown or missing type is refused, not waved through", () => {
+  // The switch had no default, so an unrecognised type validated clean, was
+  // persisted, and then rendered as a DIFFERENT block — the merchant approves
+  // one thing and their theme gets another. A validator's job is to fail
+  // closed on input it doesn't understand.
+  for (const bad of [
+    { type: "totally_unknown" },
+    { items: [] },
+    {},
+    { type: null },
+  ]) {
+    const res = validateBlockSpec(bad as unknown as BlockSpecInput);
+    assert.equal(res.ok, false, JSON.stringify(bad));
+  }
+});
+
+test("a malformed item is refused instead of crashing the renderer", () => {
+  // The client forms always send every key, so these are only reachable by a
+  // crafted call — but a server action is a public endpoint that accepts
+  // arbitrary JSON, and each of these either threw inside the renderer or
+  //500'd the validator itself.
+  const cases: unknown[] = [
+    { type: "trust_icons", items: [null] },
+    { type: "comparison", competitorName: "Them", rows: [null] },
+    { type: "brand_cards", promise: "p", benefits: ["a", "b", 5], logoUrl: null },
+    { type: "product_stats", stats: [{ label: "Buyers", value: "38", unit: 7 }] },
+  ];
+  for (const bad of cases) {
+    let res: ReturnType<typeof validateBlockSpec>;
+    assert.doesNotThrow(() => {
+      res = validateBlockSpec(bad as BlockSpecInput);
+    }, JSON.stringify(bad));
+    res = validateBlockSpec(bad as BlockSpecInput);
+    assert.equal(res.ok, false, JSON.stringify(bad));
+  }
+});
+
+test("an omitted optional key is accepted — it's a blank field, not a broken one", () => {
+  // The distinction the previous version of this test got wrong: `detail` and
+  // `unit` are optional, so leaving them out is an answer. What must not happen
+  // is the renderer throwing on the `undefined` that results, which it did.
+  for (const spec of [
+    { type: "trust_icons", items: [{ icon: "shipping", label: "Free shipping" }] },
+    { type: "product_stats", stats: [{ label: "Repeat buyers", value: "38" }] },
+  ]) {
+    const res = validateBlockSpec(spec as unknown as BlockSpecInput);
+    assert.equal(res.ok, true, JSON.stringify(spec));
+  }
+});
+
+test("an icon outside the known set is refused rather than silently swapped", () => {
+  // An unrecognised name fell back to the shipping truck, so "Made in Italy"
+  // rendered next to a delivery van — a signal the merchant never chose.
+  const res = validateBlockSpec({
+    type: "trust_icons",
+    items: [{ icon: "made-in-italy", label: "Made in Italy", detail: "" }],
+  });
+  assert.equal(res.ok, false);
+  if (res.ok) return;
+  assert.ok(res.missing.some((m) => /icon/i.test(m)), res.missing.join(", "));
+});
+
+test("Liquid delimiters are refused in the merchant's own text", () => {
+  // Defence in depth with the renderer's escaping: refusing here means the
+  // merchant is TOLD, rather than quietly having their braces neutralised and
+  // wondering why the page shows them literally.
+  for (const promise of [
+    "{% for i in (1..3) %}",
+    "{{ customer.email }}",
+    "Save {%- assign x = 1 -%} now",
+  ]) {
+    const res = validateBlockSpec({
+      type: "brand_cards",
+      promise,
+      benefits: ["a", "b", "c"],
+      logoUrl: null,
+    });
+    assert.equal(res.ok, false, promise);
+    if (res.ok) continue;
+    assert.ok(res.missing.some((m) => /liquid|\{%|\{\{/i.test(m)), res.missing.join(", "));
+  }
+});
+
 test("validation never returns a spec with fields the user didn't supply", () => {
   // The guarantee in one assertion: whatever comes out is what went in.
   const res = validateBlockSpec(TRUST);

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { saveBlockSpec } from "@/app/actions/blocks-compose";
+import { requestBlocksPreview } from "@/app/actions/blocks-preview";
 import {
   BLOCK_CATALOG,
   TRUST_ICONS,
@@ -64,6 +66,7 @@ export function BlockComposer({
   const [draft, setDraft] = useState<Draft>(() =>
     initialSpec ? { ...EMPTY, [initialSpec.type]: initialSpec } : EMPTY,
   );
+  const router = useRouter();
   const [missing, setMissing] = useState<string[]>([]);
   const [isPending, startTransition] = useTransition();
 
@@ -84,7 +87,17 @@ export function BlockComposer({
         return;
       }
       for (const w of res.warnings) toast.warning(w, { duration: 9000 });
+      // Actually re-run it. The toast used to promise a preview that nothing
+      // triggered — PreviewPanel only auto-dispatches on a fresh project, so
+      // the merchant saw a confirmation, no change, and had to find the
+      // "Re-measure" button themselves.
+      const run = await requestBlocksPreview(projectId);
+      if (!run.ok) {
+        toast.error(run.error);
+        return;
+      }
       toast.success("Saved. Building the preview with your block.");
+      router.refresh();
       onSaved?.();
     });
   }

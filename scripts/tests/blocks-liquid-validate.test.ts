@@ -142,6 +142,84 @@ test("the validator reports every problem it finds, not just the first", () => {
   assert.ok(res.problems.length >= 2, res.problems.join(" | "));
 });
 
+test("a sibling combinator escapes the block and is rejected", () => {
+  // The single failure mode this validator exists to prevent, and the one it
+  // missed. Both of these START with the prefix, so a `startsWith` check waves
+  // them through — and both were proven in a real browser to hide the theme's
+  // Add to cart button, because the install guide places the block as a SIBLING
+  // of exactly those elements.
+  for (const selector of [
+    `.${BLOCK_PREFIX} ~ *`,
+    `.${BLOCK_PREFIX} + button`,
+    `.${BLOCK_PREFIX}~div`,
+    `.${BLOCK_PREFIX}+ .price`,
+  ]) {
+    const snippet = GOOD.replace(
+      `.${BLOCK_PREFIX}__title{font-weight:600}`,
+      `${selector}{display:none}`,
+    );
+    const res = validateLiquidSnippet(snippet);
+    assert.equal(res.ok, false, `${selector} was accepted`);
+  }
+});
+
+test("a descendant selector inside the block is still fine", () => {
+  // The fix must not ban ordinary nesting — `.ev-blk__media img` and
+  // `.ev-blk > div` stay inside the block by construction.
+  for (const selector of [
+    `.${BLOCK_PREFIX}__media img`,
+    `.${BLOCK_PREFIX} > div`,
+    `.${BLOCK_PREFIX} .${BLOCK_PREFIX}__title`,
+  ]) {
+    const snippet = GOOD.replace(
+      `.${BLOCK_PREFIX}__title{font-weight:600}`,
+      `${selector}{font-weight:600}`,
+    );
+    assert.equal(validateLiquidSnippet(snippet).ok, true, selector);
+  }
+});
+
+test("a scoped selector that covers the whole viewport is rejected", () => {
+  // `.ev-blk{position:fixed;inset:0}` is perfectly scoped and turns the block
+  // into a full-page overlay. Scoping is about SELECTORS; this is the hole on
+  // the other side of that, and it was proven in a browser.
+  for (const decl of [
+    "position:fixed;inset:0",
+    "position:fixed;top:0;left:0;width:100vw;height:100vh",
+    "position:sticky;top:0;height:100vh",
+  ]) {
+    const snippet = GOOD.replace("background:#fff", decl);
+    assert.equal(validateLiquidSnippet(snippet).ok, false, decl);
+  }
+});
+
+test("a class that merely begins with the prefix is not inside the block", () => {
+  // `.ev-blkFOO` passes a naive startsWith and is a different class entirely.
+  for (const selector of [`.${BLOCK_PREFIX}FOO`, `.${BLOCK_PREFIX}-hack`]) {
+    const snippet = GOOD.replace(
+      `.${BLOCK_PREFIX}__title{font-weight:600}`,
+      `${selector}{color:red}`,
+    );
+    assert.equal(validateLiquidSnippet(snippet).ok, false, selector);
+  }
+});
+
+test("tags that hijack the surrounding page are rejected", () => {
+  // <form> matters most: the install guide places the block directly under the
+  // Add to cart button, i.e. INSIDE the theme's product form. A nested <form>
+  // makes the parser close the outer one and orphans the buy button.
+  for (const bad of [
+    `<base href="https://evil/">`,
+    `<meta http-equiv="refresh" content="0;url=https://evil">`,
+    `<object data="https://evil"></object>`,
+    `<embed src="https://evil">`,
+    `<form action="https://evil"><input name="x"></form>`,
+  ]) {
+    const res = validateLiquidSnippet(GOOD.replace("</style>", `</style>${bad}`));
+    assert.equal(res.ok, false, bad);
+  }
+});
+
 test("an empty or absurd snippet is rejected rather than throwing", () => {
   for (const snippet of ["", "   ", "not html at all", "x".repeat(200_000)]) {
     const res = validateLiquidSnippet(snippet);

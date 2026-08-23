@@ -52,6 +52,19 @@ export function validateLiquidSnippet(snippet: string): LiquidValidation {
   if (/<script\b/i.test(src)) problems.push("Contains a <script> tag.");
   if (/<iframe\b/i.test(src)) problems.push("Contains an <iframe>.");
   if (/<link\b/i.test(src)) problems.push("Contains a <link> to an external stylesheet.");
+  // `<base>` rewrites every relative URL on the merchant's page; a refresh meta
+  // navigates away from it.
+  if (/<base\b/i.test(src)) problems.push("Contains a <base> tag, which would rewrite the page's links.");
+  if (/<meta\b/i.test(src)) problems.push("Contains a <meta> tag.");
+  if (/<(object|embed)\b/i.test(src)) problems.push("Contains an <object> or <embed>.");
+  // `<form>` matters more here than it looks: the install guide places the
+  // block directly under the Add to cart button, i.e. INSIDE the theme's
+  // product form. A nested form makes the parser close the outer one and
+  // orphans the buy button — the block would break checkout without touching a
+  // single style.
+  if (/<form\b/i.test(src)) {
+    problems.push("Contains a <form>, which would break the theme's own product form.");
+  }
   if (/\son[a-z]+\s*=/i.test(src)) problems.push("Contains an inline event handler (on… attribute).");
   if (/@import/i.test(src)) problems.push("Contains an @import.");
   if (/url\s*\(\s*['"]?https?:/i.test(src)) {
@@ -83,16 +96,61 @@ export function validateLiquidSnippet(snippet: string): LiquidValidation {
   // ── The containment rule ──────────────────────────────────────────────────
   for (const css of styles) {
     for (const selector of selectorsOf(css)) {
-      // Must START with the prefix. `body .ev-blk` targets the block too, but
-      // it drags `body` into the match and picks a specificity fight with the
-      // theme; only descendants OF the block are in bounds.
-      if (!selector.startsWith(`.${BLOCK_PREFIX}`)) {
-        problems.push(
-          `Selector "${selector}" is not scoped to .${BLOCK_PREFIX} — it would restyle the theme.`,
-        );
-      }
+      problems.push(...selectorProblems(selector));
+    }
+
+    // Scoping is about SELECTORS, and that turned out to be only half the
+    // question. `.ev-blk{position:fixed;inset:0}` is perfectly scoped and turns
+    // the block into a full-viewport overlay covering the merchant's entire
+    // page — proven in a browser during review. A block sits in the flow of the
+    // page; it never pins itself to the window.
+    if (/position\s*:\s*(fixed|sticky)/i.test(css)) {
+      problems.push(
+        "Uses position:fixed or position:sticky, which lifts the block out of the page and can cover the whole store.",
+      );
     }
   }
 
   return problems.length === 0 ? { ok: true } : { ok: false, problems };
+}
+
+/**
+ * Is this selector genuinely confined to the block?
+ *
+ * `startsWith(".ev-blk")` was the first answer and it was wrong twice over,
+ * both proven against a real storefront:
+ *
+ *   - `.ev-blk ~ *` and `.ev-blk + button` start with the prefix and reach
+ *     SIDEWAYS out of it. The install guide places the block as a sibling of
+ *     the buy button, so those selectors hid the Add to cart control. This is
+ *     the exact failure the validator exists to catch, and it sailed through.
+ *   - `.ev-blkFOO` starts with the prefix and is a different class entirely.
+ *
+ * Descendants (` `, `>`) stay inside by construction and are fine.
+ */
+function selectorProblems(selector: string): string[] {
+  const sel = selector.trim();
+  if (!sel.startsWith(`.${BLOCK_PREFIX}`)) {
+    return [
+      `Selector "${sel}" is not scoped to .${BLOCK_PREFIX} — it would restyle the theme.`,
+    ];
+  }
+
+  // The character right after the prefix decides whether this is our class or
+  // one that merely shares its opening letters. A word character or a hyphen
+  // means a different class name.
+  const after = sel.slice(BLOCK_PREFIX.length + 1, BLOCK_PREFIX.length + 2);
+  const isOurClass = after === "" || !/[\w-]/.test(after) || sel.startsWith(`.${BLOCK_PREFIX}__`);
+  if (!isOurClass) {
+    return [
+      `Selector "${sel}" only looks like a block class — .${BLOCK_PREFIX}${after}… is something else.`,
+    ];
+  }
+
+  if (/[~+]/.test(sel)) {
+    return [
+      `Selector "${sel}" uses a sibling combinator, which reaches out of the block and can restyle the theme elements next to it.`,
+    ];
+  }
+  return [];
 }

@@ -54,14 +54,34 @@ export interface RenderedBlock {
   liquid?: string;
 }
 
-/** Escape for HTML text and double-quoted attribute values. */
+/**
+ * Escape for HTML text and double-quoted attribute values — AND for Liquid.
+ *
+ * The braces are the part that isn't obvious and the part that mattered most.
+ * Everything passed through here is either the merchant's own typed text or a
+ * value from the store, and the output is pasted into `main-product.liquid`,
+ * where Liquid parses the source before a browser ever sees it. Left alone,
+ * `{% for i in (1..3) %}` in a benefit line is an unclosed tag that takes down
+ * the entire product section, and `{{ customer.email }}` prints a real
+ * shopper's address on a public page — output the merchant never typed.
+ *
+ * Escaping to a numeric entity does both jobs at once: Liquid reads `&#123;`
+ * and finds no tag, and the browser renders it as `{`, so a merchant who typed
+ * "Save {{20}}% today" sees exactly that. Dropping the braces instead would
+ * silently rewrite their copy.
+ *
+ * Our own Liquid expressions never come through here — they're inserted
+ * directly by productFields, which is the whole reason that split exists.
+ */
 function esc(raw: string): string {
   return raw
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+    .replace(/'/g, "&#39;")
+    .replace(/\{/g, "&#123;")
+    .replace(/\}/g, "&#125;");
 }
 
 /**
@@ -280,6 +300,13 @@ function productFactsHtml(
 {%- if product.compare_at_price > product.price %}
 <div class="${p}__stat"><span class="${p}__stat-label">You save</span><span class="${p}__stat-value">{{ product.compare_at_price | minus: product.price | times: 100 | divided_by: product.compare_at_price }}%</span></div>
 {%- endif %}
+{%- if product.variants.size > 1 %}
+{%- assign ev_in_stock = 0 %}
+{%- for ev_v in product.variants %}{% if ev_v.available %}{% assign ev_in_stock = ev_in_stock | plus: 1 %}{% endif %}{% endfor %}
+{%- if ev_in_stock > 0 %}
+<div class="${p}__stat"><span class="${p}__stat-label">Options in stock</span><span class="${p}__stat-value">{{ ev_in_stock }} of {{ product.variants.size }}</span></div>
+{%- endif %}
+{%- endif %}
 {%- if product.type != blank %}
 <div class="${p}__stat"><span class="${p}__stat-label">Type</span><span class="${p}__stat-value">{{ product.type }}</span></div>
 {%- endif %}
@@ -292,7 +319,9 @@ function productFactsHtml(
   // reaching here means the saving is genuine.
   const discountPct =
     product.compareAtCents !== null
-      ? Math.round(
+      // Floor, matching Liquid's `divided_by` on the export side. Rounding here
+      // and flooring there let the preview and the snippet disagree by a point.
+      ? Math.floor(
           ((product.compareAtCents - product.priceCents) / product.compareAtCents) * 100,
         )
       : null;
@@ -394,7 +423,7 @@ function trustHtml(spec: Extract<BlockSpecInput, { type: "trust_icons" }>): stri
     .map(
       (item) =>
         `<div class="${p}__trust-item">${icon(item.icon)}<span><span class="${p}__trust-label">${esc(item.label)}</span>${
-          item.detail.trim()
+          (item.detail ?? "").trim()
             ? `<span class="${p}__trust-detail">${esc(item.detail)}</span>`
             : ""
         }</span></div>`,
@@ -413,7 +442,7 @@ function brandHtml(
   const p = BLOCK_PREFIX;
   const logo = safeImageUrl(spec.logoUrl);
   const benefits = spec.benefits
-    .filter((b) => b.trim())
+    .filter((b): b is string => typeof b === "string" && b.trim().length > 0)
     .map(
       (b) =>
         `<li class="${p}__benefit"><span class="${p}__tick" aria-hidden="true">✓</span><span>${esc(b)}</span></li>`,
@@ -463,7 +492,7 @@ function statsHtml(
     .map((stat, i) => {
       const pct = Math.max(2, Math.round((values[i] / peak) * 100));
       return `<div class="${p}__stat"><span class="${p}__stat-label">${esc(stat.label)}</span><span class="${p}__stat-value">${esc(stat.value)}${
-        stat.unit.trim() ? `<span class="${p}__unit">${esc(stat.unit)}</span>` : ""
+        (stat.unit ?? "").trim() ? `<span class="${p}__unit">${esc(stat.unit)}</span>` : ""
       }</span><span class="${p}__bar"><span class="${p}__bar-fill" style="width:${pct}%"></span></span></div>`;
     })
     .join("\n");

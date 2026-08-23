@@ -193,6 +193,100 @@ test("the CSS is identical in both modes — it is the same block", () => {
   }
 });
 
+test("Liquid delimiters in a merchant's own text can never execute", () => {
+  // The worst bug found in review. `esc()` handled HTML and left `{{` and `{%`
+  // alone, so a claim field was a Liquid injection point in the exported
+  // snippet — and the snippet gets pasted into main-product.liquid.
+  //
+  // Two distinct failures, both real:
+  //   - `{% for i in (1..3) %}` unclosed is a Liquid SYNTAX ERROR that takes
+  //     down the whole product section. "It broke my product page" is the one
+  //     outcome this feature promises can't happen.
+  //   - `{{ customer.email }}` renders a real shopper's address on a public
+  //     product page — output the merchant never typed.
+  const injected: BlockSpecInput = {
+    type: "brand_cards",
+    promise: "{% for i in (1..3) %}loop",
+    benefits: ["{{ customer.email }}", "{{ shop.email }}", "{% assign x = 1 %}"],
+    logoUrl: null,
+  };
+  for (const mode of ["preview", "liquid"] as const) {
+    const out = render(injected, mode);
+    const body = mode === "liquid" ? (out.liquid ?? "") : out.html;
+    // Our OWN Liquid still has to work, so we can't just ban braces globally —
+    // the merchant's text is what gets neutralised.
+    assert.ok(!body.includes("{% for i in"), `${mode}: a Liquid tag survived`);
+    assert.ok(!body.includes("{{ customer.email }}"), `${mode}: an object survived`);
+    assert.ok(!body.includes("{% assign"), `${mode}: an assign survived`);
+  }
+});
+
+test("neutralising the merchant's braces still shows them the characters they typed", () => {
+  // A promise of "Save {{20}}% today" must READ as "Save {{20}}% today" on the
+  // page. Escaping to an HTML entity is what does both jobs: Liquid parses the
+  // source and never sees a tag, the browser renders it and shows a brace.
+  const spec: BlockSpecInput = {
+    type: "brand_cards",
+    promise: "Save {{20}}% today",
+    benefits: ["one", "two", "three"],
+    logoUrl: null,
+  };
+  const { liquid } = render(spec, "liquid");
+  assert.ok(liquid);
+  assert.ok(!liquid.includes("{{20}}"), "the braces were left executable");
+  assert.ok(/&#12[35];/.test(liquid), "the braces were dropped instead of escaped");
+});
+
+test("our own Liquid expressions are untouched by that escaping", () => {
+  // The escaping applies to merchant text only. If it hit our own output tags
+  // the snippet would print "{{ product.title }}" as literal text.
+  const { liquid } = renderBlock({
+    spec: { type: "product_facts" },
+    tokens: TOKENS,
+    product: PRODUCT,
+    currency: "USD",
+    mode: "liquid",
+  });
+  assert.ok(liquid?.includes("{{ product.title }}"));
+});
+
+test("the facts panel shows the same tiles in the preview and in the export", () => {
+  // Review found the preview rendering an "Options in stock" tile that the
+  // Liquid had no counterpart for — so the merchant approved one block and
+  // exported another, on the one block whose whole job is to be the proof.
+  const preview = renderBlock({
+    spec: { type: "product_facts" },
+    tokens: TOKENS,
+    product: {
+      ...PRODUCT,
+      variants: [
+        { title: "S", priceCents: 8900, available: true },
+        { title: "M", priceCents: 8900, available: true },
+        { title: "L", priceCents: 8900, available: false },
+      ],
+    },
+    currency: "USD",
+  }).html;
+  const liquid =
+    renderBlock({
+      spec: { type: "product_facts" },
+      tokens: TOKENS,
+      product: {
+        ...PRODUCT,
+        variants: [
+          { title: "S", priceCents: 8900, available: true },
+          { title: "M", priceCents: 8900, available: true },
+          { title: "L", priceCents: 8900, available: false },
+        ],
+      },
+      currency: "USD",
+      mode: "liquid",
+    }).liquid ?? "";
+  const labels = (src: string) =>
+    [...src.matchAll(/__stat-label">([^<]+)</g)].map((m) => m[1]).sort();
+  assert.deepEqual(labels(preview), labels(liquid));
+});
+
 test("a hostile claim is escaped, in both modes", () => {
   const hostile: BlockSpecInput = {
     type: "trust_icons",

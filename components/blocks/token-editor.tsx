@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { AlertTriangle, Check, Pencil } from "lucide-react";
 import { toast } from "sonner";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { saveTokenOverrides } from "@/app/actions/blocks-compose";
+import { requestBlocksPreview } from "@/app/actions/blocks-preview";
 import type { DesignTokens } from "@/lib/blocks/design-tokens";
 
 /**
@@ -55,6 +57,7 @@ export function TokenEditor({
   /** Fired after a successful save so the parent can re-run the preview. */
   onSaved?: () => void;
 }) {
+  const router = useRouter();
   const [draft, setDraft] = useState<Record<string, string>>(savedOverrides);
   const [isPending, startTransition] = useTransition();
 
@@ -70,7 +73,16 @@ export function TokenEditor({
         return;
       }
       for (const w of res.warnings) toast.warning(w, { duration: 8000 });
+      // Actually re-run it — see the same note in block-composer.tsx. A
+      // correction the merchant can't see take effect is worse than no
+      // correction at all, because it teaches them the control does nothing.
+      const run = await requestBlocksPreview(projectId);
+      if (!run.ok) {
+        toast.error(run.error);
+        return;
+      }
       toast.success("Saved. Re-measuring your page with these values.");
+      router.refresh();
       onSaved?.();
     });
   }

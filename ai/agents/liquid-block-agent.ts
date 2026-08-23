@@ -65,11 +65,14 @@ function systemPrompt(): string {
     "You write additive Shopify Liquid snippets that a merchant pastes into a product template.",
     "",
     "ABSOLUTE RULES — a snippet that breaks any of these is discarded:",
-    `1. Every CSS selector MUST start with .${BLOCK_PREFIX}. Never style a bare element (body, img, a, button, h1…), never use *, never use :root, never use a selector that merely CONTAINS the prefix (e.g. "body .${BLOCK_PREFIX}").`,
-    `2. Declare custom properties on .${BLOCK_PREFIX} itself, never on :root.`,
-    "3. No <script>, no <iframe>, no <link>, no @import, no url(http…), no on* attributes.",
-    "4. No {% render %}, {% include %}, {% section %}, {% javascript %}, {% stylesheet %}, {% schema %} — the snippet must stand alone.",
-    "5. Exactly one <style> block and exactly one root element carrying the block class.",
+    `1. Every CSS selector MUST start with .${BLOCK_PREFIX}. Never style a bare element (body, img, a, button, h1…), never a bare *, never :root, and never a selector that merely CONTAINS the prefix (e.g. "body .${BLOCK_PREFIX}"). Descendants are fine — ".${BLOCK_PREFIX} *" and ".${BLOCK_PREFIX}__media img" both stay inside the block.`,
+    `2. Never use a sibling combinator (~ or +) after the block class: ".${BLOCK_PREFIX} ~ *" reaches OUT of the block and would restyle the theme elements beside it.`,
+    "3. Never use position:fixed or position:sticky. A block sits in the flow of the page; pinning it to the window can cover the whole store.",
+    `4. Declare custom properties on .${BLOCK_PREFIX} itself, never on :root.`,
+    "5. No <script>, <iframe>, <link>, <base>, <meta>, <object>, <embed> or <form>. A nested <form> would break the theme's own product form, and the block is pasted inside it.",
+    "6. No @import, no url(http…), no on* attributes.",
+    "7. No {% render %}, {% include %}, {% section %}, {% javascript %}, {% stylesheet %}, {% schema %} — the snippet must stand alone.",
+    "8. Exactly one <style> block and exactly one root element carrying the block class.",
     "",
     "DESIGN RULES:",
     "- Use ONLY the design tokens given. Never introduce a colour, font or radius that isn't among them. The whole point is that the block wears the store's own clothes.",
@@ -151,6 +154,25 @@ export async function generateLiquidBlock(input: {
       currency: input.currency,
       mode: "liquid",
     }).liquid ?? "";
+
+  /**
+   * The template is checked too — as a canary, not as a gate.
+   *
+   * Review pointed out that the fallback path had no validation at all, which
+   * meant the code that actually ships today was the only thing in the feature
+   * nothing checked. It's checked now. But a failure here is NOT a reason to
+   * refuse the export: this is our own tested code, and by far the likeliest
+   * cause of it failing is a false positive in the validator rather than a real
+   * escape. Refusing would turn a validator bug into a paid export that
+   * produces nothing, which is worse than shipping a block the test suite
+   * already proves is scoped. So it screams in the logs and continues.
+   */
+  const templateCheck = validateLiquidSnippet(template);
+  if (!templateCheck.ok) {
+    console.error(
+      `[blocks] OUR OWN template failed validation — this is a bug in render-block.ts or in the validator: ${templateCheck.problems.join(" | ")}`,
+    );
+  }
 
   if (!process.env.ANTHROPIC_API_KEY) {
     // Not an error worth failing an export over: the merchant gets exactly the

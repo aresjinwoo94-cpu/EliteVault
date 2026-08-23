@@ -216,7 +216,10 @@ test("the block states only facts that came from the store", () => {
   const { html } = render();
   // Real: the price, and a discount that genuinely exists (12000 → 8900).
   assert.ok(html.includes("$89.00"));
-  assert.ok(html.includes("26%"), "the real discount should be shown");
+  // 25, not 26: (12000-8900)/12000 = 25.83%, floored. Floor rather than round
+  // because Liquid's `divided_by` is integer division, and the exported snippet
+  // has to agree with the preview the merchant approved.
+  assert.ok(html.includes("25%"), "the real discount should be shown");
 });
 
 test("no discount claim appears when the store has no discount", () => {

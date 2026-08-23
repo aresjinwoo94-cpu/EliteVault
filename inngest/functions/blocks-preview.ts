@@ -438,7 +438,13 @@ export const blocksPreview = inngest.createFunction(
             // of the user's OWN store, and WP-C lets them correct any we got
             // wrong. `fallbacks` is what that UI keys off.
             design_tokens: {
-              ...tokens,
+              // The MEASUREMENT, never the corrected result. Writing the merged
+              // tokens back here destroyed the distinction the whole feature
+              // rests on: applyTokenOverrides strips corrected paths from
+              // `fallbacks`, so the editor then labelled a value the merchant
+              // typed as "✓ measured" and the readout claimed we had read it
+              // off their page. Corrections live in token_overrides.
+              ...measured,
               diagnostics: {
                 matchedButtonSelector: raw.matchedButtonSelector,
                 buttonWasVisible: raw.buttonWasVisible,
