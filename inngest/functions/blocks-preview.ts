@@ -16,6 +16,7 @@ import {
   injectBlock,
   productPageIsReady,
   removeBlock,
+  reparentBlockToMain,
   frameBlock,
   scrollToPosition,
   ANCHOR_SELECTORS,
@@ -102,6 +103,14 @@ function humanize(err: unknown): string {
   }
   if (/net::ERR_|ERR_NAME_NOT_RESOLVED|ERR_CONNECTION/.test(msg)) {
     return "We couldn't open that product page from our servers. Check it loads publicly (no password page) and try again.";
+  }
+  // A store that bounces our browser elsewhere will do it every time, so
+  // "try again in a minute" would be a lie that costs the user a minute.
+  if (/Refusing to (render|publish)/.test(msg)) {
+    return "That product page sent our browser to a different site, so we stopped. Some stores redirect automated browsers away — if yours does, we can't measure it.";
+  }
+  if (/no height|collapsed it/.test(msg)) {
+    return "We placed the block on your page but the theme's layout collapsed it to nothing, so there was no preview worth showing.";
   }
   if (/timeout|Navigation timeout|budget exhausted/i.test(msg)) {
     return "Your product page took too long to load for us to measure it. Try again — if it keeps happening, the store may be blocking automated browsers.";
@@ -250,7 +259,11 @@ export const blocksPreview = inngest.createFunction(
         await page
           .waitForFunction(
             productPageIsReady,
-            { timeout: Math.min(12_000, Math.max(3_000, dl.remaining() - 60_000)), polling: 400 },
+            // 8s, not 12: measured across real stores this never fires on the
+            // majority (their buy button genuinely isn't there under headless
+            // Chrome), and every one of those pays the full timeout. It's a
+            // head start when it works, not a gate.
+            { timeout: Math.min(8_000, Math.max(3_000, dl.remaining() - 60_000)), polling: 400 },
             {
               buttonSelectors: BUY_BUTTON_SELECTORS,
               buttonTextPattern: BUY_BUTTON_TEXT.source,
@@ -333,7 +346,20 @@ export const blocksPreview = inngest.createFunction(
         // the arithmetic put fully in view was 150px cut off by the time the
         // shutter opened. Centring after everything has moved is what holds.
         await new Promise((r) => setTimeout(r, 700));
-        const framed = await page.evaluate(frameBlock);
+        let framed = await page.evaluate(frameBlock);
+
+        // Centring can't rescue a block whose PARENT clips it — measured on a
+        // store whose buy box is a sticky narrow rail, where the block stayed
+        // 44% cut off however it was scrolled. Re-homing it into the main
+        // column is the only thing that helps, and a partly-visible proof is
+        // worth less than a whole one somewhere slightly less ideal.
+        if (framed.height > 0 && framed.visiblePx < framed.height * 0.9) {
+          const rescued = await page.evaluate(reparentBlockToMain);
+          if (rescued) {
+            await new Promise((r) => setTimeout(r, 300));
+            framed = await page.evaluate(frameBlock);
+          }
+        }
         // Only a paint tick here, deliberately: a longer wait would reopen the
         // window this reordering exists to close.
         await new Promise((r) => setTimeout(r, 150));
@@ -362,6 +388,18 @@ export const blocksPreview = inngest.createFunction(
 
         dl.assert("blocks-upload");
 
+        // Re-assert the origin immediately before anything is written. The
+        // check after navigation is a point in time, and several seconds of
+        // injection, framing and two captures happen after it — a page that
+        // bounces in that window would otherwise be rendered, shot, and
+        // published to a PUBLIC bucket.
+        const finalUrl = page.url();
+        if (new URL(finalUrl).origin !== new URL(guard.url).origin) {
+          throw new Error(
+            `Refusing to publish a capture of ${finalUrl}: the page left ${new URL(guard.url).origin} while we worked.`,
+          );
+        }
+
         // ── 4. Persist ────────────────────────────────────────────────────
         const upload = async (name: string, body: Buffer): Promise<string> => {
           const path = `blocks/${projectId}-${name}.jpg`;
@@ -385,7 +423,14 @@ export const blocksPreview = inngest.createFunction(
               ...tokens,
               diagnostics: {
                 matchedButtonSelector: raw.matchedButtonSelector,
+                buttonWasVisible: raw.buttonWasVisible,
                 matchedAnchorSelector: injected.anchor,
+                // How much of the block the proof shot actually shows. A run
+                // that couldn't get the whole thing in frame still reaches
+                // `ready`, so without this the shortfall left no trace at all
+                // beyond a log line nobody reads.
+                blockVisiblePx: framed.visiblePx,
+                blockHeightPx: framed.height,
               },
             },
             preview_before_url: beforeUrl,

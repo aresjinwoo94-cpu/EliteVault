@@ -35,6 +35,18 @@ export interface DesignTokenPalette {
   accentText: string;
   /** Card/section background. Often identical to pageBackground; that's fine. */
   surface: string;
+  /**
+   * The background for elements NESTED inside the block — stat tiles, the image
+   * well. Derived from `surface`, never from `pageBackground`.
+   *
+   * That distinction is load-bearing. The block paints a panel in `surface` and
+   * puts tiles inside it; painting those tiles with the PAGE colour means the
+   * block's single text colour has to be legible on two unrelated backgrounds
+   * at once. On a store where they're opposites it isn't: measured live, the
+   * panel read 21:1 while the tiles inside it read 1.08 and the prices were
+   * invisible.
+   */
+  inset: string;
   border: string;
 }
 
@@ -81,6 +93,13 @@ export interface RawTokenSample {
   containerMaxWidth: string | null;
   cardShadow: string | null;
   surfaceBackground: string | null;
+  /**
+   * False when the buy button we read was present in the DOM but not laid out
+   * (a hidden quick-add template, say). Its styling is still the THEME'S, so
+   * it beats inventing — but the user should be asked to confirm a colour that
+   * appears nowhere on their page. Absent/undefined means "visible".
+   */
+  buttonWasVisible?: boolean;
 }
 
 /**
@@ -309,6 +328,12 @@ export function normalizeDesignTokens(raw: RawTokenSample): DesignTokens {
     "palette.accent",
     LAST_RESORT.accent,
   );
+  // Read off an element that exists but isn't on screen: still the theme's own
+  // value, so it's used — but flagged, because `fallbacks` is the list WP-C
+  // asks the user to confirm and a colour they can't see anywhere is top of it.
+  if (raw.buttonWasVisible === false && !fallbacks.includes("palette.accent")) {
+    fallbacks.push("palette.accent");
+  }
 
   // Button text: measured if we read it, otherwise DERIVED for contrast against
   // the accent. Arithmetic on a measured value, not an invention — but still
@@ -324,11 +349,36 @@ export function normalizeDesignTokens(raw: RawTokenSample): DesignTokens {
       ? measuredAccentText
       : measured(null, "palette.accentText", readableOn(parseHex(accent)));
 
-  const surface = measured(
-    hexOf(raw.surfaceBackground),
-    "palette.surface",
-    pageBackground,
-  );
+  /**
+   * The panel colour.
+   *
+   * SURFACE_SELECTORS matches the first card-ish element ANYWHERE in the
+   * document, which measured live on one store as #000000 on a page whose real
+   * background is #f6f6f6 — a dark card from a section nowhere near the product.
+   * It was technically a reading, so nothing declared it, and it dragged the
+   * rest of the palette with it.
+   *
+   * So a measured surface has to survive one more question: can the store's own
+   * measured text sit on it? If it can't and the page background can, the page
+   * background is the better answer and the swap is disclosed. Repairing the
+   * SURFACE first is what makes repairing the TEXT (below) a genuine last
+   * resort rather than the routine outcome.
+   */
+  const surface = (() => {
+    const chosen = measured(
+      hexOf(raw.surfaceBackground),
+      "palette.surface",
+      pageBackground,
+    );
+    if (chosen === pageBackground) return chosen;
+    const textOnSurface = contrastRatio(parseHex(measuredText), parseHex(chosen));
+    const textOnPage = contrastRatio(parseHex(measuredText), parseHex(pageBackground));
+    if (textOnSurface < MIN_READABLE_CONTRAST && textOnPage >= MIN_READABLE_CONTRAST) {
+      if (!fallbacks.includes("palette.surface")) fallbacks.push("palette.surface");
+      return pageBackground;
+    }
+    return chosen;
+  })();
 
   /**
    * The pairing check.
@@ -357,10 +407,12 @@ export function normalizeDesignTokens(raw: RawTokenSample): DesignTokens {
     return readableOn(parseHex(surface));
   })();
 
-  // A hairline blended from the two colours we measured, so it sits correctly on
-  // a white store AND on a near-black one. A fixed light grey would disappear on
-  // the second. Derived from measurements, so not a fallback.
-  const border = toHex(mix(parseHex(pageBackground), parseHex(textPrimary), 0.14));
+  // Both blended from the PANEL and its text, so they sit correctly on a white
+  // store and on a near-black one alike. Deriving them from the page background
+  // instead was how the border went to 1.01 against the page on a dark-surface
+  // store — invisible, on the one element whose job is to draw an edge.
+  const inset = toHex(mix(parseHex(surface), parseHex(textPrimary), 0.06));
+  const border = toHex(mix(parseHex(surface), parseHex(textPrimary), 0.14));
 
   // ── Type ─────────────────────────────────────────────────────────────────
   const bodyFamily = measured(
@@ -414,7 +466,7 @@ export function normalizeDesignTokens(raw: RawTokenSample): DesignTokens {
   }
 
   return {
-    palette: { pageBackground, textPrimary, accent, accentText, surface, border },
+    palette: { pageBackground, textPrimary, accent, accentText, surface, inset, border },
     type: { headingFamily, bodyFamily, baseSizePx, headingWeight, bodyWeight },
     shape: { radiusPx, containerMaxWidthPx, cardShadow },
     fallbacks,

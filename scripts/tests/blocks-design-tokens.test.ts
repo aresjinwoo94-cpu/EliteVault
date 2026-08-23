@@ -263,6 +263,38 @@ test("text and its background are never left unreadable against each other", () 
   );
 });
 
+test("a surface that fights the store's own text is dropped for the page background", () => {
+  // Measured live: a store whose real page is #f6f6f6 reported surface #000000,
+  // because SURFACE_SELECTORS matched a dark card somewhere unrelated to the
+  // product area. It IS a reading, so it wasn't declared — and it dragged the
+  // whole palette with it. When a measured surface can't hold the store's own
+  // measured text and the page background can, the page background is the
+  // better answer, and the substitution is disclosed.
+  const t = normalizeDesignTokens({
+    ...SAMPLE,
+    bodyBackground: "rgb(246, 246, 246)",
+    bodyColor: "rgb(17, 17, 17)",
+    surfaceBackground: "rgb(0, 0, 0)",
+  });
+  assert.equal(t.palette.surface, "#f6f6f6");
+  assert.equal(t.palette.textPrimary, "#111111", "the store's own text survives");
+  assert.ok(t.fallbacks.includes("palette.surface"));
+  assert.ok(
+    !t.fallbacks.includes("palette.textPrimary"),
+    "fixing the surface should make repairing the text unnecessary",
+  );
+});
+
+test("an accent read off an element nobody can see is flagged for confirmation", () => {
+  // A hidden `.product-form__submit` still carries the theme's button styling,
+  // so using it beats inventing — but the brief makes `fallbacks` the list the
+  // user is asked to confirm, and a colour that appears nowhere on the page is
+  // exactly what deserves confirming.
+  const t = normalizeDesignTokens({ ...SAMPLE, buttonWasVisible: false });
+  assert.equal(t.palette.accent, "#124a3d", "still used — it's the theme's own value");
+  assert.ok(t.fallbacks.includes("palette.accent"));
+});
+
 test("a legible pairing is left exactly as measured", () => {
   // The guard must not fire on normal stores — a contrast fix that rewrote
   // every palette would be its own kind of invention.

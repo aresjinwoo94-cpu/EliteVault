@@ -127,6 +127,40 @@ test("the store's measured colours are what actually style the block", () => {
   assert.ok(css.includes("Assistant"), "the measured body font is missing");
 });
 
+test("every surface the block paints can carry the block's text", () => {
+  // The bug this exists to stop, found live: the contrast repair fixed the
+  // PANEL and left the tiles inside it behind, because the tiles were painted
+  // with the page background while the panel used the measured surface. On a
+  // store where those two are opposites, the panel read 21:1 and the stat tiles
+  // read 1.08 — "PRICE / 14.99" was invisible.
+  //
+  // Checked against the emitted CSS rather than the tokens, because the tokens
+  // were individually fine. The pairing is what was wrong.
+  const hostile = normalizeDesignTokens({
+    ...RAW,
+    bodyBackground: "rgb(246, 246, 246)",
+    bodyColor: "rgb(17, 17, 17)",
+    surfaceBackground: "rgb(0, 0, 0)",
+  });
+  const { css } = renderBlock({
+    spec: { type: "product_facts" },
+    tokens: hostile,
+    product: PRODUCT,
+    currency: "USD",
+  });
+
+  // Nothing inside the block may paint itself with the PAGE background — that
+  // is the colour behind the block, not a colour the block's own text sits on.
+  const inner = css
+    .split("\n")
+    .filter((line) => line.startsWith(`.${BLOCK_PREFIX}__`))
+    .join("\n");
+  assert.ok(
+    !/background:\s*var\(--ev-bg\)/.test(inner),
+    "an inner element paints itself with the page background:\n" + inner,
+  );
+});
+
 test("a store with square corners gets square corners", () => {
   const square = normalizeDesignTokens({ ...RAW, buttonBorderRadius: "0px" });
   const { css } = renderBlock({
@@ -240,6 +274,18 @@ test("a statement before a rule doesn't swallow the selector that follows it", (
       `"${expected}" was swallowed — found ${JSON.stringify(found)}`,
     );
   }
+});
+
+test("keyframe steps are not mistaken for global selectors", () => {
+  // `from`, `to` and `50%` are keyframe steps, not selectors — reporting them
+  // as bare globals would block legitimate animation in WP-C for no reason.
+  const found = selectorsOf(`
+    @keyframes ev-fade{from{opacity:0}50%{opacity:.5}to{opacity:1}}
+    .ev-blk__badge{animation:ev-fade .2s}
+  `);
+  assert.ok(!found.includes("from"), JSON.stringify(found));
+  assert.ok(!found.includes("to"), JSON.stringify(found));
+  assert.ok(found.includes(".ev-blk__badge"), "the real rule after it must survive");
 });
 
 test("an at-rule is never reported as a selector, however it's written", () => {

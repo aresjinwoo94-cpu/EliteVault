@@ -159,6 +159,8 @@ export interface CollectedTokens {
   containerMaxWidth: string | null;
   cardShadow: string | null;
   surfaceBackground: string | null;
+  /** False when the button we read exists but isn't laid out. See design-tokens. */
+  buttonWasVisible: boolean;
   /** Diagnostics — which selector actually matched, for the PR and for support. */
   matchedButtonSelector: string | null;
   matchedAnchorSelector: string | null;
@@ -413,6 +415,7 @@ export function collectDesignTokens(args: {
     containerMaxWidth: containerStyle?.maxWidth ?? null,
     cardShadow: shadow,
     surfaceBackground: surface.el ? paintedAncestor(surface.el) : null,
+    buttonWasVisible: button.el ? laidOut(button.el) : false,
     matchedButtonSelector: button.selector,
     matchedAnchorSelector: anchor.selector,
   };
@@ -503,7 +506,14 @@ export function injectBlock(args: {
    */
   let rect = holder.getBoundingClientRect();
   if (rect.height < 1) {
-    const fallbackHome = document.querySelector("main") ?? document.body;
+    // Prefer a real content column. Falling straight to <body> would append the
+    // block after the footer on a theme with no <main> — visible, but somewhere
+    // no merchant would accept.
+    const fallbackHome =
+      document.querySelector("main") ??
+      document.querySelector("[role='main']") ??
+      document.querySelector("#MainContent") ??
+      document.body;
     fallbackHome.appendChild(holder);
     anchorSelector = (anchorSelector ?? "none") + " → reparented (collapsed)";
     rect = holder.getBoundingClientRect();
@@ -575,6 +585,30 @@ export function dismissOverlays(overlaySelectors: string[]): number {
 export function removeBlock(styleId: string): void {
   document.getElementById(styleId)?.remove();
   document.querySelectorAll("[data-ev-block]").forEach((el) => el.remove());
+}
+
+/**
+ * Move an already-injected block into the main content column. Runs in the
+ * browser; returns false when there was nowhere better to put it.
+ *
+ * The case this exists for, measured live: a theme whose buy box is a sticky,
+ * narrow rail with its own clipping. The block goes in beside the button — the
+ * right place — and the rail cuts 44% of it off, and no amount of scrolling
+ * helps because the container is what's clipping. A whole proof somewhere
+ * slightly less ideal beats a partial one in exactly the right spot.
+ */
+export function reparentBlockToMain(): boolean {
+  const holder = document.querySelector("[data-ev-block]");
+  if (!holder) return false;
+  const home =
+    document.querySelector("main") ??
+    document.querySelector("[role='main']") ??
+    document.querySelector("#MainContent");
+  // No main column: leave it where it is. Appending to <body> would put the
+  // block after the footer, which is worse than being clipped.
+  if (!home) return false;
+  home.appendChild(holder);
+  return true;
 }
 
 /**

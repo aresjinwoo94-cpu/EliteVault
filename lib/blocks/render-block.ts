@@ -95,7 +95,14 @@ export function selectorsOf(css: string): string[] {
   const out: string[] = [];
   // Strip declaration blocks' contents so `color: red` can't be read as a
   // selector, then read what precedes each `{`.
-  const withoutComments = css.replace(/\/\*[\s\S]*?\*\//g, "");
+  // `@keyframes` names its steps `from`, `to` and percentages, which are not
+  // selectors and would be reported as bare global elements — blocking
+  // legitimate animation from WP-C onward for no reason. Dropped whole, so
+  // nothing inside one is inspected either (there is nothing there to inspect:
+  // keyframe steps can't target the document).
+  const withoutComments = css
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/@(-\w+-)?keyframes[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/gi, "");
   for (const m of withoutComments.matchAll(/([^{}]+)\{/g)) {
     // A `;` ends a statement, so only what FOLLOWS the last one is the selector
     // for this block — `@import url(x);\nbody` is an import statement and then
@@ -130,8 +137,15 @@ function css(tokens: DesignTokens): string {
   const { palette, type, shape } = tokens;
   return `
 .${p}{
+/* The page's own background, recorded for reference. Deliberately NOT used to
+   paint anything inside the block: an inner element painted with the colour
+   BEHIND the block forces one text colour to be legible on two unrelated
+   backgrounds, which on a dark-surface store left the stat tiles at 1.08
+   contrast. Everything nested reads --ev-inset, which is derived from the
+   panel it sits on. */
 --ev-bg:${palette.pageBackground};
 --ev-surface:${palette.surface};
+--ev-inset:${palette.inset};
 --ev-text:${palette.textPrimary};
 --ev-accent:${palette.accent};
 --ev-accent-text:${palette.accentText};
@@ -156,12 +170,12 @@ ${shape.cardShadow ? `box-shadow:${shape.cardShadow};` : ""}
 }
 .${p} *{box-sizing:border-box;}
 .${p}__head{display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap;}
-.${p}__media{width:96px;height:96px;flex:0 0 auto;border-radius:var(--ev-radius);overflow:hidden;background:var(--ev-bg);}
+.${p}__media{width:96px;height:96px;flex:0 0 auto;border-radius:var(--ev-radius);overflow:hidden;background:var(--ev-inset);}
 .${p}__media img{width:100%;height:100%;object-fit:cover;display:block;}
 .${p}__title{margin:0;font-family:var(--ev-font-heading);font-weight:var(--ev-weight-heading);font-size:1.25em;line-height:1.2;}
 .${p}__vendor{margin:.25rem 0 0;opacity:.65;font-size:.875em;}
 .${p}__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem;margin-top:1.25rem;}
-.${p}__stat{padding:.75rem;background:var(--ev-bg);border:1px solid var(--ev-border);border-radius:var(--ev-radius);}
+.${p}__stat{padding:.75rem;background:var(--ev-inset);border:1px solid var(--ev-border);border-radius:var(--ev-radius);}
 .${p}__stat-label{display:block;font-size:.75em;text-transform:uppercase;letter-spacing:.06em;opacity:.6;}
 .${p}__stat-value{display:block;margin-top:.25rem;font-size:1.125em;font-weight:600;}
 .${p}__was{opacity:.55;text-decoration:line-through;font-weight:400;font-size:.8em;margin-left:.4em;}
