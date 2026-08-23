@@ -28,8 +28,10 @@ import {
   OVERLAY_SELECTORS,
   SURFACE_SELECTORS,
 } from "@/lib/blocks/collect-tokens";
-import { normalizeDesignTokens } from "@/lib/blocks/design-tokens";
+import { applyTokenOverrides, normalizeDesignTokens } from "@/lib/blocks/design-tokens";
 import { renderBlock } from "@/lib/blocks/render-block";
+import type { BlockSpec } from "@/lib/blocks/render-block";
+import type { BlockSpecInput } from "@/lib/blocks/catalog";
 import type { BlocksProduct } from "@/lib/blocks/product-json";
 import { startDeadline } from "@/lib/deadline";
 
@@ -194,7 +196,7 @@ export const blocksPreview = inngest.createFunction(
 
       const { data: project } = await service
         .from("blocks_projects")
-        .select("product_url, product_json")
+        .select("product_url, product_json, block_spec, token_overrides")
         .eq("id", projectId)
         .single();
       if (!project) throw new Error(`blocks project ${projectId} not found`);
@@ -202,6 +204,8 @@ export const blocksPreview = inngest.createFunction(
       const row = project as unknown as {
         product_url: string;
         product_json: (BlocksProduct & { currency: string | null }) | null;
+        block_spec: BlockSpecInput | null;
+        token_overrides: Record<string, string> | null;
       };
       if (!row.product_json) {
         throw new Error("This project has no product data — start it again.");
@@ -307,10 +311,24 @@ export const blocksPreview = inngest.createFunction(
           anchorSelectors: ANCHOR_SELECTORS,
           buyButtonAttr: BUY_BUTTON_ATTR,
         });
-        const tokens = normalizeDesignTokens(raw);
+        const measured = normalizeDesignTokens(raw);
+
+        // The merchant's corrections win over what we read — that's the point
+        // of offering them. Applied here rather than at export so the preview
+        // they approve is styled with the values they chose, not the ones we
+        // guessed and they then fixed.
+        const tokens = row.token_overrides
+          ? applyTokenOverrides(measured, row.token_overrides)
+          : measured;
+
+        // Preview whichever block they picked. Before they've picked one, the
+        // calibration panel stands in: it needs no input from them and shows
+        // the measurement, which is what the first visit is actually asking
+        // them to confirm.
+        const spec: BlockSpec = row.block_spec ?? { type: "product_facts" };
 
         const rendered = renderBlock({
-          spec: { type: "product_facts" },
+          spec,
           tokens,
           product: row.product_json,
           currency: row.product_json.currency ?? null,

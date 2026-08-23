@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import type { BlocksProduct } from "@/lib/blocks/product-json";
 import { PreviewPanel, type PreviewProject } from "@/components/blocks/preview-panel";
+import { BlockComposer } from "@/components/blocks/block-composer";
+import { TokenEditor } from "@/components/blocks/token-editor";
 
 export const metadata = { title: "Liquid Blocks — project" };
 
@@ -37,7 +39,7 @@ export default async function LiquidProjectPage({
   const { data: project } = await supabase
     .from("blocks_projects")
     .select(
-      "id, product_url, product_handle, product_json, design_tokens, preview_before_url, preview_after_url, status, error, created_at",
+      "id, product_url, product_handle, product_json, design_tokens, token_overrides, block_spec, preview_before_url, preview_after_url, status, error, created_at",
     )
     .eq("id", id)
     .eq("user_id", user!.id)
@@ -152,6 +154,35 @@ export default async function LiquidProjectPage({
           } satisfies PreviewProject}
         />
       </section>
+
+      {/*
+        Both editors live BELOW the preview on purpose. The first thing the
+        merchant should see is their own page with a block on it — the proof.
+        Choosing a block and correcting a colour are things you do once you
+        believe the proof, not before.
+
+        Only offered once we've actually measured the page: correcting tokens we
+        haven't read yet would be asking someone to check our work before we've
+        done any.
+      */}
+      {row.design_tokens && (
+        <>
+          <section>
+            <h2 className="text-sm font-medium text-white/70 mb-3">
+              Build your block
+            </h2>
+            <BlockComposer projectId={row.id} initialSpec={row.block_spec ?? null} />
+          </section>
+
+          <section>
+            <TokenEditor
+              projectId={row.id}
+              tokens={row.design_tokens}
+              savedOverrides={row.token_overrides ?? {}}
+            />
+          </section>
+        </>
+      )}
     </div>
   );
 }

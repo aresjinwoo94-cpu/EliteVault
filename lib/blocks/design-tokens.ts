@@ -75,6 +75,170 @@ export interface DesignTokens {
   fallbacks: string[];
 }
 
+/**
+ * Tokens after the merchant has had a look. Same shape, plus a record of what
+ * they changed — the UI needs to distinguish "we measured this", "we guessed
+ * this" and "you told us this", and they are three different claims.
+ */
+export interface CorrectedDesignTokens extends DesignTokens {
+  /** Dotted paths the merchant supplied themselves. */
+  userCorrected: string[];
+  /** Advisory only — never a reason to override what they chose. */
+  warnings: string[];
+}
+
+/** The dotted paths a merchant may correct. Anything else is ignored. */
+export const OVERRIDABLE_TOKENS = [
+  "palette.pageBackground",
+  "palette.textPrimary",
+  "palette.accent",
+  "palette.accentText",
+  "palette.surface",
+  "type.headingFamily",
+  "type.bodyFamily",
+  "type.baseSizePx",
+  "shape.radiusPx",
+  "shape.containerMaxWidthPx",
+] as const;
+export type OverridableToken = (typeof OVERRIDABLE_TOKENS)[number];
+
+/** `#abc` → `#aabbcc`; anything not unambiguously a hex triplet → null. */
+function parseUserColor(raw: string): string | null {
+  const s = (raw ?? "").trim().toLowerCase();
+  if (/^#[0-9a-f]{6}$/.test(s)) return s;
+  if (/^#[0-9a-f]{3}$/.test(s)) {
+    return `#${s[1]}${s[1]}${s[2]}${s[2]}${s[3]}${s[3]}`;
+  }
+  return null;
+}
+
+function parseUserNumber(raw: string, min: number, max: number): number | null {
+  const n = Number((raw ?? "").trim());
+  if (!Number.isFinite(n)) return null;
+  return Math.max(min, Math.min(max, Math.round(n)));
+}
+
+/**
+ * Apply the merchant's corrections on top of what we measured.
+ *
+ * Three rules, each earned:
+ *
+ * 1. **Untrusted input.** These strings are typed by a person and written
+ *    verbatim into a `<style>` block. A value that isn't unambiguously a colour
+ *    (or a safe font stack, or a number in range) is REFUSED and the
+ *    measurement stands — never sanitized into something arbitrary, which would
+ *    silently give them a colour nobody chose.
+ *
+ * 2. **A corrected value stops being our guess.** It leaves `fallbacks` and
+ *    joins `userCorrected`. Otherwise the UI keeps asking them to confirm
+ *    something they just told us.
+ *
+ * 3. **Their choice wins, even when it's bad.** The automatic contrast repair
+ *    exists because WE might have measured two colours that fight. If the
+ *    merchant explicitly picks both, that's a decision about their own
+ *    storefront — we warn, and we apply it. Overruling them here would be the
+ *    same overreach the whole feature is built against.
+ */
+export function applyTokenOverrides(
+  tokens: DesignTokens,
+  overrides: Record<string, string>,
+): CorrectedDesignTokens {
+  const palette = { ...tokens.palette };
+  const type = { ...tokens.type };
+  const shape = { ...tokens.shape };
+  const userCorrected: string[] = [];
+  const warnings: string[] = [];
+
+  const accept = (path: string) => {
+    if (!userCorrected.includes(path)) userCorrected.push(path);
+  };
+
+  for (const path of OVERRIDABLE_TOKENS) {
+    // Read off the caller's plain object by known key only — `__proto__` and
+    // friends never get near a property assignment.
+    const raw = Object.prototype.hasOwnProperty.call(overrides, path)
+      ? overrides[path]
+      : undefined;
+    if (typeof raw !== "string") continue;
+
+    switch (path) {
+      case "palette.pageBackground":
+      case "palette.textPrimary":
+      case "palette.accent":
+      case "palette.accentText":
+      case "palette.surface": {
+        const value = parseUserColor(raw);
+        if (!value) continue;
+        palette[path.split(".")[1] as keyof DesignTokenPalette] = value;
+        accept(path);
+        break;
+      }
+      case "type.headingFamily":
+      case "type.bodyFamily": {
+        const value = safeFontStack(raw);
+        if (!value) continue;
+        type[path.split(".")[1] as "headingFamily" | "bodyFamily"] = value;
+        accept(path);
+        break;
+      }
+      case "type.baseSizePx": {
+        const value = parseUserNumber(raw, 10, 32);
+        if (value === null) continue;
+        type.baseSizePx = value;
+        accept(path);
+        break;
+      }
+      case "shape.radiusPx": {
+        const value = parseUserNumber(raw, 0, MAX_USEFUL_RADIUS_PX);
+        if (value === null) continue;
+        shape.radiusPx = value;
+        accept(path);
+        break;
+      }
+      case "shape.containerMaxWidthPx": {
+        const value = parseUserNumber(raw, 320, 2400);
+        if (value === null) continue;
+        shape.containerMaxWidthPx = value;
+        accept(path);
+        break;
+      }
+    }
+  }
+
+  // Re-derive what hangs off the corrected values. Leaving these is how a
+  // merchant ends up with a hand-picked panel and hairlines blended from the
+  // colour it replaced.
+  palette.inset = toHex(mix(parseHex(palette.surface), parseHex(palette.textPrimary), 0.06));
+  palette.border = toHex(mix(parseHex(palette.surface), parseHex(palette.textPrimary), 0.14));
+
+  if (
+    contrastRatio(parseHex(palette.textPrimary), parseHex(palette.surface)) <
+    MIN_READABLE_CONTRAST
+  ) {
+    warnings.push(
+      "Your text colour and panel colour are very close — the block will be hard to read. That's your call, but worth a look.",
+    );
+  }
+  if (
+    contrastRatio(parseHex(palette.accentText), parseHex(palette.accent)) <
+    MIN_READABLE_CONTRAST
+  ) {
+    warnings.push(
+      "Your button text is hard to read against your button colour.",
+    );
+  }
+
+  return {
+    palette,
+    type,
+    shape,
+    // A value they supplied is theirs now, whatever we had guessed before.
+    fallbacks: tokens.fallbacks.filter((f) => !userCorrected.includes(f)),
+    userCorrected,
+    warnings,
+  };
+}
+
 /** Exactly what the in-page collector reads. All strings, all as-computed. */
 export interface RawTokenSample {
   bodyBackground: string | null;
