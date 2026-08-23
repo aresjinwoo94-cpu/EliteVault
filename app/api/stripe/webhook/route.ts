@@ -8,7 +8,7 @@ import { sendEmail } from "@/lib/email/resend";
 import { buildReceipt } from "@/lib/email/receipt";
 import { buildPaymentFailed } from "@/lib/email/payment-failed";
 import { buildCancellation } from "@/lib/email/cancellation";
-import { settleExport } from "@/app/actions/blocks-export";
+import { settleExport } from "@/lib/blocks/settle-export";
 
 export const runtime = "nodejs";
 
@@ -103,10 +103,31 @@ export async function POST(req: NextRequest) {
           session.mode === "payment" &&
           session.metadata?.purchase === "liquid_export"
         ) {
-          // Idempotent on the session id, independently of the event-level
-          // dedupe above — the same session can arrive under two different
-          // event ids and must still unlock exactly one export.
-          await settleExport(session);
+          /**
+           * Idempotent on the session id, independently of the event-level
+           * dedupe above — the same session can arrive under two different
+           * event ids and must still unlock exactly one export.
+           *
+           * The `catch` is what makes the retry meaningful. This event id was
+           * inserted into `stripe_events` BEFORE processing, so a throw here
+           * would return 500, Stripe would retry the same event, and line ~86
+           * would answer `duplicate: true` and do nothing. A subscription
+           * survives that — later `subscription.updated` / `invoice.*` events
+           * re-sync it. A one-time payment does not:
+           * `checkout.session.completed` is the ONLY event it will ever get,
+           * so a swallowed failure means the customer paid and can never
+           * download.
+           *
+           * Releasing the dedupe row turns Stripe's retry back into a real
+           * second attempt. Safe precisely because settlement is idempotent on
+           * the session id: replaying it cannot grant a second export.
+           */
+          try {
+            await settleExport(session);
+          } catch (err) {
+            await service.from("stripe_events").delete().eq("id", event.id);
+            throw err;
+          }
           break;
         }
         await syncSubscription(event, service);

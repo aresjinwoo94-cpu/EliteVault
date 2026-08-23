@@ -1,7 +1,75 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+
+/** Every .ts/.tsx file under `dir`, recursively. */
+function walk(dir: string): string[] {
+  const out: string[] = [];
+  let entries;
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return out;
+  }
+  for (const entry of entries) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name === "node_modules" || entry.name === ".next") continue;
+      out.push(...walk(full));
+    } else {
+      out.push(full);
+    }
+  }
+  return out;
+}
+
+/**
+ * The body of one function, by brace matching from its declaration.
+ *
+ * Needed because scanning a whole FILE for a string proves almost nothing —
+ * the first version of the "settled from Stripe's record" test below passed on
+ * strings that live in a different function entirely.
+ */
+function bodyOf(src: string, fnName: string): string {
+  const decl = new RegExp(`(?:export\\s+)?async\\s+function\\s+${fnName}\\b`);
+  const at = src.search(decl);
+  if (at === -1) return "";
+
+  /**
+   * Find the BODY's opening brace, not the first `{` after the name.
+   *
+   * A return type like `Promise<{ ok: boolean }>` contains a brace, and taking
+   * that one made every body come back as its own type annotation — which is
+   * how these assertions looked like they were checking a function and were
+   * really checking six words of TypeScript. Parameters and generics are
+   * skipped by depth so only a brace at the top level counts.
+   */
+  let paren = 0;
+  let angle = 0;
+  let open = -1;
+  for (let i = at; i < src.length; i++) {
+    const c = src[i];
+    if (c === "(") paren++;
+    else if (c === ")") paren--;
+    else if (c === "<") angle++;
+    else if (c === ">") angle = Math.max(0, angle - 1);
+    else if (c === "{" && paren === 0 && angle === 0) {
+      open = i;
+      break;
+    }
+  }
+  if (open === -1) return "";
+  let depth = 0;
+  for (let i = open; i < src.length; i++) {
+    if (src[i] === "{") depth++;
+    else if (src[i] === "}") {
+      depth--;
+      if (depth === 0) return src.slice(open, i + 1);
+    }
+  }
+  return src.slice(open);
+}
 
 /**
  * WP-D — the paywall, and the promise that the credit system stays out of it.
@@ -117,15 +185,112 @@ test("payment is settled from Stripe's own record, never from the client's word"
   // A session id arrives in a URL, so it is the client's word. Everything that
   // decides whether someone paid — the buyer, the project, the payment status —
   // has to come from the session Stripe hands back.
-  assert.ok(EXPORT_ACTION.includes("stripe.checkout.sessions.retrieve"));
+  //
+  // Scoped to confirmExportPayment's own body. Searching the whole file made
+  // this near-vacuous: `blocks_project_id` and `supabase_user_id` also appear
+  // in startExportCheckout's metadata block, so every validation branch here
+  // could be deleted and the test would still pass.
+  const body = bodyOf(EXPORT_ACTION, "confirmExportPayment");
+  assert.ok(body.includes("stripe.checkout.sessions.retrieve"));
+  assert.ok(body.includes("payment_status"), "doesn't check payment_status");
   assert.ok(
-    EXPORT_ACTION.includes("payment_status"),
-    "the confirmation doesn't check payment_status",
+    body.includes("meta.blocks_project_id !== projectId"),
+    "doesn't verify the session was opened for THIS project",
   );
   assert.ok(
-    EXPORT_ACTION.includes("blocks_project_id") &&
-      EXPORT_ACTION.includes("supabase_user_id"),
-    "the confirmation doesn't verify the session belongs to this project and buyer",
+    body.includes("meta.supabase_user_id !== user.id"),
+    "doesn't verify the session was opened for THIS buyer",
+  );
+  assert.ok(
+    body.includes('meta.purchase !== "liquid_export"'),
+    "doesn't verify the session is an export purchase at all",
+  );
+});
+
+test("settlement checks payment_status on BOTH paths, not just the eager one", () => {
+  // The webhook path calls settleExport directly. When only the eager path
+  // checked, an unpaid `checkout.session.completed` would have been written as
+  // paid — impossible today because every configured payment method is
+  // synchronous, and a free export the day anyone enables ACH, SEPA, Klarna or
+  // a 100%-off promo code in the Stripe dashboard. Nobody making that change
+  // would think to look at this file.
+  const settle = codeOf(read("lib/blocks/settle-export.ts"));
+  assert.ok(
+    settle.includes('session.payment_status !== "paid"'),
+    "settleExport writes a paid row without checking the payment actually succeeded",
+  );
+});
+
+test("every server action in the export module authenticates", () => {
+  // The hole that got through review: EVERY exported async function in a
+  // "use server" module is a public HTTP endpoint. `settleExport` was exported
+  // from here, took a Stripe session as its argument, did no auth, and wrote
+  // with the SERVICE-ROLE client — walking straight around the SELECT-only RLS
+  // that was supposed to protect the money table. The only thing in the way was
+  // the reference id not yet being in a client chunk, which is obscurity.
+  assert.ok(
+    EXPORT_ACTION.trimStart().startsWith('"use server"'),
+    "this test assumes the module is a server-action module",
+  );
+  const exported = [...EXPORT_ACTION.matchAll(/export\s+async\s+function\s+(\w+)/g)].map(
+    (m) => m[1],
+  );
+  assert.ok(exported.length > 0, "no exported actions found — the check is vacuous");
+  for (const name of exported) {
+    const body = bodyOf(EXPORT_ACTION, name);
+    assert.ok(
+      body.includes("auth.getUser()"),
+      `${name}() is a public endpoint that never authenticates. Either authenticate it, or move it to a server-only module that isn't a server action (see lib/blocks/settle-export.ts).`,
+    );
+  }
+});
+
+test("the money table stays readable-only to the client", () => {
+  // The RLS shape IS the protection, and a later migration adding
+  // `for all using (auth.uid() = user_id)` would let anyone insert their own
+  // row with status 'paid' — opening the front door with nothing failing.
+  const sql = read("supabase/migrations/0035_blocks_exports.sql").toLowerCase();
+  assert.ok(sql.includes("enable row level security"));
+  const policies = [...sql.matchAll(/create\s+policy[^;]*?\bfor\s+(\w+)/g)].map(
+    (m) => m[1],
+  );
+  assert.deepEqual(
+    policies,
+    ["select"],
+    `blocks_exports must expose SELECT and nothing else to the client; found: ${policies.join(", ")}`,
+  );
+});
+
+test("no file anywhere in the repo reaches for credits on behalf of Blocks", () => {
+  // The hardcoded list in the test above is an allowlist, and the scenario it
+  // exists to prevent is a FUTURE file — "Pro includes 3 exports" landing in a
+  // new module that reaches for the audit pool out of habit. So this one
+  // sweeps every source file that mentions Blocks at all.
+  const roots = ["app", "lib", "components", "inngest", "ai"];
+  /**
+   * The Stripe webhook is shared infrastructure. It legitimately grants
+   * subscription credits (`onInvoicePaid`) AND routes the Blocks export branch,
+   * so it matches on both counts without either being wrong. Excluded by path
+   * and by name so the exemption is deliberate and visible rather than a
+   * loophole in the pattern.
+   */
+  const SHARED = ["app/api/stripe/webhook/route.ts"];
+  const offenders: string[] = [];
+  for (const root of roots) {
+    for (const file of walk(join(ROOT, root))) {
+      if (!/\.(ts|tsx)$/.test(file) || file.includes("node_modules")) continue;
+      const rel = file.slice(ROOT.length + 1).replace(/\\/g, "/");
+      if (SHARED.includes(rel)) continue;
+      const raw = readFileSync(file, "utf8");
+      if (!/blocks_projects|blocks_exports|liquid-block|blocks\//i.test(raw)) continue;
+      const src = codeOf(raw);
+      if (/\bcredits\b|assertQuota/.test(src)) offenders.push(rel);
+    }
+  }
+  assert.deepEqual(
+    offenders,
+    [],
+    `these Blocks files reach for the audit credit pool: ${offenders.join(", ")}`,
   );
 });
 
@@ -133,8 +298,9 @@ test("settling a payment is idempotent on the Stripe session", () => {
   // The webhook dedupes by EVENT id, which cannot protect against the same
   // session arriving under two different event ids — nor against the eager
   // confirmation racing the webhook, which is the normal case.
-  assert.ok(EXPORT_ACTION.includes("onConflict"), "the settle path isn't an upsert");
-  assert.ok(EXPORT_ACTION.includes("stripe_session_id"));
+  const settle = codeOf(read("lib/blocks/settle-export.ts"));
+  assert.ok(settle.includes("onConflict"), "the settle path isn't an upsert");
+  assert.ok(settle.includes("stripe_session_id"));
 });
 
 test("a one-time purchase does not fall through to the subscription handler", () => {

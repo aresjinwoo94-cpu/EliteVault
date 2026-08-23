@@ -2,6 +2,7 @@
 
 import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe/server";
+import { resolveStripeCustomerId } from "@/lib/stripe/customer";
 import {
   createSupabaseServerClient,
   createSupabaseServiceClient,
@@ -11,10 +12,12 @@ import {
   EXPORT_NOT_CONFIGURED,
   exportPriceId,
   getExportPrice,
+  isExportConfigured,
   type ExportPrice,
 } from "@/lib/blocks/export-pricing";
 import { generateLiquidBlock } from "@/ai/agents/liquid-block-agent";
 import { installGuide, installGuideText } from "@/lib/blocks/install-instructions";
+import { settleExport } from "@/lib/blocks/settle-export";
 
 import { runWithMeter } from "@/lib/usage/context";
 import type { BlockSpecInput } from "@/lib/blocks/catalog";
@@ -117,7 +120,11 @@ export async function getExportStatus(projectId: string): Promise<ExportStatus> 
     hasPaidExport(projectId, user.id),
     getExportPrice(),
   ]);
-  return { paid, configured: price !== null, price };
+  // "Configured" is about OUR setup, not about Stripe being reachable. Deriving
+  // it from a failed price fetch told merchants the price "hasn't been set up"
+  // during a transient Stripe outage, when it had been — a true-sounding
+  // statement about the wrong thing.
+  return { paid, configured: isExportConfigured(), price };
 }
 
 /**
@@ -157,10 +164,44 @@ export async function startExportCheckout(
   }
 
   try {
+    /**
+     * Attach the purchase to the buyer's Stripe Customer where one exists.
+     *
+     * In `mode: "payment"` Stripe's `customer_creation` defaults to
+     * `if_required`, so without this a Pro subscriber's export shows up as an
+     * unattached guest payment: it doesn't appear under their customer record,
+     * their LTV fragments across two identities, and finding the payment later
+     * means searching PaymentIntents by email instead of opening the customer.
+     * Refunds and receipts work either way, so this is a finance-hygiene fix —
+     * and a far more annoying one to apply after real payments exist.
+     *
+     * Best-effort: `resolveStripeCustomerId` returns null for someone who has
+     * never subscribed, and the session falls back to `customer_email`.
+     */
+    let customerId: string | null = null;
+    try {
+      const service = createSupabaseServiceClient();
+      const { data: profile } = await service
+        .from("profiles")
+        .select("stripe_customer_id, email")
+        .eq("id", user.id)
+        .single();
+      customerId = await resolveStripeCustomerId({
+        userId: user.id,
+        email: (profile as { email?: string } | null)?.email ?? user.email ?? null,
+        storedId: (profile as { stripe_customer_id?: string } | null)?.stripe_customer_id ?? null,
+      });
+    } catch (err) {
+      console.warn("[blocks] customer lookup skipped:", (err as Error).message);
+    }
+
     const session = await stripe.checkout.sessions.create({
       ui_mode: "embedded",
       mode: "payment",
       line_items: [{ price: priceId, quantity: 1 }],
+      ...(customerId
+        ? { customer: customerId }
+        : { customer_email: user.email ?? undefined }),
       // Back to the project itself. The page confirms the payment eagerly from
       // this id, so the download works even if the webhook never arrives.
       return_url: absoluteUrl(
@@ -175,7 +216,6 @@ export async function startExportCheckout(
       },
       payment_method_types: ["card", "amazon_pay", "cashapp", "link"],
       locale: "auto",
-      customer_email: user.email ?? undefined,
     });
 
     if (!session.client_secret) {
@@ -228,6 +268,26 @@ export async function confirmExportPayment(
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, paid: false };
 
+  /**
+   * Only ask Stripe about a session WE opened.
+   *
+   * This runs on a GET render from a URL the user controls, so without it a
+   * signed-in user could loop the page with arbitrary ids and turn it into an
+   * unmetered amplifier against our Stripe read budget. The pending row written
+   * by `startExportCheckout` is the proof that this session is ours — and if
+   * that row is missing, the session cannot be one we created for them anyway.
+   */
+  const supabaseCheck = await createSupabaseServerClient();
+  const { data: known } = await supabaseCheck
+    .from("blocks_exports")
+    .select("id")
+    .eq("stripe_session_id", sessionId)
+    .eq("user_id", user.id)
+    .limit(1);
+  if (!Array.isArray(known) || known.length === 0) {
+    return { ok: false, paid: false };
+  }
+
   let session: Stripe.Checkout.Session;
   try {
     session = await stripe.checkout.sessions.retrieve(sessionId);
@@ -254,44 +314,6 @@ export async function confirmExportPayment(
 
   await settleExport(session);
   return { ok: true, paid: true };
-}
-
-/**
- * Write the paid row. Shared by the return page and the webhook.
- *
- * Idempotent on `stripe_session_id`, which is what makes "the same session
- * arriving twice under two different event ids" a no-op — a guarantee the
- * webhook's own event-level dedupe cannot provide.
- */
-export async function settleExport(session: Stripe.Checkout.Session): Promise<void> {
-  const meta = session.metadata ?? {};
-  const projectId = meta.blocks_project_id;
-  const userId = meta.supabase_user_id;
-  if (!projectId || !userId) return;
-
-  const service = createSupabaseServiceClient();
-  // `as any`: see the note above.
-  const { error } = await (service.from("blocks_exports") as any).upsert(
-    {
-      project_id: projectId,
-      user_id: userId,
-      stripe_session_id: session.id,
-      status: "paid",
-      amount_total: session.amount_total ?? null,
-      currency: session.currency?.toUpperCase() ?? null,
-      paid_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "stripe_session_id" },
-  );
-  if (error) {
-    // Loud: the customer has paid and cannot download. Surfacing the session id
-    // is what makes this reconcilable by hand.
-    console.error(
-      `[blocks] PAID EXPORT NOT RECORDED — session ${session.id}, project ${projectId}: ${error.message}`,
-    );
-    throw new Error(error.message);
-  }
 }
 
 /**
