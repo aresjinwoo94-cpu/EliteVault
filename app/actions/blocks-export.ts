@@ -23,6 +23,7 @@ import { runWithMeter } from "@/lib/usage/context";
 import type { BlockSpecInput } from "@/lib/blocks/catalog";
 import { applyTokenOverrides, type DesignTokens } from "@/lib/blocks/design-tokens";
 import type { BlocksProduct } from "@/lib/blocks/product-json";
+import type { PlanTier } from "@/lib/supabase/types";
 
 /**
  * Liquid Blocks WP-D — the paywall.
@@ -351,10 +352,32 @@ export async function exportLiquid(projectId: string): Promise<ExportLiquidResul
   // else would hand them code that doesn't match what they approved.
   const tokens = applyTokenOverrides(project.design_tokens, project.token_overrides ?? {});
 
+  /**
+   * WP-E — the plan at the time of the call.
+   *
+   * A snapshot, not a gate: the export is available on every plan, and this
+   * only exists so `usage_events` can answer "what does a Blocks export cost us
+   * per tier". Without it every export row landed with plan null and that
+   * question had no answer at all. Best-effort, because a metering detail must
+   * never fail a purchase the customer already paid for.
+   */
+  let plan: PlanTier | null = null;
+  try {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("plan")
+      .eq("id", user.id)
+      .single();
+    plan = (profile as { plan?: PlanTier } | null)?.plan ?? null;
+  } catch {
+    /* metering detail — never worth failing the export over */
+  }
+
   try {
     const generated = await runWithMeter(
       {
         userId: user.id,
+        plan,
         eventType: "blocks",
         meta: { projectId, phase: "export" },
       },

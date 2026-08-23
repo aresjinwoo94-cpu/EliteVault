@@ -34,6 +34,7 @@ import type { BlockSpec } from "@/lib/blocks/render-block";
 import type { BlockSpecInput } from "@/lib/blocks/catalog";
 import type { BlocksProduct } from "@/lib/blocks/product-json";
 import { startDeadline } from "@/lib/deadline";
+import { recordBrowserCost } from "@/lib/blocks/browser-cost";
 
 /**
  * Liquid Blocks WP-B — measure the store, wear its clothes, prove it in a
@@ -218,6 +219,12 @@ export const blocksPreview = inngest.createFunction(
       if (!guard.ok) throw new Error(`Refusing to open ${row.product_url}: ${guard.reason}`);
 
       let browser: Browser | null = null;
+      // WP-E: the headless session is the expensive part of this feature and the
+      // only cost here that isn't tokens. Timed from just before launch so the
+      // cold Chromium start — the biggest and least predictable slice — is
+      // inside the measurement rather than excluded from it.
+      const browserStartedAt = Date.now();
+      let browserOk = false;
       try {
         browser = await launchBlocksBrowser();
         const page = await browser.newPage();
@@ -465,9 +472,19 @@ export const blocksPreview = inngest.createFunction(
           })
           .eq("id", projectId);
 
+        browserOk = true;
         return { fallbacks: tokens.fallbacks.length };
       } finally {
         await closeQuietly(browser);
+        // Recorded on the failure path too: a run that died after launching
+        // still spent the compute, and a feature whose cost only appears when
+        // it succeeds understates exactly the case worth watching.
+        recordBrowserCost({
+          userId,
+          projectId,
+          durationMs: Date.now() - browserStartedAt,
+          succeeded: browserOk,
+        });
       }
     });
   },

@@ -47,6 +47,19 @@ export type UsageRecord = {
   userId?: string | null;
   plan?: PlanTier | null;
   meta?: Record<string, unknown>;
+  /**
+   * Cost supplied by the caller, for work that ISN'T an inference call.
+   *
+   * The pricing table above is keyed by model, so anything that doesn't burn
+   * tokens — Liquid Blocks' headless browser is the first — estimates to zero
+   * and disappears from the ledger it belongs in. This lets such a caller state
+   * its own figure.
+   *
+   * Deliberately an explicit opt-in rather than a fallback: an AI call whose
+   * model is missing from PRICING should keep reporting 0 and be fixed by
+   * adding the model, not by having some other number quietly substituted.
+   */
+  estCostUsdOverride?: number;
 };
 
 /**
@@ -68,7 +81,12 @@ export function recordUsage(rec: UsageRecord): void {
     0,
     Math.round(rec.totalTokens ?? promptTokens + outputTokens),
   );
-  const estCost = estimateCostUsd(rec.model, promptTokens, outputTokens);
+  const estCost =
+    typeof rec.estCostUsdOverride === "number" &&
+    Number.isFinite(rec.estCostUsdOverride) &&
+    rec.estCostUsdOverride >= 0
+      ? rec.estCostUsdOverride
+      : estimateCostUsd(rec.model, promptTokens, outputTokens);
   const meta = { ...(ctx?.meta ?? {}), ...(rec.meta ?? {}) };
 
   void (async () => {
