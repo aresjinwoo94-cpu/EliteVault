@@ -19,8 +19,15 @@ type CostRow = {
   user_id: string | null;
   email: string | null;
   plan: string | null;
+  /** Inference calls only — browser sessions are counted separately. */
   calls: number | null;
   tokens: number | null;
+  /**
+   * Seconds of headless-browser compute (Liquid Blocks). Added by migration
+   * 0037; optional so the page still renders against a database where that
+   * migration hasn't run yet.
+   */
+  browser_seconds?: number | null;
   cost_usd_30d: number | null;
   last_call_at: string | null;
 };
@@ -54,6 +61,13 @@ export default async function InternalCostPage() {
 
   const totalCost = rows.reduce((s, r) => s + (r.cost_usd_30d ?? 0), 0);
   const totalCalls = rows.reduce((s, r) => s + (r.calls ?? 0), 0);
+  // Headless-browser compute (Liquid Blocks). Counted separately from AI calls
+  // because it is not one — folding it into `calls` made cost-per-call wrong on
+  // a page that says it measures inference.
+  const totalBrowserSeconds = rows.reduce(
+    (sum, r) => sum + Number(r.browser_seconds ?? 0),
+    0,
+  );
   const fmtUsd = (n: number | null) =>
     `$${(n ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
@@ -64,11 +78,12 @@ export default async function InternalCostPage() {
           Internal · last 30 days
         </p>
         <h1 className="mt-1 font-serif text-3xl tracking-tight">
-          Inference cost per user
+          Cost per user
         </h1>
         <p className="mt-2 text-sm text-white/50">
-          Estimated Gemini/Claude COGS. {rows.length} users ·{" "}
-          {totalCalls.toLocaleString("en-US")} calls ·{" "}
+          Estimated COGS — model inference plus headless-browser compute.{" "}
+          {rows.length} users · {totalCalls.toLocaleString("en-US")} AI calls ·{" "}
+          {Math.round(totalBrowserSeconds).toLocaleString("en-US")}s browser ·{" "}
           <span className="text-champagne-400">{fmtUsd(totalCost)}</span> total.
         </p>
 
@@ -86,6 +101,7 @@ export default async function InternalCostPage() {
                 <th className="px-4 py-3 font-medium">Plan</th>
                 <th className="px-4 py-3 font-medium text-right">Calls</th>
                 <th className="px-4 py-3 font-medium text-right">Tokens</th>
+                <th className="px-4 py-3 font-medium text-right">Browser s</th>
                 <th className="px-4 py-3 font-medium text-right">Cost (30d)</th>
                 <th className="px-4 py-3 font-medium text-right">Last call</th>
               </tr>
@@ -114,6 +130,9 @@ export default async function InternalCostPage() {
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums text-white/70">
                     {(r.tokens ?? 0).toLocaleString("en-US")}
+                  </td>
+                  <td className="px-4 py-3 text-right tabular-nums text-white/60">
+                    {Math.round(Number(r.browser_seconds ?? 0)).toLocaleString("en-US")}
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums text-champagne-400">
                     {fmtUsd(r.cost_usd_30d)}

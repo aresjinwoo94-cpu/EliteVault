@@ -475,16 +475,35 @@ export const blocksPreview = inngest.createFunction(
         browserOk = true;
         return { fallbacks: tokens.fallbacks.length };
       } finally {
-        await closeQuietly(browser);
-        // Recorded on the failure path too: a run that died after launching
-        // still spent the compute, and a feature whose cost only appears when
-        // it succeeds understates exactly the case worth watching.
-        recordBrowserCost({
+        /**
+         * Recorded BEFORE the browser is closed, and awaited.
+         *
+         * Before the close, because `browser.close()` has no timeout: a wedged
+         * Chromium hangs there and the cost row would be lost in exactly the
+         * expensive case it exists to capture. The few milliseconds of teardown
+         * that go unmeasured are a far better trade.
+         *
+         * Awaited, because this is the last thing the step does. `recordUsage`
+         * detaches its insert, which is right when more work follows — but here
+         * the handler returns, the route responds, and the instance can be
+         * frozen before a real network round-trip completes. The one row this
+         * work package exists to write would be the one most likely to vanish.
+         * `recordUsageNow` never rejects, so awaiting it in a `finally` cannot
+         * mask the error that brought us here.
+         *
+         * On the failure path too: a run that died after launching still spent
+         * the compute, and a feature whose cost only appears when it succeeds
+         * understates precisely the store worth watching — the one that times
+         * out every time.
+         */
+        await recordBrowserCost({
           userId,
+          plan: (plan as PlanTier | null | undefined) ?? null,
           projectId,
           durationMs: Date.now() - browserStartedAt,
           succeeded: browserOk,
         });
+        await closeQuietly(browser);
       }
     });
   },

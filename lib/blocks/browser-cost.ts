@@ -1,5 +1,6 @@
 import "server-only";
-import { recordUsage } from "@/lib/usage/meter";
+import { recordUsageNow } from "@/lib/usage/meter";
+import type { PlanTier } from "@/lib/supabase/types";
 
 /**
  * Liquid Blocks WP-E — the part of the COGS that isn't inference.
@@ -25,9 +26,37 @@ import { recordUsage } from "@/lib/usage/meter";
  * already stored.
  */
 
+/**
+ * What a session of `durationMs` costs, and the rate that produced it.
+ *
+ * Exported so the honesty rule can be TESTED rather than asserted about by
+ * regex over this file's source — an earlier test matched the exact shape of
+ * the expression below and broke the moment it was rewritten, while a genuinely
+ * invented rate would have sailed past it.
+ */
+export function browserCostUsd(durationMs: number): {
+  estCostUsd: number;
+  usdPerSecond: number;
+} {
+  const rate = usdPerSecond();
+  const seconds = Math.max(0, durationMs) / 1000;
+  return { estCostUsd: Number((seconds * rate).toFixed(6)), usdPerSecond: rate };
+}
+
 function usdPerSecond(): number {
-  const raw = Number(process.env.BLOCKS_BROWSER_USD_PER_SECOND);
-  return Number.isFinite(raw) && raw >= 0 ? raw : 0;
+  const configured = process.env.BLOCKS_BROWSER_USD_PER_SECOND?.trim();
+  if (!configured) return 0;
+  const raw = Number(configured);
+  if (!Number.isFinite(raw) || raw < 0) {
+    // Someone meant to price this and the value did not parse — a European
+    // decimal comma is the usual culprit. Silently reading it as 0 looks
+    // identical to never having set it, which is an afternoon of confusion.
+    console.warn(
+      `[blocks] BLOCKS_BROWSER_USD_PER_SECOND is set to "${configured}" which is not a number — treating the browser cost as 0.`,
+    );
+    return 0;
+  }
+  return raw;
 }
 
 /**
@@ -37,19 +66,27 @@ function usdPerSecond(): number {
  * delay the caller. Losing a cost row is acceptable; failing a preview the
  * merchant is watching is not.
  */
-export function recordBrowserCost(opts: {
+export async function recordBrowserCost(opts: {
   userId: string | null;
+  /**
+   * Passed explicitly rather than left to the ALS context. The context is set
+   * with enterWith at the top of the Inngest handler, and whether that survives
+   * into a step callback under Inngest's replay model is not something to bet
+   * a silent per-tier gap on — export rows would carry a plan and browser rows
+   * would not, and nobody would notice.
+   */
+  plan: PlanTier | null;
   projectId: string;
   durationMs: number;
   /** False when the session ended in a failure — still real compute spent. */
   succeeded: boolean;
-}): void {
+}): Promise<void> {
   try {
-    const seconds = Math.max(0, opts.durationMs) / 1000;
-    const estCostUsd = Number((seconds * usdPerSecond()).toFixed(6));
-    recordUsage({
+    const { estCostUsd, usdPerSecond: rate } = browserCostUsd(opts.durationMs);
+    await recordUsageNow({
       eventType: "blocks",
       userId: opts.userId,
+      plan: opts.plan,
       // Not an inference call, so there are no tokens — and pretending there
       // were would corrupt the token totals the cost page sums.
       provider: "browser",
@@ -68,11 +105,11 @@ export function recordBrowserCost(opts: {
         succeeded: opts.succeeded,
         // Stamped on the row so a rate configured LATER can be applied to rows
         // already written, instead of the history being unrecoverable.
-        usdPerSecond: usdPerSecond(),
+        usdPerSecond: rate,
         estCostUsd,
       },
     });
   } catch (err) {
-    console.warn("[blocks] browser cost not recorded:", (err as Error).message);
+    console.warn("[blocks] browser cost not recorded:", String(err));
   }
 }

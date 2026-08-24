@@ -23,32 +23,102 @@ const read = (p: string) => readFileSync(join(ROOT, p), "utf8");
 const codeOf = (raw: string) =>
   raw.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/[^\n]*/g, "$1");
 
-test("the browser's cost rate is never invented", () => {
+test("the browser's cost rate is never invented", async () => {
   // The duration is measured, so it's a fact. The price per second depends on
   // the plan, the memory setting and the region — none of which this repo can
-  // know — so it comes from the environment and defaults to zero.
+  // know — so it comes from the environment, and with nothing configured the
+  // honest answer is zero rather than a plausible-looking figure sitting in the
+  // same column as the real inference costs.
+  //
+  // Run, not regex-matched. The previous version asserted the exact shape of
+  // the expression that computes this and broke the moment it was rewritten,
+  // while a genuinely invented rate would have passed.
+  const { browserCostUsd } = await import("../../lib/blocks/browser-cost");
+  const original = process.env.BLOCKS_BROWSER_USD_PER_SECOND;
+  const warn = console.warn;
+  console.warn = () => {};
+  try {
+    for (const unset of [undefined, "", "   "]) {
+      if (unset === undefined) delete process.env.BLOCKS_BROWSER_USD_PER_SECOND;
+      else process.env.BLOCKS_BROWSER_USD_PER_SECOND = unset;
+      const out = browserCostUsd(30_000);
+      assert.equal(out.usdPerSecond, 0, `rate for ${JSON.stringify(unset)}`);
+      assert.equal(out.estCostUsd, 0, "a cost appeared from nowhere");
+    }
+
+    // A rate the owner actually supplies is used, and used correctly.
+    process.env.BLOCKS_BROWSER_USD_PER_SECOND = "0.0002";
+    assert.equal(browserCostUsd(30_000).estCostUsd, 0.006);
+
+    // Garbage falls back to zero rather than to a guess. "0,5" is the European
+    // decimal comma, the realistic way this gets mistyped.
+    for (const bad of ["0,5", "cheap", "-1", "NaN", "Infinity"]) {
+      process.env.BLOCKS_BROWSER_USD_PER_SECOND = bad;
+      assert.equal(browserCostUsd(30_000).estCostUsd, 0, `rate ${bad}`);
+    }
+  } finally {
+    console.warn = warn;
+    if (original === undefined) delete process.env.BLOCKS_BROWSER_USD_PER_SECOND;
+    else process.env.BLOCKS_BROWSER_USD_PER_SECOND = original;
+  }
+});
+
+test("the duration is written into the row, not merely named in a signature", async () => {
+  // The previous version asserted `src.includes("durationMs")`, which the
+  // PARAMETER NAME satisfies on its own. Deleting the line that puts the
+  // duration in `meta` — destroying the retroactive-repricing property this
+  // exists to protect — left the test passing. It checked that a word appeared
+  // in a file.
+  //
+  // Now it runs the thing. No Supabase env is configured here, so the insert
+  // fails inside recordUsageNow and is swallowed — which is exactly the
+  // behaviour criterion 2 demands, and makes this a real test of it too.
+  const { recordBrowserCost } = await import("../../lib/blocks/browser-cost");
+  const seen: unknown[] = [];
+  const warn = console.warn;
+  console.warn = (...args: unknown[]) => seen.push(args);
+  try {
+    await recordBrowserCost({
+      userId: null,
+      plan: null,
+      projectId: "p1",
+      durationMs: 4200,
+      succeeded: true,
+    });
+  } finally {
+    console.warn = warn;
+  }
+  // Returning at all is the assertion: no throw, no rejection, no hang.
+  assert.ok(true);
+
+  // And the value genuinely reaches the payload.
   const src = codeOf(read("lib/blocks/browser-cost.ts"));
-  assert.ok(src.includes("BLOCKS_BROWSER_USD_PER_SECOND"));
   assert.ok(
-    /Number\.isFinite\(raw\)\s*&&\s*raw\s*>=\s*0\s*\?\s*raw\s*:\s*0/.test(src),
-    "the rate should fall back to 0, not to a guess",
+    /durationMs:\s*Math\.round\(opts\.durationMs\)/.test(src),
+    "the measured duration never reaches the row",
   );
-  // A hardcoded per-second price would be exactly the invention this avoids.
+  // The rate in force is stamped alongside it, so a rate configured LATER can
+  // be applied to rows already written instead of the history being lost.
   assert.ok(
-    !/0\.0000\d|usdPerSecond\s*=\s*[\d.]+/.test(src),
-    "a cost rate appears to be hardcoded",
+    /usdPerSecond:\s*rate/.test(src),
+    "the rate in force isn't stamped on the row",
   );
 });
 
-test("the duration is recorded even when no rate is configured", () => {
-  // So a rate supplied later can be applied to rows already written, instead of
-  // the history being unrecoverable.
-  const src = codeOf(read("lib/blocks/browser-cost.ts"));
-  assert.ok(src.includes("durationMs"));
-  assert.ok(
-    src.includes("usdPerSecond: usdPerSecond()"),
-    "the rate in force isn't stamped on the row",
-  );
+test("metering survives having no database at all", async () => {
+  // Criterion 2, exercised rather than asserted about. SUPABASE_SERVICE_ROLE_KEY
+  // is read with a non-null assertion, so createSupabaseServiceClient throws
+  // synchronously when it's absent — the one path most likely to take a preview
+  // down with it.
+  const { recordUsageNow } = await import("../../lib/usage/meter");
+  const warn = console.warn;
+  console.warn = () => {};
+  try {
+    await recordUsageNow({ eventType: "blocks", model: "chromium" });
+  } finally {
+    console.warn = warn;
+  }
+  assert.ok(true, "recordUsageNow rejected — it must never reject");
 });
 
 test("a browser session is metered even when the preview fails", () => {
@@ -75,13 +145,45 @@ test("the timer starts before the browser launches", () => {
   assert.ok(started < launched, "the timer starts after the launch it should include");
 });
 
-test("metering can never fail the work it is measuring", () => {
-  // recordUsage is already fire-and-forget; this is about the layer above it.
-  const src = codeOf(read("lib/blocks/browser-cost.ts"));
-  assert.ok(src.includes("try {") && src.includes("catch"));
+test("the browser row is written before the browser is closed", () => {
+  // `browser.close()` has no timeout, so a wedged Chromium hangs the teardown —
+  // and the cost row would be lost in exactly the expensive case it exists to
+  // capture. The few milliseconds of teardown that go unmeasured are the better
+  // trade.
+  const src = codeOf(read("inngest/functions/blocks-preview.ts"));
+  const tail = src.slice(src.lastIndexOf("} finally {"));
+  const record = tail.indexOf("recordBrowserCost");
+  const close = tail.indexOf("closeQuietly");
+  assert.ok(record !== -1 && close !== -1, "the finally block changed shape");
   assert.ok(
-    !src.includes("await "),
-    "recordBrowserCost awaits something — it must not delay the caller",
+    record < close,
+    "the cost is recorded after closeQuietly, which can hang and lose the row",
+  );
+});
+
+test("the last write of the invocation is awaited, not detached", () => {
+  // recordUsage detaches its insert, which is right when more work follows the
+  // call. Here the handler returns immediately afterwards and the instance can
+  // be frozen mid-flight, so the one row WP-E exists to write would be the one
+  // most likely to vanish.
+  //
+  // Replaces an earlier assertion that browser-cost.ts contained no `await` at
+  // all. That was a trap: it policed a file that couldn't delay anyone, would
+  // have failed on any unrelated async helper, and missed real blocking done
+  // without the keyword.
+  const src = codeOf(read("inngest/functions/blocks-preview.ts"));
+  assert.ok(
+    /await recordBrowserCost\(/.test(src),
+    "the browser cost is fired and forgotten at the end of the invocation",
+  );
+  const meter = codeOf(read("lib/usage/meter.ts"));
+  assert.ok(
+    meter.includes("export async function recordUsageNow"),
+    "there is no awaitable write for callers whose insert is the last thing they do",
+  );
+  assert.ok(
+    meter.includes("void recordUsageNow(rec)"),
+    "recordUsage should delegate, so both paths share one implementation",
   );
 });
 
@@ -97,15 +199,28 @@ test("both Blocks paths attribute their cost to the same feature", () => {
   }
 });
 
-test("the export records which plan the buyer was on", () => {
+test("both paths record which plan the user was on", () => {
   // A snapshot for COGS-per-tier, not a gate — the export is available on every
-  // plan. Without it every export row landed with plan null and the question
-  // "what does an export cost us per tier" had no answer.
-  const body = codeOf(read("app/actions/blocks-export.ts"));
-  assert.ok(body.includes("runWithMeter"));
+  // plan. Without it the rows landed with plan null and "what does this cost us
+  // per tier" had no answer.
+  //
+  // The earlier version matched `/plan,\s*\n\s*eventType/`, i.e. SOURCE
+  // FORMATTING: reordering two object properties, or Prettier joining the
+  // lines, would have failed a correct implementation.
+  const exp = codeOf(read("app/actions/blocks-export.ts"));
+  assert.ok(exp.includes("runWithMeter"));
   assert.ok(
-    /plan,\s*\n\s*eventType: "blocks"/.test(body),
-    "the meter context for the export carries no plan",
+    /select\("plan"\)/.test(exp) && /\bplan\b/.test(exp),
+    "the export never reads the buyer's plan",
+  );
+
+  // The browser row passes it explicitly rather than relying on the ALS context
+  // surviving into an Inngest step callback — a bet that, if lost, would leave
+  // browser rows with plan null while export rows had it, silently.
+  const preview = codeOf(read("inngest/functions/blocks-preview.ts"));
+  assert.ok(
+    /recordBrowserCost\(\{[\s\S]{0,200}?plan:/.test(preview),
+    "the browser cost row doesn't pass a plan explicitly",
   );
 });
 

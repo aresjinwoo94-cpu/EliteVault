@@ -71,6 +71,25 @@ export type UsageRecord = {
  * never be able to forge cost rows.
  */
 export function recordUsage(rec: UsageRecord): void {
+  void recordUsageNow(rec);
+}
+
+/**
+ * The same write, but awaitable — for callers whose insert would otherwise be
+ * the LAST thing a serverless invocation does.
+ *
+ * `recordUsage` detaches the insert and returns immediately, which is right for
+ * an AI call: more work always follows it, so the promise has time to flush.
+ * It is wrong for the final statement of a request or an Inngest step. There
+ * the handler returns, the platform answers, and the instance may be frozen
+ * before a real network round-trip completes — so the one row a feature exists
+ * to write becomes the row most likely to be dropped. That is exactly the shape
+ * of Liquid Blocks' headless-browser cost.
+ *
+ * NEVER REJECTS. Awaiting it cannot fail the caller, which is what makes it
+ * safe to use inside a `finally` where a throw would mask the real error.
+ */
+export async function recordUsageNow(rec: UsageRecord): Promise<void> {
   const ctx = getMeterContext();
   const eventType = rec.eventType ?? ctx?.eventType ?? "other";
   const userId = rec.userId ?? ctx?.userId ?? null;
@@ -89,24 +108,26 @@ export function recordUsage(rec: UsageRecord): void {
       : estimateCostUsd(rec.model, promptTokens, outputTokens);
   const meta = { ...(ctx?.meta ?? {}), ...(rec.meta ?? {}) };
 
-  void (async () => {
-    try {
-      const service = createSupabaseServiceClient();
-      await service.from("usage_events").insert({
-        user_id: userId,
-        plan,
-        event_type: eventType,
-        model: rec.model ?? null,
-        provider: rec.provider ?? "gemini",
-        prompt_tokens: promptTokens,
-        output_tokens: outputTokens,
-        total_tokens: totalTokens,
-        est_cost_usd: Number(estCost.toFixed(6)),
-        meta,
-      });
-    } catch (err) {
-      // Never surface — metering is non-critical.
-      console.warn("[meter] failed to record usage:", (err as Error).message);
-    }
-  })();
+  try {
+    const service = createSupabaseServiceClient();
+    await service.from("usage_events").insert({
+      user_id: userId,
+      plan,
+      event_type: eventType,
+      model: rec.model ?? null,
+      provider: rec.provider ?? "gemini",
+      prompt_tokens: promptTokens,
+      output_tokens: outputTokens,
+      total_tokens: totalTokens,
+      est_cost_usd: Number(estCost.toFixed(6)),
+      meta,
+    });
+  } catch (err) {
+    // Never surface — metering is non-critical.
+    //
+    // String(err) rather than (err as Error).message: a non-Error throw would
+    // make the CATCH itself throw, and this function's whole contract is that
+    // it cannot. Inside a `finally` that would mask the real failure.
+    console.warn("[meter] failed to record usage:", String(err));
+  }
 }
