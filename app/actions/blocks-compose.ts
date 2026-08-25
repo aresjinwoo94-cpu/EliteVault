@@ -56,6 +56,21 @@ export async function saveBlockSpec(
   projectId: string,
   spec: BlockSpecInput,
 ): Promise<ComposeResult> {
+  try {
+    return await doSaveBlockSpec(projectId, spec);
+  } catch (err) {
+    // Same rule as every action in this feature: an unexpected throw becomes a
+    // returned error, never the page-level error boundary. See
+    // app/actions/blocks-preview.ts for what that failure looked like.
+    console.error("[blocks] saveBlockSpec threw:", err);
+    return { ok: false, error: "We could not save that. Try again in a moment." };
+  }
+}
+
+async function doSaveBlockSpec(
+  projectId: string,
+  spec: BlockSpecInput,
+): Promise<ComposeResult> {
   const ctx = await ownedProject(projectId);
   if (!ctx) return { ok: false, error: "Project not found" };
 
@@ -96,6 +111,18 @@ export async function saveBlockSpec(
  * them one nobody chose.
  */
 export async function saveTokenOverrides(
+  projectId: string,
+  overrides: Record<string, string>,
+): Promise<ComposeResult> {
+  try {
+    return await doSaveTokenOverrides(projectId, overrides);
+  } catch (err) {
+    console.error("[blocks] saveTokenOverrides threw:", err);
+    return { ok: false, error: "We could not save those. Try again in a moment." };
+  }
+}
+
+async function doSaveTokenOverrides(
   projectId: string,
   overrides: Record<string, string>,
 ): Promise<ComposeResult> {

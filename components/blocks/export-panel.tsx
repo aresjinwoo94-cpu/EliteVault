@@ -79,15 +79,43 @@ export function ExportPanel({
     );
   }
 
-  // The purchase can't be offered because the price isn't set up. Said plainly:
-  // the merchant can neither cause nor fix this, so it must not read as their
-  // mistake, and their work is explicitly safe.
+  /**
+   * The purchase can't be offered because no price is configured.
+   *
+   * Shown as a LOCKED STEP, not as an absence. The first version rendered a
+   * quiet grey sentence, which in dev and QA was indistinguishable from the
+   * export step not having been built — the reviewer's words were "parece que
+   * falta". The step now looks like itself: same heading, same description of
+   * what you get, a disabled button where the real one goes, and the reason
+   * underneath.
+   *
+   * The wording still refuses to imply merchant error, because they can neither
+   * cause nor fix this, and it says their work is safe — which is the actual
+   * question someone has when a step they expected is unavailable.
+   */
   if (!configured && !paid) {
     return (
       <Card className="p-6 border-white/[0.04]">
         <div className="flex items-start gap-3">
-          <Lock className="size-4 shrink-0 text-white/30 mt-0.5" />
-          <p className="text-sm text-white/60">{notConfiguredMessage}</p>
+          <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.02]">
+            <Lock className="size-4 text-white/35" />
+          </span>
+          <div className="min-w-0">
+            <h3 className="text-sm font-medium text-white/70">
+              Download the code for this block
+            </h3>
+            <p className="mt-2 text-sm text-white/45 max-w-xl">
+              The Liquid snippet for the block you previewed, styled with your
+              store&apos;s own values, plus instructions for where to paste it.
+            </p>
+            <Button className="mt-5" disabled>
+              <Download className="size-4" />
+              Download — not available yet
+            </Button>
+            <p className="mt-3 text-xs text-white/40 max-w-xl">
+              {notConfiguredMessage}
+            </p>
+          </div>
         </div>
       </Card>
     );

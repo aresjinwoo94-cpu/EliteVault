@@ -155,14 +155,27 @@ export function PreviewPanel({ initial }: { initial: PreviewProject }) {
       {tokens && <TokenReadout tokens={tokens} />}
 
       <div>
-        <div className="flex items-center justify-between gap-3 mb-3">
+        {/*
+          The toggle IS the product's argument, so it gets the weight of one.
+          It was a pair of small grey chips tucked at the end of a heading row —
+          the same visual rank as a filter — and reviewers didn't notice the
+          single most persuasive control on the page.
+
+          Three changes carry it: it sits on its own line at full width instead
+          of competing with the heading; the active side is a solid champagne
+          pill rather than a 6% white wash, so which view you're on is legible
+          at a glance; and the ACTIVE view is named underneath in words, because
+          a toggle only lands if you know what changed between the two.
+        */}
+        <div className="mb-4">
           <h3 className="text-sm font-medium text-white/70">
             Your page, with the block on it
           </h3>
+
           <div
-            className="inline-flex rounded-lg border border-white/[0.08] p-0.5"
+            className="mt-3 inline-flex w-full sm:w-auto rounded-xl border border-white/[0.10] bg-obsidian-950/60 p-1"
             role="group"
-            aria-label="Compare before and after"
+            aria-label="Compare your page before and after the block"
           >
             {(["before", "after"] as const).map((v) => (
               <button
@@ -171,16 +184,27 @@ export function PreviewPanel({ initial }: { initial: PreviewProject }) {
                 onClick={() => setView(v)}
                 aria-pressed={view === v}
                 className={
-                  "px-3 py-1.5 text-xs rounded-md transition-colors " +
+                  "flex-1 sm:flex-none sm:min-w-[8.5rem] px-5 py-2.5 text-sm font-medium rounded-lg transition-all " +
                   (view === v
-                    ? "bg-white/[0.08] text-white"
-                    : "text-white/50 hover:text-white/80")
+                    ? "bg-champagne-400 text-obsidian-950 shadow-lg shadow-champagne-400/20"
+                    : "text-white/55 hover:text-white hover:bg-white/[0.04]")
                 }
               >
                 {v === "before" ? "Before" : "After"}
               </button>
             ))}
           </div>
+
+          <p className="mt-2.5 text-xs text-white/45">
+            {view === "after" ? (
+              <>
+                <span className="text-champagne-400/90">Showing the block</span>{" "}
+                — same page, same scroll position, one thing added.
+              </>
+            ) : (
+              <>Your page exactly as it is today. Tap After to see the block.</>
+            )}
+          </p>
         </div>
 
         {shown ? (

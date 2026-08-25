@@ -23,6 +23,33 @@ export type RequestPreviewResult =
 export async function requestBlocksPreview(
   projectId: string,
 ): Promise<RequestPreviewResult> {
+  try {
+    return await dispatchPreview(projectId);
+  } catch (err) {
+    /**
+     * The regression this exists to prevent.
+     *
+     * `inngest.send` is a network call, and it used to run unguarded — so a
+     * queue that wasn't reachable (a dev server not running, a stale event key,
+     * a transient 5xx) threw straight out of the action. A server action that
+     * THROWS doesn't return an error to the caller: Next turns it into the
+     * error boundary, and the merchant sees "Something broke" with their work
+     * apparently gone. Returning `{ok:false}` shows a toast and leaves them
+     * exactly where they were, with the project and its preview intact.
+     *
+     * It was reported as a bug in one block type. It was never about blocks —
+     * every type hit it, and so did the auto-dispatch on a fresh project.
+     */
+    console.error("[blocks] preview dispatch failed:", err);
+    return {
+      ok: false,
+      error:
+        "We couldn't start the preview just now — the job queue didn't answer. Your block is saved; try again in a moment.",
+    };
+  }
+}
+
+async function dispatchPreview(projectId: string): Promise<RequestPreviewResult> {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },

@@ -40,6 +40,21 @@ export type CreateBlocksProjectResult =
 export async function createBlocksProject(
   input: z.infer<typeof CreateProjectInput>,
 ): Promise<CreateBlocksProjectResult> {
+  try {
+    return await doCreateBlocksProject(input);
+  } catch (err) {
+    // Same rule as every action here: an unexpected throw becomes a returned
+    // error, never the page-level error boundary. The store fetch already has
+    // its own handling; this covers everything else, including the Supabase
+    // client failing to construct.
+    console.error("[blocks] createBlocksProject threw:", err);
+    return { ok: false, error: "We could not start that project. Try again in a moment." };
+  }
+}
+
+async function doCreateBlocksProject(
+  input: z.infer<typeof CreateProjectInput>,
+): Promise<CreateBlocksProjectResult> {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },

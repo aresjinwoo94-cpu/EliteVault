@@ -111,6 +111,24 @@ async function hasPaidExport(projectId: string, userId: string): Promise<boolean
  * is cached per lambda and the paid check is one indexed row.
  */
 export async function getExportStatus(projectId: string): Promise<ExportStatus> {
+  try {
+    return await readExportStatus(projectId);
+  } catch (err) {
+    /**
+     * This one is called during the project page's own RENDER, so a throw here
+     * doesn't produce a failed action — it produces the error boundary, and the
+     * merchant loses the whole page including a preview that was working.
+     *
+     * Degrading to "not configured" is the safe direction: the export panel
+     * shows its locked state, everything above it still renders, and nobody is
+     * offered a purchase we couldn't currently complete.
+     */
+    console.error("[blocks] export status unavailable:", err);
+    return { paid: false, configured: false, price: null };
+  }
+}
+
+async function readExportStatus(projectId: string): Promise<ExportStatus> {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -135,6 +153,17 @@ export async function getExportStatus(projectId: string): Promise<ExportStatus> 
  * the plan checkout, so the payment happens inside our own page.
  */
 export async function startExportCheckout(
+  projectId: string,
+): Promise<ExportGateResult> {
+  try {
+    return await doStartExportCheckout(projectId);
+  } catch (err) {
+    console.error("[blocks] startExportCheckout threw:", err);
+    return { ok: false, error: "We could not open the payment form. Try again." };
+  }
+}
+
+async function doStartExportCheckout(
   projectId: string,
 ): Promise<ExportGateResult> {
   const supabase = await createSupabaseServerClient();
@@ -263,6 +292,22 @@ export async function confirmExportPayment(
   projectId: string,
   sessionId: string,
 ): Promise<{ ok: boolean; paid: boolean }> {
+  try {
+    return await doConfirmExportPayment(projectId, sessionId);
+  } catch (err) {
+    // Runs during the project page render, from the URL Stripe redirects to.
+    // A throw here would replace a just-completed purchase with a broken page.
+    // The webhook settles the same payment independently, so failing quietly
+    // here loses nothing but this one attempt.
+    console.error("[blocks] eager confirm threw:", err);
+    return { ok: false, paid: false };
+  }
+}
+
+async function doConfirmExportPayment(
+  projectId: string,
+  sessionId: string,
+): Promise<{ ok: boolean; paid: boolean }> {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -321,6 +366,22 @@ export async function confirmExportPayment(
  * Hand over the code. The one function in the feature that returns Liquid.
  */
 export async function exportLiquid(projectId: string): Promise<ExportLiquidResult> {
+  try {
+    return await doExportLiquid(projectId);
+  } catch (err) {
+    // The generation path already handles its own failures; this is the outer
+    // net. Their purchase stands either way — nothing here charges anything.
+    console.error("[blocks] exportLiquid threw:", err);
+    return {
+      ok: false,
+      error:
+        "We could not build your snippet just now. Your purchase is safe — try the download again in a moment.",
+      code: "GENERATION_FAILED",
+    };
+  }
+}
+
+async function doExportLiquid(projectId: string): Promise<ExportLiquidResult> {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },

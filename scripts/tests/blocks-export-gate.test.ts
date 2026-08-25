@@ -98,6 +98,28 @@ function codeOf(raw: string): string {
 
 const EXPORT_ACTION = codeOf(read("app/actions/blocks-export.ts"));
 
+/**
+ * The body where a function's real work happens.
+ *
+ * Every action in this feature is now a thin try/catch that delegates to a
+ * helper — the fix for actions taking the whole page down when they threw. That
+ * left these security assertions inspecting a wrapper containing nothing but a
+ * `return await doThing(...)`, which would have passed while the validations
+ * they check had been deleted.
+ *
+ * Resolving one hop keeps the assertions pointed at the code that matters
+ * without hardcoding the helper names, so they survive the next refactor and
+ * still fail if the checks themselves go.
+ */
+function effectiveBody(src: string, fnName: string): string {
+  const body = bodyOf(src, fnName);
+  // A wrapper delegates to exactly one helper and does nothing else of note.
+  const delegate = body.match(/return await (\w+)\(/);
+  if (!delegate) return body;
+  const inner = bodyOf(src, delegate[1]);
+  return inner ? `${body}\n${inner}` : body;
+}
+
 /** Every module that makes up the feature. */
 const FEATURE_FILES = [
   "app/actions/blocks.ts",
@@ -190,7 +212,12 @@ test("payment is settled from Stripe's own record, never from the client's word"
   // this near-vacuous: `blocks_project_id` and `supabase_user_id` also appear
   // in startExportCheckout's metadata block, so every validation branch here
   // could be deleted and the test would still pass.
-  const body = bodyOf(EXPORT_ACTION, "confirmExportPayment");
+  // Follows the delegation: the action is now a thin guard that hands off to a
+  // helper, so the validations live one level down. Resolving that hop rather
+  // than pointing the test at the helper by name means the test keeps working
+  // whichever way the code is arranged, and keeps FAILING if the validations
+  // disappear.
+  const body = effectiveBody(EXPORT_ACTION, "confirmExportPayment");
   assert.ok(body.includes("stripe.checkout.sessions.retrieve"));
   assert.ok(body.includes("payment_status"), "doesn't check payment_status");
   assert.ok(
@@ -237,7 +264,7 @@ test("every server action in the export module authenticates", () => {
   );
   assert.ok(exported.length > 0, "no exported actions found — the check is vacuous");
   for (const name of exported) {
-    const body = bodyOf(EXPORT_ACTION, name);
+    const body = effectiveBody(EXPORT_ACTION, name);
     assert.ok(
       body.includes("auth.getUser()"),
       `${name}() is a public endpoint that never authenticates. Either authenticate it, or move it to a server-only module that isn't a server action (see lib/blocks/settle-export.ts).`,

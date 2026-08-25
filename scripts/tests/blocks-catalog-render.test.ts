@@ -111,6 +111,41 @@ test("all four blocks render, and every selector stays inside the block", () => 
   }
 });
 
+test("no block type can crash the renderer, in either mode", () => {
+  // Reported as a "trust icons" bug and it was never type-specific — the crash
+  // was an unguarded `inngest.send` in the dispatch action, which every type
+  // hit. But the report was a fair warning that only some types were being
+  // exercised end to end, so every one is rendered here, in both modes, with
+  // the shapes real forms actually produce: the minimum the validator accepts,
+  // and empty optional fields.
+  const minimal: BlockSpecInput[] = [
+    { type: "trust_icons", items: [{ icon: "shipping", label: "Free shipping", detail: "" }] },
+    { type: "brand_cards", promise: "We make one thing well.", benefits: ["a", "b", "c"], logoUrl: null },
+    {
+      type: "comparison",
+      competitorName: "The usual",
+      rows: [{ label: "Price", ours: "$29", theirs: "$49", weWin: true }],
+    },
+    { type: "product_stats", stats: [{ label: "Repeat buyers", value: "38", unit: "%" }] },
+    { type: "product_facts" } as unknown as BlockSpecInput,
+  ];
+
+  for (const spec of minimal) {
+    for (const mode of ["preview", "liquid"] as const) {
+      assert.doesNotThrow(
+        () => render(spec, mode),
+        `${spec.type} threw in ${mode} mode`,
+      );
+      const out = render(spec, mode);
+      assert.ok(out.html.length > 0, `${spec.type}/${mode} rendered nothing`);
+      assert.ok(out.css.includes(`.${BLOCK_PREFIX}`), `${spec.type}/${mode} lost its scope`);
+      if (mode === "liquid") {
+        assert.ok(out.liquid && out.liquid.length > 0, `${spec.type} produced no snippet`);
+      }
+    }
+  }
+});
+
 test("every block's Liquid form passes the same gate we hold the model to", () => {
   // If our own deterministic template couldn't pass validateLiquidSnippet, the
   // fallback would be unusable exactly when it's needed most.
