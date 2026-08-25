@@ -92,6 +92,24 @@ test("every Blocks server action guards its whole body", () => {
           `error boundary — the merchant sees "Something broke" instead of a ` +
           `message they can act on.`,
       );
+
+      /**
+       * The try must be the FIRST statement, not merely present.
+       *
+       * This test is named "guards its whole body" and previously only checked
+       * that a `try` existed somewhere. An action written as
+       * `const supabase = await createSupabaseServerClient(); try { … }` would
+       * have satisfied it while leaving the one call most likely to throw —
+       * client construction, `cookies()`, a missing env var — outside the guard.
+       * That is precisely the shape the original crash had.
+       */
+      const beforeTry = body.slice(1, body.indexOf("try {")).trim();
+      assert.equal(
+        beforeTry,
+        "",
+        `${file}: ${name}() runs code BEFORE its try block:\n    ${beforeTry.split("\n")[0]}\n` +
+          `  Anything above the guard can still throw and take the page down.`,
+      );
       assert.ok(
         /catch\s*\(/.test(body),
         `${file}: ${name}() has a try with no catch.`,

@@ -113,11 +113,36 @@ const EXPORT_ACTION = codeOf(read("app/actions/blocks-export.ts"));
  */
 function effectiveBody(src: string, fnName: string): string {
   const body = bodyOf(src, fnName);
-  // A wrapper delegates to exactly one helper and does nothing else of note.
-  const delegate = body.match(/return await (\w+)\(/);
-  if (!delegate) return body;
-  const inner = bodyOf(src, delegate[1]);
-  return inner ? `${body}\n${inner}` : body;
+  const delegates = [...body.matchAll(/return await (\w+)\(/g)].map((m) => m[1]);
+
+  // Not a delegating wrapper — the work is right here.
+  if (delegates.length === 0) return body;
+
+  /**
+   * A wrapper may delegate to EXACTLY ONE helper, and that helper must be
+   * called from exactly one place.
+   *
+   * The first version of this took the first `return await` it found and
+   * returned the wrapper CONCATENATED with that helper. Both choices were
+   * exploitable, and a verifier demonstrated it against the real file: give the
+   * action two delegates — a safe one on a dead branch, an unsafe one on the
+   * live path — and the safe one satisfies every assertion on the unsafe one's
+   * behalf. A build of this module that handed the paid Liquid to any
+   * unauthenticated caller passed the entire suite.
+   *
+   * Returning "" makes an ambiguous wrapper FAIL every check rather than
+   * silently pass one. If a future refactor legitimately needs two exits, this
+   * has to be taught about it deliberately — which is the point.
+   */
+  if (delegates.length > 1) return "";
+  const calls = [...src.matchAll(
+    new RegExp(`(?<!function\\s)\\b${delegates[0]}\\(`, "g"),
+  )].length;
+  if (calls !== 1) return "";
+
+  // The INNER body alone. Unioning it with the wrapper let the wrapper's own
+  // text satisfy assertions about the helper.
+  return bodyOf(src, delegates[0]);
 }
 
 /** Every module that makes up the feature. */
@@ -359,6 +384,87 @@ test("the export price is never hardcoded in the repo", () => {
 test("the env var is documented for whoever has to set it", () => {
   const example = read(".env.example");
   assert.ok(example.includes("STRIPE_PRICE_LIQUID_EXPORT"));
+});
+
+test("a wrapper with a second, unsafe exit cannot borrow the safe one's checks", () => {
+  /**
+   * The exact bypass a verifier built against the real file, kept as a fixture.
+   *
+   * The shape: an action delegates to a safe helper on a dead branch and to an
+   * unsafe one on the live path. The safe helper contains `auth.getUser()`, so
+   * a resolver that follows the FIRST delegate — or that unions wrapper and
+   * helper — reports the action as authenticated while every request goes to
+   * the helper with no auth, no ownership check and no paywall.
+   *
+   * This is a test of the TEST. It exists because the version of `effectiveBody`
+   * it replaces let a build that handed the paid Liquid to any anonymous caller
+   * pass the whole WP-D suite.
+   */
+  const bypass = `
+    export async function exportLiquid(projectId: string): Promise<X> {
+      try {
+        if (LEGACY) return await doExportLiquid(projectId);
+        return await fastExport(projectId);
+      } catch (err) { return { ok: false }; }
+    }
+    async function doExportLiquid(projectId: string): Promise<X> {
+      const supabase = await createSupabaseServerClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!(await hasPaidExport(projectId, user.id))) return { ok: false };
+      return await generateLiquidBlock({});
+    }
+    async function fastExport(projectId: string): Promise<X> {
+      return await generateLiquidBlock({});
+    }
+  `;
+  const resolved = effectiveBody(bypass, "exportLiquid");
+  assert.equal(
+    resolved,
+    "",
+    "an ambiguous wrapper must resolve to nothing, so every assertion on it fails",
+  );
+  assert.ok(
+    !resolved.includes("auth.getUser()"),
+    "the safe helper's auth check was credited to the unsafe path",
+  );
+});
+
+test("a helper reachable from more than one place is not trusted either", () => {
+  // The simpler variant of the same bypass: no dead branch, just a second
+  // caller. If the helper can be invoked from somewhere the wrapper's guard
+  // doesn't cover, inspecting it proves nothing about the action.
+  const shared = `
+    export async function a(id: string): Promise<X> {
+      try { return await work(id); } catch { return { ok: false }; }
+    }
+    export async function b(id: string): Promise<X> {
+      return await work(id);
+    }
+    async function work(id: string): Promise<X> {
+      const supabase = await createSupabaseServerClient();
+      await supabase.auth.getUser();
+      return { ok: true };
+    }
+  `;
+  assert.equal(effectiveBody(shared, "a"), "");
+});
+
+test("an ordinary single-delegate wrapper still resolves to its helper", () => {
+  // The widening must not have broken the normal case, or every assertion in
+  // this file would be passing on an empty string.
+  const normal = `
+    export async function act(id: string): Promise<X> {
+      try { return await doAct(id); } catch { return { ok: false }; }
+    }
+    async function doAct(id: string): Promise<X> {
+      const supabase = await createSupabaseServerClient();
+      await supabase.auth.getUser();
+      return { ok: true };
+    }
+  `;
+  const resolved = effectiveBody(normal, "act");
+  assert.ok(resolved.includes("auth.getUser()"), resolved);
+  assert.ok(!resolved.includes("catch"), "the wrapper leaked into the resolved body");
 });
 
 test("the guard would actually catch a violation", () => {

@@ -184,7 +184,7 @@ export function PreviewPanel({ initial }: { initial: PreviewProject }) {
                 onClick={() => setView(v)}
                 aria-pressed={view === v}
                 className={
-                  "flex-1 sm:flex-none sm:min-w-[8.5rem] px-5 py-2.5 text-sm font-medium rounded-lg transition-all " +
+                  "flex-1 sm:flex-none sm:min-w-[8.5rem] px-5 py-3 text-sm font-medium rounded-lg transition-all " +
                   (view === v
                     ? "bg-champagne-400 text-obsidian-950 shadow-lg shadow-champagne-400/20"
                     : "text-white/55 hover:text-white hover:bg-white/[0.04]")
@@ -202,7 +202,7 @@ export function PreviewPanel({ initial }: { initial: PreviewProject }) {
                 — same page, same scroll position, one thing added.
               </>
             ) : (
-              <>Your page exactly as it is today. Tap After to see the block.</>
+              <>Your page exactly as it is today. Switch to After to see the block.</>
             )}
           </p>
         </div>

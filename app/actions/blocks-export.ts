@@ -64,6 +64,17 @@ export interface ExportStatus {
   paid: boolean;
   configured: boolean;
   price: ExportPrice | null;
+  /**
+   * True when we could not determine the state at all — a failed read, not a
+   * missing price.
+   *
+   * Without this, a transient Supabase or Stripe failure degraded to
+   * {paid:false, configured:false}, which told someone who HAD paid that
+   * "downloads aren't switched on yet". That is a confident, false statement
+   * about our own configuration during what is actually an outage — the same
+   * class of true-sounding-but-wrong the rest of this feature refuses to make.
+   */
+  unknown?: boolean;
 }
 
 interface ProjectRow {
@@ -124,7 +135,7 @@ export async function getExportStatus(projectId: string): Promise<ExportStatus> 
      * offered a purchase we couldn't currently complete.
      */
     console.error("[blocks] export status unavailable:", err);
-    return { paid: false, configured: false, price: null };
+    return { paid: false, configured: false, price: null, unknown: true };
   }
 }
 

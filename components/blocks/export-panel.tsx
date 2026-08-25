@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Check, Copy, Download, Loader2, Lock } from "lucide-react";
+import { AlertTriangle, Check, Copy, Download, Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -27,6 +27,7 @@ export function ExportPanel({
   projectId,
   paid,
   configured,
+  unknown,
   priceLabel,
   hasBlock,
   notConfiguredMessage,
@@ -34,6 +35,8 @@ export function ExportPanel({
   projectId: string;
   paid: boolean;
   configured: boolean;
+  /** We could not read the state at all — an outage, not a missing price. */
+  unknown?: boolean;
   priceLabel: string | null;
   hasBlock: boolean;
   notConfiguredMessage: string;
@@ -80,18 +83,43 @@ export function ExportPanel({
   }
 
   /**
-   * The purchase can't be offered because no price is configured.
+   * We could not read the state at all — an outage, not a configuration gap.
+   *
+   * Saying "downloads aren't switched on yet" here would be a confident, false
+   * statement about our own setup, and to someone who has already paid it would
+   * be an alarming one. Say what is actually true: we could not check.
+   */
+  if (unknown && !paid) {
+    return (
+      <Card className="p-6 border-white/[0.04]">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="size-4 shrink-0 text-white/30 mt-0.5" />
+          <div className="min-w-0">
+            <h3 className="text-sm font-medium text-white/70">
+              Download the code for this block
+            </h3>
+            <p className="mt-2 text-sm text-white/45 max-w-xl">
+              We could not check this just now. Reload in a moment — if you have
+              already bought this export, it is safe and still yours.
+            </p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  /**
+   * The purchase cannot be offered because no price is configured.
    *
    * Shown as a LOCKED STEP, not as an absence. The first version rendered a
    * quiet grey sentence, which in dev and QA was indistinguishable from the
-   * export step not having been built — the reviewer's words were "parece que
-   * falta". The step now looks like itself: same heading, same description of
-   * what you get, a disabled button where the real one goes, and the reason
-   * underneath.
+   * step not having been built — the reviewer's words were "parece que falta".
+   * It now looks like itself: same heading, same description of what you get, a
+   * disabled button where the real one goes, and the reason underneath.
    *
-   * The wording still refuses to imply merchant error, because they can neither
-   * cause nor fix this, and it says their work is safe — which is the actual
-   * question someone has when a step they expected is unavailable.
+   * The wording refuses to imply merchant error, because they can neither cause
+   * nor fix this, and it says their work is safe — the actual question someone
+   * has when a step they expected is unavailable.
    */
   if (!configured && !paid) {
     return (

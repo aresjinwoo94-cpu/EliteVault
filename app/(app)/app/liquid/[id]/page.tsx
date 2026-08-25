@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
@@ -48,15 +48,28 @@ export default async function LiquidProjectPage({
    * `stripe_session_id` is unique.
    */
   if (sp.checkout) {
-    await confirmExportPayment(id, sp.checkout).catch((err) =>
-      console.warn("[blocks] eager export confirm failed:", (err as Error).message),
-    );
+    // No .catch(): the action guards its own body and returns rather than
+    // rejecting, so a catch here would advertise a hazard that no longer exists.
+    await confirmExportPayment(id, sp.checkout);
   }
 
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  /**
+   * Checked here rather than leaning on the layout.
+   *
+   * `getUser()` RETURNS `{user: null}` on an expired session or a transient
+   * GoTrue failure — it doesn't throw — so `user!.id` below was a real
+   * `Cannot read properties of null` in the render path. The `(app)` layout
+   * does redirect a signed-out visitor, but layout and page render
+   * concurrently in the App Router, so that was a race, not a guarantee. The
+   * whole point of this commit is that nothing in this render can take the
+   * page down.
+   */
+  if (!user) redirect("/sign-in");
 
   // RLS already scopes this to the owner; the explicit user_id filter makes the
   // intent readable and keeps the query honest if policies are ever relaxed.
@@ -66,7 +79,7 @@ export default async function LiquidProjectPage({
       "id, product_url, product_handle, product_json, design_tokens, token_overrides, block_spec, preview_before_url, preview_after_url, status, error, created_at",
     )
     .eq("id", id)
-    .eq("user_id", user!.id)
+    .eq("user_id", user.id)
     .single();
 
   if (!project) notFound();
@@ -222,6 +235,7 @@ export default async function LiquidProjectPage({
               projectId={row.id}
               paid={exportStatus.paid}
               configured={exportStatus.configured}
+              unknown={exportStatus.unknown}
               priceLabel={exportStatus.price?.formatted ?? null}
               hasBlock={Boolean(row.block_spec)}
               notConfiguredMessage={EXPORT_NOT_CONFIGURED}
