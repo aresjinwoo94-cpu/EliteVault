@@ -81,8 +81,23 @@ function auditFile(file: string, raw: string): Violation[] {
   for (const m of sql.matchAll(/create\s+(function|view)\s+(\S+)/g)) {
     // `create or replace` is matched by the negative form below, so reaching
     // here means the bare `create` was used.
-    if (!/or\s+replace/.test(sql.slice(Math.max(0, m.index - 20), m.index))) {
-      flag(`create ${m[1]} needs \`or replace\``, m[2]);
+    if (/or\s+replace/.test(sql.slice(Math.max(0, m.index - 20), m.index))) continue;
+
+    /**
+     * A preceding `drop … if exists` is the OTHER legitimate guard, and for
+     * views it is sometimes the only one.
+     *
+     * `create or replace view` cannot rename or reorder an existing view's
+     * columns — Postgres refuses with 42P16. So a migration that inserts a
+     * column into the middle of a view has no choice but to drop first, and
+     * the rule as written declared that correct migration unsafe. Same shape
+     * this file already accepts for policies and triggers.
+     */
+    const dropped = new RegExp(
+      `drop\\s+${m[1]}\\s+if\\s+exists\\s+${escape(m[2])}\\b`,
+    ).test(sql.slice(0, m.index));
+    if (!dropped) {
+      flag(`create ${m[1]} needs \`or replace\` or a preceding drop-if-exists`, m[2]);
     }
   }
   for (const m of sql.matchAll(/create\s+type\s+(\S+)/g)) {
@@ -165,6 +180,22 @@ test("the accepted guard forms are recognised as idempotent", () => {
     exception when duplicate_object then null; end $$;
     alter table public.ok add column if not exists shiny text;
     create or replace function public.noop() returns void as $$ begin end; $$ language plpgsql;
+    drop view if exists public.v_thing;
+    create view public.v_thing as select 1 as a;
   `;
   assert.deepEqual(auditFile("synthetic.sql", good), []);
+});
+
+test("a bare create view with no drop before it is still caught", () => {
+  // Guards the guard added for 0037: widening the rule to accept a preceding
+  // drop must not have widened it to accept nothing at all.
+  const bad = `create view public.v_thing as select 1 as a;`;
+  assert.equal(auditFile("synthetic.sql", bad).length, 1);
+
+  // And a drop of a DIFFERENT view doesn't count as cover.
+  const wrongTarget = `
+    drop view if exists public.v_other;
+    create view public.v_thing as select 1 as a;
+  `;
+  assert.equal(auditFile("synthetic.sql", wrongTarget).length, 1);
 });

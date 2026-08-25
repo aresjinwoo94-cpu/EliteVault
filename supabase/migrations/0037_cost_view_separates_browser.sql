@@ -16,12 +16,16 @@
 -- Tokens were never affected: browser rows carry hard zeros, deliberately, so
 -- that pretending they had tokens couldn't corrupt the totals.
 --
--- `create or replace view` — additive column, existing columns unchanged in
--- name, order and meaning. Idempotent; rollback in
+-- Drop + recreate, NOT `create or replace`: browser_seconds sits between
+-- tokens and cost_usd_30d, and Postgres refuses to reorder an existing
+-- view's columns with replace (error 42P16). `drop ... if exists` keeps it
+-- idempotent. Rollback in
 -- supabase/rollbacks/0037_cost_view_separates_browser_rollback.sql.
 -- ──────────────────────────────────────────────────────────────────────────
 
-create or replace view public.v_user_cost_30d as
+drop view if exists public.v_user_cost_30d;
+
+create view public.v_user_cost_30d as
   select
     u.user_id,
     p.email,
