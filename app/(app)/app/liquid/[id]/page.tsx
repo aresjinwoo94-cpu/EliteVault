@@ -176,34 +176,15 @@ export default async function LiquidProjectPage({
         </Card>
       </section>
 
-      {/*
-        WP-C turns the measured tokens into editable fields and adds the four
-        MVP block types; WP-D adds the paid export. What renders today is the
-        calibration and its proof.
-      */}
-      <section>
-        <h2 className="text-sm font-medium text-white/70 mb-3">Preview</h2>
-        <PreviewPanel
-          initial={{
-            id: row.id,
-            status: row.status,
-            design_tokens: row.design_tokens,
-            preview_before_url: row.preview_before_url,
-            preview_after_url: row.preview_after_url,
-            error: row.error,
-          } satisfies PreviewProject}
-        />
-      </section>
 
       {/*
-        Both editors live BELOW the preview on purpose. The first thing the
-        merchant should see is their own page with a block on it — the proof.
-        Choosing a block and correcting a colour are things you do once you
-        believe the proof, not before.
+        Choosing comes FIRST.
 
-        Only offered once we've actually measured the page: correcting tokens we
-        haven't read yet would be asking someone to check our work before we've
-        done any.
+        These used to sit below the preview, and the owner's report after
+        testing was simply "no los encontré". A catalogue nobody finds is a
+        catalogue that does not exist — and a preview with no block chosen is a
+        dead end, because there is nothing yet to preview. The gallery leads,
+        the correction panel follows it, and the proof sits underneath both.
       */}
       {row.design_tokens && (
         <>
@@ -243,6 +224,24 @@ export default async function LiquidProjectPage({
           </section>
         </>
       )}
+      {/*
+        WP-C turns the measured tokens into editable fields and adds the four
+        MVP block types; WP-D adds the paid export. What renders today is the
+        calibration and its proof.
+      */}
+      <section>
+        <h2 className="text-sm font-medium text-white/70 mb-3">Preview</h2>
+        <PreviewPanel
+          initial={{
+            id: row.id,
+            status: row.status,
+            design_tokens: row.design_tokens,
+            preview_before_url: row.preview_before_url,
+            preview_after_url: row.preview_after_url,
+            error: row.error,
+          } satisfies PreviewProject}
+        />
+      </section>
     </div>
   );
 }

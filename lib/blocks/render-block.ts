@@ -29,6 +29,7 @@
 import type { DesignTokens } from "./design-tokens";
 import type { BlocksProduct } from "./product-json";
 import type { BlockSpecInput } from "./catalog";
+import { resolveVariant } from "./variants";
 
 /**
  * The single class every selector hangs off. Short, and namespaced enough that
@@ -215,6 +216,57 @@ ${shape.cardShadow ? `box-shadow:${shape.cardShadow};` : ""}
 .${p}__icon svg{width:100%;height:100%;display:block;}
 .${p}__trust-label{display:block;font-weight:600;font-size:.95em;}
 .${p}__trust-detail{display:block;margin-top:.15rem;opacity:.65;font-size:.85em;}
+
+/* ── Trust variants (design-references.md §1) ──────────────────────────────
+   Modifier classes on the same markup. Same content, same tree, different
+   layout — which is what makes "a variant changes layout only" structural
+   rather than a promise. */
+.${p}__trust--boxed{gap:.75rem;}
+.${p}__trust--boxed .${p}__trust-item{padding:.9rem;border:1px solid var(--ev-border);border-radius:var(--ev-radius);background:var(--ev-inset);}
+.${p}__trust--stacked_2x2{grid-template-columns:repeat(2,1fr);}
+@media (max-width:640px){
+/* The pattern's own rule: wrap to 2×2 rather than shrink below legibility. */
+.${p}__trust{grid-template-columns:repeat(2,1fr);}
+.${p}__trust--stacked_2x2{grid-template-columns:1fr;}
+}
+
+/* ── Feature grid (design-references.md §3) ───────────────────────────────── */
+.${p}__features{display:grid;gap:1rem;}
+.${p}__features--cards_2{grid-template-columns:repeat(2,1fr);}
+.${p}__features--cards_3{grid-template-columns:repeat(3,1fr);}
+.${p}__features--cards_4{grid-template-columns:repeat(2,1fr);}
+.${p}__feature{padding:1.1rem;border:1px solid var(--ev-border);border-radius:var(--ev-radius);background:var(--ev-inset);}
+/* The icon sits in a soft accent circle — the detail that makes this read as a
+   feature grid rather than as three paragraphs in boxes. color-mix keeps the
+   tint derived from the MEASURED accent instead of a second colour we chose. */
+.${p}__feature-icon{display:inline-flex;align-items:center;justify-content:center;width:2.5em;height:2.5em;border-radius:999px;background:color-mix(in srgb,var(--ev-accent) 14%,transparent);}
+.${p}__feature-icon .${p}__icon{width:1.25em;height:1.25em;}
+.${p}__feature-title{margin:.75rem 0 0;font-family:var(--ev-font-heading);font-weight:var(--ev-weight-heading);font-size:1em;line-height:1.25;}
+.${p}__feature-line{margin:.35rem 0 0;font-size:.9em;opacity:.75;line-height:1.45;}
+@media (max-width:640px){
+.${p}__features--cards_2,.${p}__features--cards_3{grid-template-columns:1fr;}
+}
+
+/* ── Comparison variants (design-references.md §2) ────────────────────────── */
+/* Our column is lifted so the shape of the answer reads before a single row
+   does: tinted panel, accent header. */
+.${p}__ours-head{background:color-mix(in srgb,var(--ev-accent) 12%,transparent);color:var(--ev-accent);border-radius:var(--ev-radius) var(--ev-radius) 0 0;}
+.${p}__ours{background:color-mix(in srgb,var(--ev-accent) 6%,transparent);font-weight:600;}
+.${p}__theirs{opacity:.6;}
+.${p}__mark{display:inline-block;margin-right:.4em;font-weight:700;}
+.${p}__mark--win{color:var(--ev-accent);}
+.${p}__mark--lose{opacity:.45;}
+.${p}__muted{opacity:.55;}
+.${p}__checklist{list-style:none;margin:.75rem 0 0;padding:0;display:grid;gap:.6rem;}
+.${p}__check-row{display:flex;gap:.6rem;align-items:flex-start;}
+.${p}__check-label{display:block;font-weight:600;font-size:.95em;}
+.${p}__check-values{display:block;font-size:.9em;margin-top:.1rem;}
+@media (max-width:640px){
+/* Three columns cannot be read on a phone however carefully they're styled, so
+   the table scrolls rather than crushing. The checklist variant exists for
+   merchants who would rather it never came to that. */
+.${p}__table--three{display:block;overflow-x:auto;white-space:nowrap;}
+}
 .${p}__logo{max-height:40px;width:auto;display:block;margin-bottom:1rem;}
 .${p}__benefits{list-style:none;margin:0;padding:0;display:grid;gap:.6rem;}
 .${p}__benefit{display:flex;gap:.6rem;align-items:flex-start;}
@@ -417,8 +469,20 @@ function productFields(
   };
 }
 
+/**
+ * The variant a block should render as.
+ *
+ * A single place, so every renderer resolves it the same way — and so an
+ * unknown or absent id lands on the type's default instead of anywhere else.
+ * Projects saved before variants existed carry none, and must keep opening.
+ */
+function variantOf(spec: BlockSpecInput): string {
+  return resolveVariant(spec.type, spec.variant).id;
+}
+
 function trustHtml(spec: Extract<BlockSpecInput, { type: "trust_icons" }>): string {
   const p = BLOCK_PREFIX;
+  const v = variantOf(spec);
   const items = spec.items
     .map(
       (item) =>
@@ -429,9 +493,35 @@ function trustHtml(spec: Extract<BlockSpecInput, { type: "trust_icons" }>): stri
         }</span></div>`,
     )
     .join("\n");
+  // The variant is a MODIFIER CLASS, not a different tree. Same markup, same
+  // content, different CSS — which is what keeps "a variant changes layout
+  // only" true by construction rather than by discipline.
   return `<section class="${p}">
-<div class="${p}__trust">
+<div class="${p}__trust ${p}__trust--${v}">
 ${items}
+</div>
+</section>`;
+}
+
+/**
+ * Feature grid — this PRODUCT's concrete features, distinct from Brand cards,
+ * which tells the brand's story. Modelled on design-references.md §3: icon in a
+ * soft accent circle, bold short title, exactly one line.
+ */
+function featureGridHtml(
+  spec: Extract<BlockSpecInput, { type: "feature_grid" }>,
+): string {
+  const p = BLOCK_PREFIX;
+  const v = variantOf(spec);
+  const cards = spec.features
+    .map(
+      (f) =>
+        `<div class="${p}__feature"><span class="${p}__feature-icon">${icon(f.icon)}</span><h4 class="${p}__feature-title">${esc(f.title)}</h4><p class="${p}__feature-line">${esc(f.line)}</p></div>`,
+    )
+    .join("\n");
+  return `<section class="${p}">
+<div class="${p}__features ${p}__features--${v}">
+${cards}
 </div>
 </section>`;
 }
@@ -462,15 +552,54 @@ function comparisonHtml(
   fields: ReturnType<typeof productFields>,
 ): string {
   const p = BLOCK_PREFIX;
+  const v = variantOf(spec);
+
+  /**
+   * The checklist variant. Not a table at all — one line per benefit, ticked
+   * for us and struck through for them. It exists because on a phone a
+   * three-column table is unreadable however carefully it's styled, and a list
+   * is the shape this content naturally has (design-references.md §2).
+   */
+  if (v === "checklist") {
+    const lines = spec.rows
+      .map(
+        (row) =>
+          `<li class="${p}__check-row"><span class="${p}__mark ${row.weWin ? `${p}__mark--win` : `${p}__mark--lose`}" aria-hidden="true">${row.weWin ? "✓" : "✗"}</span><span class="${p}__check-body"><span class="${p}__check-label">${esc(row.label)}</span><span class="${p}__check-values"><strong>${esc(row.ours)}</strong> <span class="${p}__muted">vs ${esc(row.theirs)}</span></span></span></li>`,
+      )
+      .join("\n");
+    return `<section class="${p}">
+<p class="${p}__lede">${fields.title} <span class="${p}__muted">vs ${esc(spec.competitorName)}</span></p>
+<ul class="${p}__checklist">
+${lines}
+</ul>
+</section>`;
+  }
+
+  /**
+   * Three columns: us, the one they named, and the rest of the category.
+   *
+   * The third column is only rendered when the merchant NAMED it. An
+   * unlabelled "Others" column would be us inventing a competitor, which is the
+   * one thing this block may never do — see the honesty constraint in
+   * design-references.md §2.
+   */
+  const others = (spec.othersName ?? "").trim();
+  const threeCol = v === "three_col" && others.length > 0;
+
   const rows = spec.rows
     .map(
       (row) =>
-        `<tr class="${row.weWin ? `${p}__row-win` : ""}"${row.weWin ? ` data-ev-win="true"` : ""}><td>${esc(row.label)}</td><td class="${p}__ours">${esc(row.ours)}</td><td>${esc(row.theirs)}</td></tr>`,
+        `<tr class="${row.weWin ? `${p}__row-win` : ""}"${row.weWin ? ` data-ev-win="true"` : ""}><td>${esc(row.label)}</td><td class="${p}__ours"><span class="${p}__mark ${p}__mark--win" aria-hidden="true">✓</span>${esc(row.ours)}</td><td class="${p}__theirs">${esc(row.theirs)}</td>${
+          threeCol ? `<td class="${p}__theirs ${p}__muted">—</td>` : ""
+        }</tr>`,
     )
     .join("\n");
+
   return `<section class="${p}">
-<table class="${p}__table">
-<thead><tr><th></th><th>${fields.title}</th><th>${esc(spec.competitorName)}</th></tr></thead>
+<table class="${p}__table ${p}__table--${threeCol ? "three" : "two"}">
+<thead><tr><th></th><th class="${p}__ours-head">${fields.title}</th><th>${esc(spec.competitorName)}</th>${
+    threeCol ? `<th>${esc(others)}</th>` : ""
+  }</tr></thead>
 <tbody>
 ${rows}
 </tbody>
@@ -526,6 +655,9 @@ export function renderBlock(input: {
       break;
     case "comparison":
       body = comparisonHtml(input.spec, fields);
+      break;
+    case "feature_grid":
+      body = featureGridHtml(input.spec);
       break;
     case "product_stats":
       body = statsHtml(input.spec, fields);

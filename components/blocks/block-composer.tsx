@@ -16,6 +16,8 @@ import {
   type CatalogBlockType,
 } from "@/lib/blocks/catalog";
 
+import { BlockGallery, VariantPicker } from "@/components/blocks/block-gallery";
+
 /**
  * Liquid Blocks WP-C — pick a block, and supply the claims it makes.
  *
@@ -34,6 +36,7 @@ type Draft = {
   trust_icons: Extract<BlockSpecInput, { type: "trust_icons" }>;
   brand_cards: Extract<BlockSpecInput, { type: "brand_cards" }>;
   comparison: Extract<BlockSpecInput, { type: "comparison" }>;
+  feature_grid: Extract<BlockSpecInput, { type: "feature_grid" }>;
   product_stats: Extract<BlockSpecInput, { type: "product_stats" }>;
 };
 
@@ -47,6 +50,13 @@ const EMPTY: Draft = {
     type: "comparison",
     competitorName: "",
     rows: [{ label: "", ours: "", theirs: "", weWin: true }],
+  },
+  feature_grid: {
+    type: "feature_grid",
+    features: [
+      { icon: "shipping", title: "", line: "" },
+      { icon: "warranty", title: "", line: "" },
+    ],
   },
   product_stats: { type: "product_stats", stats: [{ label: "", value: "", unit: "" }] },
 };
@@ -106,27 +116,12 @@ export function BlockComposer({
     <div className="space-y-5">
       <div>
         <h3 className="text-sm font-medium text-white/70">Choose a block</h3>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          {BLOCK_CATALOG.map((block) => {
-            const active = selected === block.id;
-            return (
-              <button
-                key={block.id}
-                type="button"
-                onClick={() => setSelected(block.id)}
-                aria-pressed={active}
-                className={
-                  "text-left rounded-xl border p-4 transition-colors " +
-                  (active
-                    ? "border-champagne-400/40 bg-white/[0.05]"
-                    : "border-white/[0.06] bg-card/30 hover:border-white/[0.14]")
-                }
-              >
-                <p className="text-sm font-medium text-white/90">{block.name}</p>
-                <p className="mt-1 text-xs text-white/45">{block.summary}</p>
-              </button>
-            );
-          })}
+        <p className="mt-1 text-xs text-white/40">
+          Each one is native Liquid, scoped so it cannot restyle your theme, and
+          rendered in the colours and type we measured on your page.
+        </p>
+        <div className="mt-4">
+          <BlockGallery selected={selected} onSelect={setSelected} />
         </div>
       </div>
 
@@ -157,12 +152,43 @@ export function BlockComposer({
                 onChange={(v) => update("comparison", v)}
               />
             )}
+            {selected === "feature_grid" && (
+              <FeatureForm
+                value={draft.feature_grid}
+                onChange={(v) => update("feature_grid", v)}
+              />
+            )}
             {selected === "product_stats" && (
               <StatsForm
                 value={draft.product_stats}
                 onChange={(v) => update("product_stats", v)}
               />
             )}
+          </div>
+
+          {/*
+            Layout comes after the content, deliberately. A merchant choosing
+            how it looks before deciding what it says is choosing in the dark —
+            and the variants only differ in ways you can judge once there's
+            something in them.
+          */}
+          <div className="mt-6 pt-5 border-t border-white/[0.05]">
+            {/*
+              Keyed off `entry.id` rather than `selected`: inside this branch
+              `entry` is proven non-null, where `selected` is only known to be
+              non-null to a reader. Writing through setDraft with a computed key
+              also avoids asking the generic `update` to narrow a union it
+              can't.
+            */}
+            <VariantPicker
+              type={entry.id}
+              value={draft[entry.id].variant}
+              onChange={(variant) =>
+                setDraft(
+                  (d) => ({ ...d, [entry.id]: { ...d[entry.id], variant } }) as Draft,
+                )
+              }
+            />
           </div>
 
           {missing.length > 0 && (
@@ -475,6 +501,96 @@ function StatsForm({
         <Plus className="size-4" />
         Add a figure
       </Button>
+    </div>
+  );
+}
+
+/**
+ * Feature grid — this PRODUCT's concrete features.
+ *
+ * The one-line cap is the pattern, not a safety margin: a grid where one card
+ * runs to four lines stops being scannable and becomes an unread paragraph in a
+ * box (design-references.md §3). The field says so rather than silently
+ * refusing at save time.
+ */
+function FeatureForm({
+  value,
+  onChange,
+}: {
+  value: Draft["feature_grid"];
+  onChange: (v: Draft["feature_grid"]) => void;
+}) {
+  const set = (i: number, patch: Partial<(typeof value.features)[number]>) =>
+    onChange({
+      ...value,
+      features: value.features.map((f, idx) => (idx === i ? { ...f, ...patch } : f)),
+    });
+
+  return (
+    <div className="space-y-4">
+      {value.features.map((feature, i) => (
+        <div key={i} className="grid gap-3 sm:grid-cols-[8rem_1fr_1.5fr_auto] sm:items-end">
+          <label>
+            <FieldLabel>Icon</FieldLabel>
+            <select
+              value={feature.icon}
+              onChange={(e) => set(i, { icon: e.target.value })}
+              className="w-full h-10 rounded-lg border border-white/10 bg-obsidian-950/60 px-3 text-sm text-white/80"
+            >
+              {TRUST_ICONS.map((icon) => (
+                <option key={icon} value={icon}>
+                  {icon.replace("-", " ")}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <FieldLabel>Feature</FieldLabel>
+            <Input
+              value={feature.title}
+              onChange={(e) => set(i, { title: e.target.value })}
+              placeholder="Merino wool"
+            />
+          </label>
+          <label>
+            <FieldLabel>One line about it</FieldLabel>
+            <Input
+              value={feature.line}
+              onChange={(e) => set(i, { line: e.target.value })}
+              placeholder="Warm when it's cold, breathable when it isn't."
+            />
+          </label>
+          {value.features.length > 2 && (
+            <button
+              type="button"
+              aria-label={`Remove feature ${i + 1}`}
+              onClick={() =>
+                onChange({
+                  ...value,
+                  features: value.features.filter((_, idx) => idx !== i),
+                })
+              }
+              className="h-10 w-10 inline-flex items-center justify-center rounded-lg text-white/40 hover:text-destructive hover:bg-white/[0.04]"
+            >
+              <Trash2 className="size-4" />
+            </button>
+          )}
+        </div>
+      ))}
+      {value.features.length < 4 && (
+        <Button
+          variant="secondary"
+          onClick={() =>
+            onChange({
+              ...value,
+              features: [...value.features, { icon: "support", title: "", line: "" }],
+            })
+          }
+        >
+          <Plus className="size-4" />
+          Add a feature
+        </Button>
+      )}
     </div>
   );
 }

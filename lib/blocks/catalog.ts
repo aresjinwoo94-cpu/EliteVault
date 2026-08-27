@@ -20,6 +20,8 @@
  * exemption by saying nothing the store's own product endpoint didn't tell us.
  */
 
+import { isKnownVariant, type Interactivity } from "./variants";
+
 /** Icons a trust row may use. A closed set — the renderer draws them inline. */
 export const TRUST_ICONS = [
   "shipping",
@@ -46,6 +48,21 @@ export interface ComparisonRowInput {
   weWin: boolean;
 }
 
+export interface FeatureItemInput {
+  /** One of TRUST_ICONS — drawn inline, no runtime request. */
+  icon: TrustIcon | string;
+  /** The feature, in a few words. */
+  title: string;
+  /**
+   * Exactly one line of explanation.
+   *
+   * The single-line discipline IS the pattern (see design-references.md §3): a
+   * grid where one card runs to four lines stops being scannable and becomes an
+   * unread paragraph in a box. Enforced by a cap, not by hoping.
+   */
+  line: string;
+}
+
 export interface ProductStatInput {
   label: string;
   /** Digits. Prose belongs in a claims block, not a stats one. */
@@ -53,16 +70,37 @@ export interface ProductStatInput {
   unit: string;
 }
 
+/**
+ * The visual variant, from lib/blocks/variants.ts.
+ *
+ * OPTIONAL on every member on purpose: projects saved before variants existed
+ * carry none, and must keep opening. An absent or withdrawn variant resolves to
+ * the type default rather than erroring — the merchant's content is intact
+ * either way, and layout is the part that can safely change under them.
+ */
+type WithVariant = { variant?: string | null };
+
 export type BlockSpecInput =
-  | { type: "trust_icons"; items: TrustItemInput[] }
-  | {
+  | ({ type: "trust_icons"; items: TrustItemInput[] } & WithVariant)
+  | ({
       type: "brand_cards";
       promise: string;
       benefits: string[];
       logoUrl: string | null;
-    }
-  | { type: "comparison"; competitorName: string; rows: ComparisonRowInput[] }
-  | { type: "product_stats"; stats: ProductStatInput[] };
+    } & WithVariant)
+  | ({
+      type: "comparison";
+      competitorName: string;
+      rows: ComparisonRowInput[];
+      /**
+       * The third column, for the three-column variant: the rest of the
+       * category. Optional, and named by the merchant like the first one — we
+       * autofill no competitor, ever.
+       */
+      othersName?: string | null;
+    } & WithVariant)
+  | ({ type: "feature_grid"; features: FeatureItemInput[] } & WithVariant)
+  | ({ type: "product_stats"; stats: ProductStatInput[] } & WithVariant);
 
 export type CatalogBlockType = BlockSpecInput["type"];
 
@@ -80,9 +118,42 @@ export interface CatalogEntry {
   requires: string[];
   /** Where the block belongs on a product page, for the install instructions. */
   placement: string;
+  /**
+   * Heading in lib/blocks/design-references.md this block is modelled on.
+   * Every entry cites one — a block nobody can trace to a reference is a block
+   * nobody can defend.
+   */
+  reference: string;
+  /**
+   * How much of the market pattern we actually deliver, shown to the merchant
+   * BEFORE they pick. "presentational" means the category leaders ship an
+   * interactive version and we ship the visual form only.
+   */
+  interactivity: Interactivity;
+  /**
+   * Set on a presentational block: what it does NOT do, in the merchant's own
+   * terms, rendered beside it in the gallery. Saying this late — or not at all —
+   * is how a shopper ends up clicking something dead and concluding the STORE
+   * is broken.
+   */
+  limitation?: string;
 }
 
 export const BLOCK_CATALOG: CatalogEntry[] = [
+  {
+    id: "comparison",
+    name: "You vs them",
+    summary:
+      "The comparison your buyer is already making in their head — done properly, with the alternative named.",
+    requires: [
+      "The competitor, by name",
+      "The rows to compare (price, materials, delivery…)",
+      "Your value and theirs for each row",
+    ],
+    placement: "Under the product description",
+    reference: "2. Comparison “us vs them”",
+    interactivity: "static",
+  },
   {
     id: "trust_icons",
     name: "Trust icons",
@@ -95,28 +166,35 @@ export const BLOCK_CATALOG: CatalogEntry[] = [
       "Which payment methods you really accept",
     ],
     placement: "Directly under the Add to cart button",
+    reference: "1. Trust / benefit icons",
+    interactivity: "static",
+  },
+  {
+    id: "feature_grid",
+    name: "Feature grid",
+    summary:
+      "Two to four of this PRODUCT’s concrete features — icon, title, one line each.",
+    requires: [
+      "Two to four real features of this product",
+      "One line explaining each",
+    ],
+    placement: "Under the product description",
+    reference: "3. Feature / benefit grid",
+    interactivity: "static",
   },
   {
     id: "brand_cards",
     name: "Brand cards",
-    summary: "Who you are and why this product is worth it, in three or four lines.",
+    summary:
+      "Your BRAND’s story — one promise and the benefits behind it. (For product features, use the Feature grid.)",
     requires: [
       "Your promise in one sentence",
       "Three or four concrete benefits",
       "Your logo (optional)",
     ],
     placement: "Under the product description",
-  },
-  {
-    id: "comparison",
-    name: "Comparison table",
-    summary: "This product against the alternative your buyer is actually considering.",
-    requires: [
-      "The competitor, by name",
-      "The rows to compare (price, materials, delivery…)",
-      "Your value and theirs for each row",
-    ],
-    placement: "Under the product description",
+    reference: "3. Feature / benefit grid",
+    interactivity: "static",
   },
   {
     id: "product_stats",
@@ -124,6 +202,8 @@ export const BLOCK_CATALOG: CatalogEntry[] = [
     summary: "Real numbers about this product — the ones you can back up.",
     requires: ["At least one real figure, with a label"],
     placement: "Under the price, or under the description",
+    reference: "6. Specs / size table",
+    interactivity: "static",
   },
 ];
 
@@ -138,13 +218,17 @@ const MAX = {
   promise: 160,
   benefit: 90,
   competitor: 60,
+  featureTitle: 40,
+  // One LINE. The cap is the pattern, not a safety margin — see
+  // design-references.md §3.
+  featureLine: 100,
   cellValue: 40,
   statLabel: 40,
   statValue: 12,
   unit: 8,
 } as const;
 
-const MAX_ITEMS = { trust: 6, benefits: 6, rows: 8, stats: 6 } as const;
+const MAX_ITEMS = { trust: 6, benefits: 6, rows: 8, stats: 6, features: 4 } as const;
 
 function filled(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
@@ -198,6 +282,13 @@ export function validateBlockSpec(spec: BlockSpecInput): ValidateResult {
   const KNOWN: string[] = BLOCK_CATALOG.map((b) => b.id);
   if (typeof spec.type !== "string" || !KNOWN.includes(spec.type)) {
     return { ok: false, missing: ["Pick one of the block types."] };
+  }
+
+  // Layout only, so an unknown id is not worth refusing the merchant content
+  // over — but a TYPO should not silently become the default either. Warned,
+  // and resolveVariant falls back when it renders.
+  if (!isKnownVariant(spec.type, (spec as { variant?: string | null }).variant)) {
+    warnings.push("That layout no longer exists — using the default for this block.");
   }
 
   const tooLong = (what: string, value: string, cap: number) => {
@@ -276,6 +367,11 @@ export function validateBlockSpec(spec: BlockSpecInput): ValidateResult {
     }
 
     case "comparison": {
+      if (spec.othersName !== undefined && spec.othersName !== null) {
+        // Optional third column. Named by the merchant like the first one — we
+        // autofill no competitor, ever, not even a generic "Others".
+        text("The third column name", spec.othersName, MAX.competitor);
+      }
       if (!text("The competitor name", spec.competitorName, MAX.competitor)) {
         // A comparison is a claim ABOUT SOMEONE. It needs a subject the
         // merchant chose deliberately — that's both honest and their legal
@@ -310,6 +406,34 @@ export function validateBlockSpec(spec: BlockSpecInput): ValidateResult {
           "You win every row. A comparison where the alternative never wins reads as an ad — conceding one honest point usually makes the rest more believable.",
         );
       }
+      break;
+    }
+
+    case "feature_grid": {
+      const features = Array.isArray(spec.features) ? spec.features : [];
+      if (features.length < 2) {
+        // Two is the floor because one "grid" card is a sentence in a box, and
+        // the layout has nothing to be a grid of.
+        missing.push("At least two features");
+      }
+      if (features.length > MAX_ITEMS.features) {
+        missing.push(`Too many features (max ${MAX_ITEMS.features})`);
+      }
+      features.forEach((feature, i) => {
+        if (!isRecord(feature)) {
+          missing.push(`Feature ${i + 1} is malformed.`);
+          return;
+        }
+        if (!text(`Feature ${i + 1}`, feature.title, MAX.featureTitle)) {
+          missing.push(`Feature ${i + 1}: what is it?`);
+        }
+        if (!text(`Feature ${i + 1} line`, feature.line, MAX.featureLine)) {
+          missing.push(`Feature ${i + 1}: one line explaining it`);
+        }
+        if (!TRUST_ICONS.includes(feature.icon as TrustIcon)) {
+          missing.push(`Feature ${i + 1}: pick an icon from the list.`);
+        }
+      });
       break;
     }
 

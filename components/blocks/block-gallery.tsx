@@ -1,0 +1,222 @@
+"use client";
+
+import { BLOCK_CATALOG, type CatalogBlockType } from "@/lib/blocks/catalog";
+import { BLOCK_VARIANTS } from "@/lib/blocks/variants";
+
+/**
+ * Liquid Blocks WP-F — the catalogue, as something you browse.
+ *
+ * # Why this exists
+ * The picker used to be a two-column list of buttons buried under the preview,
+ * and the owner's report after testing was simply: "no los encontré". A
+ * catalogue nobody finds is a catalogue that doesn't exist, and the preview
+ * with no block chosen is a dead end — there is nothing to preview yet.
+ *
+ * So the gallery leads. Choosing is the first thing on the page, the block
+ * types read as a library rather than as a form control, and each one shows
+ * what it needs from you before you commit to filling it in.
+ *
+ * # The honesty label is part of the card, not a footnote
+ * A block whose market equivalent is interactive carries its limitation HERE,
+ * where the merchant decides — not in a tooltip they meet afterwards. Choosing
+ * a block and discovering later that half of it doesn't work is the experience
+ * this product is supposed to be an escape from.
+ */
+
+/**
+ * A tiny inline diagram per block type.
+ *
+ * Deliberately abstract rather than a screenshot: a thumbnail of a real store's
+ * block would be someone else's design, and would promise a specific look we
+ * can't honour — every block is rendered in the MERCHANT's measured tokens, so
+ * two stores get two different-looking versions of the same choice. A shape
+ * conveys the layout without lying about the styling.
+ */
+function Thumb({ type }: { type: CatalogBlockType }) {
+  const bar = "rgb(255 255 255 / 0.22)";
+  const accent = "#2DD4BF";
+  const common = { rx: 1.5, fill: bar } as const;
+
+  return (
+    <svg
+      viewBox="0 0 88 44"
+      className="w-full h-auto rounded-md bg-white/[0.03]"
+      aria-hidden="true"
+    >
+      {type === "comparison" && (
+        <>
+          <rect x="6" y="6" width="34" height="32" rx="2" fill={accent} opacity="0.14" />
+          <rect x="6" y="6" width="34" height="7" rx="2" fill={accent} opacity="0.5" />
+          <rect x="44" y="6" width="34" height="32" rx="2" fill={bar} opacity="0.5" />
+          {[18, 25, 32].map((y) => (
+            <g key={y}>
+              <rect x="10" y={y} width="14" height="3" {...common} />
+              <rect x="48" y={y} width="14" height="3" {...common} opacity="0.5" />
+            </g>
+          ))}
+        </>
+      )}
+      {type === "trust_icons" && (
+        <>
+          {[8, 28, 48, 68].map((x) => (
+            <g key={x}>
+              <circle cx={x + 6} cy="17" r="5" fill={accent} opacity="0.45" />
+              <rect x={x} y="27" width="12" height="3" {...common} />
+            </g>
+          ))}
+        </>
+      )}
+      {type === "feature_grid" && (
+        <>
+          {[6, 32, 58].map((x) => (
+            <g key={x}>
+              <rect x={x} y="8" width="24" height="28" rx="2" fill={bar} opacity="0.28" />
+              <circle cx={x + 8} cy="16" r="4" fill={accent} opacity="0.5" />
+              <rect x={x + 4} y="24" width="16" height="3" {...common} />
+              <rect x={x + 4} y="29" width="12" height="2.5" {...common} opacity="0.4" />
+            </g>
+          ))}
+        </>
+      )}
+      {type === "brand_cards" && (
+        <>
+          <rect x="6" y="7" width="20" height="5" rx="1.5" fill={accent} opacity="0.5" />
+          <rect x="6" y="16" width="60" height="4" {...common} />
+          {[24, 30, 36].map((y) => (
+            <g key={y}>
+              <circle cx="9" cy={y + 1.5} r="2" fill={accent} opacity="0.5" />
+              <rect x="14" y={y} width="40" height="3" {...common} opacity="0.5" />
+            </g>
+          ))}
+        </>
+      )}
+      {type === "product_stats" && (
+        <>
+          {[8, 20, 32].map((y, i) => (
+            <g key={y}>
+              <rect x="6" y={y} width="18" height="3" {...common} />
+              <rect x="28" y={y} width={[46, 30, 38][i]} height="3" rx="1.5" fill={accent} opacity="0.5" />
+            </g>
+          ))}
+        </>
+      )}
+    </svg>
+  );
+}
+
+const INTERACTIVITY_LABEL: Record<string, string> = {
+  static: "Pure Liquid · no JavaScript",
+  presentational: "Display only",
+};
+
+export function BlockGallery({
+  selected,
+  onSelect,
+}: {
+  selected: CatalogBlockType | null;
+  onSelect: (type: CatalogBlockType) => void;
+}) {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {BLOCK_CATALOG.map((block) => {
+        const active = selected === block.id;
+        const variants = BLOCK_VARIANTS[block.id] ?? [];
+        return (
+          <button
+            key={block.id}
+            type="button"
+            onClick={() => onSelect(block.id)}
+            aria-pressed={active}
+            className={
+              "text-left rounded-xl border p-4 transition-all " +
+              (active
+                ? "border-champagne-400/60 bg-white/[0.05] ring-1 ring-champagne-400/30"
+                : "border-white/[0.06] bg-card/30 hover:border-white/[0.16] hover:bg-card/50")
+            }
+          >
+            <Thumb type={block.id} />
+
+            <p className="mt-3 text-sm font-medium text-white/90">{block.name}</p>
+            <p className="mt-1 text-xs text-white/45 leading-relaxed">
+              {block.summary}
+            </p>
+
+            <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px]">
+              <span
+                className={
+                  "rounded px-1.5 py-0.5 " +
+                  (block.interactivity === "static"
+                    ? "bg-success/10 text-success"
+                    : "bg-warning/10 text-warning")
+                }
+              >
+                {INTERACTIVITY_LABEL[block.interactivity]}
+              </span>
+              {variants.length > 1 && (
+                <span className="text-white/35">
+                  {variants.length} layouts
+                </span>
+              )}
+            </div>
+
+            {/*
+              The limitation sits on the CARD, at the moment of choosing.
+              Discovering afterwards that half a block doesn't work is exactly
+              the experience this tool is meant to replace.
+            */}
+            {block.limitation && (
+              <p className="mt-2 text-[11px] text-warning/80">{block.limitation}</p>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * Layout chooser for the selected block. Separate from the gallery because it
+ * only makes sense once a type is chosen, and because a merchant changing
+ * layout is doing something different from a merchant changing block.
+ */
+export function VariantPicker({
+  type,
+  value,
+  onChange,
+}: {
+  type: CatalogBlockType;
+  value: string | null | undefined;
+  onChange: (variant: string) => void;
+}) {
+  const variants = BLOCK_VARIANTS[type] ?? [];
+  if (variants.length < 2) return null;
+  const current = variants.find((v) => v.id === value) ?? variants[0];
+
+  return (
+    <div>
+      <p className="text-[10px] uppercase tracking-widest text-white/40">Layout</p>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {variants.map((v) => (
+          <button
+            key={v.id}
+            type="button"
+            onClick={() => onChange(v.id)}
+            aria-pressed={current.id === v.id}
+            className={
+              "rounded-lg border px-3 py-2 text-xs transition-colors " +
+              (current.id === v.id
+                ? "border-champagne-400/50 bg-champagne-400/10 text-white"
+                : "border-white/[0.08] text-white/55 hover:text-white hover:border-white/20")
+            }
+          >
+            {v.name}
+          </button>
+        ))}
+      </div>
+      <p className="mt-2 text-xs text-white/40">
+        {current.summary}{" "}
+        <span className="text-white/30">On a phone: {current.mobile.toLowerCase()}</span>
+      </p>
+    </div>
+  );
+}
