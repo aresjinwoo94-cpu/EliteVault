@@ -622,6 +622,57 @@ export function reparentBlockToMain(): boolean {
  * important token. A fixed sleep either wastes time on fast stores or is too
  * short for slow ones; this asks the actual question.
  */
+/**
+ * Has the page LAID OUT, whether or not we can find a buy button?
+ *
+ * The escape hatch for the wait below, and measured to be the single biggest
+ * latency win in the pipeline. `productPageIsReady` polls for a visible buy
+ * button, and on a store that never exposes one — a hidden 0×0 quick-add
+ * template, a headless storefront, a shop that sells through Amazon — it polls
+ * until the timeout expires. Measured on a real store: 12.0s of a 17.9s
+ * preview, 67% of the whole run, spent waiting for something that was never
+ * going to arrive.
+ *
+ * This answers the weaker question the caller can fall back to: is there a
+ * headline with real size on it? If yes, the theme has rendered and whatever we
+ * can measure is measurable now. Waiting longer buys nothing.
+ */
+export function productPageSettled(): boolean {
+  // A page still building itself has no height to speak of.
+  if (document.body.getBoundingClientRect().height < 400) return false;
+
+  /**
+   * Is something actually PAINTED where the shopper is looking?
+   *
+   * The first version of this asked for a laid-out `h1`, which sounded like the
+   * obvious proxy for "the theme has rendered" and was wrong on the very store
+   * it was written for: drinkolipop's h1 measures 1×1 — a screen-reader-only
+   * heading, a completely standard accessibility pattern — and the page has no
+   * `<main>` at all. So the escape hatch never fired and the store still paid
+   * both timeouts.
+   *
+   * `elementFromPoint` asks the question directly instead of guessing at which
+   * tag carries the answer: if the middle of the viewport hits something deeper
+   * than `<body>`, content is on screen. It is indifferent to how the theme is
+   * marked up, which is the whole point — every assumption about structure has
+   * been wrong on at least one real store.
+   */
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const points: Array<[number, number]> = [
+    [Math.round(w * 0.5), Math.round(h * 0.45)],
+    [Math.round(w * 0.5), Math.round(h * 0.7)],
+    [Math.round(w * 0.3), Math.round(h * 0.55)],
+  ];
+  for (const [x, y] of points) {
+    const hit = document.elementFromPoint(x, y);
+    if (!hit) continue;
+    const tag = hit.tagName;
+    if (tag !== "BODY" && tag !== "HTML") return true;
+  }
+  return false;
+}
+
 export function productPageIsReady(args: {
   buttonSelectors: string[];
   buttonTextPattern: string;

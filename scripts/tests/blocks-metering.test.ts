@@ -140,9 +140,14 @@ test("the timer starts before the browser launches", () => {
   // can otherwise estimate.
   const src = codeOf(read("inngest/functions/blocks-preview.ts"));
   const started = src.indexOf("browserStartedAt = Date.now()");
-  const launched = src.indexOf("launchBlocksBrowser()");
-  assert.ok(started !== -1 && launched !== -1);
-  assert.ok(started < launched, "the timer starts after the launch it should include");
+  // Matches however the browser is obtained. WP-F.5 replaced the direct
+  // `launchBlocksBrowser()` with `acquireBlocksBrowser()` (a warm pool), and a
+  // test naming one specific function failed a correct implementation — the
+  // property is about ORDER, not about which call does the acquiring.
+  const acquired = src.search(/(acquire|launch)BlocksBrowser\(/);
+  assert.ok(started !== -1, "the browser timer is gone");
+  assert.ok(acquired !== -1, "nothing acquires a browser — this test needs updating");
+  assert.ok(started < acquired, "the timer starts after the launch it should include");
 });
 
 test("the browser row is written before the browser is closed", () => {

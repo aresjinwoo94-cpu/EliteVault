@@ -5,7 +5,7 @@ import { enterMeter } from "@/lib/usage/context";
 import type { PlanTier } from "@/lib/supabase/types";
 import { validatePublicStoreUrl } from "@/lib/security/url-guard";
 import {
-  launchBlocksBrowser,
+  acquireBlocksBrowser,
   closeQuietly,
   BLOCKS_USER_AGENT,
   BLOCKS_VIEWPORT,
@@ -15,6 +15,7 @@ import {
   dismissOverlays,
   injectBlock,
   productPageIsReady,
+  productPageSettled,
   removeBlock,
   reparentBlockToMain,
   frameBlock,
@@ -35,6 +36,7 @@ import type { BlockSpecInput } from "@/lib/blocks/catalog";
 import type { BlocksProduct } from "@/lib/blocks/product-json";
 import { startDeadline } from "@/lib/deadline";
 import { recordBrowserCost } from "@/lib/blocks/browser-cost";
+import { shouldBlockRequest } from "@/lib/blocks/request-filter";
 
 /**
  * Liquid Blocks WP-B — measure the store, wear its clothes, prove it in a
@@ -78,7 +80,7 @@ const STEP_BUDGET_MS = (() => {
 /** How long to wait for a store's page to become usable. */
 const NAV_TIMEOUT_MS = (() => {
   const raw = Number(process.env.BLOCKS_NAV_TIMEOUT_MS);
-  return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 45_000;
+  return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 25_000;
 })();
 
 /**
@@ -225,11 +227,62 @@ export const blocksPreview = inngest.createFunction(
       // inside the measurement rather than excluded from it.
       const browserStartedAt = Date.now();
       let browserOk = false;
+      /** Phase timings, so "the preview is slow" can be answered with numbers. */
+      const phase: Record<string, number> = {};
+      const since = (t: number) => Date.now() - t;
+      let releaseBrowser: (() => Promise<void>) | null = null;
+      let page: Page | null = null;
       try {
-        browser = await launchBlocksBrowser();
-        const page = await browser.newPage();
+        // WP-F.5 — a browser kept warm between previews. Measured cold-launch
+        // cost was ~1.1-1.3s on every single run, paid before any of the work
+        // the merchant is waiting on begins.
+        const lease = await acquireBlocksBrowser();
+        browser = lease.browser;
+        releaseBrowser = lease.release;
+        phase.launch = since(browserStartedAt);
+        phase.cold = lease.coldStart ? 1 : 0;
+
+        page = await browser.newPage();
         await page.setUserAgent(BLOCKS_USER_AGENT);
         await page.setViewport(BLOCKS_VIEWPORT);
+
+        /**
+         * Drop what cannot change what we measure.
+         *
+         * Measured honestly: this is a smaller lever than it looks. On two real
+         * storefronts it blocked 19 of 336 and 18 of 621 requests, because
+         * Shopify serves most assets from its own CDN — which is third-party
+         * but is emphatically NOT noise. The win shows up in the capture phase
+         * rather than in navigation.
+         *
+         * The rule is asymmetric on purpose: when in doubt, allow. Stylesheets,
+         * fonts and everything same-origin are never blocked, because the
+         * product IS the measurement — a faster preview that reports the wrong
+         * typeface is worse than no preview. Verified against real stores that
+         * every measured token is byte-identical with the filter on and off.
+         */
+        const pageOrigin = new URL(guard.url).origin;
+        let blockedCount = 0;
+        await page.setRequestInterception(true);
+        page.on("request", (req) => {
+          try {
+            const verdict = shouldBlockRequest({
+              url: req.url(),
+              resourceType: req.resourceType(),
+              pageOrigin,
+            });
+            if (verdict.block) {
+              blockedCount++;
+              void req.abort().catch(() => {});
+            } else {
+              void req.continue().catch(() => {});
+            }
+          } catch {
+            // A handler that throws would hang the request forever. Letting it
+            // through is always the safe direction.
+            void req.continue().catch(() => {});
+          }
+        });
 
         // The functions below are serialized and run inside the store's page.
         // esbuild's keepNames transform can wrap inner arrow functions in a
@@ -247,6 +300,7 @@ export const blocksPreview = inngest.createFunction(
         // here to read, so JS stays ON. Only the page's own noise is skipped.
         page.setDefaultTimeout(Math.min(NAV_TIMEOUT_MS, dl.remaining()));
 
+        const navStart = Date.now();
         await page.goto(guard.url, {
           // `networkidle0` waits for chat widgets and trackers that never
           // settle on a busy storefront; `domcontentloaded` plus a short settle
@@ -260,6 +314,7 @@ export const blocksPreview = inngest.createFunction(
         await page
           .evaluate(() => document.fonts?.ready)
           .catch(() => undefined);
+        phase.nav = since(navStart);
 
         // Wait for the page to be worth measuring rather than for a fixed
         // number of seconds. Measured across five real storefronts: on the
@@ -267,24 +322,48 @@ export const blocksPreview = inngest.createFunction(
         // zero size several seconds after DOMContentLoaded, so calibration read
         // an unlaid-out page and found nothing. Best-effort — a store that
         // never satisfies it is still measured, just with whatever is there.
-        await page
+        /**
+         * Two questions, in order of usefulness — the single biggest latency
+         * win in this pipeline.
+         *
+         * The strong one first: is the buy button laid out? When it is, we're
+         * ready in a few hundred milliseconds and calibration gets the accent
+         * colour from the element the shopper actually clicks.
+         *
+         * The weak one as an escape hatch: has the page laid out AT ALL? Plenty
+         * of real stores never expose a buy button to a headless browser — a
+         * hidden quick-add template, a headless storefront, a shop that sells
+         * through Amazon — and the old code polled the strong question until
+         * the timeout expired every single time. Measured on one such store:
+         * 12.0s of a 17.9s preview, 67% of the run, spent waiting for something
+         * that was never going to arrive.
+         *
+         * So the strong wait is short, and failing it falls through to a much
+         * shorter settle check rather than to the floor. Fast stores are
+         * unaffected; hopeless ones stop costing twelve seconds to discover.
+         */
+        const readyStart = Date.now();
+        const sawButton = await page
           .waitForFunction(
             productPageIsReady,
-            // 8s, not 12: measured across real stores this never fires on the
-            // majority (their buy button genuinely isn't there under headless
-            // Chrome), and every one of those pays the full timeout. It's a
-            // head start when it works, not a gate.
-            { timeout: Math.min(8_000, Math.max(3_000, dl.remaining() - 60_000)), polling: 400 },
+            { timeout: Math.min(4_000, Math.max(1_500, dl.remaining() - 60_000)), polling: 250 },
             {
               buttonSelectors: BUY_BUTTON_SELECTORS,
               buttonTextPattern: BUY_BUTTON_TEXT.source,
               crossSellContainers: CROSS_SELL_CONTAINERS,
             },
           )
-          .catch(() =>
-            console.warn("[blocks] product page never reported ready — measuring as-is"),
-          );
-        await new Promise((r) => setTimeout(r, 800));
+          .then(() => true)
+          .catch(() => false);
+
+        if (!sawButton) {
+          await page
+            .waitForFunction(productPageSettled, { timeout: 2_500, polling: 250 })
+            .catch(() =>
+              console.warn("[blocks] page never settled — measuring as-is"),
+            );
+        }
+        phase.ready = since(readyStart);
 
         // A redirect can leave the origin we validated. WP-A closes exactly this
         // hole for the JSON fetch (lib/blocks/fetch-product.ts) because the URL
@@ -309,6 +388,7 @@ export const blocksPreview = inngest.createFunction(
         dl.assert("blocks-calibrate");
 
         // ── 1. Calibration ────────────────────────────────────────────────
+        const tokensStart = Date.now();
         const raw = await page.evaluate(collectDesignTokens, {
           buttonSelectors: BUY_BUTTON_SELECTORS,
           buttonTextPattern: BUY_BUTTON_TEXT.source,
@@ -327,6 +407,7 @@ export const blocksPreview = inngest.createFunction(
         const tokens = row.token_overrides
           ? applyTokenOverrides(measured, row.token_overrides)
           : measured;
+        const injectStart = Date.now();
 
         // Preview whichever block they picked. Before they've picked one, the
         // calibration panel stands in: it needs no input from them and shows
@@ -392,6 +473,8 @@ export const blocksPreview = inngest.createFunction(
           `[blocks] block ${framed.visiblePx}/${framed.height}px visible, anchor=${injected.anchor}`,
         );
 
+        phase.inject = since(injectStart);
+        const captureStart = Date.now();
         const after = await shoot(page);
 
         // ── 3. The same frame, without the block ──────────────────────────
@@ -407,6 +490,7 @@ export const blocksPreview = inngest.createFunction(
         await page.evaluate((y: number) => window.scrollTo(0, y), framed.scrollY);
         await new Promise((r) => setTimeout(r, 400));
         const before = await shoot(page);
+        phase.capture = since(captureStart);
 
         // (The block was already removed to take the "before" shot, so the page
         // is back to its original state at this point.)
@@ -473,6 +557,17 @@ export const blocksPreview = inngest.createFunction(
           .eq("id", projectId);
 
         browserOk = true;
+        /**
+         * One line per preview with the time each phase took.
+         *
+         * "The preview is slow" is not actionable; "ready 12004ms" is — that
+         * single number is what turned a vague complaint into the two-phase
+         * wait above. Kept in production because the phase that dominates
+         * varies by store, and averages hide it.
+         */
+        console.log(
+          `[blocks] preview ${projectId} — launch ${phase.launch ?? 0}ms${phase.cold ? " (cold)" : " (warm)"} · nav ${phase.nav ?? 0}ms · ready ${phase.ready ?? 0}ms · tokens ${phase.tokens ?? 0}ms · inject ${phase.inject ?? 0}ms · capture ${phase.capture ?? 0}ms · blocked ${blockedCount} req`,
+        );
         return { fallbacks: tokens.fallbacks.length };
       } finally {
         /**
@@ -503,7 +598,9 @@ export const blocksPreview = inngest.createFunction(
           durationMs: Date.now() - browserStartedAt,
           succeeded: browserOk,
         });
-        await closeQuietly(browser);
+        if (page) await page.close().catch(() => {});
+        if (releaseBrowser) await releaseBrowser();
+        else await closeQuietly(browser);
       }
     });
   },
