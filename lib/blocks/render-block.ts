@@ -236,10 +236,16 @@ ${shape.cardShadow ? `box-shadow:${shape.cardShadow};` : ""}
 .${p}__features--cards_3{grid-template-columns:repeat(3,1fr);}
 .${p}__features--cards_4{grid-template-columns:repeat(2,1fr);}
 .${p}__feature{padding:1.1rem;border:1px solid var(--ev-border);border-radius:var(--ev-radius);background:var(--ev-inset);}
+/* Each tinted surface declares a plain fallback FIRST, then color-mix.
+   color-mix landed in browsers in 2023; on anything older the declaration is
+   dropped, and without a fallback the accent circle and — much worse — the
+   highlighted "us" column simply vanish. The lifted column IS the comparison
+   pattern, so losing it silently on a merchant live storefront is not an
+   acceptable degradation. Old browsers now get a measured neutral tint. */
 /* The icon sits in a soft accent circle — the detail that makes this read as a
    feature grid rather than as three paragraphs in boxes. color-mix keeps the
    tint derived from the MEASURED accent instead of a second colour we chose. */
-.${p}__feature-icon{display:inline-flex;align-items:center;justify-content:center;width:2.5em;height:2.5em;border-radius:999px;background:color-mix(in srgb,var(--ev-accent) 14%,transparent);}
+.${p}__feature-icon{display:inline-flex;align-items:center;justify-content:center;width:2.5em;height:2.5em;border-radius:999px;background:var(--ev-inset);background:color-mix(in srgb,var(--ev-accent) 14%,transparent);}
 .${p}__feature-icon .${p}__icon{width:1.25em;height:1.25em;}
 .${p}__feature-title{margin:.75rem 0 0;font-family:var(--ev-font-heading);font-weight:var(--ev-weight-heading);font-size:1em;line-height:1.25;}
 .${p}__feature-line{margin:.35rem 0 0;font-size:.9em;opacity:.75;line-height:1.45;}
@@ -250,8 +256,8 @@ ${shape.cardShadow ? `box-shadow:${shape.cardShadow};` : ""}
 /* ── Comparison variants (design-references.md §2) ────────────────────────── */
 /* Our column is lifted so the shape of the answer reads before a single row
    does: tinted panel, accent header. */
-.${p}__ours-head{background:color-mix(in srgb,var(--ev-accent) 12%,transparent);color:var(--ev-accent);border-radius:var(--ev-radius) var(--ev-radius) 0 0;}
-.${p}__ours{background:color-mix(in srgb,var(--ev-accent) 6%,transparent);font-weight:600;}
+.${p}__ours-head{background:var(--ev-inset);background:color-mix(in srgb,var(--ev-accent) 12%,transparent);color:var(--ev-accent);border-radius:var(--ev-radius) var(--ev-radius) 0 0;}
+.${p}__ours{background:var(--ev-inset);background:color-mix(in srgb,var(--ev-accent) 6%,transparent);font-weight:600;}
 .${p}__theirs{opacity:.6;}
 .${p}__mark{display:inline-block;margin-right:.4em;font-weight:700;}
 .${p}__mark--win{color:var(--ev-accent);}

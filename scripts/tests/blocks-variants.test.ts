@@ -141,6 +141,44 @@ test("every catalogue type has variants, and every variant is reachable", () => 
  */
 const LAYOUT_GLYPHS = new Set(["—", "✓", "✗", "vs", "of", "-"]);
 
+/**
+ * Words the merchant (or the store) actually supplied — VALUES only.
+ *
+ * The first version of this built the set from `JSON.stringify(spec)`, which
+ * quietly admitted every JSON KEY and every identifier we chose ourselves. I
+ * probed it: `shipping`, `returns`, `available`, `title`, `label`, `detail`,
+ * `vendor` and `icon` were all "supplied", so a variant printing "Free
+ * shipping" as its own claim would have sailed through the one test written to
+ * stop exactly that. The test was checking the shape of our data structure, not
+ * the merchant's words.
+ *
+ * `icon` is skipped explicitly: those ids are a closed set WE picked, so their
+ * names are ours, not the merchant's, and must never license printing them.
+ */
+function suppliedWords(...sources: unknown[]): Set<string> {
+  const words = new Set<string>();
+  const visit = (node: unknown, key?: string) => {
+    if (key === "icon" || key === "type" || key === "variant") return;
+    if (typeof node === "string" || typeof node === "number") {
+      for (const w of String(node)
+        .replace(/[^\p{L}\p{N}£$€%.,'-]+/gu, " ")
+        .split(" ")) {
+        if (w) words.add(w);
+      }
+      return;
+    }
+    if (Array.isArray(node)) {
+      node.forEach((child) => visit(child));
+      return;
+    }
+    if (node && typeof node === "object") {
+      for (const [k, v] of Object.entries(node)) visit(v, k);
+    }
+  };
+  sources.forEach((s) => visit(s));
+  return words;
+}
+
 test("a variant never shows a word the merchant didn't supply", () => {
   /**
    * The rule that lets visual choice exist without reopening the truthfulness
@@ -162,13 +200,7 @@ test("a variant never shows a word the merchant didn't supply", () => {
     const variants = BLOCK_VARIANTS[entry.id];
     const baseline = new Set(textOf(render(spec, variants[0].id).html).split(" "));
 
-    // Everything the merchant and the store between them supplied.
-    const supplied = new Set(
-      (JSON.stringify(spec) + " " + JSON.stringify(PRODUCT))
-        .replace(/[^\p{L}\p{N}£$€%.,'-]+/gu, " ")
-        .split(" ")
-        .filter(Boolean),
-    );
+    const supplied = suppliedWords(spec);
 
     for (const v of variants.slice(1)) {
       const words = textOf(render(spec, v.id).html).split(" ").filter(Boolean);
