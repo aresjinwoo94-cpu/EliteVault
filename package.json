@@ -23,7 +23,8 @@
     "library:discover": "tsx --tsconfig scripts/library/tsconfig.json scripts/library/discover.mts",
     "library:verify": "tsx --tsconfig scripts/library/tsconfig.json scripts/library/verify.mts",
     "library:momentum": "tsx --tsconfig scripts/library/tsconfig.json scripts/library/momentum.mts",
-    "library:audit": "tsx --tsconfig scripts/library/tsconfig.json scripts/library/audit.mts"
+    "library:audit": "tsx --tsconfig scripts/library/tsconfig.json scripts/library/audit.mts",
+    "blocks:perf": "tsx --tsconfig scripts/tests/tsconfig.json --conditions=react-server scripts/blocks-perf.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
