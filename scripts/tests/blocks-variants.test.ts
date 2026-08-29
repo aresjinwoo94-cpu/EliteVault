@@ -197,15 +197,29 @@ test("a variant never shows a word the merchant didn't supply", () => {
   for (const entry of BLOCK_CATALOG) {
     const spec = SPECS[entry.id];
     assert.ok(spec, `no fixture for ${entry.id}`);
-    const variants = BLOCK_VARIANTS[entry.id];
-    const baseline = new Set(textOf(render(spec, variants[0].id).html).split(" "));
 
-    const supplied = suppliedWords(spec);
+    /**
+     * EVERY variant, including the default — and no baseline.
+     *
+     * The previous version did `variants.slice(1)` and allowed anything the
+     * FIRST variant printed. Both were holes a verifier walked through: the
+     * default of every type (two_col, row_line, cards_3, promise_led, tiles)
+     * was never asserted on at all, so an invented claim in a default passed
+     * the suite; and using our own renderer's output as the allowlist meant a
+     * default could launder words for all its siblings. The complaint that
+     * produced the last fix was that the allowlist "was checking our data
+     * shape, not their words" — a baseline built from our own HTML was the
+     * same mistake wearing a different hat, and a wider channel than the JSON
+     * keys it replaced.
+     *
+     * The allowlist is now only what the merchant and the store supplied.
+     */
+    const supplied = suppliedWords(spec, PRODUCT);
 
-    for (const v of variants.slice(1)) {
+    for (const v of BLOCK_VARIANTS[entry.id]) {
       const words = textOf(render(spec, v.id).html).split(" ").filter(Boolean);
       const invented = words.filter(
-        (w) => !baseline.has(w) && !supplied.has(w) && !LAYOUT_GLYPHS.has(w),
+        (w) => !supplied.has(w) && !LAYOUT_GLYPHS.has(w),
       );
       assert.deepEqual(
         invented,
@@ -337,4 +351,36 @@ test("no variant introduces a runtime request", () => {
       assert.ok(!/<link/i.test(html), `${entry.id}/${v.id}: link tag`);
     }
   }
+});
+
+test("every class the renderer emits has a CSS rule behind it", () => {
+  /**
+   * A class in the markup with no rule in the stylesheet is not cosmetic here.
+   * The block is injected into a merchant's own page, so an unstyled element
+   * does not fall back to "plain" — it inherits whatever the THEME says about
+   * that tag, which is the one thing this feature promises not to do. The
+   * `.ev-blk` scoping keeps our CSS off their page; this keeps their CSS off
+   * our block.
+   *
+   * It is also the drift alarm for WP-F. Every new variant adds markup, and a
+   * modifier class that was renamed on one side only produces exactly this.
+   */
+  const emitted = new Set<string>();
+  const styled = new Set<string>();
+
+  for (const entry of BLOCK_CATALOG) {
+    for (const v of BLOCK_VARIANTS[entry.id]) {
+      const { html, css } = render(SPECS[entry.id], v.id);
+      for (const m of html.matchAll(/\sclass="([^"]*)"/g)) {
+        for (const cls of m[1].split(/\s+/).filter(Boolean)) emitted.add(cls);
+      }
+      for (const sel of selectorsOf(css)) {
+        for (const m of sel.matchAll(/\.([A-Za-z0-9_-]+)/g)) styled.add(m[1]);
+      }
+    }
+  }
+
+  assert.ok(emitted.size > 10, "the scan found almost no markup — the walk is broken");
+  const dead = [...emitted].filter((c) => !styled.has(c)).sort();
+  assert.deepEqual(dead, [], `classes emitted with no CSS rule: ${dead.join(", ")}`);
 });

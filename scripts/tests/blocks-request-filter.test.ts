@@ -69,13 +69,12 @@ test("a store whose own domain contains a noisy name is not blocked", () => {
   assert.equal(req("https://notfacebook.net/px.js", "script", store).block, false);
 });
 
-test("analytics, ad pixels, chat and review widgets are blocked", () => {
+test("analytics, ad pixels and chat widgets are blocked", () => {
   for (const url of [
     "https://www.google-analytics.com/collect",
     "https://connect.facebook.net/en_US/fbevents.js",
     "https://static.hotjar.com/c/hotjar.js",
     "https://widget.intercom.io/widget/abc",
-    "https://cdn.judge.me/loader.js",
     "https://static.klaviyo.com/onsite/js/klaviyo.js",
     "https://analytics.tiktok.com/i18n/pixel/events.js",
   ]) {
@@ -135,4 +134,54 @@ test("a blocked verdict says why", () => {
   assert.equal(v.block, true);
   assert.match(v.reason ?? "", /domain:google-analytics\.com/);
   assert.match(req(`${STORE}/a.mp4`, "media").reason ?? "", /type:media/);
+});
+
+test("an entry with a path only blocks that path, not the whole domain", () => {
+  /**
+   * `google.com/ads` was written narrow on purpose. The matcher split the entry
+   * on "/" and compared only the host, so it silently meant "block everything
+   * Google serves" — and `licdn.com/px` meant "block LinkedIn's whole CDN".
+   * That is precisely the widening this file's header forbids: when in doubt,
+   * ALLOW, because an over-blocked request can change what we measure.
+   */
+  assert.equal(req("https://www.google.com/ads/beacon.js", "script").block, true);
+  assert.equal(req("https://www.google.com/shopping/product.png", "image").block, false);
+  assert.equal(req("https://i.pinimg.com/ct/pixel.gif", "image").block, true);
+  assert.equal(req("https://i.pinimg.com/originals/hero.jpg", "image").block, false);
+  assert.equal(req("https://static.licdn.com/px/t.gif", "image").block, true);
+  assert.equal(req("https://static.licdn.com/sc/h/logo.svg", "image").block, false);
+});
+
+test("a path entry still matches subdomains, and still refuses substrings", () => {
+  assert.equal(req("https://ads.google.com/ads/x.js", "script").block, true);
+  // `notgoogle.com` must not be caught by the `google.com/ads` entry.
+  assert.equal(req("https://notgoogle.com/ads/x.js", "script").block, false);
+});
+
+test("review widgets are never blocked — they are visible page content", () => {
+  /**
+   * These were filed under "misc trackers" and blocked. They are not trackers:
+   * they paint star ratings and review counts into the product page, and
+   * several ship their own stylesheet. Blocking them broke the two rules this
+   * file's header states outright — never change the capture, never drop
+   * third-party CSS — and produced a "before" of the merchant's own store with
+   * their reviews missing from it.
+   *
+   * A named test rather than a comment, because the pull to re-add them for
+   * speed will come back: they are genuinely heavy.
+   */
+  for (const host of [
+    "staticw2.yotpo.com",
+    "loox.io",
+    "cdn.judge.me",
+    "d3hw6dc1ow8pp2.cloudfront.net".replace(/^/, "api.okendo.io/"),
+    "cdn-widgetsrepository.yotpo.com",
+    "widget.reviews.io",
+    "widget.trustpilot.com",
+    "stamped.io",
+  ]) {
+    const url = `https://${host.split("/")[0]}/widget.js`;
+    assert.equal(req(url, "script").block, false, `${host} was blocked`);
+    assert.equal(req(url.replace(".js", ".css"), "stylesheet").block, false);
+  }
 });

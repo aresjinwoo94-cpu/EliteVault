@@ -1,5 +1,6 @@
 import "server-only";
 import type { Browser } from "puppeteer-core";
+import { createBrowserPool, type BrowserLease } from "./browser-pool";
 
 /**
  * Liquid Blocks WP-B — a headless browser, for this feature only.
@@ -115,11 +116,6 @@ export async function closeQuietly(browser: Browser | null): Promise<void> {
  * courtesy, not a correctness requirement.
  */
 
-let shared: Browser | null = null;
-/** In-flight launch, so two concurrent previews don't start two browsers. */
-let launching: Promise<Browser> | null = null;
-let idleTimer: NodeJS.Timeout | null = null;
-
 /** How long an unused browser is kept before being released. */
 const IDLE_MS = (() => {
   const raw = Number(process.env.BLOCKS_BROWSER_IDLE_MS);
@@ -131,52 +127,54 @@ function reuseEnabled(): boolean {
   return process.env.BLOCKS_BROWSER_REUSE !== "0";
 }
 
-/** How many previews are using the shared browser right now. */
-let leases = 0;
-
-function clearIdle(): void {
-  if (idleTimer) {
-    clearTimeout(idleTimer);
-    idleTimer = null;
-  }
-}
-
-function scheduleIdleRelease(): void {
-  clearIdle();
-  if (!shared) return;
-  idleTimer = setTimeout(() => {
-    // Only if nothing picked it up in the meantime.
-    if (leases === 0 && shared) {
-      const dying = shared;
-      shared = null;
-      void dying.close().catch(() => {});
-    }
-  }, IDLE_MS);
-  // Don't hold the process open just to close a browser later.
-  idleTimer.unref?.();
-}
+/** How long a health check may take before the browser counts as gone. */
+const HEALTH_CHECK_MS = 1_000;
 
 /** True when the handle still refers to a live browser we can drive. */
-async function isAlive(browser: Browser): Promise<boolean> {
+export async function isBrowserAlive(browser: Browser): Promise<boolean> {
   try {
     if (browser.connected === false) return false;
-    await browser.version();
-    return true;
+    /**
+     * Bounded, because this sits on the front door of every acquire.
+     *
+     * `browser.version()` is an unbounded CDP round trip. A DEAD browser
+     * rejects it promptly — but a WEDGED one (socket open, renderer
+     * unresponsive) never answers, and every subsequent preview then queues
+     * behind a health check that will not return. The check detected the
+     * failure it was written for and hung on the one it was not.
+     *
+     * A browser that cannot answer within a second is not one to hand to the
+     * next preview, so the timeout is treated as death.
+     */
+    let timer: NodeJS.Timeout | undefined;
+    const answered = await Promise.race([
+      browser.version().then(() => true),
+      new Promise<false>((r) => {
+        timer = setTimeout(() => r(false), HEALTH_CHECK_MS);
+        timer.unref?.();
+      }),
+    ]);
+    // Otherwise a fast health check leaves a pending timer behind on every
+    // acquire — harmless individually, a leak across a long-lived container.
+    if (timer) clearTimeout(timer);
+    return answered;
   } catch {
     return false;
   }
 }
 
+const pool = createBrowserPool({
+  launch: launchBlocksBrowser,
+  close: closeQuietly,
+  isAlive: isBrowserAlive,
+  idleMs: IDLE_MS,
+});
+
 /**
  * Get a browser to run one preview with, plus the release function to call when
  * done. The caller closes its PAGE; releasing does not close the browser.
  */
-export async function acquireBlocksBrowser(): Promise<{
-  browser: Browser;
-  release: () => Promise<void>;
-  /** True when this run paid for a cold launch. For the phase timings. */
-  coldStart: boolean;
-}> {
+export async function acquireBlocksBrowser(): Promise<BrowserLease> {
   if (!reuseEnabled()) {
     const browser = await launchBlocksBrowser();
     return {
@@ -185,45 +183,10 @@ export async function acquireBlocksBrowser(): Promise<{
       coldStart: true,
     };
   }
-
-  clearIdle();
-  let coldStart = false;
-
-  if (shared && !(await isAlive(shared))) {
-    // Died between runs — OOM, a reaped container, a page that took it down.
-    // Dropping the handle is the whole point of the health check.
-    console.warn("[blocks] shared browser was dead; relaunching");
-    shared = null;
-  }
-
-  if (!shared) {
-    // One launch even if several previews arrive at once.
-    if (!launching) {
-      coldStart = true;
-      launching = launchBlocksBrowser().finally(() => {
-        launching = null;
-      });
-    }
-    shared = await launching;
-  }
-
-  leases++;
-  const browser = shared;
-  return {
-    browser,
-    coldStart,
-    release: async () => {
-      leases = Math.max(0, leases - 1);
-      if (leases === 0) scheduleIdleRelease();
-    },
-  };
+  return pool.acquire();
 }
 
 /** Drop the shared browser now. For tests and for a clean shutdown. */
 export async function releaseSharedBrowser(): Promise<void> {
-  clearIdle();
-  leases = 0;
-  const dying = shared;
-  shared = null;
-  if (dying) await closeQuietly(dying);
+  await pool.releaseAll();
 }

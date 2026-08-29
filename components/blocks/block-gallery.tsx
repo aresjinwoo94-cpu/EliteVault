@@ -117,23 +117,46 @@ export function BlockGallery({
   onSelect: (type: CatalogBlockType) => void;
 }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    /*
+      A radio group, not seven toggle buttons.
+
+      `aria-pressed` said "pressed / not pressed" about each card with nothing
+      tying them together, so a screen reader announced seven independent
+      switches and never that choosing one un-chooses the rest — which is the
+      only thing a merchant needs to know here. Native radios are used rather
+      than `role="radio"` on a button because the browser then supplies arrow-key
+      navigation, roving focus and the "3 of 7, selected" position announcement;
+      hand-rolling those is how half-done radiogroups end up worse than the
+      buttons they replaced. The input is visually hidden, so the card is still
+      the whole target.
+    */
+    <div
+      role="radiogroup"
+      aria-label="Block type"
+      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
       {BLOCK_CATALOG.map((block) => {
         const active = selected === block.id;
         const variants = BLOCK_VARIANTS[block.id] ?? [];
         return (
-          <button
+          <label
             key={block.id}
-            type="button"
-            onClick={() => onSelect(block.id)}
-            aria-pressed={active}
             className={
-              "text-left rounded-xl border p-4 transition-all " +
+              "block cursor-pointer text-left rounded-xl border p-4 transition-all " +
+              "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-champagne-400/60 " +
               (active
                 ? "border-champagne-400/60 bg-white/[0.05] ring-1 ring-champagne-400/30"
                 : "border-white/[0.06] bg-card/30 hover:border-white/[0.16] hover:bg-card/50")
             }
           >
+            <input
+              type="radio"
+              name="ev-block-type"
+              value={block.id}
+              checked={active}
+              onChange={() => onSelect(block.id)}
+              className="sr-only"
+            />
             <Thumb type={block.id} />
 
             <p className="mt-3 text-sm font-medium text-white/90">{block.name}</p>
@@ -141,7 +164,14 @@ export function BlockGallery({
               {block.summary}
             </p>
 
-            <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px]">
+            {/*
+              12px floor, not 10px. The interactivity chip is the honesty label
+              this catalogue is built around — "static" vs "needs a developer" —
+              so setting it in the smallest, faintest type on the card put the
+              one disclosure that changes a buying decision at the bottom of the
+              legibility order.
+            */}
+            <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
               <span
                 className={
                   "rounded px-1.5 py-0.5 " +
@@ -153,7 +183,7 @@ export function BlockGallery({
                 {INTERACTIVITY_LABEL[block.interactivity]}
               </span>
               {variants.length > 1 && (
-                <span className="text-white/35">
+                <span className="text-white/55">
                   {variants.length} layouts
                 </span>
               )}
@@ -165,9 +195,9 @@ export function BlockGallery({
               the experience this tool is meant to replace.
             */}
             {block.limitation && (
-              <p className="mt-2 text-[11px] text-warning/80">{block.limitation}</p>
+              <p className="mt-2 text-xs text-warning/90">{block.limitation}</p>
             )}
-          </button>
+          </label>
         );
       })}
     </div>
@@ -194,28 +224,44 @@ export function VariantPicker({
 
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-widest text-white/40">Layout</p>
-      <div className="mt-2 flex flex-wrap gap-2">
+      <p id="ev-layout-label" className="text-xs uppercase tracking-widest text-white/55">
+        Layout
+      </p>
+      {/* Same radio-group reasoning as the gallery above. */}
+      <div
+        role="radiogroup"
+        aria-labelledby="ev-layout-label"
+        className="mt-2 flex flex-wrap gap-2"
+      >
         {variants.map((v) => (
-          <button
+          <label
             key={v.id}
-            type="button"
-            onClick={() => onChange(v.id)}
-            aria-pressed={current.id === v.id}
             className={
-              "rounded-lg border px-3 py-2 text-xs transition-colors " +
+              // min-h-11 is the 44px touch target the rest of the app holds to;
+              // px-3 py-2 on 12px type came out at about 33, which is a miss on
+              // a control a merchant taps repeatedly while comparing layouts.
+              "inline-flex min-h-11 cursor-pointer items-center rounded-lg border px-3 text-xs transition-colors " +
+              "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-champagne-400/60 " +
               (current.id === v.id
                 ? "border-champagne-400/50 bg-champagne-400/10 text-white"
-                : "border-white/[0.08] text-white/55 hover:text-white hover:border-white/20")
+                : "border-white/[0.08] text-white/70 hover:text-white hover:border-white/20")
             }
           >
+            <input
+              type="radio"
+              name={`ev-variant-${type}`}
+              value={v.id}
+              checked={current.id === v.id}
+              onChange={() => onChange(v.id)}
+              className="sr-only"
+            />
             {v.name}
-          </button>
+          </label>
         ))}
       </div>
-      <p className="mt-2 text-xs text-white/40">
+      <p className="mt-2 text-xs text-white/55">
         {current.summary}{" "}
-        <span className="text-white/30">On a phone: {current.mobile.toLowerCase()}</span>
+        <span className="text-white/45">On a phone: {current.mobile.toLowerCase()}</span>
       </p>
     </div>
   );

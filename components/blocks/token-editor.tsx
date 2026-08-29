@@ -158,7 +158,7 @@ export function TokenEditor({
                 />
               </div>
               {field.hint && !guessed && (
-                <p className="mt-1 text-[11px] text-white/30">{field.hint}</p>
+                <p className="mt-1 text-xs text-white/50">{field.hint}</p>
               )}
             </div>
           );

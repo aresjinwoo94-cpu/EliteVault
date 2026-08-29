@@ -221,6 +221,17 @@ ${shape.cardShadow ? `box-shadow:${shape.cardShadow};` : ""}
    Modifier classes on the same markup. Same content, same tree, different
    layout — which is what makes "a variant changes layout only" structural
    rather than a promise. */
+/* The default row. Its rule looks redundant against the base __trust, and
+   it is not: a class we EMIT with no rule behind it is a class whose
+   appearance is decided by the merchant stylesheet, not ours. The .ev-blk
+   scoping keeps our CSS off their page; declaring every modifier we emit is
+   what keeps their CSS off our block. This one also carries the variant's own
+   promise — "a quiet row… reads as part of the theme" — as the hairline that
+   gives it its name. */
+.${p}__trust--row_line{gap:1rem;}
+.${p}__trust--row_line .${p}__trust-item:not(:last-child){
+  border-right:1px solid var(--ev-border);padding-right:1rem;}
+@media (max-width:640px){.${p}__trust--row_line .${p}__trust-item{border-right:0;padding-right:0;}}
 .${p}__trust--boxed{gap:.75rem;}
 .${p}__trust--boxed .${p}__trust-item{padding:.9rem;border:1px solid var(--ev-border);border-radius:var(--ev-radius);background:var(--ev-inset);}
 .${p}__trust--stacked_2x2{grid-template-columns:repeat(2,1fr);}
@@ -265,12 +276,21 @@ ${shape.cardShadow ? `box-shadow:${shape.cardShadow};` : ""}
 .${p}__muted{opacity:.55;}
 .${p}__checklist{list-style:none;margin:.75rem 0 0;padding:0;display:grid;gap:.6rem;}
 .${p}__check-row{display:flex;gap:.6rem;align-items:flex-start;}
+/* The flex child that holds label + values. Left unstyled it is an inline
+   span, so the merchant theme decides how it wraps inside our row — and
+   min-width:0 is what stops a long claim from forcing the row wider than
+   the block. */
+.${p}__check-body{display:block;min-width:0;flex:1;}
 .${p}__check-label{display:block;font-weight:600;font-size:.95em;}
 .${p}__check-values{display:block;font-size:.9em;margin-top:.1rem;}
 @media (max-width:640px){
 /* Three columns cannot be read on a phone however carefully they're styled, so
    the table scrolls rather than crushing. The checklist variant exists for
    merchants who would rather it never came to that. */
+/* Declared even though it changes nothing against the base: see the note on
+   __trust--row_line. It also pins the contrast with --three, whose horizontal
+   scroll must not leak onto the two-column table. */
+.${p}__table--two{white-space:normal;}
 .${p}__table--three{display:block;overflow-x:auto;white-space:nowrap;}
 }
 .${p}__logo{max-height:40px;width:auto;display:block;margin-bottom:1rem;}

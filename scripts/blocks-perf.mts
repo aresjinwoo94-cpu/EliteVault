@@ -36,6 +36,7 @@ import {
   injectBlock,
   productPageIsReady,
   productPageSettled,
+  tokenSignature,
   removeBlock,
   frameBlock,
   scrollToPosition,
@@ -81,8 +82,14 @@ function fingerprint(t: DesignTokens): Record<string, string | number> {
     bodyFamily: t.type.bodyFamily,
     baseSizePx: t.type.baseSizePx,
     headingWeight: t.type.headingWeight,
+    bodyWeight: t.type.bodyWeight,
     radiusPx: t.shape.radiusPx,
     containerMaxWidthPx: t.shape.containerMaxWidthPx,
+    // Written straight into the block box-shadow, so a change here is visible
+    // on the merchant page. It was omitted, which meant a shadow changing to a
+    // different non-null value went unreported by the very check built to catch
+    // that. (palette.inset is derived from surface+textPrimary, both compared.)
+    cardShadow: t.shape.cardShadow ?? "none",
     fallbacks: t.fallbacks.slice().sort().join(","),
   };
 }
@@ -172,7 +179,10 @@ async function runOnce(
     const tokensStart = Date.now();
     await page.keyboard.press("Escape").catch(() => undefined);
     await page.evaluate(dismissOverlays, OVERLAY_SELECTORS);
-    const raw = await page.evaluate(collectDesignTokens, {
+
+    // Mirrors the pipeline read-until-stable loop. Without it this harness
+    // would report the latency of code that no longer exists.
+    const collectArgs = {
       buttonSelectors: BUY_BUTTON_SELECTORS,
       buttonTextPattern: BUY_BUTTON_TEXT.source,
       crossSellContainers: CROSS_SELL_CONTAINERS,
@@ -180,7 +190,19 @@ async function runOnce(
       containerSelectors: CONTAINER_SELECTORS,
       anchorSelectors: ANCHOR_SELECTORS,
       buyButtonAttr: BUY_BUTTON_ATTR,
-    });
+    };
+    let reading = await page.evaluate(collectDesignTokens, collectArgs);
+    let sig = tokenSignature(reading);
+    for (let i = 1; i <= 6; i++) {
+      await new Promise((r) => setTimeout(r, 400));
+      reading = await page.evaluate(collectDesignTokens, collectArgs);
+      const next = tokenSignature(reading);
+      if (next === sig) break;
+      sig = next;
+    }
+
+    // The reading the loop settled on, exactly as the pipeline does it.
+    const raw = reading;
     const tokens = normalizeDesignTokens(raw);
     phases.tokens = since(tokensStart);
 
@@ -352,13 +374,27 @@ try {
       `browser acquired (cold: ${lease.coldStart}) — every store below reuses it\n`,
     );
     let allIdentical = true;
+    let anyFailed = false;
+    /** Comparisons actually made. Zero means the run proved nothing. */
+    let compared = 0;
     for (const url of urls) {
       console.log(new URL(url).hostname);
-      const unfiltered = await runOnce(lease.browser, url, false);
-      const filtered = await runOnce(lease.browser, url, true);
+      let unfiltered: RunResult | null = null;
+      let filtered: RunResult | null = null;
+      try {
+        unfiltered = await runOnce(lease.browser, url, false);
+        filtered = await runOnce(lease.browser, url, true);
+      } catch (err) {
+        // A store that throws mid-run used to take the whole process with it,
+        // so the remaining stores were never measured. Measured on a mainstream
+        // store that threw on roughly one run in three.
+        console.log(`  ✗ threw: ${(err as Error).message.slice(0, 120)}`);
+        anyFailed = true;
+      }
       if (unfiltered) printRun(unfiltered);
       if (filtered) printRun(filtered);
       if (unfiltered && filtered) {
+        compared++;
         if (!compareTokens(unfiltered, filtered)) allIdentical = false;
         const delta = unfiltered.totalMs - filtered.totalMs;
         const pct = Math.round((delta / unfiltered.totalMs) * 100);
@@ -368,11 +404,28 @@ try {
       }
     }
     await lease.release();
+    /*
+     * "Unchanged" is a claim about comparisons that actually happened. When
+     * every store failed to load, nothing was compared — and printing the
+     * success line there reported a clean result for a run that measured
+     * nothing at all.
+     */
     console.log(
-      allIdentical
-        ? "All stores: measured tokens unchanged by the filter."
-        : "✗ At least one store measured differently with the filter on.",
+      compared === 0
+        ? "No store was measured — nothing to compare."
+        : allIdentical
+          ? `All ${compared} comparison(s): measured tokens unchanged by the filter.`
+          : "✗ At least one store measured differently with the filter on.",
     );
+    if (anyFailed) console.log("(one or more stores failed; see above)");
+    /**
+     * Exit non-zero when the acceptance condition fails.
+     *
+     * It printed the failure and exited 0, so anything checking $? read a
+     * failed fidelity check as a pass — which makes it unusable as a gate, and
+     * that is the whole reason it was committed.
+     */
+    if (!allIdentical || anyFailed || compared === 0) process.exitCode = 1;
   } else if (!wantsHealth) {
     console.error("Give me at least one product URL, or --health-check.");
     process.exit(1);

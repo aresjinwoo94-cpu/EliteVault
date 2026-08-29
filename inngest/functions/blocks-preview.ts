@@ -16,6 +16,7 @@ import {
   injectBlock,
   productPageIsReady,
   productPageSettled,
+  tokenSignature,
   removeBlock,
   reparentBlockToMain,
   frameBlock,
@@ -96,6 +97,14 @@ const GLOBAL_CONCURRENCY = (() => {
 
 /** Pixels of page kept above the block, so the shot shows what it attaches to. */
 const BLOCK_OFFSET_PX = 220;
+
+/**
+ * How many times a moving measurement is re-read before we take it anyway.
+ * Six reads at 400ms is up to ~2.4s — well under the 8s fixed wait it
+ * replaces, and only paid by the stores that need it.
+ */
+const TOKEN_STABILITY_READS = Number(process.env.BLOCKS_TOKEN_STABILITY_READS ?? 6);
+const TOKEN_STABILITY_GAP_MS = Number(process.env.BLOCKS_TOKEN_STABILITY_GAP_MS ?? 400);
 
 const STYLE_ID = "ev-blocks-preview-style";
 const BUCKET = "screenshots";
@@ -389,7 +398,7 @@ export const blocksPreview = inngest.createFunction(
 
         // ── 1. Calibration ────────────────────────────────────────────────
         const tokensStart = Date.now();
-        const raw = await page.evaluate(collectDesignTokens, {
+        const collectArgs = {
           buttonSelectors: BUY_BUTTON_SELECTORS,
           buttonTextPattern: BUY_BUTTON_TEXT.source,
           crossSellContainers: CROSS_SELL_CONTAINERS,
@@ -397,7 +406,53 @@ export const blocksPreview = inngest.createFunction(
           containerSelectors: CONTAINER_SELECTORS,
           anchorSelectors: ANCHOR_SELECTORS,
           buyButtonAttr: BUY_BUTTON_ATTR,
-        });
+        };
+
+        /**
+         * Measure until the measurement stops changing.
+         *
+         * A verifier caught the calibration being NON-DETERMINISTIC on a
+         * mainstream store: two identically-configured runs produced opposite
+         * palettes, because the read landed mid-render and whichever one the
+         * merchant drew was shown to them as "measured". That was the real cost
+         * of shortening the readiness wait from 8s to 4s — latency bought with
+         * measurement stability, and the commit that did it did not say so
+         * because it did not know.
+         *
+         * Restoring the 8s would fix it and charge every already-stable store
+         * eight seconds for the privilege. Two agreeing reads answer the actual
+         * question, and cost ~150ms when the page was ready all along.
+         */
+        // Only collectDesignTokens crosses into the page; the signature is
+        // taken from its RESULT, in Node. Passing tokenSignature to evaluate
+        // instead threw on every store, because puppeteer serializes the one
+        // function it is handed and the name it called did not exist there.
+        let reading = await page.evaluate(collectDesignTokens, collectArgs);
+        let signature = tokenSignature(reading);
+        for (let attempt = 1; attempt <= TOKEN_STABILITY_READS; attempt++) {
+          await new Promise((r) => setTimeout(r, TOKEN_STABILITY_GAP_MS));
+          reading = await page.evaluate(collectDesignTokens, collectArgs);
+          const next = tokenSignature(reading);
+          if (next === signature) break;
+          signature = next;
+          if (attempt === TOKEN_STABILITY_READS) {
+            // Still moving. Measured anyway — a late reading beats none — but
+            // the log is what turns "the colours look wrong" into a diagnosis.
+            console.warn(
+              `[blocks] tokens never settled for ${projectId} after ${TOKEN_STABILITY_READS} reads; measuring the last one`,
+            );
+          }
+        }
+
+        /**
+         * The reading the loop just proved stable — not a fresh one.
+         *
+         * Collecting again here would throw away the agreement we paid for and
+         * substitute an unverified read, which is the exact bug the loop exists
+         * to close: it would still be possible for the values that reach the
+         * merchant to be the ones taken mid-render. It also saves a round trip.
+         */
+        const raw = reading;
         const measured = normalizeDesignTokens(raw);
 
         // The merchant's corrections win over what we read — that's the point

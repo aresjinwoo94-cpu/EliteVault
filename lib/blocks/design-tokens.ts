@@ -463,6 +463,43 @@ function safeShadow(raw: string | null | undefined): string | null {
   return s;
 }
 
+/**
+ * The font stacks a browser reports when the page's own CSS names none.
+ *
+ * A Shopify theme always sets a family, so reading one of these back does not
+ * mean "this merchant chose Times New Roman" — it means the theme's CSS had not
+ * applied when we looked. WP-F.5 made that failure mode reachable in a new way:
+ * the request filter now drops third-party requests, and a stylesheet served
+ * from a host we misjudged would leave the page rendering in exactly this.
+ *
+ * The value is still USED. If the page really does render this way that is what
+ * the shopper sees, and the preview should match it. But it is recorded as a
+ * fallback, because "measured from your store" is the claim this entire feature
+ * rests on, and a browser default is not a measurement of anybody's design. It
+ * goes in the list the user is asked to confirm, like every other token we did
+ * not genuinely read.
+ */
+const BROWSER_DEFAULT_FONTS = new Set([
+  "times new roman",
+  "times",
+  "-webkit-standard",
+  "-apple-system-body",
+  "serif",
+  "sans-serif",
+]);
+
+/** True when a stack is only the browser's default, not a theme's choice. */
+export function isBrowserDefaultFont(stack: string | null): boolean {
+  if (!stack) return false;
+  const families = stack
+    .split(",")
+    .map((f) => f.trim().replace(/^["']|["']$/g, "").toLowerCase())
+    .filter(Boolean);
+  // Only when the WHOLE stack is defaults. A theme that ends its stack with a
+  // generic last resort has still made a choice in front of it.
+  return families.length > 0 && families.every((f) => BROWSER_DEFAULT_FONTS.has(f));
+}
+
 export function normalizeDesignTokens(raw: RawTokenSample): DesignTokens {
   const fallbacks: string[] = [];
   /** Take the measurement, or record that we're supplying this one ourselves. */
@@ -584,6 +621,10 @@ export function normalizeDesignTokens(raw: RawTokenSample): DesignTokens {
     "type.bodyFamily",
     LAST_RESORT.fontFamily,
   );
+  // Read, but chosen by nobody. See BROWSER_DEFAULT_FONTS.
+  if (isBrowserDefaultFont(bodyFamily) && !fallbacks.includes("type.bodyFamily")) {
+    fallbacks.push("type.bodyFamily");
+  }
   // A missing heading face inherits the body stack rather than being paired with
   // a "complementary" display font — picking one would be exactly the invention
   // this module exists to prevent.
@@ -592,6 +633,9 @@ export function normalizeDesignTokens(raw: RawTokenSample): DesignTokens {
     "type.headingFamily",
     bodyFamily,
   );
+  if (isBrowserDefaultFont(headingFamily) && !fallbacks.includes("type.headingFamily")) {
+    fallbacks.push("type.headingFamily");
+  }
   const baseSizePx = measured(
     parsePx(raw.bodyFontSize, 10, 32),
     "type.baseSizePx",

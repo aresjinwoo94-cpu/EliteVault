@@ -637,6 +637,46 @@ export function reparentBlockToMain(): boolean {
  * headline with real size on it? If yes, the theme has rendered and whatever we
  * can measure is measurable now. Waiting longer buys nothing.
  */
+/**
+ * A cheap signature of everything calibration will read.
+ *
+ * Exists so the caller can measure TWICE and check the answer stopped moving,
+ * instead of guessing at a fixed settle time. A verifier found the reason:
+ * on a mainstream Shopify store, two identically-configured runs produced
+ * OPPOSITE palettes — a dark navy panel with white text, or light grey with
+ * black — because the read landed mid-render. Whichever the merchant happened
+ * to draw was then presented to them as "✓ measured".
+ *
+ * A fixed 8s wait made it deterministic, which is how the problem was found,
+ * but it is the wrong instrument: it is 8 seconds of nothing on the stores that
+ * were already stable at 200ms, and still a guess on the ones that aren't.
+ * Asking whether the reading has stopped changing is the actual question.
+ *
+ * Runs in NODE, not in the page — it takes a reading rather than making one.
+ * The first version called collectDesignTokens itself, which looked tidier and
+ * was broken: page.evaluate serializes only the function it is handed, so the
+ * module-scope name did not exist on the other side and EVERY preview threw
+ * "collectDesignTokens is not defined". The perf harness caught it on the first
+ * real store; nothing in the unit suite could have, because the failure only
+ * exists across the serialization boundary.
+ */
+export function tokenSignature(t: CollectedTokens): string {
+  return [
+    t.bodyBackground,
+    t.bodyColor,
+    t.bodyFontFamily,
+    t.bodyFontSize,
+    t.headingFontFamily,
+    t.buttonBackground,
+    t.buttonColor,
+    t.buttonBorderRadius,
+    t.containerMaxWidth,
+    t.surfaceBackground,
+    t.cardShadow,
+    t.matchedButtonSelector,
+  ].join("|");
+}
+
 export function productPageSettled(): boolean {
   // A page still building itself has no height to speak of.
   if (document.body.getBoundingClientRect().height < 400) return false;

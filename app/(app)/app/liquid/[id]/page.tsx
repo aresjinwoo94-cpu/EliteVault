@@ -203,25 +203,6 @@ export default async function LiquidProjectPage({
             />
           </section>
 
-          {/*
-            Last, and only once there is a block to buy. Selling the download
-            above the proof would be asking for money before showing anything —
-            the preview is the argument, and this is what it argues for.
-          */}
-          <section>
-            <h2 className="text-sm font-medium text-white/70 mb-3">
-              Take it to your theme
-            </h2>
-            <ExportPanel
-              projectId={row.id}
-              paid={exportStatus.paid}
-              configured={exportStatus.configured}
-              unknown={exportStatus.unknown}
-              priceLabel={exportStatus.price?.formatted ?? null}
-              hasBlock={Boolean(row.block_spec)}
-              notConfiguredMessage={EXPORT_NOT_CONFIGURED}
-            />
-          </section>
         </>
       )}
       {/*
@@ -240,6 +221,25 @@ export default async function LiquidProjectPage({
             preview_after_url: row.preview_after_url,
             error: row.error,
           } satisfies PreviewProject}
+        />
+      </section>
+      {/*
+        Last, and only once there is a block to buy. Selling the download
+        above the proof would be asking for money before showing anything —
+        the preview is the argument, and this is what it argues for.
+      */}
+      <section>
+        <h2 className="text-sm font-medium text-white/70 mb-3">
+          Take it to your theme
+        </h2>
+        <ExportPanel
+          projectId={row.id}
+          paid={exportStatus.paid}
+          configured={exportStatus.configured}
+          unknown={exportStatus.unknown}
+          priceLabel={exportStatus.price?.formatted ?? null}
+          hasBlock={Boolean(row.block_spec)}
+          notConfiguredMessage={EXPORT_NOT_CONFIGURED}
         />
       </section>
     </div>

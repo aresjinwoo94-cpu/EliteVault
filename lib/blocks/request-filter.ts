@@ -76,10 +76,26 @@ const NOISY_DOMAINS = [
   // video
   "youtube.com", "ytimg.com", "vimeo.com", "vimeocdn.com", "wistia.com",
   "wistia.net", "brightcove.com",
-  // misc trackers
-  "trustpilot.com", "yotpo.com", "okendo.io", "stamped.io",
-  "loox.io", "judge.me", "reviews.io", "shopperapproved.com",
 ];
+
+/**
+ * Review widgets are NOT on that list, and were removed from it deliberately.
+ *
+ * Yotpo, Loox, Judge.me, Okendo, Stamped, Trustpilot and Reviews.io were all
+ * filed under "misc trackers". They are not trackers. They render star ratings
+ * and review counts into the product page, and several inject their own
+ * stylesheet — so blocking them does two things this file's header explicitly
+ * forbids: it changes the BEFORE capture, and it drops third-party CSS.
+ *
+ * The merchant then opens a before/after of their own store with their reviews
+ * missing from the "before". Of everything that can go wrong in this preview,
+ * that is the worst kind: it is not subtly wrong, it is visibly wrong, on the
+ * exact element social-proof blocks sit next to — and it invites them to
+ * distrust the measurement, which is the only thing we are selling.
+ *
+ * They are heavy. Keeping them is the cost of the header's rule holding for
+ * real: when in doubt, ALLOW.
+ */
 
 export interface RequestVerdict {
   block: boolean;
@@ -96,10 +112,36 @@ function hostOf(url: string): string | null {
   }
 }
 
-/** True when `host` is `domain` or a subdomain of it — never a substring match. */
-function matchesDomain(host: string, domain: string): boolean {
-  const d = domain.split("/")[0];
-  return host === d || host.endsWith(`.${d}`);
+/** Pathname of a URL, or "/" when it isn't parseable. */
+function pathOf(url: string): string {
+  try {
+    return new URL(url).pathname;
+  } catch {
+    return "/";
+  }
+}
+
+/**
+ * True when a request matches a list entry.
+ *
+ * An entry is either a bare domain (`criteo.com`) or a domain plus a path
+ * prefix (`google.com/ads`). The domain half is matched as a SUFFIX, never a
+ * substring, so `foo.segment.io` matches and `mysegment.io` does not.
+ *
+ * The path half used to be dropped on the floor: the entry was split on "/" and
+ * only the host was compared, which quietly turned `google.com/ads` into "block
+ * everything Google serves" and `licdn.com/px` into "block LinkedIn's whole
+ * CDN". Those entries were written narrow ON PURPOSE — the header's rule is
+ * that when in doubt we ALLOW — so widening them silently was the one thing
+ * this file says it must not do. Now the path is honoured: the hostname has to
+ * match AND the pathname has to start with the prefix.
+ */
+function matchesEntry(host: string, pathname: string, entry: string): boolean {
+  const slash = entry.indexOf("/");
+  const domain = slash === -1 ? entry : entry.slice(0, slash);
+  if (host !== domain && !host.endsWith(`.${domain}`)) return false;
+  if (slash === -1) return true;
+  return pathname.startsWith(entry.slice(slash));
 }
 
 export function shouldBlockRequest(req: {
@@ -160,9 +202,10 @@ export function shouldBlockRequest(req: {
     return { block: false };
   }
 
-  for (const domain of NOISY_DOMAINS) {
-    if (matchesDomain(host, domain)) {
-      return { block: true, reason: `domain:${domain}` };
+  const path = pathOf(req.url);
+  for (const entry of NOISY_DOMAINS) {
+    if (matchesEntry(host, path, entry)) {
+      return { block: true, reason: `domain:${entry}` };
     }
   }
 

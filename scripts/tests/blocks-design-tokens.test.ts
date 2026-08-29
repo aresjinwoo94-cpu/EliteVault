@@ -357,3 +357,34 @@ test("the border colour is derived from the measured palette, not picked", () =>
   assert.match(light.palette.border, /^#[0-9a-f]{6}$/);
   assert.match(dark.palette.border, /^#[0-9a-f]{6}$/);
 });
+
+test("a browser-default font is used but declared as a fallback", () => {
+  /**
+   * A Shopify theme always names a family. Reading "Times New Roman" back means
+   * the theme's CSS had not applied when we looked — a failure mode WP-F.5 made
+   * newly reachable, since the request filter now drops third-party requests and
+   * a stylesheet on a host we misjudged would leave the page rendering in
+   * exactly this.
+   *
+   * The value is still USED: if the page really renders that way, that is what
+   * the shopper sees. But "measured from your store" is the claim this whole
+   * feature rests on, and a browser default is not a measurement of anybody's
+   * design, so it goes in the list the user is asked to confirm.
+   */
+  const t = normalizeDesignTokens({
+    ...SAMPLE,
+    bodyFontFamily: "Times New Roman",
+    headingFontFamily: '"Times New Roman", serif',
+  });
+  assert.equal(t.type.bodyFamily, "Times New Roman", "the reading is still honoured");
+  assert.ok(t.fallbacks.includes("type.bodyFamily"));
+  assert.ok(t.fallbacks.includes("type.headingFamily"));
+});
+
+test("a real theme stack ending in a generic is not called a fallback", () => {
+  // Nearly every well-built stack ends with `sans-serif`. Flagging those would
+  // put the entire catalogue in the "we guessed" list and make the disclosure
+  // worthless — the signal only means something if it is rare.
+  const t = normalizeDesignTokens({ ...SAMPLE, bodyFontFamily: "Assistant, sans-serif" });
+  assert.ok(!t.fallbacks.includes("type.bodyFamily"));
+});
