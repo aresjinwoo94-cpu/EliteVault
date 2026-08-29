@@ -264,6 +264,12 @@ export interface RawTokenSample {
    * appears nowhere on their page. Absent/undefined means "visible".
    */
   buttonWasVisible?: boolean;
+  /** The family that actually rendered, resolved in-page. See collect-tokens. */
+  bodyFontFamilyApplied?: string | null;
+  headingFontFamilyApplied?: string | null;
+  /** Diagnostics: which element the type was read from. */
+  matchedBodyTextSelector?: string | null;
+  matchedHeadingSelector?: string | null;
 }
 
 /**
@@ -500,6 +506,31 @@ export function isBrowserDefaultFont(stack: string | null): boolean {
   return families.length > 0 && families.every((f) => BROWSER_DEFAULT_FONTS.has(f));
 }
 
+/**
+ * The stack to render the block in, led by the face that actually rendered.
+ *
+ * The declared stack is what the theme ASKED for; `applied` is what the browser
+ * used. When they differ — a webfont that failed, a licensed face absent from
+ * this machine — writing the declared stack into the block would style it in a
+ * font the merchant's shopper does not get, while the before/after capture
+ * beside it shows the one they do. Leading with the applied family keeps the
+ * block, the capture and the storefront on the same typeface, and the rest of
+ * the theme's stack stays behind it as the theme's own fallbacks.
+ */
+function stackLedByApplied(
+  declared: string | null,
+  applied: string | null | undefined,
+): string | null {
+  if (!declared) return null;
+  if (!applied) return declared;
+  const quoted = /\s/.test(applied) && !/^["']/.test(applied) ? '"' + applied + '"' : applied;
+  const rest = declared
+    .split(",")
+    .map((f) => f.trim())
+    .filter((f) => f && f.replace(/^["']|["']$/g, "").toLowerCase() !== applied.toLowerCase());
+  return [quoted, ...rest].join(", ");
+}
+
 export function normalizeDesignTokens(raw: RawTokenSample): DesignTokens {
   const fallbacks: string[] = [];
   /** Take the measurement, or record that we're supplying this one ourselves. */
@@ -617,23 +648,41 @@ export function normalizeDesignTokens(raw: RawTokenSample): DesignTokens {
 
   // ── Type ─────────────────────────────────────────────────────────────────
   const bodyFamily = measured(
-    safeFontStack(raw.bodyFontFamily),
+    safeFontStack(stackLedByApplied(raw.bodyFontFamily, raw.bodyFontFamilyApplied)),
     "type.bodyFamily",
     LAST_RESORT.fontFamily,
   );
-  // Read, but chosen by nobody. See BROWSER_DEFAULT_FONTS.
-  if (isBrowserDefaultFont(bodyFamily) && !fallbacks.includes("type.bodyFamily")) {
+  /*
+   * Read, but chosen by nobody — declared rather than claimed as measured.
+   *
+   * Two ways to land here. The name check catches a stack that IS a browser
+   * default ("Times New Roman" alone, which is what brooklinen's <body>
+   * computes to). `bodyFontFamilyApplied === null` catches the other: a real
+   * stack in which nothing resolved, so the browser fell through to its own
+   * default and the name check would have seen a perfectly respectable stack.
+   */
+  const bodyUnresolved =
+    raw.bodyFontFamilyApplied === null && Boolean(raw.bodyFontFamily);
+  if (
+    (isBrowserDefaultFont(bodyFamily) || bodyUnresolved) &&
+    !fallbacks.includes("type.bodyFamily")
+  ) {
     fallbacks.push("type.bodyFamily");
   }
   // A missing heading face inherits the body stack rather than being paired with
   // a "complementary" display font — picking one would be exactly the invention
   // this module exists to prevent.
   const headingFamily = measured(
-    safeFontStack(raw.headingFontFamily),
+    safeFontStack(stackLedByApplied(raw.headingFontFamily, raw.headingFontFamilyApplied)),
     "type.headingFamily",
     bodyFamily,
   );
-  if (isBrowserDefaultFont(headingFamily) && !fallbacks.includes("type.headingFamily")) {
+  const headingUnresolved =
+    raw.headingFontFamilyApplied === null && Boolean(raw.headingFontFamily);
+  if (
+    (isBrowserDefaultFont(headingFamily) || headingUnresolved) &&
+    !fallbacks.includes("type.headingFamily")
+  ) {
     fallbacks.push("type.headingFamily");
   }
   const baseSizePx = measured(

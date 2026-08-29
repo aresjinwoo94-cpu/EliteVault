@@ -16,6 +16,8 @@ import {
   injectBlock,
   productPageIsReady,
   productPageSettled,
+  fontsSettled,
+  fontFaceCount,
   tokenSignature,
   removeBlock,
   reparentBlockToMain,
@@ -97,6 +99,11 @@ const GLOBAL_CONCURRENCY = (() => {
 
 /** Pixels of page kept above the block, so the shot shows what it attaches to. */
 const BLOCK_OFFSET_PX = 220;
+
+/** How many times the face set may grow before we stop waiting on it. */
+const FONT_SETTLE_ROUNDS = Number(process.env.BLOCKS_FONT_SETTLE_ROUNDS ?? 4);
+/** Ceiling on any single wait for the face set to finish loading. */
+const FONT_WAIT_MS = Number(process.env.BLOCKS_FONT_WAIT_MS ?? 8_000);
 
 /**
  * How many times a moving measurement is re-read before we take it anyway.
@@ -409,6 +416,40 @@ export const blocksPreview = inngest.createFunction(
         };
 
         /**
+         * Let the web fonts finish before reading any of them.
+         *
+         * There was no font wait at all. Two files documented one — the request
+         * filter's header cites `document.fonts.ready` as the reason it never
+         * blocks a font request — and no code ever awaited it, so every
+         * typographic reading raced the swap. That is what produced two
+         * different heading faces on two runs of the same store.
+         *
+         * `fonts.ready` alone is not enough either: it settles for the faces
+         * known when it is called, and a storefront that hydrates after first
+         * paint asks for more afterwards. So we wait for the set to be loaded
+         * AND to have stopped growing. Polled in-page by waitForFunction —
+         * there is no fixed sleep on either side of this.
+         */
+        const fontWaitStart = Date.now();
+        try {
+          await page.evaluate(() => document.fonts.ready.then(() => undefined));
+          let seen = -1;
+          for (let i = 0; i < FONT_SETTLE_ROUNDS; i++) {
+            const count = await page.evaluate(fontFaceCount);
+            if (count === seen) break;
+            seen = count;
+            await page.waitForFunction(fontsSettled, { polling: 100, timeout: FONT_WAIT_MS }, count);
+          }
+        } catch {
+          // A store that never settles still gets a preview. The stability loop
+          // below is the backstop, and it can now SEE a font swap because the
+          // signature carries the resolved family rather than the declared
+          // stack — which reads identically before and after one.
+          console.warn(`[blocks] fonts never settled for ${projectId}; measuring anyway`);
+        }
+        phase.fontWait = since(fontWaitStart);
+
+        /**
          * Measure until the measurement stops changing.
          *
          * A verifier caught the calibration being NON-DETERMINISTIC on a
@@ -427,13 +468,31 @@ export const blocksPreview = inngest.createFunction(
         // taken from its RESULT, in Node. Passing tokenSignature to evaluate
         // instead threw on every store, because puppeteer serializes the one
         // function it is handed and the name it called did not exist there.
+        /**
+         * Stability is not the same as correctness, and treating them as one
+         * left a second flake behind.
+         *
+         * A page whose buy button has not laid out yet reads "no accent" — and
+         * reads it again 400ms later. Two agreeing readings, loop satisfied,
+         * and the merchant is told their accent colour is one WE picked. Across
+         * six runs of the same store it landed either way, which is precisely
+         * the coin-flip the loop exists to remove.
+         *
+         * So a reading only counts as settled when it has the tokens worth
+         * waiting for. The accent is the one that qualifies: it is the single
+         * most visible value in the finished block, and unlike a shadow or a
+         * radius its absence is not a legitimate answer about a storefront.
+         */
+        const stillMissingKeyTokens = (r: typeof reading): boolean =>
+          r.matchedButtonSelector === null || r.buttonWasVisible === false;
+
         let reading = await page.evaluate(collectDesignTokens, collectArgs);
         let signature = tokenSignature(reading);
         for (let attempt = 1; attempt <= TOKEN_STABILITY_READS; attempt++) {
           await new Promise((r) => setTimeout(r, TOKEN_STABILITY_GAP_MS));
           reading = await page.evaluate(collectDesignTokens, collectArgs);
           const next = tokenSignature(reading);
-          if (next === signature) break;
+          if (next === signature && !stillMissingKeyTokens(reading)) break;
           signature = next;
           if (attempt === TOKEN_STABILITY_READS) {
             // Still moving. Measured anyway — a late reading beats none — but

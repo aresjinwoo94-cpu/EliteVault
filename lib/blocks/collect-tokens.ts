@@ -161,9 +161,44 @@ export interface CollectedTokens {
   surfaceBackground: string | null;
   /** False when the button we read exists but isn't laid out. See design-tokens. */
   buttonWasVisible: boolean;
+  /**
+   * The single family that ACTUALLY rendered, resolved from the stack above.
+   *
+   * `getComputedStyle().fontFamily` returns what the CSS asked for, not what the
+   * browser used. Those differ whenever a face is missing or hasn't loaded, and
+   * the difference is invisible in the string — which is why the whole stability
+   * loop was blind to font swaps: the declared stack reads identically before
+   * and after the swap, so two agreeing reads proved nothing about typography.
+   */
+  bodyFontFamilyApplied: string | null;
+  headingFontFamilyApplied: string | null;
   /** Diagnostics — which selector actually matched, for the PR and for support. */
   matchedButtonSelector: string | null;
   matchedAnchorSelector: string | null;
+  /** Where the type was read from. `body`/`h1` mean we fell back to the old way. */
+  matchedBodyTextSelector: string | null;
+  matchedHeadingSelector: string | null;
+}
+
+/**
+ * Are the page's web fonts done loading?
+ *
+ * Polled by the caller through `waitForFunction`, so there is no fixed sleep on
+ * either side. `document.fonts.ready` alone is not enough: it resolves for the
+ * faces known at the moment it is called, and a storefront that hydrates after
+ * first paint requests more afterwards. Checking that the set has stopped
+ * GROWING as well as finished loading is what makes the answer stable.
+ */
+export function fontsSettled(previousCount: number): boolean {
+  const set = document.fonts;
+  if (!set) return true;
+  if (set.status !== "loaded") return false;
+  return set.size === previousCount;
+}
+
+/** How many faces the document knows about right now. See fontsSettled. */
+export function fontFaceCount(): number {
+  return document.fonts ? document.fonts.size : 0;
 }
 
 /**
@@ -191,6 +226,207 @@ export function collectDesignTokens(args: {
 
   const styleOf = (el: Element | null): CSSStyleDeclaration | null =>
     el ? window.getComputedStyle(el) : null;
+
+  /**
+   * Which family in the stack the browser ACTUALLY used.
+   *
+   * The measurement this feature sells rests on this being right, and
+   * `getComputedStyle` cannot answer it: it reports the stack the CSS asked
+   * for, unchanged, whether the first family loaded, failed, or never existed.
+   * Reading it and calling the first entry "your font" is how a block gets
+   * rendered in a typeface the merchant's shopper has never seen.
+   *
+   * Resolved by measurement rather than by asking. `document.fonts.check()`
+   * looks like the right tool and is not: per spec it returns TRUE for a family
+   * matching nothing at all, because no loading is required in order to fall
+   * back — so it cannot separate "installed" from "absent". Rendering the same
+   * string with and without the candidate in front of a baseline generic can:
+   * if the candidate resolves to anything real, the advance width moves.
+   *
+   * Three baselines, because a face metrically compatible with one generic
+   * (Arial/Helvetica, the Georgia clones) would otherwise read as absent. A
+   * face identical to all three does not occur in practice.
+   *
+   * Defined INSIDE the collector on purpose. page.evaluate serializes only the
+   * function it is handed, so a module-scope helper is not there on the other
+   * side — the mistake that made every preview throw once already.
+   */
+  const GENERICS = [
+    "serif", "sans-serif", "monospace", "cursive", "fantasy",
+    "system-ui", "ui-serif", "ui-sans-serif", "ui-monospace", "ui-rounded",
+    "math", "emoji", "fangsong",
+  ];
+  const probeCanvas = document.createElement("canvas");
+  const probeCtx = probeCanvas.getContext("2d");
+  const resolveApplied = (stack: string | null, weight: string | null): string | null => {
+    const families = (stack ?? "")
+      .split(",")
+      .map((f) => f.trim().replace(/^["']|["']$/g, ""))
+      .filter(Boolean);
+    if (families.length === 0) return null;
+    // No canvas (blocked, or a headless quirk): report what was asked for
+    // rather than inventing a resolution we could not perform.
+    if (!probeCtx) return families[0];
+
+    const w = weight && /^\d+$/.test(weight) ? weight : "400";
+    const probe = "mmmwwwiiilllMMMWWW0123456789";
+    const widthOf = (font: string): number => {
+      probeCtx.font = font;
+      return probeCtx.measureText(probe).width;
+    };
+    for (let i = 0; i < families.length; i++) {
+      const family = families[i];
+      if (GENERICS.indexOf(family.toLowerCase()) !== -1) return family;
+      const quoted = '"' + family.replace(/"/g, "") + '"';
+      for (let b = 0; b < 3; b++) {
+        const base = b === 0 ? "monospace" : b === 1 ? "sans-serif" : "serif";
+        const without = widthOf(w + " 72px " + base);
+        const withIt = widthOf(w + " 72px " + quoted + ", " + base);
+        // A tenth of a pixel over 28 glyphs at 72px is far outside rounding.
+        if (Math.abs(withIt - without) > 0.1) return family;
+      }
+    }
+    // Nothing in the stack resolved: the browser is painting its own default.
+    // Saying so is the point — design-tokens declares it rather than claiming
+    // it was measured.
+    return null;
+  };
+
+  const mainScope =
+    document.querySelector("main") ??
+    document.querySelector("[role='main']") ??
+    document.querySelector("#MainContent") ??
+    document.body;
+
+  /**
+   * The element whose type actually represents the page's body copy.
+   *
+   * `document.body` was the old answer and it is wrong on any theme that sets
+   * its fonts on inner elements instead, which is most of them. Verified live:
+   * brooklinen's `body` computes to "Times New Roman", so every block we built
+   * for them was set in a browser default their shopper never sees — and
+   * reported as measured.
+   *
+   * Picks by weight of evidence: the laid-out element carrying the most DIRECT
+   * text at a plausible body size. Direct text only, so a wrapper cannot win by
+   * merely containing everything below it.
+   */
+  const findBodyText = (): { el: Element | null; selector: string | null } => {
+    if (!mainScope) return { el: document.body, selector: "body (no main)" };
+
+    /*
+     * The DOMINANT body face, not the single longest run of text.
+     *
+     * "Whichever element has the most text" was the first answer and it flapped:
+     * across six runs of one store it returned Brandon Bold once and Brandon
+     * Regular the next, because a lazily-loaded section changed which element
+     * happened to be longest. Both readings were true about some element; the
+     * question is which face the page is SET in, and that is a property of the
+     * page as a whole.
+     *
+     * Totalling characters per font stack answers it, and is stable under
+     * exactly the churn that broke the other approach: a section arriving late
+     * adds to a total rather than changing a winner.
+     */
+    const charsByStack: Record<string, number> = {};
+    const exemplarByStack: Record<string, Element> = {};
+
+    const candidates = mainScope.querySelectorAll("p, li, dd, figcaption, span, div, a");
+    for (let i = 0; i < candidates.length; i++) {
+      const el = candidates[i];
+      let direct = "";
+      for (let j = 0; j < el.childNodes.length; j++) {
+        const n = el.childNodes[j];
+        if (n.nodeType === 3) direct += n.nodeValue ?? "";
+      }
+      direct = direct.trim();
+      if (direct.length < 25) continue;
+
+      const cs = window.getComputedStyle(el);
+      if (cs.visibility === "hidden" || cs.display === "none" || cs.opacity === "0") continue;
+      const size = parseFloat(cs.fontSize);
+      // Body copy: not micro-print, and not a headline wearing a <p>.
+      if (!(size >= 11 && size <= 24)) continue;
+      // Bold is emphasis or a subheading, and many themes ship a separate bold
+      // face — reading one gave "BrandonTextWeb-Bold" as the body font, which
+      // would have set every paragraph of the block in it.
+      const weight = parseFloat(cs.fontWeight);
+      if (Number.isFinite(weight) && weight >= 600) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 80 || r.height < 8) continue;
+
+      const stack = cs.fontFamily;
+      if (!stack) continue;
+      charsByStack[stack] = (charsByStack[stack] ?? 0) + direct.length;
+      // First element seen for a stack, so the exemplar is stable in DOM order
+      // rather than depending on which one is longest.
+      if (!exemplarByStack[stack]) exemplarByStack[stack] = el;
+    }
+
+    let winner: string | null = null;
+    let winnerChars = 0;
+    const stacks = Object.keys(charsByStack);
+    for (let i = 0; i < stacks.length; i++) {
+      const stack = stacks[i];
+      // Strictly greater, so a tie keeps the earlier stack and the answer does
+      // not depend on key order.
+      if (charsByStack[stack] > winnerChars) {
+        winnerChars = charsByStack[stack];
+        winner = stack;
+      }
+    }
+    if (!winner) return { el: document.body, selector: "body (no body copy found)" };
+    const el = exemplarByStack[winner];
+    return {
+      el,
+      selector: el.tagName.toLowerCase() + " (dominant of " + stacks.length + " stacks)",
+    };
+  };
+
+  /**
+   * The product title, or the closest thing to it.
+   *
+   * Ordered by how sure we are it is THE heading rather than a rail or promo
+   * heading. The old `h1 ?? h2` coin-flip is what produced two different faces
+   * on two runs of the same store: whichever happened to exist when we looked.
+   */
+  const findHeading = (): { el: Element | null; selector: string | null } => {
+    const ordered = [
+      ".product__title h1",
+      ".product-single__title",
+      "[class*='product'][class*='title'] h1",
+      "h1",
+      "[class*='product'][class*='title']",
+      "h2",
+    ];
+    const scope = mainScope ?? document.body;
+    for (let i = 0; i < ordered.length; i++) {
+      try {
+        const found = scope.querySelectorAll(ordered[i]);
+        for (let j = 0; j < found.length; j++) {
+          const el = found[j];
+          const r = el.getBoundingClientRect();
+          const cs = window.getComputedStyle(el);
+          if (
+            r.width >= 40 &&
+            r.height >= 8 &&
+            cs.visibility !== "hidden" &&
+            cs.display !== "none" &&
+            (el.textContent ?? "").trim().length > 0
+          ) {
+            return { el, selector: ordered[i] };
+          }
+        }
+      } catch {
+        /* invalid selector */
+      }
+    }
+    const any = document.querySelector("h1") ?? document.querySelector("h2");
+    return {
+      el: any,
+      selector: any ? any.tagName.toLowerCase() + " (not laid out)" : null,
+    };
+  };
 
   const firstMatch = (
     selectors: string[],
@@ -374,8 +610,9 @@ export function collectDesignTokens(args: {
     return { el: null, selector: null };
   };
 
-  const body = document.body;
-  const bodyStyle = styleOf(body);
+  // Where the type is READ from. Not document.body — see findBodyTextElement.
+  const bodyText = findBodyText();
+  const bodyStyle = styleOf(bodyText.el);
 
   const button = findBuyButton();
   const buttonStyle = styleOf(button.el);
@@ -384,8 +621,8 @@ export function collectDesignTokens(args: {
   // again by removeBlock.
   if (button.el) button.el.setAttribute(args.buyButtonAttr, "1");
 
-  const heading = document.querySelector("h1") ?? document.querySelector("h2");
-  const headingStyle = styleOf(heading);
+  const headingPick = findHeading();
+  const headingStyle = styleOf(headingPick.el);
 
   const surface = firstMatch(surfaceSelectors);
   const container = firstMatch(containerSelectors);
@@ -415,6 +652,16 @@ export function collectDesignTokens(args: {
     containerMaxWidth: containerStyle?.maxWidth ?? null,
     cardShadow: shadow,
     surfaceBackground: surface.el ? paintedAncestor(surface.el) : null,
+    bodyFontFamilyApplied: resolveApplied(
+      bodyStyle?.fontFamily ?? null,
+      bodyStyle?.fontWeight ?? null,
+    ),
+    headingFontFamilyApplied: resolveApplied(
+      headingStyle?.fontFamily ?? null,
+      headingStyle?.fontWeight ?? null,
+    ),
+    matchedBodyTextSelector: bodyText.selector,
+    matchedHeadingSelector: headingPick.selector,
     buttonWasVisible: button.el ? laidOut(button.el) : false,
     matchedButtonSelector: button.selector,
     matchedAnchorSelector: anchor.selector,

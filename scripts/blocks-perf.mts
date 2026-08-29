@@ -12,6 +12,7 @@
  *   npm run blocks:perf -- <product-url> [more urls…]
  *   npm run blocks:perf -- --concurrent=2 <url> <url>
  *   npm run blocks:perf -- --health-check
+ *   npm run blocks:perf -- --determinism=3 <url> [more urls…]
  *
  * Needs a real Chrome. Set BLOCKS_CHROME_PATH, the same variable the pipeline
  * uses locally — the @sparticuz build is Linux-only and won't run on a laptop.
@@ -39,6 +40,9 @@ import {
   tokenSignature,
   removeBlock,
   frameBlock,
+  reparentBlockToMain,
+  fontsSettled,
+  fontFaceCount,
   scrollToPosition,
   ANCHOR_SELECTORS,
   BUY_BUTTON_ATTR,
@@ -83,6 +87,8 @@ function fingerprint(t: DesignTokens): Record<string, string | number> {
     baseSizePx: t.type.baseSizePx,
     headingWeight: t.type.headingWeight,
     bodyWeight: t.type.bodyWeight,
+    bodyFamily: t.type.bodyFamily,
+    headingFamily: t.type.headingFamily,
     radiusPx: t.shape.radiusPx,
     containerMaxWidthPx: t.shape.containerMaxWidthPx,
     // Written straight into the block box-shadow, so a change here is visible
@@ -191,13 +197,32 @@ async function runOnce(
       anchorSelectors: ANCHOR_SELECTORS,
       buyButtonAttr: BUY_BUTTON_ATTR,
     };
+    // Mirrors the pipeline's font wait. Without it this harness measures a
+    // page whose faces have not swapped yet and reports the wrong typeface as
+    // faithfully reproduced.
+    try {
+      await page.evaluate(() => document.fonts.ready.then(() => undefined));
+      let seen = -1;
+      for (let i = 0; i < 4; i++) {
+        const count = await page.evaluate(fontFaceCount);
+        if (count === seen) break;
+        seen = count;
+        await page.waitForFunction(fontsSettled, { polling: 100, timeout: 8000 }, count);
+      }
+    } catch {
+      /* measured anyway, exactly as the pipeline does */
+    }
+
     let reading = await page.evaluate(collectDesignTokens, collectArgs);
     let sig = tokenSignature(reading);
     for (let i = 1; i <= 6; i++) {
       await new Promise((r) => setTimeout(r, 400));
       reading = await page.evaluate(collectDesignTokens, collectArgs);
       const next = tokenSignature(reading);
-      if (next === sig) break;
+      // Mirrors the pipeline: stable AND has the tokens worth waiting for.
+      const missingKey =
+        reading.matchedButtonSelector === null || reading.buttonWasVisible === false;
+      if (next === sig && !missingKey) break;
       sig = next;
     }
 
@@ -222,7 +247,22 @@ async function runOnce(
     });
     await page.evaluate(scrollToPosition, { top: injected.blockTop, offsetPx: 220 });
     await new Promise((r) => setTimeout(r, 700));
-    const framed = await page.evaluate(frameBlock);
+    let framed = await page.evaluate(frameBlock);
+    /*
+     * The rescue the pipeline performs when a block is clipped by its parent.
+     *
+     * Omitting it made this harness report "block 150/269px" on a store where
+     * the pipeline shows the whole thing — a harness defect reported upward as
+     * a product defect. A harness that does not mirror the pipeline measures
+     * something nobody ships.
+     */
+    if (framed.height > 0 && framed.visiblePx < framed.height * 0.9) {
+      const rescued = await page.evaluate(reparentBlockToMain);
+      if (rescued) {
+        await new Promise((r) => setTimeout(r, 300));
+        framed = await page.evaluate(frameBlock);
+      }
+    }
     await new Promise((r) => setTimeout(r, 150));
     phases.inject = since(injectStart);
 
@@ -259,6 +299,11 @@ function printRun(r: RunResult): void {
   );
   console.log(
     `             block ${r.blockVisiblePx}/${r.blockHeightPx}px · fallbacks: ${r.tokens.fallbacks.join(",") || "none"}`,
+  );
+  // The headline fidelity claim, printed rather than inferred. A browser
+  // default showing up here is the failure this work was done to remove.
+  console.log(
+    `             type: body ${r.tokens.type.bodyFamily} · heading ${r.tokens.type.headingFamily}`,
   );
 }
 
@@ -348,11 +393,73 @@ async function healthCheck(): Promise<void> {
   await second.release();
 }
 
+/**
+ * The same store, measured N times: does it give the same typeface every time?
+ *
+ * This exists because the property cannot be unit-tested. Which element carries
+ * the page's body copy, and which family in a stack the browser actually used,
+ * are both questions only a real browser with real fonts can answer — jsdom
+ * implements neither `getComputedStyle` font resolution nor canvas metrics, so
+ * a unit test there would be testing a mock of the thing that broke.
+ *
+ * What broke: two runs of one store returned Brandon Bold and Brandon Regular,
+ * because the picker took "the element with the most text" and a lazily-loaded
+ * section changed which element that was. Before that, `document.body` was read
+ * directly and brooklinen reported "Times New Roman" — a browser default, sold
+ * to the merchant as their measured brand font.
+ *
+ * Fails loudly and non-zero, so it can sit in a release check rather than
+ * relying on somebody remembering to squint at the output.
+ */
+async function determinismCheck(urls: string[], runs: number): Promise<void> {
+  console.log(`\n── typography determinism: ${runs} runs per store ──`);
+  const lease = await acquireBlocksBrowser();
+  let failed = false;
+  try {
+    for (const url of urls) {
+      const host = new URL(url).hostname;
+      const seen: string[] = [];
+      for (let i = 0; i < runs; i++) {
+        const r = await runOnce(lease.browser, url, true);
+        if (!r) {
+          console.log(`  ${host}: run ${i + 1} produced no reading`);
+          failed = true;
+          continue;
+        }
+        seen.push(`${r.tokens.type.bodyFamily} | ${r.tokens.type.headingFamily}`);
+      }
+      const distinct = [...new Set(seen)];
+      if (seen.length === 0) {
+        console.log(`  ${host}: nothing measured`);
+        failed = true;
+      } else if (distinct.length === 1) {
+        console.log(`  ${host}: PASS — ${runs}/${runs} identical`);
+        console.log(`      ${distinct[0]}`);
+        // A browser default here means the reading is stable AND wrong, which
+        // is the failure this whole pass was about. Stability alone is not the
+        // claim; "your store's font" is.
+        if (/times new roman|^serif|^sans-serif/i.test(distinct[0])) {
+          console.log("      ✗ FAIL — that is a browser default, not their font");
+          failed = true;
+        }
+      } else {
+        console.log(`  ${host}: ✗ FAIL — ${distinct.length} different answers`);
+        for (const d of distinct) console.log(`      ${d}`);
+        failed = true;
+      }
+    }
+  } finally {
+    await lease.release();
+  }
+  if (failed) process.exitCode = 1;
+}
+
 // ── main ───────────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
 const urls = args.filter((a) => !a.startsWith("--"));
 const concurrentArg = args.find((a) => a.startsWith("--concurrent"));
 const wantsHealth = args.includes("--health-check");
+const determinismArg = args.find((a) => a.startsWith("--determinism"));
 
 if (!process.env.BLOCKS_CHROME_PATH && !process.env.PUPPETEER_EXECUTABLE_PATH) {
   console.error(
@@ -364,6 +471,11 @@ if (!process.env.BLOCKS_CHROME_PATH && !process.env.PUPPETEER_EXECUTABLE_PATH) {
 
 try {
   if (wantsHealth) await healthCheck();
+
+  if (determinismArg) {
+    const n = Number(determinismArg.split("=")[1] ?? 3);
+    await determinismCheck(urls, Number.isFinite(n) && n > 1 ? n : 3);
+  } else
 
   if (concurrentArg) {
     const n = Number(concurrentArg.split("=")[1] ?? 2);

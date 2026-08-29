@@ -388,3 +388,59 @@ test("a real theme stack ending in a generic is not called a fallback", () => {
   const t = normalizeDesignTokens({ ...SAMPLE, bodyFontFamily: "Assistant, sans-serif" });
   assert.ok(!t.fallbacks.includes("type.bodyFamily"));
 });
+
+test("the block is styled in the face that actually rendered, not the one asked for", () => {
+  /**
+   * The theme asks for Brandon; Brandon failed to load, so the shopper sees
+   * Helvetica. Writing the declared stack into the block would set it in
+   * Brandon — a font nobody on that storefront sees — while the before/after
+   * capture beside it shows Helvetica. The block, the capture and the store
+   * have to agree, so the resolved face leads and the theme's own stack stays
+   * behind it.
+   */
+  const t = normalizeDesignTokens({
+    ...SAMPLE,
+    bodyFontFamily: "BrandonText, Helvetica, sans-serif",
+    bodyFontFamilyApplied: "Helvetica",
+  });
+  assert.equal(t.type.bodyFamily, "Helvetica, BrandonText, sans-serif");
+  // It resolved to a real face, so nothing here was guessed.
+  assert.ok(!t.fallbacks.includes("type.bodyFamily"));
+});
+
+test("a face that did resolve is not reshuffled", () => {
+  const t = normalizeDesignTokens({
+    ...SAMPLE,
+    bodyFontFamily: "Assistant, sans-serif",
+    bodyFontFamilyApplied: "Assistant",
+  });
+  assert.equal(t.type.bodyFamily, "Assistant, sans-serif");
+});
+
+test("a stack where NOTHING resolved is declared, not claimed as measured", () => {
+  /**
+   * The name check cannot catch this one: the stack reads like a perfectly
+   * respectable choice. Only the in-page resolution knows the browser fell
+   * through it entirely and is painting its own default.
+   */
+  const t = normalizeDesignTokens({
+    ...SAMPLE,
+    bodyFontFamily: "LicensedDisplay, AnotherMissingFace",
+    bodyFontFamilyApplied: null,
+    headingFontFamily: "LicensedDisplay",
+    headingFontFamilyApplied: null,
+  });
+  assert.ok(t.fallbacks.includes("type.bodyFamily"));
+  assert.ok(t.fallbacks.includes("type.headingFamily"));
+});
+
+test("a quoted family name survives being put in front", () => {
+  // An unquoted multi-word family in a stack is a CSS syntax error, and this
+  // value is written straight into a <style> block.
+  const t = normalizeDesignTokens({
+    ...SAMPLE,
+    bodyFontFamily: "Foo, serif",
+    bodyFontFamilyApplied: "Helvetica Neue",
+  });
+  assert.equal(t.type.bodyFamily, '"Helvetica Neue", Foo, serif');
+});
