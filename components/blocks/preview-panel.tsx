@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { AlertTriangle, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
@@ -53,6 +54,7 @@ const FALLBACK_LABELS: Record<string, string> = {
 const POLL_MS = 2500;
 
 export function PreviewPanel({ initial }: { initial: PreviewProject }) {
+  const router = useRouter();
   const [project, setProject] = useState<PreviewProject>(initial);
   const [view, setView] = useState<"before" | "after">("after");
   const [isPending, startTransition] = useTransition();
@@ -104,6 +106,31 @@ export function PreviewPanel({ initial }: { initial: PreviewProject }) {
       clearInterval(timer);
     };
   }, [isRunning, project.id]);
+
+  /**
+   * Tell the SERVER the run finished, once.
+   *
+   * The poll above updates this component's own state, and nothing else. But
+   * the block gallery is rendered by the page, gated on `design_tokens` being
+   * present in the row — which the server read before the run existed. So the
+   * first preview completed, the pictures appeared, and the single most
+   * important thing to do next stayed invisible until the merchant happened to
+   * reload. That is the "I couldn't find them" report, arriving a second time
+   * through a different door.
+   *
+   * `router.refresh()` re-runs the server component with the tokens now in
+   * place. It is a refresh, not a navigation: scroll position and the state of
+   * everything on the page survive it.
+   */
+  const refreshed = useRef(false);
+  useEffect(() => {
+    if (refreshed.current) return;
+    if (project.status !== "ready" || !project.design_tokens) return;
+    // Nothing to reveal if the page already rendered with tokens.
+    if (initial.design_tokens) return;
+    refreshed.current = true;
+    router.refresh();
+  }, [project.status, project.design_tokens, initial.design_tokens, router]);
 
   if (isRunning) {
     return (

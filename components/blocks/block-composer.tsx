@@ -145,8 +145,25 @@ export function BlockComposer({
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-sm font-medium text-white/70">Choose a block</h3>
-        <p className="mt-1 text-xs text-white/40">
+        {/*
+          Sized as the primary action, because it is one.
+
+          This heading was `text-sm text-white/70` — the same weight as the
+          section labels around it — for the step the whole page exists to lead
+          to. Once a block is chosen it steps back down: at that point the form
+          below is what matters, and a large heading over a completed choice is
+          just noise.
+        */}
+        <h3
+          className={
+            selected
+              ? "text-sm font-medium text-white/70"
+              : "font-serif text-xl md:text-2xl tracking-tight text-white/90"
+          }
+        >
+          Choose a block
+        </h3>
+        <p className={selected ? "mt-1 text-xs text-white/40" : "mt-1.5 text-sm text-white/55"}>
           Each one is native Liquid, scoped so it cannot restyle your theme, and
           rendered in the colours and type we measured on your page.
         </p>
