@@ -824,9 +824,14 @@ function BundleForm({
             <Input
               value={String(tier.discountPercent)}
               onChange={(e) =>
-                set(i, { discountPercent: Number(e.target.value.replace(/[^\d.]/g, "")) || 0 })
+                // Digits only. Allowing a dot let a decimal reach the merchant's
+                // theme as a float literal (`times: 87.5`), which drags the
+                // whole Liquid chain into floating point and hands `money` a
+                // non-integer cent value. And "12.5.3" parsed to NaN, which the
+                // `|| 0` then turned silently into 0% off.
+                set(i, { discountPercent: Number(e.target.value.replace(/\D/g, "")) || 0 })
               }
-              inputMode="decimal"
+              inputMode="numeric"
               placeholder="10"
             />
           </label>

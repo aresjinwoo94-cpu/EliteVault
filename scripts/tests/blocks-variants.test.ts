@@ -463,3 +463,166 @@ test("every custom property the CSS reads is one the block declares", () => {
     }
   }
 });
+
+test("a block's rules are reachable at desktop width, not only on a phone", () => {
+  /**
+   * The defect this pins shipped: all 37 rules for the four phase-2 blocks were
+   * appended after the last rule INSIDE `@media (max-width:600px)`, so above a
+   * phone every one of those blocks rendered unstyled — `side_by_side` and
+   * `stacked` came out byte-identical, and the "inline" low-stock variant
+   * showed the bar it is defined by hiding.
+   *
+   * It survived both existing containment tests because `selectorsOf` reports a
+   * selector nested in an at-rule as though it were top level, which is right
+   * for its own job (catching an escaped selector wherever it hides) and blind
+   * to this one. The preview is captured at 1440px, so this was also what the
+   * merchant would have approved and paid against.
+   *
+   * The rule: every block must carry at least one UNCONDITIONAL rule for its
+   * own elements. Media queries may then adjust; they may not be the only home.
+   */
+  for (const entry of BLOCK_CATALOG) {
+    for (const v of BLOCK_VARIANTS[entry.id]) {
+      const { css, html } = render(SPECS[entry.id], v.id);
+      const emitted = new Set<string>();
+      for (const m of html.matchAll(/\sclass="([^"]*)"/g)) {
+        for (const cls of m[1].split(/\s+/).filter(Boolean)) emitted.add(cls);
+      }
+
+      // Walk the stylesheet tracking at-rule depth, and collect the selectors
+      // that are reachable with no media condition at all.
+      const clean = css.replace(/\/\*[\s\S]*?\*\//g, "");
+      const unconditional = new Set<string>();
+      /*
+       * Brace COUNTING, not line matching.
+       *
+       * A one-line `@media (max-width:640px){.x{...}}` opens and closes on the
+       * same line. The first draft of this test only decremented on a lone "}",
+       * so it never closed that one and reported eight perfectly healthy
+       * `comparison` classes as unreachable — a false alarm on the very run
+       * meant to confirm a real one.
+       */
+      let depth = 0;
+      for (const line of clean.split("\n")) {
+        const atMedia = /@media/.test(line);
+        const opens = (line.match(/\{/g) ?? []).length;
+        const closes = (line.match(/\}/g) ?? []).length;
+        if (!atMedia && depth === 0) {
+          const sel = line.match(/^\s*(\.[^{]+)\{/);
+          if (sel) {
+            for (const m of sel[1].matchAll(/\.([A-Za-z0-9_-]+)/g)) unconditional.add(m[1]);
+          }
+        }
+        depth = Math.max(0, depth + opens - closes);
+      }
+
+      /*
+       * STRUCTURAL classes only — a modifier is allowed to be mobile-only.
+       *
+       * `__table--three` legitimately has nothing to do above 640px: at that
+       * width the three-column variant is already distinct because its MARKUP
+       * differs, and the modifier exists only to make it scroll on a phone.
+       * Flagging it was the first draft of this test being coarser than the
+       * rule it is enforcing. The variant-distinctness case is covered by the
+       * test below, which is the one that catches what actually shipped.
+       */
+      const phoneOnly = [...emitted]
+        .filter((c) => !c.includes("--") && !unconditional.has(c))
+        .sort();
+      assert.deepEqual(
+        phoneOnly,
+        [],
+        `${entry.id}/${v.id}: these classes are only styled inside a media query, so the block is unstyled on desktop: ${phoneOnly.join(", ")}`,
+      );
+    }
+  }
+});
+
+test("two variants that share markup are told apart by a rule that works on desktop", () => {
+  /**
+   * The sharp version of the defect that shipped.
+   *
+   * `stacked` and `side_by_side` emit the same tree; the ONLY thing that
+   * distinguishes them is `__tiers--side_by_side{flex-direction:row}`. That
+   * rule sat inside `@media (max-width:600px)`, so on every screen wider than a
+   * phone — including the 1440px viewport the approval screenshot is taken at —
+   * the merchant picked one variant and got the other, pixel for pixel.
+   *
+   * Where markup differs (three_col adds a column), the variant is already
+   * distinct and needs no modifier rule; that case is excluded rather than
+   * waved through, by comparing the markup first.
+   */
+  for (const entry of BLOCK_CATALOG) {
+    const variants = BLOCK_VARIANTS[entry.id];
+    if (variants.length < 2) continue;
+
+    const { css } = render(SPECS[entry.id], variants[0].id);
+    const clean = css.replace(/\/\*[\s\S]*?\*\//g, "");
+    const unconditional = new Set<string>();
+    let depth = 0;
+    for (const line of clean.split("\n")) {
+      const atMedia = /@media/.test(line);
+      const opens = (line.match(/\{/g) ?? []).length;
+      const closes = (line.match(/\}/g) ?? []).length;
+      if (!atMedia && depth === 0) {
+        const sel = line.match(/^\s*(\.[^{]+)\{/);
+        if (sel) for (const m of sel[1].matchAll(/\.([A-Za-z0-9_-]+)/g)) unconditional.add(m[1]);
+      }
+      depth = Math.max(0, depth + opens - closes);
+    }
+
+    /** The markup with every variant modifier stripped, for comparison. */
+    const skeleton = (id: string) =>
+      render(SPECS[entry.id], id).html.replace(/ev-blk__[a-z-]+--[a-z0-9_]+/g, "");
+
+    for (let i = 0; i < variants.length; i++) {
+      for (let j = i + 1; j < variants.length; j++) {
+        if (skeleton(variants[i].id) !== skeleton(variants[j].id)) continue;
+        // Same tree: a modifier rule is the only thing that can separate them.
+        const distinguishable = [variants[i].id, variants[j].id].some((id) =>
+          [...unconditional].some((c) => c.endsWith(`--${id}`)),
+        );
+        assert.ok(
+          distinguishable,
+          `${entry.id}: "${variants[i].id}" and "${variants[j].id}" render identical markup and neither modifier has a rule outside a media query — on desktop they are the same block`,
+        );
+      }
+    }
+  }
+});
+
+test("every variant of a type prints the SAME chrome as its siblings", () => {
+  /**
+   * The guard the renderer's own comment claimed existed, and did not.
+   *
+   * BLOCK_CHROME is a flat bag of words, so the word-level invariant accepts
+   * any sentence built from it. A verifier proved the hole live: adding
+   * "Save the usual Price In stock" to one spec_table variant passed the entire
+   * suite, because every word is chrome. One variant printed a claim about the
+   * merchant's business that its siblings did not, and nothing objected.
+   *
+   * Comparing chrome BETWEEN variants closes it without widening anything:
+   * chrome is fixed vocabulary by definition, so if a layout prints different
+   * chrome from its sibling, that difference is content wearing chrome's
+   * clothes.
+   */
+  for (const entry of BLOCK_CATALOG) {
+    const variants = BLOCK_VARIANTS[entry.id];
+    if (variants.length < 2) continue;
+
+    const chromeOf = (id: string) =>
+      textOf(render(SPECS[entry.id], id).html)
+        .split(" ")
+        .filter((w) => CHROME.has(w))
+        .join(" ");
+
+    const baseline = chromeOf(variants[0].id);
+    for (const v of variants.slice(1)) {
+      assert.equal(
+        chromeOf(v.id),
+        baseline,
+        `${entry.id}/${v.id} prints different chrome from ${entry.id}/${variants[0].id} — a layout is saying something its siblings do not`,
+      );
+    }
+  }
+});

@@ -20,7 +20,7 @@ import { installGuide, installGuideText } from "@/lib/blocks/install-instruction
 import { settleExport } from "@/lib/blocks/settle-export";
 
 import { runWithMeter } from "@/lib/usage/context";
-import type { BlockSpecInput } from "@/lib/blocks/catalog";
+import { validateBlockSpec, type BlockSpecInput } from "@/lib/blocks/catalog";
 import { applyTokenOverrides, type DesignTokens } from "@/lib/blocks/design-tokens";
 import type { BlocksProduct } from "@/lib/blocks/product-json";
 import type { PlanTier } from "@/lib/supabase/types";
@@ -443,6 +443,29 @@ async function doExportLiquid(projectId: string): Promise<ExportLiquidResult> {
     plan = (profile as { plan?: PlanTier } | null)?.plan ?? null;
   } catch {
     /* metering detail — never worth failing the export over */
+  }
+
+  /**
+   * Re-validate the stored spec before rendering it.
+   *
+   * `validateBlockSpec` ran only in `saveBlockSpec`, so this path rendered
+   * whatever was in the row on trust. A spec that arrived by any other route —
+   * a row written before a validator rule existed, a direct database write —
+   * reached `renderBlock` unchecked, and `renderBlock` does not defend itself:
+   * a malformed member throws a TypeError mid-render, which on the export path
+   * is a customer who has already paid.
+   *
+   * Refusing here is the right failure: it names what is wrong and leaves the
+   * paid row intact, so the merchant can fix the block and export again.
+   */
+  const revalidated = validateBlockSpec(project.block_spec!);
+  if (!revalidated.ok) {
+    return {
+      ok: false as const,
+      error:
+        "This block needs a fix before it can be exported: " +
+        revalidated.missing.join("; "),
+    };
   }
 
   try {

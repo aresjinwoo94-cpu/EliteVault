@@ -346,6 +346,23 @@ const MAX_ITEMS = {
   tiers: 4,
 } as const;
 
+/**
+ * Materialise an array so HOLES become `undefined` instead of vanishing.
+ *
+ * `[ , {…}]` is a sparse array, and every iteration method the validator used —
+ * `forEach`, `some`, `filter` — SKIPS holes silently. So a spec whose first
+ * tier was a hole validated clean and then threw inside the renderer:
+ * "Cannot read properties of undefined (reading 'discountPercent')". A
+ * validator returning ok on input the renderer cannot render is worse than one
+ * that refuses too much.
+ *
+ * `Array.from` fills the holes, and the `isRecord` guard on each member then
+ * rejects them with a message naming the position.
+ */
+function members(value: unknown): unknown[] {
+  return Array.isArray(value) ? Array.from(value) : [];
+}
+
 function filled(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
@@ -424,14 +441,15 @@ export function validateBlockSpec(spec: BlockSpecInput): ValidateResult {
 
   switch (spec.type) {
     case "trust_icons": {
-      if (!Array.isArray(spec.items) || spec.items.length === 0) {
+      const trustItems = members(spec.items);
+      if (!Array.isArray(spec.items) || trustItems.length === 0) {
         missing.push("At least one trust item — we don't invent these");
         break;
       }
-      if (spec.items.length > MAX_ITEMS.trust) {
+      if (trustItems.length > MAX_ITEMS.trust) {
         missing.push(`Too many trust items (max ${MAX_ITEMS.trust})`);
       }
-      spec.items.forEach((item, i) => {
+      trustItems.forEach((item, i) => {
         if (!isRecord(item)) {
           missing.push(`Trust item ${i + 1} is malformed.`);
           return;
@@ -461,7 +479,7 @@ export function validateBlockSpec(spec: BlockSpecInput): ValidateResult {
 
       // `.filter(filled)` also drops non-strings, so a benefit of `5` becomes
       // "too few benefits" rather than a crash in the renderer.
-      const benefits = Array.isArray(spec.benefits) ? spec.benefits.filter(filled) : [];
+      const benefits = members(spec.benefits).filter(filled);
       if (benefits.length < 3) {
         missing.push("At least three benefits (a card with one line looks unfinished)");
       }
@@ -472,7 +490,7 @@ export function validateBlockSpec(spec: BlockSpecInput): ValidateResult {
       // A non-string in the list is silently excluded above, which would let a
       // malformed payload through as "three benefits" while the renderer sees
       // four and throws on the fourth.
-      if (Array.isArray(spec.benefits) && spec.benefits.some((b) => typeof b !== "string")) {
+      if (members(spec.benefits).some((b) => typeof b !== "string")) {
         missing.push("One of the benefits isn't text.");
       }
 
@@ -495,7 +513,7 @@ export function validateBlockSpec(spec: BlockSpecInput): ValidateResult {
         missing.push("Competitor: what you're comparing against, by name");
       }
 
-      const rows = Array.isArray(spec.rows) ? spec.rows : [];
+      const rows = members(spec.rows);
       if (rows.length === 0) missing.push("At least one row to compare");
       if (rows.length > MAX_ITEMS.rows) missing.push(`Too many rows (max ${MAX_ITEMS.rows})`);
       rows.forEach((row, i) => {
@@ -517,7 +535,7 @@ export function validateBlockSpec(spec: BlockSpecInput): ValidateResult {
       // Allowed — it might be true — but a table the competitor loses outright
       // reads as marketing rather than comparison, and a shopper discounts the
       // whole thing. Better said now than discovered from the conversion rate.
-      if (rows.length >= 3 && rows.every((r) => r.weWin)) {
+      if (rows.length >= 3 && rows.every((r) => isRecord(r) && r.weWin === true)) {
         warnings.push(
           "You win every row. A comparison where the alternative never wins reads as an ad — conceding one honest point usually makes the rest more believable.",
         );
@@ -526,7 +544,7 @@ export function validateBlockSpec(spec: BlockSpecInput): ValidateResult {
     }
 
     case "feature_grid": {
-      const features = Array.isArray(spec.features) ? spec.features : [];
+      const features = members(spec.features);
       if (features.length < 2) {
         // Two is the floor because one "grid" card is a sentence in a box, and
         // the layout has nothing to be a grid of.
@@ -554,7 +572,7 @@ export function validateBlockSpec(spec: BlockSpecInput): ValidateResult {
     }
 
     case "product_stats": {
-      const stats = Array.isArray(spec.stats) ? spec.stats : [];
+      const stats = members(spec.stats);
       if (stats.length === 0) {
         // The block the brief singles out: no numbers, no block. It is not
         // offered rather than filled with plausible-looking figures.
@@ -586,7 +604,7 @@ export function validateBlockSpec(spec: BlockSpecInput): ValidateResult {
     }
 
     case "spec_table": {
-      const rows = Array.isArray(spec.rows) ? spec.rows : [];
+      const rows = members(spec.rows);
       if (rows.length < 2) {
         // One row is not a table, and a table is the pattern — see
         // design-references.md §6. A single fact belongs in the description.
@@ -614,7 +632,7 @@ export function validateBlockSpec(spec: BlockSpecInput): ValidateResult {
     }
 
     case "assurance_bar": {
-      const items = Array.isArray(spec.items) ? spec.items : [];
+      const items = members(spec.items);
       if (items.length === 0) {
         missing.push("Your guarantee or delivery promise — we don't invent these");
       }
@@ -642,7 +660,7 @@ export function validateBlockSpec(spec: BlockSpecInput): ValidateResult {
     }
 
     case "bundle_tiers": {
-      const tiers = Array.isArray(spec.tiers) ? spec.tiers : [];
+      const tiers = members(spec.tiers);
       if (tiers.length < 2) {
         missing.push("At least two tiers (volume pricing needs something to compare)");
       }
@@ -665,11 +683,33 @@ export function validateBlockSpec(spec: BlockSpecInput): ValidateResult {
         } else seen.add(qty);
 
         const off = tier.discountPercent;
-        if (typeof off !== "number" || !Number.isFinite(off) || off < 0 || off > 90) {
+        /*
+         * WHOLE percent, not merely finite.
+         *
+         * A fractional discount passed validation and was written straight
+         * into the theme as a float literal — `times: 87.5` — which drags the
+         * whole Liquid chain into floating point and hands `money` a
+         * non-integer cent value it is not specified for. Reachable by typing
+         * a decimal into the composer, not just by a crafted request.
+         */
+        if (typeof off !== "number" || !Number.isInteger(off) || off < 0 || off > 90) {
           // Capped well below 100: a tier at 100% off is a free product, and a
           // typo that publishes one is the single most expensive thing this
           // block could do to a store.
-          missing.push(`Tier ${i + 1}: a discount between 0 and 90 percent`);
+          missing.push(`Tier ${i + 1}: a whole percentage between 0 and 90`);
+        }
+      });
+      /*
+       * A real boolean, checked before it is counted.
+       *
+       * The count used `=== true` while the renderer branched on truthiness,
+       * so `highlight: "yes"` counted as zero here and rendered a ribbon
+       * there — two "Most popular" ribbons on one panel, which is the
+       * self-contradiction this rule exists to prevent.
+       */
+      tiers.forEach((t, i) => {
+        if (isRecord(t) && t.highlight !== undefined && typeof t.highlight !== "boolean") {
+          missing.push(`Tier ${i + 1}: the popular flag must be true or false`);
         }
       });
       if (tiers.filter((t) => isRecord(t) && t.highlight === true).length > 1) {

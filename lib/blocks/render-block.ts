@@ -311,17 +311,25 @@ ${shape.cardShadow ? `box-shadow:${shape.cardShadow};` : ""}
 .${p}__check-body{display:block;min-width:0;flex:1;}
 .${p}__check-label{display:block;font-weight:600;font-size:.95em;}
 .${p}__check-values{display:block;font-size:.9em;margin-top:.1rem;}
+/* Declared even though it changes nothing against the base: see the note on
+   __trust--row_line. Kept OUT of the media block below, unlike --three: this
+   is the desktop case, and a modifier whose only rule lives behind
+   max-width:640px is unstyled everywhere else — which is exactly the defect
+   the phase-2 rules shipped with. */
+.${p}__table--two{white-space:normal;}
 @media (max-width:640px){
 /* Three columns cannot be read on a phone however carefully they're styled, so
    the table scrolls rather than crushing. The checklist variant exists for
-   merchants who would rather it never came to that. */
-/* Declared even though it changes nothing against the base: see the note on
-   __trust--row_line. It also pins the contrast with --three, whose horizontal
-   scroll must not leak onto the two-column table. */
-.${p}__table--two{white-space:normal;}
+   merchants who would rather it never came to that. Its horizontal scroll must
+   not leak onto the two-column table, hence the explicit pair. */
 .${p}__table--three{display:block;overflow-x:auto;white-space:nowrap;}
 }
 .${p}__logo{max-height:40px;width:auto;display:block;margin-bottom:1rem;}
+/* Logo-first centres its mark; promise-first keeps it left, under the line it
+   follows. Declared for both, so neither modifier is a class with no rule. */
+.${p}__brand{display:block;}
+.${p}__brand--logo_led .${p}__logo{margin-left:auto;margin-right:auto;}
+.${p}__brand--promise_led .${p}__logo{margin-top:1rem;margin-bottom:0;}
 .${p}__benefits{list-style:none;margin:0;padding:0;display:grid;gap:.6rem;}
 .${p}__benefit{display:flex;gap:.6rem;align-items:flex-start;}
 .${p}__tick{color:var(--ev-accent);flex:0 0 auto;font-weight:700;}
@@ -332,12 +340,32 @@ ${shape.cardShadow ? `box-shadow:${shape.cardShadow};` : ""}
 .${p}__row-win .${p}__ours{color:var(--ev-accent);}
 .${p}__bar{height:.5rem;margin-top:.4rem;border-radius:var(--ev-radius);background:var(--ev-border);overflow:hidden;}
 .${p}__bar-fill{display:block;height:100%;background:var(--ev-accent);}
+/* The variant IS whether the bar shows. Declared for both so neither modifier
+   is a class with no rule, and both at top level so the choice survives a
+   desktop viewport. */
+.${p}__grid--bars .${p}__bar{display:block;}
+.${p}__grid--tiles .${p}__bar{display:none;}
 .${p}__unit{font-size:.7em;opacity:.7;margin-left:.15em;}
 @media (max-width:600px){
 .${p}{padding:1rem;}
 .${p}__media{width:72px;height:72px;}
 .${p}__table th,.${p}__table td{padding:.5rem .4rem;}
+}
 
+/* ────────────────────────────────────────────────────────────────────────
+   WP-F phase 2. These sit at TOP LEVEL, and that is the whole note.
+
+   They were first appended after the last rule inside the 600px media block,
+   which put all 37 of them behind (max-width:600px). Above a phone the four
+   blocks rendered completely unstyled: side_by_side and stacked came out
+   byte-identical, the inline low-stock variant showed the bar it is defined
+   by hiding, and the assurance bar was not a bar. The preview is captured at
+   1440px, so that is what the merchant would have approved and paid against.
+
+   No test caught it. selectorsOf reports a selector nested in an at-rule as
+   though it were top level, so both containment tests were blind to it.
+   Nothing here is safe to move back inside a media block.
+   ──────────────────────────────────────────────────────────────────────── */
 /* ── §6 Spec table ────────────────────────────────────────────────────────
    Two-column key/value. Every colour comes from a measured token; nothing
    here is a literal. */
@@ -409,7 +437,6 @@ ${shape.cardShadow ? `box-shadow:${shape.cardShadow};` : ""}
 /* The inline variant is the line alone — the bar is hidden rather than absent
    from the markup, so both variants ship the same tree. */
 .${p}__stock--inline .${p}__stock-bar{display:none;}
-}
 `.trim();
 }
 
@@ -663,22 +690,51 @@ function bundleHtml(
   const v = variantOf(spec);
   const tiers = [...spec.tiers].sort((a, b) => a.quantity - b.quantity);
 
-  const cell = (tier: (typeof tiers)[number]) => {
+  /**
+   * One arithmetic, expressed twice — and the two must agree to the penny.
+   *
+   * They did not. The preview used Math.round while Liquid's `divided_by`
+   * TRUNCATES on integers, so the merchant approved one number and their
+   * shoppers saw another: 603 of 756 realistic price/discount/quantity
+   * combinations diverged. $9.99 × 3 at 50% off showed $14.99 in the preview
+   * and $14.98 on the storefront.
+   *
+   * Two more defects lived in the same six lines:
+   *
+   *  - `saved` was computed from the price independently of `total`, so both
+   *    floored separately and the exported panel contradicted ITSELF: total
+   *    $18.98 and saved $0.99 against a 2 × $9.99 that is $19.98.
+   *  - `unit` was the discounted single price rather than the total divided by
+   *    the quantity, so unit × qty did not equal the total ON THE SAME ROW —
+   *    a shopper doing the one multiplication this block exists to save them
+   *    concludes the store cannot add up.
+   *
+   * The rule now: TOTAL is the only figure computed from the price. Unit and
+   * saved are both derived FROM the total, in both modes, with the same integer
+   * floor semantics Liquid uses. The export assigns the total to a variable so
+   * Liquid derives from the identical value rather than recomputing it.
+   */
+  const cell = (tier: (typeof tiers)[number], index: number) => {
+    const kept = 100 - tier.discountPercent;
     if (mode === "liquid") {
       // Integer arithmetic in cents, exactly as Shopify stores prices. Doing it
       // in Liquid rather than baking a number is what keeps the panel correct
       // after a price change.
-      const kept = 100 - tier.discountPercent;
-      const total = `{{ product.price | times: ${tier.quantity} | times: ${kept} | divided_by: 100 | money }}`;
-      const unit = `{{ product.price | times: ${kept} | divided_by: 100 | money }}`;
-      const saved = `{{ product.price | times: ${tier.quantity} | times: ${tier.discountPercent} | divided_by: 100 | money }}`;
-      return { total, unit, saved };
+      const t = `ev_total_${index}`;
+      return {
+        assign: `{%- assign ${t} = product.price | times: ${tier.quantity} | times: ${kept} | divided_by: 100 -%}`,
+        total: `{{ ${t} | money }}`,
+        unit: `{{ ${t} | divided_by: ${tier.quantity} | money }}`,
+        saved: `{{ product.price | times: ${tier.quantity} | minus: ${t} | money }}`,
+      };
     }
-    const kept = 100 - tier.discountPercent;
-    const totalCents = Math.round((product.priceCents * tier.quantity * kept) / 100);
-    const unitCents = Math.round((product.priceCents * kept) / 100);
+    // Math.floor, not Math.round: it mirrors Liquid's divided_by exactly, and
+    // matching the storefront matters more than the half-penny.
+    const totalCents = Math.floor((product.priceCents * tier.quantity * kept) / 100);
+    const unitCents = Math.floor(totalCents / tier.quantity);
     const savedCents = product.priceCents * tier.quantity - totalCents;
     return {
+      assign: "",
       total: esc(money(totalCents, currency)),
       unit: esc(money(unitCents, currency)),
       saved: esc(money(savedCents, currency)),
@@ -686,8 +742,8 @@ function bundleHtml(
   };
 
   const rows = tiers
-    .map((tier) => {
-      const c = cell(tier);
+    .map((tier, index) => {
+      const c = cell(tier, index);
       const badge =
         tier.discountPercent > 0
           ? `<span class="${p}__tier-save">Save ${c.saved}</span>`
@@ -695,7 +751,7 @@ function bundleHtml(
       const ribbon = tier.highlight
         ? `<span class="${p}__tier-ribbon">Most popular</span>`
         : "";
-      return `<div class="${p}__tier${tier.highlight ? ` ${p}__tier--pick` : ""}">${ribbon}
+      return `${c.assign}<div class="${p}__tier${tier.highlight ? ` ${p}__tier--pick` : ""}">${ribbon}
 <span class="${p}__tier-qty">Buy ${tier.quantity}</span>
 <span class="${p}__tier-total">${c.total}</span>
 <span class="${p}__tier-unit">${c.unit} each</span>
@@ -869,6 +925,16 @@ function brandHtml(
   spec: Extract<BlockSpecInput, { type: "brand_cards" }>,
 ): string {
   const p = BLOCK_PREFIX;
+  /*
+   * This block ignored its own variant entirely.
+   *
+   * `variantOf` was never called and no modifier class was emitted, so
+   * "Promise first" and "Logo first" rendered the same tree — and it was the
+   * logo-first tree in both, so the variant named for putting the promise
+   * first did the opposite of what the gallery told the merchant it would.
+   * Found by the desktop-reachability test written for a different bug.
+   */
+  const v = variantOf(spec);
   const logo = safeImageUrl(spec.logoUrl);
   const benefits = spec.benefits
     .filter((b): b is string => typeof b === "string" && b.trim().length > 0)
@@ -877,12 +943,28 @@ function brandHtml(
         `<li class="${p}__benefit"><span class="${p}__tick" aria-hidden="true">✓</span><span>${esc(b)}</span></li>`,
     )
     .join("\n");
+  const logoTag = logo
+    ? `<img class="${p}__logo" src="${esc(logo)}" alt="" loading="lazy">`
+    : "";
+  const lede = `<p class="${p}__lede">${esc(spec.promise)}</p>`;
+  // The order IS the variant. Named for what each puts first, and now doing it.
+  const lead = v === "logo_led" ? `${logoTag}\n${lede}` : `${lede}\n${logoTag}`;
+  /*
+   * The modifier goes on an inner element, not the root.
+   *
+   * `.ev-blk--logo_led` was refused by validateLiquidSnippet, which treats
+   * `.ev-blk-…` as a near-miss on the block class rather than a modifier of it
+   * — correctly, since that is exactly the shape a typo takes. Every other
+   * variant in this file already uses `__element--variant`; this one was the
+   * outlier because it was written last.
+   */
   return `<section class="${p}">
-${logo ? `<img class="${p}__logo" src="${esc(logo)}" alt="" loading="lazy">` : ""}
-<p class="${p}__lede">${esc(spec.promise)}</p>
+<div class="${p}__brand ${p}__brand--${v}">
+${lead}
 <ul class="${p}__benefits">
 ${benefits}
 </ul>
+</div>
 </section>`;
 }
 
@@ -951,6 +1033,10 @@ function statsHtml(
   fields: ReturnType<typeof productFields>,
 ): string {
   const p = BLOCK_PREFIX;
+  // Same omission as brandHtml: the variant was never read, so "Tiles" and
+  // "Bars" were one block that always drew bars. The bar markup ships in both
+  // and CSS decides, which keeps the two variants one tree.
+  const v = variantOf(spec);
   // The bars are scaled against the largest figure in the set, so they compare
   // the merchant's own numbers to each other and never imply a benchmark we
   // don't have.
@@ -966,7 +1052,7 @@ function statsHtml(
     .join("\n");
   return `<section class="${p}">
 <p class="${p}__lede">${fields.title}</p>
-<div class="${p}__grid">
+<div class="${p}__grid ${p}__grid--${v}">
 ${tiles}
 </div>
 </section>`;

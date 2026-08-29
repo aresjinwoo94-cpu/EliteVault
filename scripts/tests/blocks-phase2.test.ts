@@ -94,7 +94,12 @@ test("volume pricing stores no money — the Liquid recomputes it", () => {
    */
   const { liquid } = render(TIERS, "liquid");
   assert.ok(liquid);
-  assert.match(liquid!, /product\.price \| times: 2 \| times: 90 \| divided_by: 100 \| money/);
+  // The total is assigned ONCE and the other two figures derive from it, so
+  // the panel cannot contradict itself — see the note on `cell`. Asserting the
+  // literal chain is what pins the export side against a silent rewrite.
+  assert.match(liquid!, /assign ev_total_1 = product\.price \| times: 2 \| times: 90 \| divided_by: 100/);
+  assert.match(liquid!, /ev_total_1 \| divided_by: 2 \| money/);
+  assert.match(liquid!, /product\.price \| times: 2 \| minus: ev_total_1 \| money/);
   // The figures the preview showed must not appear anywhere in the export.
   for (const frozen of ["160.20", "80.10", "213.60", "17.80"]) {
     assert.ok(!liquid!.includes(frozen), `the export froze ${frozen} instead of computing it`);
@@ -324,4 +329,182 @@ test("blocks that always render carry no guard", () => {
     const { liquid } = render(spec, "liquid");
     assert.ok(!/\{%-? *if /.test(liquid ?? ""), `${spec.type} grew a condition`);
   }
+});
+
+/**
+ * Evaluate the Liquid the export actually emits, with Liquid's own semantics.
+ *
+ * `divided_by` on integers TRUNCATES, `times` and `minus` are integer ops, and
+ * `money` formats cents. Reimplemented here rather than mocked, so the test
+ * fails when the emitted filter chain changes as well as when the preview does.
+ */
+function evalLiquidMoney(liquid: string, priceCents: number): string[] {
+  const vars: Record<string, number> = { "product.price": priceCents };
+  const out: string[] = [];
+  const run = (expr: string): number => {
+    const parts = expr.split("|").map((s) => s.trim());
+    let acc = parts[0] in vars ? vars[parts[0]] : Number(parts[0]);
+    for (const step of parts.slice(1)) {
+      const [filter, rawArg] = step.split(":").map((s) => s.trim());
+      if (filter === "money") continue;
+      const arg = rawArg in vars ? vars[rawArg] : Number(rawArg);
+      if (filter === "times") acc = acc * arg;
+      else if (filter === "minus") acc = acc - arg;
+      // Liquid truncates toward zero on integer division.
+      else if (filter === "divided_by") acc = Math.trunc(acc / arg);
+      else throw new Error(`unmodelled filter: ${filter}`);
+    }
+    return acc;
+  };
+  for (const line of liquid.split("\n")) {
+    for (const m of line.matchAll(/\{%-?\s*assign\s+(\w+)\s*=\s*([^%]+?)\s*-?%\}/g)) {
+      vars[m[1]] = run(m[2]);
+    }
+    for (const m of line.matchAll(/\{\{\s*([^}]+?)\s*\}\}/g)) {
+      out.push((run(m[1]) / 100).toFixed(2));
+    }
+  }
+  return out;
+}
+
+test("the preview and the export quote the SAME money, to the penny", () => {
+  /**
+   * The defect this pins reached a shipped commit: the preview used Math.round
+   * while Liquid's divided_by truncates, so 603 of 756 realistic combinations
+   * disagreed — the merchant approved one number and their shoppers saw
+   * another. $9.99 × 3 at 50% off previewed as $14.99 and exported as $14.98.
+   *
+   * A grid rather than a couple of cases, because the original test used 8900
+   * with 10% and 20% off, where every product divides by 100 exactly and no
+   * rounding mode is distinguishable.
+   */
+  const prices = [1, 999, 1999, 3333, 8900, 12345];
+  const discounts = [0, 7, 15, 33, 50, 90];
+  const quantities = [1, 2, 3, 6];
+
+  for (const priceCents of prices) {
+    for (const off of discounts) {
+      for (const q of quantities) {
+        const spec = {
+          type: "bundle_tiers",
+          tiers: [{ quantity: q, discountPercent: off, highlight: false }],
+        } as BlockSpecInput;
+        const product = { ...PRODUCT, priceCents } as BlocksProduct;
+        const common = { spec, tokens: TOKENS, product, currency: "USD" as string | null };
+
+        const shown = renderBlock({ ...common })
+          .html.replace(/<[^>]+>/g, " ")
+          .match(/\$[\d,]+\.\d\d/g)!
+          .map((s) => s.replace(/[$,]/g, ""));
+        const exported = evalLiquidMoney(
+          renderBlock({ ...common, mode: "liquid" }).liquid!,
+          priceCents,
+        );
+
+        assert.deepEqual(
+          shown,
+          exported,
+          `price ${priceCents} × ${q} at ${off}% off: preview ${shown.join("/")} vs export ${exported.join("/")}`,
+        );
+      }
+    }
+  }
+});
+
+test("a bundle row adds up: unit × quantity and total + saved both reconcile", () => {
+  /**
+   * The panel used to contradict itself. `saved` was computed from the price
+   * independently of `total`, so both floored separately and 527 of 756
+   * combinations rendered a panel where total + saved ≠ quantity × price. And
+   * `unit` was the discounted single price rather than total ÷ quantity, so
+   * unit × quantity disagreed with the total ON THE SAME ROW — the one
+   * multiplication a shopper is likely to do.
+   */
+  for (const priceCents of [999, 1999, 3333, 8900]) {
+    for (const off of [7, 15, 33, 50]) {
+      for (const q of [2, 3, 6]) {
+        const liquid = renderBlock({
+          spec: {
+            type: "bundle_tiers",
+            tiers: [{ quantity: q, discountPercent: off, highlight: false }],
+          } as BlockSpecInput,
+          tokens: TOKENS,
+          product: { ...PRODUCT, priceCents } as BlocksProduct,
+          currency: "USD",
+          mode: "liquid",
+        }).liquid!;
+        const [total, unit, saved] = evalLiquidMoney(liquid, priceCents).map((v) =>
+          Math.round(Number(v) * 100),
+        );
+
+        assert.equal(
+          total + saved,
+          priceCents * q,
+          `${priceCents}×${q} @${off}%: total ${total} + saved ${saved} ≠ ${priceCents * q}`,
+        );
+        // Integer cents cannot always divide evenly, so the honest bound is
+        // "never overstates, and never by more than a penny per unit".
+        assert.ok(
+          unit * q <= total && total - unit * q < q,
+          `${priceCents}×${q} @${off}%: unit ${unit} × ${q} does not reconcile with total ${total}`,
+        );
+      }
+    }
+  }
+});
+
+test("a discount must be a whole percentage", () => {
+  /**
+   * A fractional discount passed validation and was written into the merchant's
+   * theme as a float literal — `times: 87.5` — which drags the whole Liquid
+   * chain into floating point and hands `money` a non-integer cent value it is
+   * not specified for. Reachable by typing a decimal into the composer, not
+   * only by a crafted request.
+   */
+  const r = validateBlockSpec({
+    type: "bundle_tiers",
+    tiers: [
+      { quantity: 1, discountPercent: 0, highlight: false },
+      { quantity: 2, discountPercent: 12.5, highlight: false },
+    ],
+  } as BlockSpecInput);
+  assert.equal(r.ok, false);
+  assert.ok(!r.ok && r.missing.some((m) => /whole percentage/.test(m)));
+});
+
+test("the popular flag must be a real boolean, not merely truthy", () => {
+  /**
+   * The validator counted with `=== true` while the renderer branched on
+   * truthiness, so `highlight: "yes"` counted as zero here and rendered a
+   * ribbon there — two "Most popular" ribbons on one panel, the exact
+   * self-contradiction the rule exists to prevent.
+   */
+  const r = validateBlockSpec({
+    type: "bundle_tiers",
+    tiers: [
+      { quantity: 1, discountPercent: 0, highlight: "yes" },
+      { quantity: 2, discountPercent: 10, highlight: true },
+    ],
+  } as unknown as BlockSpecInput);
+  assert.equal(r.ok, false);
+  assert.ok(!r.ok && r.missing.some((m) => /true or false/.test(m)));
+});
+
+test("a sparse array is refused rather than validated by omission", () => {
+  /**
+   * `forEach`, `some` and `filter` all SKIP holes. So `[<hole>, {…}]` was never
+   * inspected, validated clean, and then threw inside the renderer — a
+   * validator returning ok on input the renderer cannot render.
+   */
+  const holed: unknown[] = [];
+  holed[1] = { quantity: 2, discountPercent: 10, highlight: false };
+  const r = validateBlockSpec({ type: "bundle_tiers", tiers: holed } as unknown as BlockSpecInput);
+  assert.equal(r.ok, false, "the hole was skipped instead of refused");
+
+  const holedRows: unknown[] = [];
+  holedRows[2] = { label: "Material", value: "Brass" };
+  assert.equal(
+    validateBlockSpec({ type: "spec_table", rows: holedRows } as unknown as BlockSpecInput).ok,
+    false,
+  );
 });
