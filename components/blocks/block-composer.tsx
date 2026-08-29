@@ -154,19 +154,35 @@ export function BlockComposer({
           below is what matters, and a large heading over a completed choice is
           just noise.
         */}
-        <h3
-          className={
-            selected
-              ? "text-sm font-medium text-white/70"
-              : "font-serif text-xl md:text-2xl tracking-tight text-white/90"
-          }
-        >
-          Choose a block
-        </h3>
-        <p className={selected ? "mt-1 text-xs text-white/40" : "mt-1.5 text-sm text-white/55"}>
-          Each one is native Liquid, scoped so it cannot restyle your theme, and
-          rendered in the colours and type we measured on your page.
-        </p>
+        {/*
+          A reserved height, not a resize.
+
+          Swapping text-sm for text-2xl changed the block's own height, so the
+          nine-card grid directly below jumped up ~18px at desktop and ~26px on
+          a phone at the instant of the first click — under the cursor that had
+          just clicked. `min-h` holds the space either way, so the emphasis
+          changes and the layout does not.
+
+          The size is deliberately text-lg rather than text-2xl: the section
+          above this one is an <h2>, and an <h3> rendering larger than its own
+          parent heading inverts the hierarchy for sighted readers even though
+          the levels are correct in the markup.
+        */}
+        <div className="min-h-[3.75rem] sm:min-h-[3.25rem]">
+          <h3
+            className={
+              selected
+                ? "text-sm font-medium text-white/70"
+                : "font-serif text-lg tracking-tight text-white/90"
+            }
+          >
+            Choose a block
+          </h3>
+          <p className={selected ? "mt-1 text-xs text-white/40" : "mt-1 text-sm text-white/55"}>
+            Each one is native Liquid, scoped so it cannot restyle your theme, and
+            rendered in the colours and type we measured on your page.
+          </p>
+        </div>
         <div className="mt-4">
           <BlockGallery selected={selected} onSelect={setSelected} />
         </div>

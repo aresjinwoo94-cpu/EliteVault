@@ -9,15 +9,19 @@ import { BLOCK_CATALOG } from "../../lib/blocks/catalog";
  *
  * The defect this pins shipped: `Thumb` had five branches and the catalogue had
  * nine, so spec_table, assurance_bar, bundle_tiers and low_stock each rendered
- * an EMPTY box. A card whose picture is blank reads as "not finished" rather
- * than "not illustrated" — and it was the four newest blocks, the ones most in
- * need of explaining, that had it.
+ * an EMPTY box — the four newest blocks, the ones most in need of explaining.
  *
- * Checked against the SOURCE rather than by rendering. The component is a
- * client component with no DOM in this test runner, and the failure mode is
- * structural: a type the switch does not mention. Adding a tenth block type
- * without drawing it fails here, on the same commit that adds it, instead of
- * being noticed by whoever opens the gallery next.
+ * Checked against the SOURCE rather than by rendering: the component is a
+ * client component with no DOM in this runner, and the failure mode is
+ * structural — a type the switch does not mention.
+ *
+ * # These guards were weak, and a verifier proved it
+ * The first version of this file passed against three separately broken
+ * implementations: two types drawing byte-identical shapes, an icon library
+ * imported and used, and an ungated `animate-bounce hover:-translate-y-4`.
+ * Each hole is named at the test that closes it, because a guard that reports
+ * green on the thing it exists to catch is worse than no guard — it is a guard
+ * somebody is trusting.
  */
 
 const SRC = join(process.cwd(), "components/blocks/block-gallery.tsx");
@@ -39,6 +43,16 @@ function thumbBody(): string {
   throw new Error("unbalanced braces in Thumb");
 }
 
+/** The drawing instructions for one type's branch, comments stripped. */
+function branchOf(body: string, id: string): string {
+  const at = body.indexOf(`type === "${id}"`);
+  assert.notEqual(at, -1, `${id} has no branch`);
+  const nextAt = BLOCK_CATALOG.map((b) => body.indexOf(`type === "${b.id}"`))
+    .filter((i) => i > at)
+    .sort((a, b) => a - b)[0];
+  return body.slice(at, nextAt ?? body.length).replace(/\/\*[\s\S]*?\*\//g, "");
+}
+
 test("every block type has a diagram branch", () => {
   const body = thumbBody();
   const missing = BLOCK_CATALOG.map((b) => b.id).filter(
@@ -51,67 +65,109 @@ test("every block type has a diagram branch", () => {
   );
 });
 
-test("no two block types share a diagram", () => {
+test("no two block types draw the same picture", () => {
   /**
-   * A branch each is not enough — nine cards that all look alike are nine cards
-   * nobody can tell apart, which is the problem the diagrams exist to solve.
-   * Comparing the drawing instructions per type catches a copy-paste that was
-   * never adapted.
+   * Nine cards that look alike are nine cards nobody can tell apart, which is
+   * the problem the diagrams exist to solve.
+   *
+   * The first version compared a list of TAG NAMES, lowercase-only. That missed
+   * two things at once: the `<Line>` helper carries most of the geometry in
+   * eight of the nine branches and starts with a capital, so it was invisible
+   * to the scan; and comparing tags without their coordinates meant a genuine
+   * duplicate could be waved through by reordering two elements. A verifier
+   * made assurance_bar and low_stock draw byte-identical shapes and all four
+   * tests still passed.
+   *
+   * The signature now carries the geometry — every numeric attribute, sorted,
+   * so order cannot disguise sameness — and counts <Line> as the element it is.
    */
   const body = thumbBody();
-  const drawings = new Map<string, string>();
+  const seen = new Map<string, string>();
 
   for (const { id } of BLOCK_CATALOG) {
-    const at = body.indexOf(`type === "${id}"`);
-    assert.notEqual(at, -1, `${id} has no branch`);
-    // From the branch marker to the start of the next one, or the end.
-    const nextAt = BLOCK_CATALOG.map((b) => body.indexOf(`type === "${b.id}"`))
-      .filter((i) => i > at)
-      .sort((a, b) => a - b)[0];
-    const slice = body.slice(at, nextAt ?? body.length);
-    // Geometry only: the numbers and shapes, not the prose around them.
-    const shape = (slice.match(/<(rect|circle|path|g|line|polygon)\b/g) ?? []).join(",");
-    assert.ok(shape.length > 0, `${id}'s branch draws nothing`);
-    const clash = [...drawings.entries()].find(([, s]) => s === shape);
+    const slice = branchOf(body, id);
+    const elements = slice.match(/<(?:Line|rect|circle|path|g|line|polygon|ellipse)\b/g) ?? [];
+    // Every number and every path command in the branch, sorted: two branches
+    // that place the same shapes at the same coordinates collide however their
+    // source is ordered.
+    const geometry = [
+      ...(slice.match(/-?\d+(?:\.\d+)?/g) ?? []),
+      ...(slice.match(/[MmLlHhVvCcSsQqTtAaZz](?=[\s\d-])/g) ?? []),
+    ].sort();
+    const signature = `${elements.sort().join(",")}|${geometry.join(",")}`;
+
+    assert.ok(elements.length > 0, `${id}'s branch draws nothing`);
+    const clash = [...seen.entries()].find(([, s]) => s === signature);
     assert.equal(
-      clash,
+      clash?.[0],
       undefined,
-      `${id} draws exactly the same shapes as ${clash?.[0]} — one of them was copied and never adapted`,
+      `${id} draws exactly what ${clash?.[0]} draws — one was copied and never adapted`,
     );
-    drawings.set(id, shape);
+    seen.set(id, signature);
   }
 });
 
-test("the diagrams are self-contained: no external images or icon imports", () => {
+test("the diagrams are self-contained: no external images, no icon library", () => {
   /**
-   * Nine cards render at once. Nine network requests to explain nine choices is
-   * the bloat this product argues against, and an icon library pulled in for
-   * thumbnails is the same cost wearing a nicer name.
+   * Nine cards render at once, and nine requests to explain nine choices is the
+   * bloat this product argues against.
+   *
+   * Scanned over the WHOLE FILE, not the Thumb body. The first version looked
+   * only inside Thumb, so `import { ShieldCheck } from "lucide-react"` — which
+   * necessarily sits above it — was undetectable by the test whose own name
+   * promised to catch icon imports. A verifier imported one, used it in a
+   * diagram, and the suite stayed green.
    */
-  const body = thumbBody();
-  for (const forbidden of ["<img", "<image", "url(", "http://", "https://", "<Image"]) {
+  for (const forbidden of ["<img", "<image", "url(", "http://", "https://", "xlink:href"]) {
     assert.ok(
-      !body.includes(forbidden),
-      `the diagrams reference something external: ${forbidden}`,
+      !source.includes(forbidden),
+      `the gallery references something external: ${forbidden}`,
     );
   }
-});
-
-test("the hover animation is gated on prefers-reduced-motion", () => {
-  /**
-   * A motion preference is an accessibility setting, not a style opinion — for
-   * some people animation is a vestibular trigger. Tailwind's `motion-safe:`
-   * compiles to @media (prefers-reduced-motion: no-preference), so an
-   * unprefixed transform/transition here would run regardless of what the
-   * visitor asked their OS for.
-   */
-  const animated = source.match(/className="[^"]*(?:transition|translate|animate)[^"]*"/g) ?? [];
-  const ungated = animated.filter(
-    (c) => /translate-y|animate-/.test(c) && !c.includes("motion-safe:"),
+  const imports = source.match(/^import[\s\S]*?from\s+"([^"]+)"/gm) ?? [];
+  const iconish = imports.filter((i) =>
+    /lucide|heroicons|react-icons|@tabler|feather|phosphor/i.test(i),
   );
   assert.deepEqual(
-    ungated,
+    iconish,
     [],
-    `movement that ignores prefers-reduced-motion: ${ungated.join(" | ")}`,
+    `the diagrams pull in an icon library: ${iconish.join(" | ")}`,
+  );
+});
+
+test("no movement in this file escapes the reduced-motion gate", () => {
+  /**
+   * A motion preference is an accessibility setting, not a style opinion — for
+   * some people animation is a vestibular trigger.
+   *
+   * Two holes in the first version, both proven live. It only read
+   * `className="…"` literals, so the card's own className — built by string
+   * concatenation in a JSX expression — was never scanned at all; and it
+   * accepted a string if `motion-safe:` appeared ANYWHERE in it, so
+   * `motion-safe:transition-transform group-hover:-translate-y-0.5` passed
+   * while gating only the transition and leaving the transform to run as an
+   * instant jump. That is worse than no animation for the person the gate is
+   * for.
+   *
+   * Now: every string literal in the file, and every movement utility inside it
+   * must carry the prefix itself.
+   */
+  const MOVEMENT = /(?:^|[\s"'`])((?:hover:|group-hover:|focus:)?(?:-?translate-[xy]-|scale-|rotate-|animate-|transition\b)[^\s"'`]*)/g;
+  const offenders: string[] = [];
+
+  for (const [literal] of source.matchAll(/"[^"\n]*"|'[^'\n]*'|`[^`\n]*`/g)) {
+    for (const m of literal.matchAll(MOVEMENT)) {
+      const utility = m[1];
+      // `transition-colors` is a paint change, not movement; it does not
+      // trigger the response a motion preference is asking us to avoid.
+      if (utility.startsWith("transition-colors")) continue;
+      if (!utility.includes("motion-safe:")) offenders.push(utility);
+    }
+  }
+
+  assert.deepEqual(
+    [...new Set(offenders)],
+    [],
+    `movement that ignores prefers-reduced-motion: ${[...new Set(offenders)].join(", ")}`,
   );
 });

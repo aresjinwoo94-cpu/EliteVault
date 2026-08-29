@@ -26,8 +26,18 @@ import { BLOCK_VARIANTS } from "@/lib/blocks/variants";
 /** One structural grey and one accent, shared by every diagram. */
 const DIAGRAM = {
   line: "rgb(255 255 255 / 0.38)",
-  faint: "rgb(255 255 255 / 0.20)",
-  panel: "rgb(255 255 255 / 0.07)",
+  faint: "rgb(255 255 255 / 0.28)",
+  /*
+   * The structural layer — cards, table rows, the stock track, the assurance
+   * strip.
+   *
+   * It was 0.07, which composites to 1.19:1 against the card and is simply not
+   * there: low_stock cannot read as PARTLY drained without a visible track,
+   * and feature_grid had no cards. It was also fainter than the 0.22 it
+   * replaced, so the redraw quietly made the older diagrams worse while adding
+   * four new ones.
+   */
+  panel: "rgb(255 255 255 / 0.16)",
   accent: "#2DD4BF",
 } as const;
 
@@ -100,7 +110,7 @@ function Thumb({ type }: { type: CatalogBlockType }) {
       {/* ── You vs them: your column lifted, ticked, in the accent ────────── */}
       {type === "comparison" && (
         <>
-          <rect x="8" y="8" width="48" height="48" rx="3" fill={accent} opacity="0.12" />
+          <rect x="8" y="8" width="48" height="48" rx="3" fill={accent} opacity="0.22" />
           <rect x="8" y="8" width="48" height="10" rx="3" fill={accent} opacity="0.55" />
           <rect x="64" y="8" width="48" height="48" rx="3" fill={panel} />
           <rect x="64" y="8" width="48" height="10" rx="3" fill={faint} />
@@ -136,17 +146,30 @@ function Thumb({ type }: { type: CatalogBlockType }) {
           {[
             // shield
             "M0 -6 l6 2.5 v4 c0 3.5 -2.5 6 -6 7.5 c-3.5 -1.5 -6 -4 -6 -7.5 v-4 z",
-            // truck
-            "M-7 -4 h8 v8 h-8 z M1 -1 h4 l2 3 v2 h-6 z",
-            // return arrow
-            "M4 -3 a6 6 0 1 0 1.5 5 M4 -3 h-4 M4 -3 v4",
+            /*
+             * Truck: box, cab, and two wheels.
+             *
+             * The first attempt was "M-7 -4 h8 v8 h-8 z M1 -1 h4 l2 3 v2 h-6 z"
+             * — a rectangle beside a wedge, sharing a doubled edge at x=1 and
+             * with no wheels at all. At 22px it read as two boxes.
+             */
+            "M-7 -4.5 h8 v7.5 h-8 z M1 -1.5 h3.5 l2.5 3 v3 h-6 z M-4 3 a1.6 1.6 0 1 0 0.01 0 M3.5 3 a1.6 1.6 0 1 0 0.01 0",
+            /*
+             * Return arrow: a three-quarter loop with a real arrowhead.
+             *
+             * The first attempt put both "arrowhead" legs INSIDE the arc circle,
+             * axis-aligned and 90° apart, with one of them pointing along the
+             * arc's departure direction rather than against it — a near-closed
+             * ring with a tick floating in the middle of it.
+             */
+            "M-5.5 1.5 a5.5 5.5 0 1 1 2 4.2 M-5.5 1.5 l-2.5 -2.8 M-5.5 1.5 l3.4 -1.2",
             // padlock
             "M-4 -1 h8 v6 h-8 z M-2.5 -1 v-2.5 a2.5 2.5 0 0 1 5 0 v2.5",
           ].map((d, i) => {
             const cx = 20 + i * 27;
             return (
               <g key={cx}>
-                <circle cx={cx} cy="24" r="11" fill={accent} opacity="0.12" />
+                <circle cx={cx} cy="24" r="11" fill={accent} opacity="0.22" />
                 <g transform={`translate(${cx} 24)`}>
                   <path
                     d={d}
@@ -231,7 +254,7 @@ function Thumb({ type }: { type: CatalogBlockType }) {
       {/* ── Assurance bar: one quiet strip, centred ───────────────────────── */}
       {type === "assurance_bar" && (
         <>
-          <rect x="8" y="22" width="104" height="20" rx="6" fill={accent} opacity="0.1" />
+          <rect x="8" y="22" width="104" height="20" rx="6" fill={accent} opacity="0.22" />
           <g transform="translate(42 32)">
             <path
               d="M0 -6 l6 2.5 v4 c0 3.5 -2.5 6 -6 7.5 c-3.5 -1.5 -6 -4 -6 -7.5 v-4 z"
@@ -262,10 +285,18 @@ function Thumb({ type }: { type: CatalogBlockType }) {
                 height="16"
                 rx="3"
                 fill={pop ? accent : panel}
-                opacity={pop ? 0.14 : 1}
+                /*
+                 * fillOpacity, NOT opacity.
+                 *
+                 * SVG `opacity` composites the whole element, so it multiplies
+                 * the stroke as well: 0.55 × 0.14 put the outline at 1.13:1
+                 * against the card — invisible. That outline is the only thing
+                 * making the middle tier read as the highlighted one.
+                 */
+                fillOpacity={pop ? 0.18 : 1}
                 stroke={pop ? accent : "none"}
-                strokeWidth="1"
-                strokeOpacity="0.55"
+                strokeWidth="1.25"
+                strokeOpacity="0.8"
               />
               {/* qty */}
               <Line x={14} y={y + 6} w={16} h={4} o={0.8} />
@@ -279,7 +310,7 @@ function Thumb({ type }: { type: CatalogBlockType }) {
                 height="8"
                 rx="4"
                 fill={accent}
-                opacity={pop ? 0.75 : 0.35}
+                opacity={pop ? 0.85 : 0.5}
               />
               {pop && (
                 /* the POPULAR ribbon, as a notch on the edge */

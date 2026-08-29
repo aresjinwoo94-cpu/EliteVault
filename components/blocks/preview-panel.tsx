@@ -122,13 +122,30 @@ export function PreviewPanel({ initial }: { initial: PreviewProject }) {
    * place. It is a refresh, not a navigation: scroll position and the state of
    * everything on the page survive it.
    */
-  const refreshed = useRef(false);
+  const refreshedFor = useRef<string | null>(null);
   useEffect(() => {
-    if (refreshed.current) return;
     if (project.status !== "ready" || !project.design_tokens) return;
-    // Nothing to reveal if the page already rendered with tokens.
-    if (initial.design_tokens) return;
-    refreshed.current = true;
+
+    /**
+     * Refresh when the measurement CHANGED, not merely the first time.
+     *
+     * The first version returned early if the page already had tokens, which
+     * covered the first run and left the second one broken: the pipeline
+     * rewrites design_tokens on EVERY run, so after "Re-measure this page" the
+     * page showed two different measurements at once — TokenReadout (client
+     * state, fresh) above TokenEditor (props, stale). The editor is where the
+     * merchant corrects values before the export reads them, so the stale set
+     * was the one that would have reached their Liquid.
+     *
+     * Comparing the readings instead is self-limiting: after the refresh the
+     * server hands down the same tokens we polled, the signatures match, and
+     * nothing fires again. `refreshedFor` bounds it even if they never
+     * converge — one refresh per distinct reading, never a loop.
+     */
+    const polled = JSON.stringify(project.design_tokens);
+    if (polled === JSON.stringify(initial.design_tokens)) return;
+    if (polled === refreshedFor.current) return;
+    refreshedFor.current = polled;
     router.refresh();
   }, [project.status, project.design_tokens, initial.design_tokens, router]);
 
