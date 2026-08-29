@@ -38,6 +38,10 @@ type Draft = {
   comparison: Extract<BlockSpecInput, { type: "comparison" }>;
   feature_grid: Extract<BlockSpecInput, { type: "feature_grid" }>;
   product_stats: Extract<BlockSpecInput, { type: "product_stats" }>;
+  spec_table: Extract<BlockSpecInput, { type: "spec_table" }>;
+  assurance_bar: Extract<BlockSpecInput, { type: "assurance_bar" }>;
+  bundle_tiers: Extract<BlockSpecInput, { type: "bundle_tiers" }>;
+  low_stock: Extract<BlockSpecInput, { type: "low_stock" }>;
 };
 
 const EMPTY: Draft = {
@@ -59,6 +63,32 @@ const EMPTY: Draft = {
     ],
   },
   product_stats: { type: "product_stats", stats: [{ label: "", value: "", unit: "" }] },
+  spec_table: {
+    type: "spec_table",
+    rows: [
+      { label: "", value: "" },
+      { label: "", value: "" },
+    ],
+  },
+  assurance_bar: { type: "assurance_bar", items: [{ icon: "returns", text: "" }] },
+  /*
+   * Seeded with quantities but ZERO discount, deliberately.
+   *
+   * "Buy 2, save 10%" as a default would be us inventing a discount rule for
+   * a shop we know nothing about — and the merchant most likely to accept a
+   * prefilled number is the one least likely to check it against their real
+   * rules. The quantities are a shape; the percentages are a claim.
+   */
+  bundle_tiers: {
+    type: "bundle_tiers",
+    tiers: [
+      { quantity: 1, discountPercent: 0, highlight: false },
+      { quantity: 2, discountPercent: 0, highlight: false },
+    ],
+  },
+  // A threshold is a preference, not a claim, so a starting point is not an
+  // invention — and design-references.md §7 puts "reads as a status" under 10.
+  low_stock: { type: "low_stock", threshold: 5 },
 };
 
 export function BlockComposer({
@@ -162,6 +192,30 @@ export function BlockComposer({
               <StatsForm
                 value={draft.product_stats}
                 onChange={(v) => update("product_stats", v)}
+              />
+            )}
+            {selected === "spec_table" && (
+              <SpecTableForm
+                value={draft.spec_table}
+                onChange={(v) => update("spec_table", v)}
+              />
+            )}
+            {selected === "assurance_bar" && (
+              <AssuranceForm
+                value={draft.assurance_bar}
+                onChange={(v) => update("assurance_bar", v)}
+              />
+            )}
+            {selected === "bundle_tiers" && (
+              <BundleForm
+                value={draft.bundle_tiers}
+                onChange={(v) => update("bundle_tiers", v)}
+              />
+            )}
+            {selected === "low_stock" && (
+              <LowStockForm
+                value={draft.low_stock}
+                onChange={(v) => update("low_stock", v)}
               />
             )}
           </div>
@@ -591,6 +645,266 @@ function FeatureForm({
           Add a feature
         </Button>
       )}
+    </div>
+  );
+}
+
+function SpecTableForm({
+  value,
+  onChange,
+}: {
+  value: Draft["spec_table"];
+  onChange: (v: Draft["spec_table"]) => void;
+}) {
+  const set = (i: number, patch: Partial<(typeof value.rows)[number]>) =>
+    onChange({
+      ...value,
+      rows: value.rows.map((row, idx) => (idx === i ? { ...row, ...patch } : row)),
+    });
+
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-white/50">
+        The fact a shopper leaves your page to go and look up. We don&apos;t pull
+        these from Shopify — a weight we read off your catalogue isn&apos;t a spec
+        you checked.
+      </p>
+      {value.rows.map((row, i) => (
+        <div key={i} className="grid gap-3 sm:grid-cols-[10rem_1fr_auto] sm:items-end">
+          <label>
+            <FieldLabel>Spec</FieldLabel>
+            <Input
+              value={row.label}
+              onChange={(e) => set(i, { label: e.target.value })}
+              placeholder="e.g. Material"
+            />
+          </label>
+          <label>
+            <FieldLabel>Your answer</FieldLabel>
+            <Input
+              value={row.value}
+              onChange={(e) => set(i, { value: e.target.value })}
+              placeholder="e.g. Solid brass, rhodium plated"
+            />
+          </label>
+          <Button
+            variant="ghost"
+            onClick={() => onChange({ ...value, rows: value.rows.filter((_, idx) => idx !== i) })}
+            aria-label={`Remove spec ${i + 1}`}
+            className="h-10"
+          >
+            <Trash2 className="size-4" />
+          </Button>
+        </div>
+      ))}
+      <Button
+        variant="secondary"
+        onClick={() => onChange({ ...value, rows: [...value.rows, { label: "", value: "" }] })}
+      >
+        <Plus className="size-4" />
+        Add a spec
+      </Button>
+    </div>
+  );
+}
+
+function AssuranceForm({
+  value,
+  onChange,
+}: {
+  value: Draft["assurance_bar"];
+  onChange: (v: Draft["assurance_bar"]) => void;
+}) {
+  const set = (i: number, patch: Partial<(typeof value.items)[number]>) =>
+    onChange({
+      ...value,
+      items: value.items.map((item, idx) => (idx === i ? { ...item, ...patch } : item)),
+    });
+
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-white/50">
+        One promise, or two. This strip sits under your buy button to remove the
+        last objection — more than two and it starts competing with the button
+        it&apos;s there to support.
+      </p>
+      {value.items.map((item, i) => (
+        <div key={i} className="grid gap-3 sm:grid-cols-[9rem_1fr_auto] sm:items-end">
+          <label>
+            <FieldLabel>Icon</FieldLabel>
+            <select
+              value={item.icon}
+              onChange={(e) => set(i, { icon: e.target.value })}
+              className="h-10 w-full rounded-lg border border-white/[0.08] bg-transparent px-3 text-sm text-white/90"
+            >
+              {TRUST_ICONS.map((ic) => (
+                <option key={ic} value={ic} className="bg-neutral-900">
+                  {ic}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <FieldLabel>What you promise</FieldLabel>
+            <Input
+              value={item.text}
+              onChange={(e) => set(i, { text: e.target.value })}
+              placeholder="e.g. 30-day money-back guarantee"
+            />
+          </label>
+          <Button
+            variant="ghost"
+            onClick={() =>
+              onChange({ ...value, items: value.items.filter((_, idx) => idx !== i) })
+            }
+            aria-label={`Remove promise ${i + 1}`}
+            className="h-10"
+          >
+            <Trash2 className="size-4" />
+          </Button>
+        </div>
+      ))}
+      {value.items.length < 2 && (
+        <Button
+          variant="secondary"
+          onClick={() =>
+            onChange({ ...value, items: [...value.items, { icon: "shipping", text: "" }] })
+          }
+        >
+          <Plus className="size-4" />
+          Add a second promise
+        </Button>
+      )}
+    </div>
+  );
+}
+
+/**
+ * The discount percentages, and nothing about money.
+ *
+ * The form asks for percentages rather than prices on purpose: a price typed
+ * here would be frozen at the moment it was typed, and the merchant would find
+ * out months after their next price change. The block computes the money from
+ * `product.price` at render time in both modes.
+ */
+function BundleForm({
+  value,
+  onChange,
+}: {
+  value: Draft["bundle_tiers"];
+  onChange: (v: Draft["bundle_tiers"]) => void;
+}) {
+  const set = (i: number, patch: Partial<(typeof value.tiers)[number]>) =>
+    onChange({
+      ...value,
+      tiers: value.tiers.map((tier, idx) => (idx === i ? { ...tier, ...patch } : tier)),
+    });
+
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-white/50">
+        Percentages only — the prices are worked out from your product every time
+        the page renders, so they stay right when you change what it costs.
+        Match your real discount rules: this block shows the maths, it
+        doesn&apos;t apply the discount.
+      </p>
+      {value.tiers.map((tier, i) => (
+        <div key={i} className="grid gap-3 sm:grid-cols-[7rem_8rem_1fr_auto] sm:items-end">
+          <label>
+            <FieldLabel>Quantity</FieldLabel>
+            <Input
+              value={String(tier.quantity)}
+              onChange={(e) => set(i, { quantity: Number(e.target.value.replace(/\D/g, "")) || 0 })}
+              inputMode="numeric"
+              placeholder="2"
+            />
+          </label>
+          <label>
+            <FieldLabel>% off</FieldLabel>
+            <Input
+              value={String(tier.discountPercent)}
+              onChange={(e) =>
+                set(i, { discountPercent: Number(e.target.value.replace(/[^\d.]/g, "")) || 0 })
+              }
+              inputMode="decimal"
+              placeholder="10"
+            />
+          </label>
+          <label className="flex items-center gap-2 h-10">
+            <input
+              type="radio"
+              name="ev-bundle-popular"
+              checked={tier.highlight}
+              onChange={() =>
+                onChange({
+                  ...value,
+                  // Exactly one, enforced here as well as in the validator —
+                  // two "most popular" ribbons is a claim contradicting itself.
+                  tiers: value.tiers.map((t, idx) => ({ ...t, highlight: idx === i })),
+                })
+              }
+              className="size-4"
+            />
+            <span className="text-xs text-white/70">Most popular</span>
+          </label>
+          <Button
+            variant="ghost"
+            onClick={() =>
+              onChange({ ...value, tiers: value.tiers.filter((_, idx) => idx !== i) })
+            }
+            aria-label={`Remove tier ${i + 1}`}
+            className="h-10"
+          >
+            <Trash2 className="size-4" />
+          </Button>
+        </div>
+      ))}
+      <Button
+        variant="secondary"
+        onClick={() =>
+          onChange({
+            ...value,
+            tiers: [...value.tiers, { quantity: 0, discountPercent: 0, highlight: false }],
+          })
+        }
+      >
+        <Plus className="size-4" />
+        Add a tier
+      </Button>
+    </div>
+  );
+}
+
+function LowStockForm({
+  value,
+  onChange,
+}: {
+  value: Draft["low_stock"];
+  onChange: (v: Draft["low_stock"]) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-white/50">
+        We can&apos;t see your stock levels — the public product data Shopify
+        gives us says whether something is available, not how many are left. So
+        the block reads the real number from your theme when it runs, and the
+        preview here shows your threshold as an example.
+      </p>
+      <label className="block max-w-[12rem]">
+        <FieldLabel>Show it when stock drops to</FieldLabel>
+        <Input
+          value={String(value.threshold)}
+          onChange={(e) =>
+            onChange({ ...value, threshold: Number(e.target.value.replace(/\D/g, "")) || 0 })
+          }
+          inputMode="numeric"
+          placeholder="5"
+        />
+      </label>
+      <p className="text-xs text-white/40">
+        If you don&apos;t track inventory on this product, the block renders
+        nothing at all rather than guessing.
+      </p>
     </div>
   );
 }

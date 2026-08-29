@@ -70,6 +70,28 @@ export interface ProductStatInput {
   unit: string;
 }
 
+export interface SpecRowInput {
+  /** "Material", "Dimensions", "Care" — the thing being specified. */
+  label: string;
+  /** The merchant's own answer. Prose is fine here; it is a spec sheet. */
+  value: string;
+}
+
+export interface AssuranceItemInput {
+  icon: TrustIcon | string;
+  /** The reassurance itself, in the merchant's words. */
+  text: string;
+}
+
+export interface BundleTierInput {
+  /** How many units this tier is for. 1 is the baseline and needs no discount. */
+  quantity: number;
+  /** Percentage off, as the merchant sets it in their own discount rules. */
+  discountPercent: number;
+  /** The "most popular" ribbon. At most one tier may carry it. */
+  highlight: boolean;
+}
+
 /**
  * The visual variant, from lib/blocks/variants.ts.
  *
@@ -100,7 +122,34 @@ export type BlockSpecInput =
       othersName?: string | null;
     } & WithVariant)
   | ({ type: "feature_grid"; features: FeatureItemInput[] } & WithVariant)
-  | ({ type: "product_stats"; stats: ProductStatInput[] } & WithVariant);
+  | ({ type: "product_stats"; stats: ProductStatInput[] } & WithVariant)
+  | ({ type: "spec_table"; rows: SpecRowInput[] } & WithVariant)
+  | ({ type: "assurance_bar"; items: AssuranceItemInput[] } & WithVariant)
+  | ({
+      type: "bundle_tiers";
+      /**
+       * The tiers, as percentages. The MONEY is never stored — it is computed
+       * from `product.price` at render time, in Liquid for the export and from
+       * the measured product for the preview.
+       *
+       * That is the whole point of the block: a merchant who changes their
+       * price should not discover months later that a bundle panel is quoting
+       * the old one. A stored amount would be correct exactly once.
+       */
+      tiers: BundleTierInput[];
+    } & WithVariant)
+  | ({
+      type: "low_stock";
+      /**
+       * Show the block only when stock is at or below this.
+       *
+       * Also the figure the PREVIEW illustrates with, so no number here was
+       * invented by us: the merchant chose it. The exported Liquid never uses
+       * it as a count — it reads `inventory_quantity` live — which is the only
+       * way the number stays true after export.
+       */
+      threshold: number;
+    } & WithVariant);
 
 export type CatalogBlockType = BlockSpecInput["type"];
 
@@ -205,6 +254,58 @@ export const BLOCK_CATALOG: CatalogEntry[] = [
     reference: "6. Specs / size table",
     interactivity: "static",
   },
+  {
+    id: "spec_table",
+    name: "Spec table",
+    summary:
+      "Material, dimensions, weight, care — the fact a shopper leaves to go and look up.",
+    requires: ["At least two specs, each with a label and your own answer"],
+    placement: "Under the product description",
+    reference: "6. Specs / size table",
+    interactivity: "static",
+  },
+  {
+    id: "assurance_bar",
+    name: "Assurance bar",
+    summary:
+      "One quiet strip under the button — the guarantee or delivery promise that removes the last objection.",
+    requires: ["Your actual guarantee or delivery promise, in one line"],
+    placement: "Directly under the Add to cart button",
+    reference: "5. Guarantee / delivery estimate",
+    interactivity: "static",
+  },
+  {
+    id: "bundle_tiers",
+    name: "Volume pricing",
+    summary:
+      "What buying two or three actually costs, priced live from your product — so it stays right when you change the price.",
+    requires: [
+      "The quantities you offer a discount on",
+      "The percentage off each one, matching your real discount rules",
+    ],
+    placement: "Under the price, above Add to cart",
+    reference: "4. Bundle / volume pricing",
+    interactivity: "presentational",
+    // The owner rejected an earlier draft that kept a radio affordance "for
+    // fidelity". A shopper who clicks a dead control concludes the STORE is
+    // broken, and the merchant pays for our fidelity with their trust. Said
+    // here, before they choose, and repeated inside the block itself.
+    limitation: "Shows volume pricing; doesn't add to cart",
+  },
+  {
+    id: "low_stock",
+    name: "Low stock",
+    summary:
+      "“Only a few left”, read live from your theme's real inventory — never a number frozen at export.",
+    requires: ["The stock level below which you want it to appear"],
+    placement: "Directly under the price",
+    reference: "7. Low stock / scarcity",
+    interactivity: "static",
+    // Honest about where the preview stands: the public product endpoint we
+    // measure from returns `available` as a boolean and no quantity, so the
+    // preview cannot show the real figure. The export can, and does.
+    limitation: "Preview shows your threshold as an example; the export reads live stock",
+  },
 ];
 
 /**
@@ -226,9 +327,24 @@ const MAX = {
   statLabel: 40,
   statValue: 12,
   unit: 8,
+  // A spec answer is prose ("100% merino, machine washable at 30°"), so it
+  // gets more room than a comparison cell — but still a cap, because a spec
+  // table with a paragraph in it stops being scannable, which is the pattern.
+  specValue: 160,
 } as const;
 
-const MAX_ITEMS = { trust: 6, benefits: 6, rows: 8, stats: 6, features: 4 } as const;
+const MAX_ITEMS = {
+  trust: 6,
+  benefits: 6,
+  rows: 8,
+  stats: 6,
+  features: 4,
+  specRows: 12,
+  // See design-references.md §5: the strip is a floor under the decision, not
+  // a second trust row.
+  assurance: 2,
+  tiers: 4,
+} as const;
 
 function filled(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
@@ -466,6 +582,135 @@ export function validateBlockSpec(spec: BlockSpecInput): ValidateResult {
           else text(`Stat ${i + 1} unit`, stat.unit, MAX.unit);
         }
       });
+      break;
+    }
+
+    case "spec_table": {
+      const rows = Array.isArray(spec.rows) ? spec.rows : [];
+      if (rows.length < 2) {
+        // One row is not a table, and a table is the pattern — see
+        // design-references.md §6. A single fact belongs in the description.
+        missing.push("At least two specs (one row isn't a table)");
+      }
+      if (rows.length > MAX_ITEMS.specRows) {
+        missing.push(`Too many specs (max ${MAX_ITEMS.specRows})`);
+      }
+      rows.forEach((row, i) => {
+        if (!isRecord(row)) {
+          missing.push(`Spec ${i + 1} is malformed.`);
+          return;
+        }
+        if (!text(`Spec ${i + 1} label`, row.label, MAX.statLabel)) {
+          missing.push(`Spec ${i + 1}: what does it describe?`);
+        }
+        // No autofill from the product endpoint, deliberately. Shopify exposes
+        // weight and a type, and pulling them would put OUR reading of their
+        // catalogue on their page as if they had checked it.
+        if (!text(`Spec ${i + 1} value`, row.value, MAX.specValue)) {
+          missing.push(`Spec ${i + 1}: your own answer`);
+        }
+      });
+      break;
+    }
+
+    case "assurance_bar": {
+      const items = Array.isArray(spec.items) ? spec.items : [];
+      if (items.length === 0) {
+        missing.push("Your guarantee or delivery promise — we don't invent these");
+      }
+      if (items.length > MAX_ITEMS.assurance) {
+        // Two is the ceiling because the pattern is a FLOOR under the decision,
+        // not a second trust row. A strip with four claims competes with the
+        // buy button it exists to support (design-references.md §5).
+        missing.push(
+          `An assurance bar holds one or two promises (max ${MAX_ITEMS.assurance}) — for more, use Trust icons`,
+        );
+      }
+      items.forEach((item, i) => {
+        if (!isRecord(item)) {
+          missing.push(`Assurance ${i + 1} is malformed.`);
+          return;
+        }
+        if (!text(`Assurance ${i + 1}`, item.text, MAX.detail)) {
+          missing.push(`Assurance ${i + 1}: what does it promise?`);
+        }
+        if (!TRUST_ICONS.includes(item.icon as TrustIcon)) {
+          missing.push(`Assurance ${i + 1}: pick an icon from the list.`);
+        }
+      });
+      break;
+    }
+
+    case "bundle_tiers": {
+      const tiers = Array.isArray(spec.tiers) ? spec.tiers : [];
+      if (tiers.length < 2) {
+        missing.push("At least two tiers (volume pricing needs something to compare)");
+      }
+      if (tiers.length > MAX_ITEMS.tiers) {
+        missing.push(`Too many tiers (max ${MAX_ITEMS.tiers})`);
+      }
+      const seen = new Set<number>();
+      tiers.forEach((tier, i) => {
+        if (!isRecord(tier)) {
+          missing.push(`Tier ${i + 1} is malformed.`);
+          return;
+        }
+        const qty = tier.quantity;
+        if (typeof qty !== "number" || !Number.isInteger(qty) || qty < 1 || qty > 99) {
+          missing.push(`Tier ${i + 1}: a whole quantity between 1 and 99`);
+        } else if (seen.has(qty)) {
+          // Two tiers for the same quantity renders two different prices for
+          // the same purchase, on the merchant's storefront.
+          missing.push(`Tier ${i + 1}: quantity ${qty} is listed twice`);
+        } else seen.add(qty);
+
+        const off = tier.discountPercent;
+        if (typeof off !== "number" || !Number.isFinite(off) || off < 0 || off > 90) {
+          // Capped well below 100: a tier at 100% off is a free product, and a
+          // typo that publishes one is the single most expensive thing this
+          // block could do to a store.
+          missing.push(`Tier ${i + 1}: a discount between 0 and 90 percent`);
+        }
+      });
+      if (tiers.filter((t) => isRecord(t) && t.highlight === true).length > 1) {
+        // Two "most popular" ribbons is not a layout bug, it is a claim that
+        // contradicts itself.
+        missing.push("Only one tier can be the popular one");
+      }
+      // Allowed, but worth saying: a bigger box that costs more per unit is the
+      // thing shoppers screenshot and post.
+      const sorted = tiers
+        .filter((t): t is { quantity: number; discountPercent: number; highlight: boolean } =>
+          isRecord(t) && typeof t.quantity === "number" && typeof t.discountPercent === "number")
+        .sort((a, b) => a.quantity - b.quantity);
+      for (let i = 1; i < sorted.length; i++) {
+        if (sorted[i].discountPercent < sorted[i - 1].discountPercent) {
+          warnings.push(
+            `Buying ${sorted[i].quantity} is discounted less than buying ${sorted[i - 1].quantity}. That's allowed, but shoppers read it as a penalty for buying more.`,
+          );
+          break;
+        }
+      }
+      break;
+    }
+
+    case "low_stock": {
+      const threshold = spec.threshold;
+      if (
+        typeof threshold !== "number" ||
+        !Number.isInteger(threshold) ||
+        threshold < 1 ||
+        threshold > 100
+      ) {
+        missing.push("The stock level below which it appears (a whole number, 1–100)");
+      } else if (threshold > 25) {
+        // Not refused — some stores genuinely run at that scale — but "Only 80
+        // left" is the version of this pattern that reads as a threat rather
+        // than a status, which is the failure mode in §7.
+        warnings.push(
+          `At ${threshold} the message shows almost always, which shoppers learn to ignore. Under 10 is where it reads as a real status.`,
+        );
+      }
       break;
     }
   }

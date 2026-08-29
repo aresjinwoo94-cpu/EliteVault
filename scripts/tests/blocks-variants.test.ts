@@ -9,7 +9,12 @@ import {
   resolveVariant,
 } from "../../lib/blocks/variants";
 import { BLOCK_CATALOG, type BlockSpecInput } from "../../lib/blocks/catalog";
-import { renderBlock, BLOCK_PREFIX, selectorsOf } from "../../lib/blocks/render-block";
+import {
+  renderBlock,
+  BLOCK_PREFIX,
+  selectorsOf,
+  BLOCK_CHROME,
+} from "../../lib/blocks/render-block";
 import { normalizeDesignTokens, type RawTokenSample } from "../../lib/blocks/design-tokens";
 import type { BlocksProduct } from "../../lib/blocks/product-json";
 
@@ -96,6 +101,28 @@ const SPECS: Record<string, BlockSpecInput> = {
     type: "product_stats",
     stats: [{ label: "Repeat buyers", value: "38", unit: "%" }],
   },
+  spec_table: {
+    type: "spec_table",
+    rows: [
+      { label: "Material", value: "Solid brass, rhodium plated" },
+      { label: "Width", value: "2.4mm" },
+    ],
+  },
+  assurance_bar: {
+    type: "assurance_bar",
+    items: [{ icon: "returns", text: "60-day money-back guarantee" }],
+  },
+  bundle_tiers: {
+    type: "bundle_tiers",
+    tiers: [
+      { quantity: 1, discountPercent: 0, highlight: false },
+      { quantity: 3, discountPercent: 15, highlight: true },
+    ],
+  },
+  low_stock: {
+    type: "low_stock",
+    threshold: 6,
+  },
 };
 
 /** Visible text only — tags and attributes stripped. */
@@ -140,6 +167,23 @@ test("every catalogue type has variants, and every variant is reachable", () => 
  * placeholder; "Free shipping" would be a claim.
  */
 const LAYOUT_GLYPHS = new Set(["—", "✓", "✗", "vs", "of", "-"]);
+
+/**
+ * The renderer's OWN vocabulary, read from the module rather than restated.
+ *
+ * Restating it here would let the two drift, and the drift would land on the
+ * permissive side: a word removed from the renderer stays allowed forever.
+ */
+const CHROME = new Set<string>(BLOCK_CHROME);
+
+/**
+ * Types whose output contains figures derived from the measured product price.
+ *
+ * Narrow on purpose. A blanket "numbers are fine" would let any block print
+ * "50%" as an invented claim; naming the types keeps the exemption reviewable,
+ * and the maths is pinned by its own test rather than waved through here.
+ */
+const COMPUTES_MONEY = new Set(["bundle_tiers"]);
 
 /**
  * Words the merchant (or the store) actually supplied — VALUES only.
@@ -219,7 +263,14 @@ test("a variant never shows a word the merchant didn't supply", () => {
     for (const v of BLOCK_VARIANTS[entry.id]) {
       const words = textOf(render(spec, v.id).html).split(" ").filter(Boolean);
       const invented = words.filter(
-        (w) => !supplied.has(w) && !LAYOUT_GLYPHS.has(w),
+        (w) =>
+          !supplied.has(w) &&
+          !LAYOUT_GLYPHS.has(w) &&
+          !CHROME.has(w) &&
+          // Money and percentages the block COMPUTES from the store's own
+          // price. Allowed only for the types that declare they compute, and
+          // the arithmetic itself is pinned separately in blocks-bundle.test.
+          !(COMPUTES_MONEY.has(entry.id) && /^[£$€]?[\d.,]+%?$/.test(w)),
       );
       assert.deepEqual(
         invented,
@@ -383,4 +434,32 @@ test("every class the renderer emits has a CSS rule behind it", () => {
   assert.ok(emitted.size > 10, "the scan found almost no markup — the walk is broken");
   const dead = [...emitted].filter((c) => !styled.has(c)).sort();
   assert.deepEqual(dead, [], `classes emitted with no CSS rule: ${dead.join(", ")}`);
+});
+
+test("every custom property the CSS reads is one the block declares", () => {
+  /**
+   * A `var(--ev-typo)` does not fail. The declaration is dropped at computed
+   * value time and the property falls back to its initial value, silently — so
+   * a renamed token shows up as text that lost its weight, or a panel that lost
+   * its tint, on the merchant's storefront rather than in this suite.
+   *
+   * Caught one on the way in: the volume-pricing block read
+   * `--ev-heading-weight` while the block declares `--ev-weight-heading`, which
+   * would have shipped the tier quantities un-bolded.
+   */
+  for (const entry of BLOCK_CATALOG) {
+    for (const v of BLOCK_VARIANTS[entry.id]) {
+      const { css } = render(SPECS[entry.id], v.id);
+      const declared = new Set(
+        [...css.matchAll(/(--[a-z0-9-]+)\s*:/g)].map((m) => m[1]),
+      );
+      const read = [...css.matchAll(/var\((--[a-z0-9-]+)/g)].map((m) => m[1]);
+      const undeclared = [...new Set(read)].filter((n) => !declared.has(n));
+      assert.deepEqual(
+        undeclared,
+        [],
+        `${entry.id}/${v.id} reads custom properties nothing declares: ${undeclared.join(", ")}`,
+      );
+    }
+  }
 });

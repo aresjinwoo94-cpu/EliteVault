@@ -126,7 +126,14 @@ is broken, and the merchant pays for our fidelity with their trust. It ships as
 an information panel: here is what volume costs. The catalogue labels it
 "shows volume pricing; doesn't add to cart" before the merchant chooses it.
 
-**Variants:** `stacked`, `side_by_side`. *(Phase 2.)*
+**Variants:** `stacked`, `side_by_side`. **Shipped.**
+
+**Built as.** The money is never stored — only the quantities and percentages
+are. Totals, per-unit prices and savings are computed from `product.price` in
+Liquid for the export and from the measured product for the preview, so a
+merchant who changes their price does not find a panel quoting the old one. The
+"doesn't add to cart" line renders INSIDE the block, not only in the catalogue:
+the shopper never saw the catalogue.
 
 ---
 
@@ -141,7 +148,12 @@ decision, not a shout.
 buy button. The failure mode is making it loud enough to pull attention away
 from the CTA it is supposed to support.
 
-**Variants:** `single_strip`, `split_two`. *(Phase 2.)*
+**Variants:** `single_strip`, `split_two`. **Shipped.**
+
+**Built as.** Capped at two promises by the validator, and a merchant who asks
+for more is pointed at Trust icons rather than refused flatly. Painted on
+`--ev-inset` at reduced opacity, because the failure mode of this pattern is
+winning attention from the button it exists to support.
 
 ---
 
@@ -157,7 +169,14 @@ the shopper who has already decided and is checking one fact before buying.
 **What makes it work:** it prevents the tab-close. A shopper who cannot find a
 dimension leaves to search for it and does not come back.
 
-**Variants:** `zebra`, `divided`, `two_column`. *(Phase 2.)*
+**Variants:** `zebra`, `divided`, `two_column`. **Shipped.**
+
+**Built as.** Literal in both modes — every value is the merchant's own answer,
+so there is no Liquid object to read it from. Deliberately NOT autofilled from
+the product endpoint even though Shopify exposes a weight and a type: putting
+our reading of their catalogue on their page as though they had checked it is
+the invention this feature refuses. Two rows minimum, because one row is not a
+table.
 
 ---
 
@@ -182,7 +201,14 @@ see the real figure from where we stand.
 That trade is strictly better than the alternative: the number stays true
 forever instead of being frozen at export time.
 
-**Variants:** `bar`, `inline`. *(Phase 2.)*
+**Variants:** `bar`, `inline`. **Shipped.**
+
+**Built as.** The threshold the merchant sets is a CONDITION in the export, never
+a count: the exported Liquid reads `inventory_quantity` live and is wrapped in
+`inventory_management`, so a store that does not track stock renders nothing at
+all rather than an empty box or a zero. The preview shows the threshold as a
+labelled example, which is the honest thing available to us from a product
+endpoint that reports availability as a boolean.
 
 ---
 

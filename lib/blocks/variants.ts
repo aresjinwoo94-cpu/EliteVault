@@ -172,6 +172,82 @@ export const BLOCK_VARIANTS: Record<CatalogBlockType, BlockVariant[]> = {
       reference: "6. Specs / size table",
     },
   ],
+
+  spec_table: [
+    {
+      id: "zebra",
+      name: "Zebra",
+      summary:
+        "Alternating row tints. Easiest to track across on a long list of specs.",
+      mobile: "Label above value, so a long dimension never gets crushed.",
+      reference: "6. Specs / size table",
+    },
+    {
+      id: "divided",
+      name: "Divided",
+      summary: "Hairline rules instead of fills — quieter on a busy page.",
+      mobile: "Label above value, same as zebra.",
+      reference: "6. Specs / size table",
+    },
+    {
+      id: "two_column",
+      name: "Two columns",
+      summary: "Pairs side by side, for when the list is long but each value is short.",
+      mobile: "Collapses to one column — two columns of specs on a phone is unreadable.",
+      reference: "6. Specs / size table",
+    },
+  ],
+
+  assurance_bar: [
+    {
+      id: "single_strip",
+      name: "Single strip",
+      summary: "One centred line on a soft tint. The pattern in its plainest form.",
+      mobile: "Icon above the text, centred.",
+      reference: "5. Guarantee / delivery estimate",
+    },
+    {
+      id: "split_two",
+      name: "Split",
+      summary: "Two promises side by side, divided down the middle.",
+      mobile: "Stacks; the divider becomes a horizontal rule.",
+      reference: "5. Guarantee / delivery estimate",
+    },
+  ],
+
+  bundle_tiers: [
+    {
+      id: "stacked",
+      name: "Stacked",
+      summary: "One row per tier, quantity left, price and saving right.",
+      mobile: "Its natural shape — nothing changes.",
+      reference: "4. Bundle / volume pricing",
+    },
+    {
+      id: "side_by_side",
+      name: "Side by side",
+      summary: "Tiers as cards across, with the popular one lifted.",
+      mobile: "Stacks to one column rather than shrinking the prices.",
+      reference: "4. Bundle / volume pricing",
+    },
+  ],
+
+  low_stock: [
+    {
+      id: "bar",
+      name: "Stock bar",
+      summary: "The message with a thin depletion bar beneath it.",
+      mobile: "Full width; the bar keeps its height.",
+      reference: "7. Low stock / scarcity",
+    },
+    {
+      id: "inline",
+      name: "Inline",
+      summary: "Just the line, with a dot. For pages that already have enough going on.",
+      mobile: "Unchanged — it is one line.",
+      reference: "7. Low stock / scarcity",
+    },
+  ],
 };
 
 /** The variant a block gets before the merchant chooses one. */

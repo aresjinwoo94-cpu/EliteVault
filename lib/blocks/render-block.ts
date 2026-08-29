@@ -38,6 +38,34 @@ import { resolveVariant } from "./variants";
 export const BLOCK_PREFIX = "ev-blk";
 
 /**
+ * Every word the RENDERER itself may print.
+ *
+ * A closed, reviewable list, and the test reads it rather than trusting it.
+ *
+ * The truthfulness rule says nothing appears that the merchant didn't type, and
+ * the variant test enforces that word by word. But a table needs the word for a
+ * column and a savings badge needs the word for saving — labels, not claims.
+ * The distinction that keeps this honest is that chrome is FIXED: it never
+ * varies with the merchant's data, never asserts anything about their business,
+ * and adding to it means editing a list somebody reviews. "Free shipping" can
+ * never arrive here by accident, because arriving here is a deliberate act.
+ *
+ * The test also checks that the chrome a block prints is identical across all
+ * its variants, so a layout can never smuggle content in through this door.
+ */
+export const BLOCK_CHROME = [
+  // product_facts (WP-B)
+  "In", "stock", "Price", "You", "save", "Options", "in", "Type",
+  // bundle_tiers
+  "Save", "each", "Most", "popular", "Total", "Buy",
+  // the block's own disclosure — see design-references.md §4
+  "Prices", "shown", "for", "information", "add", "to", "cart", "at", "the", "usual",
+  "button", "quantity",
+  // low_stock
+  "Only", "left", "Example", "your", "theme", "shows", "live", "count",
+] as const;
+
+/**
  * `product_facts` is WP-B's calibration block — the only one that carries no
  * claims, because it says nothing the store's own product endpoint didn't tell
  * us. The other four are WP-C's catalogue and every one of them requires the
@@ -309,6 +337,78 @@ ${shape.cardShadow ? `box-shadow:${shape.cardShadow};` : ""}
 .${p}{padding:1rem;}
 .${p}__media{width:72px;height:72px;}
 .${p}__table th,.${p}__table td{padding:.5rem .4rem;}
+
+/* ── §6 Spec table ────────────────────────────────────────────────────────
+   Two-column key/value. Every colour comes from a measured token; nothing
+   here is a literal. */
+.${p}__spec{display:block;width:100%;}
+.${p}__spec-row{display:flex;gap:1rem;align-items:baseline;padding:.6rem .75rem;}
+.${p}__spec-label{flex:0 0 40%;font-size:.85em;opacity:.7;}
+.${p}__spec-value{flex:1;min-width:0;}
+/* Zebra: the tint is derived from the panel, never from the page background —
+   see the note on --ev-inset. */
+.${p}__spec--zebra .${p}__spec-row:nth-child(odd){background:var(--ev-inset);}
+.${p}__spec--zebra .${p}__spec-row{border-radius:calc(var(--ev-radius) / 2);}
+.${p}__spec--divided .${p}__spec-row{border-bottom:1px solid var(--ev-border);}
+.${p}__spec--divided .${p}__spec-row:last-child{border-bottom:0;}
+.${p}__spec--two_column{display:grid;grid-template-columns:1fr 1fr;gap:0 1.5rem;}
+.${p}__spec--two_column .${p}__spec-row{border-bottom:1px solid var(--ev-border);}
+
+/* ── §5 Assurance bar ─────────────────────────────────────────────────────
+   A floor under the decision. Low contrast on purpose: this must not compete
+   with the buy button it sits beneath. */
+.${p}__assure{display:flex;align-items:center;justify-content:center;gap:1.25rem;
+  background:var(--ev-inset);border-radius:var(--ev-radius);padding:.85rem 1rem;}
+.${p}__assure-item{display:flex;align-items:center;gap:.6rem;min-width:0;}
+.${p}__assure-text{font-size:.9em;opacity:.8;}
+.${p}__assure--single_strip{justify-content:center;text-align:center;}
+.${p}__assure--split_two .${p}__assure-item{flex:1;justify-content:center;}
+.${p}__assure--split_two .${p}__assure-item:first-child{border-right:1px solid var(--ev-border);}
+
+/* ── §4 Volume pricing ────────────────────────────────────────────────────
+   No control, no affordance, nothing that invites a click. */
+.${p}__tiers{display:flex;flex-direction:column;gap:.5rem;}
+.${p}__tier{position:relative;display:grid;grid-template-columns:1fr auto auto;
+  gap:.35rem 1rem;align-items:center;padding:.85rem 1rem;
+  border:1px solid var(--ev-border);border-radius:var(--ev-radius);background:var(--ev-inset);}
+.${p}__tier--pick{border-color:var(--ev-accent);}
+.${p}__tier-ribbon{position:absolute;top:-.6rem;left:1rem;
+  background:var(--ev-accent);color:var(--ev-accent-text);
+  font-size:.65em;text-transform:uppercase;letter-spacing:.08em;
+  padding:.15rem .5rem;border-radius:calc(var(--ev-radius) / 2);}
+.${p}__tier-qty{font-weight:var(--ev-weight-heading);}
+.${p}__tier-total{font-weight:var(--ev-weight-heading);white-space:nowrap;}
+.${p}__tier-unit{font-size:.8em;opacity:.6;white-space:nowrap;}
+.${p}__tier-save{grid-column:2 / -1;justify-self:end;font-size:.75em;
+  color:var(--ev-accent-text);background:var(--ev-accent);
+  padding:.1rem .45rem;border-radius:calc(var(--ev-radius) / 2);white-space:nowrap;}
+/* Declared even though the base already stacks: a class we EMIT with no rule
+   behind it is a class the merchant theme gets to style. Same argument as
+   __trust--row_line. */
+.${p}__tiers--stacked{flex-direction:column;}
+.${p}__tiers--side_by_side{flex-direction:row;}
+.${p}__tiers--side_by_side .${p}__tier{flex:1;grid-template-columns:1fr;
+  text-align:center;justify-items:center;}
+.${p}__tiers--side_by_side .${p}__tier-save{grid-column:auto;justify-self:center;}
+/* The disclosure is part of the block, not part of the catalogue. The shopper
+   never saw the catalogue. */
+.${p}__tiers-note{margin:.6rem 0 0;font-size:.75em;opacity:.6;text-align:center;}
+
+/* ── §7 Low stock ─────────────────────────────────────────────────────────
+   A status, not a threat. The accent carries it; nothing is red unless the
+   store's own accent is. */
+.${p}__stock{display:block;}
+.${p}__stock-line{margin:0;display:flex;align-items:center;gap:.5rem;font-size:.9em;}
+.${p}__stock-dot{width:.5rem;height:.5rem;border-radius:50%;
+  background:var(--ev-accent);flex:0 0 auto;}
+.${p}__stock-bar{margin-top:.45rem;height:4px;border-radius:2px;
+  background:var(--ev-inset);overflow:hidden;}
+.${p}__stock-fill{display:block;height:100%;background:var(--ev-accent);}
+.${p}__stock-note{margin:.35rem 0 0;font-size:.75em;opacity:.55;}
+.${p}__stock--bar .${p}__stock-bar{display:block;}
+/* The inline variant is the line alone — the bar is hidden rather than absent
+   from the markup, so both variants ship the same tree. */
+.${p}__stock--inline .${p}__stock-bar{display:none;}
 }
 `.trim();
 }
@@ -469,6 +569,219 @@ ${stats
  * reason: `{{ product.price }}` renders `8900`, and only the filter turns that
  * into $89.00 in the shopper's own currency.
  */
+/**
+ * Liquid that must enclose the whole exported snippet — stylesheet and all.
+ *
+ * Only `low_stock` uses one today. It exists because a block that decides at
+ * RUNTIME whether to appear cannot express that by wrapping its markup alone:
+ * everything it ships has to sit inside the same condition, or the parts that
+ * are not conditional get injected regardless.
+ */
+interface LiquidGuard {
+  open: string;
+  close: string;
+}
+
+/** Blocks that always render carry this. */
+const NO_GUARD: LiquidGuard = { open: "", close: "" };
+
+/**
+ * §6 — the key/value table a shopper checks one fact in before buying.
+ *
+ * Literal in both modes: every value is the merchant's own answer, so there is
+ * no Liquid object to read it from. Deliberately NOT autofilled from the
+ * product endpoint even though Shopify exposes a weight and a type — putting
+ * OUR reading of their catalogue on their page as though they had checked it is
+ * the invention this feature exists to refuse.
+ */
+function specTableHtml(spec: Extract<BlockSpecInput, { type: "spec_table" }>): string {
+  const p = BLOCK_PREFIX;
+  const v = variantOf(spec);
+  const rows = spec.rows
+    .map(
+      (row) =>
+        `<div class="${p}__spec-row"><span class="${p}__spec-label">${esc(row.label)}</span><span class="${p}__spec-value">${esc(row.value)}</span></div>`,
+    )
+    .join("\n");
+  return `<section class="${p}">
+<div class="${p}__spec ${p}__spec--${v}">
+${rows}
+</div>
+</section>`;
+}
+
+/**
+ * §5 — the floor under the decision, not a shout.
+ *
+ * Capped at two items by the validator, and styled low-contrast on a soft tint,
+ * because the failure mode of this pattern is competing with the buy button it
+ * exists to support.
+ */
+function assuranceHtml(
+  spec: Extract<BlockSpecInput, { type: "assurance_bar" }>,
+): string {
+  const p = BLOCK_PREFIX;
+  const v = variantOf(spec);
+  const items = spec.items
+    .map(
+      (item) =>
+        `<div class="${p}__assure-item">${icon(item.icon)}<span class="${p}__assure-text">${esc(item.text)}</span></div>`,
+    )
+    .join("\n");
+  return `<section class="${p}">
+<div class="${p}__assure ${p}__assure--${v}">
+${items}
+</div>
+</section>`;
+}
+
+/**
+ * §4 — volume pricing, priced from the product rather than from a stored figure.
+ *
+ * # Why the money is computed in both modes
+ * A merchant who changes their price must not discover months later that a
+ * bundle panel is quoting the old one. In Liquid the arithmetic is done by
+ * Liquid against `product.price`; in the preview it is done here against the
+ * price we actually measured. Nothing about the money is ever persisted.
+ *
+ * # Why there is no radio button
+ * The category leaders ship selection that adds to cart. We do not, because
+ * that needs JS and cart logic — the bloat this product exists to avoid — and
+ * an earlier draft that kept the radio affordance "for fidelity" was rejected,
+ * correctly: a shopper who clicks a dead control concludes the STORE is broken,
+ * and the merchant pays for our fidelity with their trust. So it is an
+ * information panel, and it SAYS SO, inside the block, where the shopper is —
+ * not only in the catalogue where the merchant chose it.
+ */
+function bundleHtml(
+  spec: Extract<BlockSpecInput, { type: "bundle_tiers" }>,
+  product: BlocksProduct,
+  currency: string | null,
+  mode: RenderMode,
+): string {
+  const p = BLOCK_PREFIX;
+  const v = variantOf(spec);
+  const tiers = [...spec.tiers].sort((a, b) => a.quantity - b.quantity);
+
+  const cell = (tier: (typeof tiers)[number]) => {
+    if (mode === "liquid") {
+      // Integer arithmetic in cents, exactly as Shopify stores prices. Doing it
+      // in Liquid rather than baking a number is what keeps the panel correct
+      // after a price change.
+      const kept = 100 - tier.discountPercent;
+      const total = `{{ product.price | times: ${tier.quantity} | times: ${kept} | divided_by: 100 | money }}`;
+      const unit = `{{ product.price | times: ${kept} | divided_by: 100 | money }}`;
+      const saved = `{{ product.price | times: ${tier.quantity} | times: ${tier.discountPercent} | divided_by: 100 | money }}`;
+      return { total, unit, saved };
+    }
+    const kept = 100 - tier.discountPercent;
+    const totalCents = Math.round((product.priceCents * tier.quantity * kept) / 100);
+    const unitCents = Math.round((product.priceCents * kept) / 100);
+    const savedCents = product.priceCents * tier.quantity - totalCents;
+    return {
+      total: esc(money(totalCents, currency)),
+      unit: esc(money(unitCents, currency)),
+      saved: esc(money(savedCents, currency)),
+    };
+  };
+
+  const rows = tiers
+    .map((tier) => {
+      const c = cell(tier);
+      const badge =
+        tier.discountPercent > 0
+          ? `<span class="${p}__tier-save">Save ${c.saved}</span>`
+          : "";
+      const ribbon = tier.highlight
+        ? `<span class="${p}__tier-ribbon">Most popular</span>`
+        : "";
+      return `<div class="${p}__tier${tier.highlight ? ` ${p}__tier--pick` : ""}">${ribbon}
+<span class="${p}__tier-qty">Buy ${tier.quantity}</span>
+<span class="${p}__tier-total">${c.total}</span>
+<span class="${p}__tier-unit">${c.unit} each</span>
+${badge}
+</div>`;
+    })
+    .join("\n");
+
+  return `<section class="${p}">
+<div class="${p}__tiers ${p}__tiers--${v}">
+${rows}
+</div>
+<p class="${p}__tiers-note">Prices shown for information — add to cart at the usual button</p>
+</section>`;
+}
+
+/**
+ * §7 — scarcity read live, never frozen.
+ *
+ * # The data caveat, and why the two modes differ on purpose
+ * Shopify's public `/products/<handle>.js` — the endpoint this feature measures
+ * from — returns `available` as a boolean and does NOT expose
+ * `inventory_quantity`. We genuinely cannot see the real figure from where the
+ * preview stands. A number we asked the merchant to type would be a lie by the
+ * following morning.
+ *
+ * So the preview illustrates with the merchant's OWN threshold and labels it as
+ * an example, and the export reads the live count from the theme. The whole
+ * block is wrapped in `inventory_management`, so a store that does not track
+ * stock renders nothing at all rather than an empty box or a zero.
+ */
+function lowStockHtml(
+  spec: Extract<BlockSpecInput, { type: "low_stock" }>,
+  mode: RenderMode,
+): { body: string; guard: LiquidGuard } {
+  const p = BLOCK_PREFIX;
+  const v = variantOf(spec);
+  const n = spec.threshold;
+
+  if (mode === "liquid") {
+    const q = "{{ ev_stock }}";
+    // Percentage of the threshold still on hand, clamped, for the bar width.
+    const pct = `{{ ev_stock | times: 100 | divided_by: ${n} }}`;
+    /*
+     * The guard wraps the ENTIRE snippet, stylesheet included.
+     *
+     * It used to wrap only the markup, which left this block shipping ~7KB of
+     * CSS into every product page of a store that does not track inventory —
+     * a store where, by design, the block renders nothing. "Renders nothing at
+     * all" has to mean nothing, or it is just a smaller lie than the one this
+     * block was built to avoid.
+     *
+     * `inventory_policy == 'deny'` is deliberate too: a store that allows
+     * overselling can still sell the item after the count hits zero, so "only
+     * 3 left" would be false on a page where a shopper can buy thirty.
+     */
+    return {
+      guard: {
+        open: `{%- assign ev_v = product.selected_or_first_available_variant -%}
+{%- if ev_v.inventory_management != blank and ev_v.inventory_policy == 'deny' -%}
+{%- assign ev_stock = ev_v.inventory_quantity -%}
+{%- if ev_stock > 0 and ev_stock <= ${n} -%}
+`,
+        close: "\n{%- endif -%}\n{%- endif -%}",
+      },
+      body: `<section class="${p}">
+<div class="${p}__stock ${p}__stock--${v}">
+<p class="${p}__stock-line"><span class="${p}__stock-dot" aria-hidden="true"></span>Only ${q} left</p>
+<div class="${p}__stock-bar" aria-hidden="true"><span class="${p}__stock-fill" style="width:${pct}%"></span></div>
+</div>
+</section>`,
+    };
+  }
+
+  return {
+    guard: NO_GUARD,
+    body: `<section class="${p}">
+<div class="${p}__stock ${p}__stock--${v}">
+<p class="${p}__stock-line"><span class="${p}__stock-dot" aria-hidden="true"></span>Only ${n} left</p>
+<div class="${p}__stock-bar" aria-hidden="true"><span class="${p}__stock-fill" style="width:100%"></span></div>
+<p class="${p}__stock-note">Example — your theme shows the live count</p>
+</div>
+</section>`,
+  };
+}
+
 function productFields(
   product: BlocksProduct,
   currency: string | null,
@@ -672,6 +985,7 @@ export function renderBlock(input: {
   const stylesheet = css(input.tokens);
 
   let body: string;
+  let guard: LiquidGuard = NO_GUARD;
   switch (input.spec.type) {
     case "trust_icons":
       body = trustHtml(input.spec);
@@ -688,6 +1002,21 @@ export function renderBlock(input: {
     case "product_stats":
       body = statsHtml(input.spec, fields);
       break;
+    case "spec_table":
+      body = specTableHtml(input.spec);
+      break;
+    case "assurance_bar":
+      body = assuranceHtml(input.spec);
+      break;
+    case "bundle_tiers":
+      body = bundleHtml(input.spec, input.product, input.currency, mode);
+      break;
+    case "low_stock": {
+      const rendered = lowStockHtml(input.spec, mode);
+      body = rendered.body;
+      guard = rendered.guard;
+      break;
+    }
     default:
       body = productFactsHtml(
         input.tokens,
@@ -710,10 +1039,10 @@ export function renderBlock(input: {
   Liquid Blocks by EliteVault — additive block, safe to remove.
   Every style below is scoped to .${BLOCK_PREFIX}; nothing here touches your theme.
 {% endcomment %}
-<style>
+${guard.open}<style>
 ${stylesheet}
 </style>
-${body}`
+${body}${guard.close}`
         : undefined,
   };
 }
