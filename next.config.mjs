@@ -33,10 +33,12 @@ const config = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    // Same logic — don't let linting block the deploy.
-    ignoreDuringBuilds: true,
-  },
+  // `eslint: { ignoreDuringBuilds }` used to live here and was REMOVED, not
+  // relaxed: Next 16 dropped the key along with `next lint`, and every dev-server
+  // start was printing "Invalid next.config.mjs options detected: Unrecognized
+  // key(s) in object: 'eslint'". It was doing nothing except adding a config
+  // error to the startup output — linting is already its own gate (`npm run
+  // lint`), which is where it belongs.
 };
 
 export default config;
