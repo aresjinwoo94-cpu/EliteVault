@@ -3,7 +3,13 @@
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { AlertTriangle, Loader2, RefreshCw } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowDownToLine,
+  ArrowUp,
+  Loader2,
+  RefreshCw,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -53,7 +59,35 @@ const FALLBACK_LABELS: Record<string, string> = {
 
 const POLL_MS = 2500;
 
-export function PreviewPanel({ initial }: { initial: PreviewProject }) {
+/**
+ * Smooth scrolling is movement, and a motion preference is an accessibility
+ * setting rather than a style opinion. `scrollTo` takes its behaviour as an
+ * argument, so unlike a CSS transition it cannot be gated by a media query in
+ * the stylesheet — it has to be asked here.
+ */
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true
+  );
+}
+
+export function PreviewPanel({
+  initial,
+  hasBlock,
+}: {
+  initial: PreviewProject;
+  /**
+   * Whether the project has a block chosen yet.
+   *
+   * The panel cannot infer this from its own row: a project that has been
+   * measured but not composed looks identical to one whose capture failed —
+   * both have tokens and no images — and those two states need opposite
+   * messages. One says "choose something"; the other says "something went
+   * wrong".
+   */
+  hasBlock: boolean;
+}) {
   const router = useRouter();
   const [project, setProject] = useState<PreviewProject>(initial);
   const [view, setView] = useState<"before" | "after">("after");
@@ -61,6 +95,7 @@ export function PreviewPanel({ initial }: { initial: PreviewProject }) {
   // A run is dispatched at most once per mount. Without this, the poll landing
   // on a still-`queued` row would dispatch again on every tick.
   const dispatched = useRef(false);
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
 
   const isRunning = project.status === "queued" || project.status === "capturing";
 
@@ -154,11 +189,48 @@ export function PreviewPanel({ initial }: { initial: PreviewProject }) {
       <Card className="p-6 md:p-10 text-center border-white/[0.04]">
         <Loader2 className="mx-auto size-5 animate-spin text-signal-300" />
         <p className="mt-3 text-sm text-white/70">
-          Measuring your product page…
+          {hasBlock
+            ? "Putting your block on the page…"
+            : "Measuring your product page…"}
         </p>
+        {/*
+          Two different waits, and they deserve two different sentences. The
+          first visit is measuring; every visit after a choice is rendering
+          that choice. One message for both left a merchant who had just
+          picked a block watching a spinner that talked about colours.
+        */}
         <p className="mt-1 text-xs text-white/40">
-          We open it in a real browser, read the colours and type it actually
-          uses, then place the block on it. Usually under a minute.
+          {hasBlock
+            ? "We open your real product page in a browser, place the block where it would go, and photograph the whole page. Usually under a minute."
+            : "We open it in a real browser and read the colours and type it actually uses. Usually under a minute."}
+        </p>
+      </Card>
+    );
+  }
+
+  /**
+   * Nothing chosen yet: say so, and point up.
+   *
+   * The panel used to preview `product_facts` — a block the merchant had not
+   * asked for and could not export — so their first visit showed a finished
+   * picture of the wrong thing while the actual next step sat unnoticed above
+   * it. An empty state that names the next action is more useful than a
+   * preview of a decision nobody made.
+   *
+   * Deliberately AFTER the running check, so a measurement in flight still
+   * shows its own progress rather than this.
+   */
+  if (!hasBlock) {
+    return (
+      <Card className="p-6 md:p-10 text-center border-white/[0.04] border-dashed">
+        <ArrowUp className="mx-auto size-5 text-white/30" />
+        <p className="mt-3 text-sm text-white/80">
+          First, choose what to add to your product page
+        </p>
+        <p className="mt-1.5 text-xs text-white/45 max-w-sm mx-auto">
+          {project.design_tokens
+            ? "We've measured your page's colours and type — pick a block above and we'll show it on your real product page."
+            : "We're reading your page now. Pick a block above and we'll show it in place."}
         </p>
       </Card>
     );
@@ -192,6 +264,19 @@ export function PreviewPanel({ initial }: { initial: PreviewProject }) {
   }
 
   const tokens = project.design_tokens;
+  /**
+   * The captured page's real dimensions, with a viewport-shaped fallback.
+   *
+   * A project measured before WP-F.7 has no capture geometry recorded, and
+   * next/image needs SOME intrinsic size. The fallback is the old constant, so
+   * an old row renders exactly as it used to rather than not at all.
+   */
+  const diagnostics = (tokens?.diagnostics ?? {}) as Record<string, unknown>;
+  const capture = {
+    width: typeof diagnostics.captureWidth === "number" ? diagnostics.captureWidth : 1440,
+    height: typeof diagnostics.captureHeight === "number" ? diagnostics.captureHeight : 900,
+    blockTop: typeof diagnostics.blockOffsetPx === "number" ? diagnostics.blockOffsetPx : 0,
+  };
   const shown = view === "after" ? project.preview_after_url : project.preview_before_url;
 
   return (
@@ -252,13 +337,33 @@ export function PreviewPanel({ initial }: { initial: PreviewProject }) {
         </div>
 
         {shown ? (
-          <div className="rounded-xl overflow-hidden border border-white/[0.06] bg-obsidian-950">
-            {/*
-              Both shots are taken at the same scroll offset, and the block is
-              inserted AFTER its anchor so nothing above it moves. Toggling
-              therefore changes exactly one thing on screen — which is the
-              point of showing it this way rather than side by side.
-            */}
+          /**
+           * A window onto the WHOLE page, scrollable.
+           *
+           * The capture used to be one viewport centred on the block, which
+           * answered "does the block look right" and nothing else — a merchant
+           * cannot judge whether it sits well on their page through a 900px
+           * porthole. Now the shot is the entire product page and this is a
+           * scroller over it, so they move down it the way a shopper would.
+           *
+           * The intrinsic size comes from the capture, not from a constant:
+           * a full-page shot is a different shape on every store, and a fixed
+           * 1440x900 would squash it.
+           */
+          <div
+            className="rounded-xl overflow-y-auto overscroll-contain border border-white/[0.06] bg-obsidian-950 max-h-[70vh]"
+            /* Named, because a scrollable region has to be reachable and
+               announced for anyone not using a mouse. tabIndex makes it
+               keyboard-scrollable, which a plain overflow container is not. */
+            role="group"
+            aria-label={
+              view === "after"
+                ? "Your product page with the block added — scroll to explore"
+                : "Your product page as it is today — scroll to explore"
+            }
+            tabIndex={0}
+            ref={scrollerRef}
+          >
             <Image
               src={shown}
               alt={
@@ -266,8 +371,8 @@ export function PreviewPanel({ initial }: { initial: PreviewProject }) {
                   ? "Your product page with the block added"
                   : "Your product page as it is today"
               }
-              width={1440}
-              height={900}
+              width={capture.width}
+              height={capture.height}
               className="w-full h-auto"
               unoptimized
             />
@@ -281,10 +386,39 @@ export function PreviewPanel({ initial }: { initial: PreviewProject }) {
         )}
       </div>
 
-      <Button variant="secondary" onClick={run} disabled={isPending}>
-        <RefreshCw className="size-4" />
-        Re-measure this page
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button variant="secondary" onClick={run} disabled={isPending}>
+          <RefreshCw className="size-4" />
+          Re-measure this page
+        </Button>
+        {/*
+          The whole page is a lot of page. A merchant opening this wants to
+          see ONE thing, and hunting for it by dragging a scrollbar is the
+          cost of showing them everything — so this pays it back.
+          Hidden when we have no offset (a project measured before WP-F.7),
+          rather than scrolling to the top and pretending that was the block.
+        */}
+        {shown && capture.blockTop > 0 && (
+          <Button
+            variant="ghost"
+            onClick={() => {
+              const el = scrollerRef.current;
+              if (!el) return;
+              // The image is scaled to the container width, so the capture
+              // offset has to be scaled with it or the jump lands wrong on
+              // every viewport that is not exactly the capture width.
+              const scale = el.clientWidth / capture.width;
+              el.scrollTo({
+                top: Math.max(0, capture.blockTop * scale - 80),
+                behavior: prefersReducedMotion() ? "auto" : "smooth",
+              });
+            }}
+          >
+            <ArrowDownToLine className="size-4" />
+            Jump to the block
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

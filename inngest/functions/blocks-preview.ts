@@ -20,9 +20,9 @@ import {
   fontFaceCount,
   tokenSignature,
   removeBlock,
-  reparentBlockToMain,
   frameBlock,
   scrollToPosition,
+  scrollThroughPage,
   ANCHOR_SELECTORS,
   BUY_BUTTON_ATTR,
   BUY_BUTTON_SELECTORS,
@@ -40,6 +40,7 @@ import type { BlocksProduct } from "@/lib/blocks/product-json";
 import { startDeadline } from "@/lib/deadline";
 import { recordBrowserCost } from "@/lib/blocks/browser-cost";
 import { shouldBlockRequest } from "@/lib/blocks/request-filter";
+import { captureHeight, wasTruncated } from "@/lib/blocks/capture-bounds";
 
 /**
  * Liquid Blocks WP-B — measure the store, wear its clothes, prove it in a
@@ -60,6 +61,28 @@ import { shouldBlockRequest } from "@/lib/blocks/request-filter";
  * The preview is free. There is no credit to refund and no charge to reverse —
  * a failed run just marks the project `failed` with an honest reason and the
  * user can re-run it. The money moment is the export (WP-D), deliberately.
+ *
+ * # Why the preview is a picture and not a live page
+ * The obvious wish is a real, interactive preview of the merchant's storefront
+ * with the block in it. That is not available to us: the page belongs to
+ * another origin, so it cannot be framed (X-Frame-Options / frame-ancestors on
+ * essentially every Shopify store) and nothing can be injected into it.
+ *
+ * The one route past that is serialising the whole DOM with its styles and
+ * images inlined and dropping the result into a sandboxed `<iframe srcdoc>`.
+ * It was considered and rejected for now, on cost: it means shipping a
+ * multi-megabyte HTML payload per preview instead of a ~500KB JPEG, rewriting
+ * every relative URL, inlining or proxying every asset, and re-solving the
+ * fidelity problem this pipeline already solved — a serialised page renders
+ * differently from the one we measured, which is the one thing this feature
+ * cannot afford. It also runs the merchant's third-party scripts inside our
+ * page, which is a security question we would then own.
+ *
+ * A full-page capture in a scroller buys most of the value — the block seen in
+ * context, the page explorable end to end — for a tenth of the work and none of
+ * the new risk. If interactivity is ever genuinely needed, the serialised
+ * iframe is the door, and it should be opened deliberately rather than drifted
+ * into.
  *
  * # The paywall's integrity
  * No Liquid is generated in this pipeline, and none is stored. What the client
@@ -99,6 +122,21 @@ const GLOBAL_CONCURRENCY = (() => {
 
 /** Pixels of page kept above the block, so the shot shows what it attaches to. */
 const BLOCK_OFFSET_PX = 220;
+
+/**
+ * Ceiling on a full-page capture, in CSS pixels.
+ *
+ * A storefront that lazy-loads a 20,000px marketing page would otherwise cost a
+ * 1440x20000 JPEG on every run — slow to take, slow to upload, slow to open, and
+ * beyond what Chromium will allocate in one texture. 9000px is roughly six
+ * viewports: past the point a merchant scrolls to check a block, and still an
+ * honest picture of the page it sits on.
+ */
+const MAX_CAPTURE_PX = Number(process.env.BLOCKS_MAX_CAPTURE_PX ?? 9_000);
+
+/** How the lazy-load sweep walks the page before a full-page capture. */
+const SWEEP_STEP_PX = 700;
+const SWEEP_STEP_MS = 90;
 
 /** How many times the face set may grow before we stop waiting on it. */
 const FONT_SETTLE_ROUNDS = Number(process.env.BLOCKS_FONT_SETTLE_ROUNDS ?? 4);
@@ -154,6 +192,68 @@ async function shoot(
     ...(clip ? { clip, captureBeyondViewport: false } : {}),
   });
   return Buffer.from(shot);
+}
+
+/**
+ * Photograph the WHOLE product page, block and all.
+ *
+ * WP-F.7. The preview used to be a viewport-sized crop centred on the block,
+ * which answered "does the block look right" and nothing else — a merchant
+ * cannot tell whether it sits well on THEIR page from a window onto 900px of
+ * it. The full page in a scrollable container lets them move through the page
+ * the way a shopper would.
+ *
+ * Two consequences worth stating. It removes the reason the block was ever
+ * re-homed to the end of `main`: that rescue existed only because a block
+ * clipped by a sticky parent could not be got into a 900px frame, and a
+ * full-page shot has no frame to miss. The block now stays where the merchant
+ * would actually paste it. And it makes the lazy-load sweep mandatory rather
+ * than nice — see scrollThroughPage.
+ *
+ * Height is capped rather than trusted: see MAX_CAPTURE_PX.
+ */
+async function shootFullPage(
+  page: Page,
+): Promise<{ buffer: Buffer; width: number; height: number; blockTop: number }> {
+  await page.evaluate(scrollThroughPage, {
+    stepPx: SWEEP_STEP_PX,
+    stepMs: SWEEP_STEP_MS,
+  });
+  const documentHeight = await page.evaluate(
+    () => document.documentElement.scrollHeight,
+  );
+  const width = BLOCKS_VIEWPORT.width;
+  const height = captureHeight(documentHeight, BLOCKS_VIEWPORT.height, MAX_CAPTURE_PX);
+  if (wasTruncated(documentHeight, BLOCKS_VIEWPORT.height, MAX_CAPTURE_PX)) {
+    // Worth a line: a merchant scrolling to the bottom of a truncated capture
+    // and finding their footer missing should show up here first.
+    console.warn(
+      `[blocks] page is ${Math.round(documentHeight)}px; captured the top ${height}px`,
+    );
+  }
+  /*
+   * Where the block sits in the FINISHED capture.
+   *
+   * Measured here, after the sweep, and not from frameBlock: that reads the
+   * rect after a scroll a theme with `scroll-behavior: smooth` may not have
+   * applied yet, which on one real store reported the block 464px lower than
+   * it is. The scroller uses this to jump to the block, so a wrong number
+   * lands the merchant somewhere else on their own page.
+   */
+  const blockTop = await page.evaluate(() => {
+    const el = document.querySelector(".ev-blk");
+    return el ? Math.round(el.getBoundingClientRect().top + window.scrollY) : 0;
+  });
+  const shot = await page.screenshot({
+    type: "jpeg",
+    quality: 80,
+    // A clip with captureBeyondViewport, rather than `fullPage`, because
+    // fullPage cannot be capped — and an uncapped storefront is the failure
+    // mode MAX_CAPTURE_PX exists for.
+    clip: { x: 0, y: 0, width, height },
+    captureBeyondViewport: true,
+  });
+  return { buffer: Buffer.from(shot), width, height, blockTop };
 }
 
 export const blocksPreview = inngest.createFunction(
@@ -523,11 +623,50 @@ export const blocksPreview = inngest.createFunction(
           : measured;
         const injectStart = Date.now();
 
-        // Preview whichever block they picked. Before they've picked one, the
-        // calibration panel stands in: it needs no input from them and shows
-        // the measurement, which is what the first visit is actually asking
-        // them to confirm.
-        const spec: BlockSpec = row.block_spec ?? { type: "product_facts" };
+        /**
+         * WP-F.7 — measuring and rendering are two different jobs.
+         *
+         * A run with no block chosen used to stand in `product_facts` and
+         * photograph that, so the merchant's first visit showed a preview of a
+         * block they had not asked for and could not export. It answered a
+         * question nobody had while burying the one that mattered: choose
+         * something.
+         *
+         * Now a run without a spec MEASURES and stops. The tokens land, the
+         * editor fills, the panel says what to do next — and the capture, which
+         * is the expensive half, is not paid for until there is something worth
+         * photographing.
+         */
+        const spec: BlockSpec | null = row.block_spec ?? null;
+        if (!spec) {
+          phase.inject = 0;
+          phase.capture = 0;
+          // `as any`: the stale Database type resolves post-0001 tables to `never`.
+          await (service.from("blocks_projects") as any)
+            .update({
+              design_tokens: {
+                ...measured,
+                diagnostics: {
+                  matchedButtonSelector: raw.matchedButtonSelector,
+                  buttonWasVisible: raw.buttonWasVisible,
+                  matchedBodyTextSelector: raw.matchedBodyTextSelector,
+                  matchedHeadingSelector: raw.matchedHeadingSelector,
+                  measuredOnly: true,
+                },
+              },
+              // Explicitly cleared, not left behind: a stale capture of a
+              // previous block sitting under "here is your page" is the kind of
+              // quietly-wrong picture this feature exists to replace.
+              preview_before_url: null,
+              preview_after_url: null,
+              status: "ready",
+              error: null,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", projectId);
+          console.log(`[blocks] ${projectId} measured only — no block chosen yet`);
+          return { ok: true as const, measuredOnly: true };
+        }
 
         const rendered = renderBlock({
           spec,
@@ -568,18 +707,16 @@ export const blocksPreview = inngest.createFunction(
         await new Promise((r) => setTimeout(r, 700));
         let framed = await page.evaluate(frameBlock);
 
-        // Centring can't rescue a block whose PARENT clips it — measured on a
-        // store whose buy box is a sticky narrow rail, where the block stayed
-        // 44% cut off however it was scrolled. Re-homing it into the main
-        // column is the only thing that helps, and a partly-visible proof is
-        // worth less than a whole one somewhere slightly less ideal.
-        if (framed.height > 0 && framed.visiblePx < framed.height * 0.9) {
-          const rescued = await page.evaluate(reparentBlockToMain);
-          if (rescued) {
-            await new Promise((r) => setTimeout(r, 300));
-            framed = await page.evaluate(frameBlock);
-          }
-        }
+        /*
+         * The reparent rescue is GONE, and its absence is the point.
+         *
+         * It existed because a block clipped by a sticky parent could not be got
+         * into a 900px frame, so it was re-homed to the end of `main` — fully
+         * visible, in a place the merchant would never actually paste it. That
+         * was a real trade while the preview was a crop. A full-page capture has
+         * no frame to miss, so the block now stays exactly where it was
+         * inserted, which is the whole claim the picture is making.
+         */
         // Only a paint tick here, deliberately: a longer wait would reopen the
         // window this reordering exists to close.
         await new Promise((r) => setTimeout(r, 150));
@@ -589,21 +726,18 @@ export const blocksPreview = inngest.createFunction(
 
         phase.inject = since(injectStart);
         const captureStart = Date.now();
-        const after = await shoot(page);
+        const afterShot = await shootFullPage(page);
+        const after = afterShot.buffer;
 
-        // ── 3. The same frame, without the block ──────────────────────────
-        // Nothing ABOVE the insertion point moves when the block is removed, so
-        // re-pinning the scroll gives the identical frame minus the block.
-        //
-        // Deliberately NOT a clipped capture: clipping to the block's rectangle
-        // read better on paper, but the second shot kept failing with "cannot
-        // take screenshot with 0 height" once the block was gone and the
-        // document reflowed. A full viewport at a pinned scroll has no such
-        // failure mode, and the block is centred in it either way.
+        // ── 3. The same page, without the block ───────────────────────────
+        // Both shots are full-page, so there is no frame to re-pin: the pair
+        // differs by exactly the block. The two heights differ by roughly the
+        // block's own height, which is honest — removing it really does make
+        // the page shorter.
         await page.evaluate(removeBlock, STYLE_ID);
-        await page.evaluate((y: number) => window.scrollTo(0, y), framed.scrollY);
         await new Promise((r) => setTimeout(r, 400));
-        const before = await shoot(page);
+        const beforeShot = await shootFullPage(page);
+        const before = beforeShot.buffer;
         phase.capture = since(captureStart);
 
         // (The block was already removed to take the "before" shot, so the page
@@ -660,6 +794,20 @@ export const blocksPreview = inngest.createFunction(
                 // beyond a log line nobody reads.
                 blockVisiblePx: framed.visiblePx,
                 blockHeightPx: framed.height,
+                /*
+                 * The captured page's own dimensions.
+                 *
+                 * The scrollable preview needs the real aspect ratio or it
+                 * either letterboxes the page or squashes it, and a squashed
+                 * capture of a merchant's storefront is worse than no capture.
+                 * A full-page shot is a different shape on every store, so this
+                 * cannot be a constant on the client.
+                 */
+                captureWidth: afterShot.width,
+                captureHeight: afterShot.height,
+                beforeCaptureHeight: beforeShot.height,
+                /* Where the block landed, so the scroller can jump to it. */
+                blockOffsetPx: afterShot.blockTop,
               },
             },
             preview_before_url: beforeUrl,

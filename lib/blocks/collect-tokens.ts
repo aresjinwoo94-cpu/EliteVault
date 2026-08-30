@@ -1075,3 +1075,46 @@ export function frameBlock(): { scrollY: number; visiblePx: number; height: numb
     height: Math.round(r.height),
   };
 }
+
+/**
+ * Walk the page top to bottom, then return to the top.
+ *
+ * A full-page capture photographs the whole document at once, which is exactly
+ * what a lazy-loading storefront is built to defeat: images below the fold have
+ * never entered a viewport, so their IntersectionObserver has never fired and
+ * they are still empty when the shot is taken. On a long product page that is
+ * most of the picture.
+ *
+ * Scrolling through first gives every observer its moment. The pause between
+ * steps is what makes it work — a synchronous loop to the bottom and back
+ * changes `scrollY` without ever yielding to the observer callbacks, so it
+ * triggers nothing.
+ *
+ * Self-contained, like everything else in this file: it is serialized into the
+ * page, so it may not reference a single thing outside its own body.
+ */
+export function scrollThroughPage(args: { stepPx: number; stepMs: number }): Promise<void> {
+  return new Promise((resolve) => {
+    const root = document.documentElement;
+    const previous = root.style.scrollBehavior;
+    // A theme's `scroll-behavior: smooth` animates each hop, so the page is
+    // still in motion when the next one fires and large stretches are skipped.
+    root.style.scrollBehavior = "auto";
+
+    let y = 0;
+    const step = () => {
+      window.scrollTo(0, y);
+      y += args.stepPx;
+      if (y < root.scrollHeight) {
+        setTimeout(step, args.stepMs);
+        return;
+      }
+      window.scrollTo(0, 0);
+      root.style.scrollBehavior = previous;
+      // One more beat at the top: the images that just started loading need a
+      // frame to paint before anything photographs them.
+      setTimeout(() => resolve(), 300);
+    };
+    step();
+  });
+}

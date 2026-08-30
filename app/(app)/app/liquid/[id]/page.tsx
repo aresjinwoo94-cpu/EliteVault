@@ -221,6 +221,7 @@ export default async function LiquidProjectPage({
             preview_after_url: row.preview_after_url,
             error: row.error,
           } satisfies PreviewProject}
+          hasBlock={Boolean(row.block_spec)}
         />
       </section>
       {/*
