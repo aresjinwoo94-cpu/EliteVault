@@ -834,29 +834,6 @@ export function removeBlock(styleId: string): void {
   document.querySelectorAll("[data-ev-block]").forEach((el) => el.remove());
 }
 
-/**
- * Move an already-injected block into the main content column. Runs in the
- * browser; returns false when there was nowhere better to put it.
- *
- * The case this exists for, measured live: a theme whose buy box is a sticky,
- * narrow rail with its own clipping. The block goes in beside the button — the
- * right place — and the rail cuts 44% of it off, and no amount of scrolling
- * helps because the container is what's clipping. A whole proof somewhere
- * slightly less ideal beats a partial one in exactly the right spot.
- */
-export function reparentBlockToMain(): boolean {
-  const holder = document.querySelector("[data-ev-block]");
-  if (!holder) return false;
-  const home =
-    document.querySelector("main") ??
-    document.querySelector("[role='main']") ??
-    document.querySelector("#MainContent");
-  // No main column: leave it where it is. Appending to <body> would put the
-  // block after the footer, which is worse than being clipped.
-  if (!home) return false;
-  home.appendChild(holder);
-  return true;
-}
 
 /**
  * Wait for the page to be worth measuring. Runs in the browser, polled by the
@@ -1093,7 +1070,13 @@ export function frameBlock(): { scrollY: number; visiblePx: number; height: numb
  * Self-contained, like everything else in this file: it is serialized into the
  * page, so it may not reference a single thing outside its own body.
  */
-export function scrollThroughPage(args: { stepPx: number; stepMs: number }): Promise<void> {
+export function scrollThroughPage(args: {
+  stepPx: number;
+  stepMs: number;
+  /** Hard ceiling on the sweep. See the note on termination. */
+  maxMs: number;
+  maxSteps: number;
+}): Promise<void> {
   return new Promise((resolve) => {
     const root = document.documentElement;
     const previous = root.style.scrollBehavior;
@@ -1101,19 +1084,50 @@ export function scrollThroughPage(args: { stepPx: number; stepMs: number }): Pro
     // still in motion when the next one fires and large stretches are skipped.
     root.style.scrollBehavior = "auto";
 
+    const startedAt = Date.now();
     let y = 0;
-    const step = () => {
-      window.scrollTo(0, y);
-      y += args.stepPx;
-      if (y < root.scrollHeight) {
-        setTimeout(step, args.stepMs);
-        return;
-      }
+    let steps = 0;
+
+    const finish = () => {
       window.scrollTo(0, 0);
       root.style.scrollBehavior = previous;
       // One more beat at the top: the images that just started loading need a
       // frame to paint before anything photographs them.
       setTimeout(() => resolve(), 300);
+    };
+
+    const step = () => {
+      window.scrollTo(0, y);
+      y += args.stepPx;
+      steps++;
+
+      /*
+       * THE SWEEP MUST TERMINATE, and `y < scrollHeight` does not guarantee it.
+       *
+       * An infinite-scroll page, a scroll-appended recommendation rail or a
+       * review widget that paginates on scroll all GROW as we walk them. If the
+       * page adds more than one step per step, the target runs away and the
+       * loop never ends. Reproduced: a page appending 1200px per scroll event
+       * was still sweeping after 30 seconds, at 387,600px and climbing.
+       *
+       * That is not a slow preview, it is a wedged one. `page.evaluate` has no
+       * timeout — `setDefaultTimeout` governs waitFor/goto only — and there is
+       * no deadline assertion between here and the screenshot, so the run holds
+       * a Chromium page and one of two global concurrency slots until Vercel
+       * kills it as an opaque 504. Two such stores take the feature down for
+       * everyone.
+       *
+       * Two independent bounds, because either one alone can be defeated: a
+       * step cap for pages that grow, and a wall clock for pages that are
+       * merely slow to settle between steps.
+       */
+      const exhausted =
+        steps >= args.maxSteps || Date.now() - startedAt >= args.maxMs;
+      if (y < root.scrollHeight && !exhausted) {
+        setTimeout(step, args.stepMs);
+        return;
+      }
+      finish();
     };
     step();
   });

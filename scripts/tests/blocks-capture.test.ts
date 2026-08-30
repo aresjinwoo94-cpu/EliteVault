@@ -68,7 +68,7 @@ test("both shots of a pair are captured the same way", () => {
   );
   assert.ok(captureSection.length > 0, "the capture section moved — this test is stale");
 
-  const fullPageShots = captureSection.match(/shootFullPage\(page\)/g) ?? [];
+  const fullPageShots = captureSection.match(/shootFullPage\(page[,)]/g) ?? [];
   assert.equal(
     fullPageShots.length,
     2,
@@ -96,15 +96,46 @@ test("a run with no block chosen measures and captures nothing", () => {
     "utf8",
   );
 
+  /*
+   * The pipeline must not NAME the stand-in block at all.
+   *
+   * The first version matched the literal expression
+   * `block_spec ?? { type: "product_facts" }`. A verifier reinstated the exact
+   * bug by adding a cast — the regex missed it, all three tests passed, and the
+   * gate became unreachable while claiming to be guarded. Meanwhile a pure
+   * refactor of the gate condition BROKE the test. Weak against the bug and
+   * brittle against the refactor, which is the worst pair to be.
+   *
+   * A substring cannot be reformatted around: any reintroduction has to mention
+   * the block type somewhere.
+   */
   assert.ok(
-    !/block_spec \?\? \{ type: "product_facts" \}/.test(src),
-    "the pipeline still falls back to product_facts when no block is chosen",
+    !src.includes("product_facts"),
+    "the pipeline mentions product_facts again — the stand-in block is back",
   );
 
   const gateAt = src.indexOf("if (!spec) {");
   assert.notEqual(gateAt, -1, "the no-block gate is gone");
   const captureAt = src.indexOf("const captureStart = Date.now();");
+  const renderAt = src.indexOf("renderBlock({");
+  assert.notEqual(renderAt, -1, "renderBlock moved — this test is stale");
   assert.ok(gateAt < captureAt, "the gate must come before the capture");
+  // Existing is not enough: it has to be reached before any work is done.
+  assert.ok(gateAt < renderAt, "the gate must come before the block is rendered");
+
+  /*
+   * A measure-only run is a SUCCESSFUL run.
+   *
+   * `browserOk` is set on the full path, so the gate's early return recorded
+   * every project's first run — the most common shape there is — as a failure.
+   * The cost was right; the flag separating "this store times out every time"
+   * from "this ran fine" was not.
+   */
+  assert.match(
+    src.slice(gateAt, captureAt),
+    /browserOk = true/,
+    "a measure-only run is still recorded as a failed one",
+  );
 
   const gate = src.slice(gateAt, src.indexOf("}", src.indexOf("return {", gateAt)));
   assert.match(gate, /preview_before_url: null/, "the stale before-image is not cleared");

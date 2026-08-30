@@ -137,6 +137,14 @@ const MAX_CAPTURE_PX = Number(process.env.BLOCKS_MAX_CAPTURE_PX ?? 9_000);
 /** How the lazy-load sweep walks the page before a full-page capture. */
 const SWEEP_STEP_PX = 700;
 const SWEEP_STEP_MS = 90;
+/**
+ * Hard bounds on the sweep. Both are needed: the step cap stops a page that
+ * GROWS as it is scrolled (infinite scroll, scroll-appended rails) from running
+ * away, and the wall clock stops one that is merely slow between steps.
+ * 60 steps at 700px is 42,000px — far past any real product page.
+ */
+const SWEEP_MAX_STEPS = 60;
+const SWEEP_MAX_MS = 20_000;
 
 /** How many times the face set may grow before we stop waiting on it. */
 const FONT_SETTLE_ROUNDS = Number(process.env.BLOCKS_FONT_SETTLE_ROUNDS ?? 4);
@@ -177,22 +185,6 @@ function humanize(err: unknown): string {
   return "We couldn't build the preview for that page. Try again in a minute.";
 }
 
-/**
- * Screenshot a rectangle of the CURRENT viewport. Both shots of a pair use the
- * identical clip, which is what makes them a comparison.
- */
-async function shoot(
-  page: Page,
-  clip?: { x: number; y: number; width: number; height: number },
-): Promise<Buffer> {
-  const shot = await page.screenshot({
-    type: "jpeg",
-    quality: 82,
-    fullPage: false,
-    ...(clip ? { clip, captureBeyondViewport: false } : {}),
-  });
-  return Buffer.from(shot);
-}
 
 /**
  * Photograph the WHOLE product page, block and all.
@@ -214,11 +206,26 @@ async function shoot(
  */
 async function shootFullPage(
   page: Page,
+  /**
+   * Whether to walk the page first.
+   *
+   * True for the first shot of a pair and false for the second: the sweep is
+   * what makes lazy content load, and once it HAS loaded a second sweep only
+   * gives carousels, animations and late widgets another two seconds to move.
+   * Measured between two back-to-back sweeps with nothing changed: 384px of
+   * height and 59KB of pixels drifted on one real store. The pair is supposed
+   * to differ by the block and nothing else.
+   */
+  sweep: boolean,
 ): Promise<{ buffer: Buffer; width: number; height: number; blockTop: number }> {
-  await page.evaluate(scrollThroughPage, {
-    stepPx: SWEEP_STEP_PX,
-    stepMs: SWEEP_STEP_MS,
-  });
+  if (sweep) {
+    await page.evaluate(scrollThroughPage, {
+      stepPx: SWEEP_STEP_PX,
+      stepMs: SWEEP_STEP_MS,
+      maxMs: SWEEP_MAX_MS,
+      maxSteps: SWEEP_MAX_STEPS,
+    });
+  }
   const documentHeight = await page.evaluate(
     () => document.documentElement.scrollHeight,
   );
@@ -626,7 +633,7 @@ export const blocksPreview = inngest.createFunction(
         /**
          * WP-F.7 — measuring and rendering are two different jobs.
          *
-         * A run with no block chosen used to stand in `product_facts` and
+         * A run with no block chosen used to stand in the calibration block and
          * photograph that, so the merchant's first visit showed a preview of a
          * block they had not asked for and could not export. It answered a
          * question nobody had while burying the one that mattered: choose
@@ -639,8 +646,6 @@ export const blocksPreview = inngest.createFunction(
          */
         const spec: BlockSpec | null = row.block_spec ?? null;
         if (!spec) {
-          phase.inject = 0;
-          phase.capture = 0;
           // `as any`: the stale Database type resolves post-0001 tables to `never`.
           await (service.from("blocks_projects") as any)
             .update({
@@ -664,7 +669,17 @@ export const blocksPreview = inngest.createFunction(
               updated_at: new Date().toISOString(),
             })
             .eq("id", projectId);
-          console.log(`[blocks] ${projectId} measured only — no block chosen yet`);
+          /*
+           * This run SUCCEEDED. `browserOk` is set on the full path only, so
+           * every measure-only run — which is every project's first run, the
+           * most common shape there is — was recorded as a failure. The dollars
+           * were right and the flag that separates "this store times out every
+           * time" from "this ran fine" was not.
+           */
+          browserOk = true;
+          console.log(
+            `[blocks] ${projectId} measured only (no block yet) — nav ${phase.nav ?? 0} · ready ${phase.ready ?? 0}`,
+          );
           return { ok: true as const, measuredOnly: true };
         }
 
@@ -726,7 +741,7 @@ export const blocksPreview = inngest.createFunction(
 
         phase.inject = since(injectStart);
         const captureStart = Date.now();
-        const afterShot = await shootFullPage(page);
+        const afterShot = await shootFullPage(page, true);
         const after = afterShot.buffer;
 
         // ── 3. The same page, without the block ───────────────────────────
@@ -736,7 +751,7 @@ export const blocksPreview = inngest.createFunction(
         // the page shorter.
         await page.evaluate(removeBlock, STYLE_ID);
         await new Promise((r) => setTimeout(r, 400));
-        const beforeShot = await shootFullPage(page);
+        const beforeShot = await shootFullPage(page, false);
         const before = beforeShot.buffer;
         phase.capture = since(captureStart);
 
@@ -788,11 +803,13 @@ export const blocksPreview = inngest.createFunction(
                 matchedButtonSelector: raw.matchedButtonSelector,
                 buttonWasVisible: raw.buttonWasVisible,
                 matchedAnchorSelector: injected.anchor,
-                // How much of the block the proof shot actually shows. A run
-                // that couldn't get the whole thing in frame still reaches
-                // `ready`, so without this the shortfall left no trace at all
-                // beyond a log line nobody reads.
-                blockVisiblePx: framed.visiblePx,
+                /*
+                 * `blockVisiblePx` is GONE. It measured the block against a
+                 * 900px viewport, and the capture is the whole page now — so
+                 * any block taller than a viewport reported itself "cut off"
+                 * while the shot had all of it. A diagnostic that is wrong in
+                 * both directions is worse than an absent one.
+                 */
                 blockHeightPx: framed.height,
                 /*
                  * The captured page's own dimensions.
@@ -805,6 +822,17 @@ export const blocksPreview = inngest.createFunction(
                  */
                 captureWidth: afterShot.width,
                 captureHeight: afterShot.height,
+                /*
+                 * Whether the block is actually IN the picture.
+                 *
+                 * A page taller than MAX_CAPTURE_PX is clipped, and a block
+                 * below the cut is simply absent from an image captioned "your
+                 * product page with the block added". That reached `ready` with
+                 * nothing but a console.warn, and the jump button pointed past
+                 * the end of the image. The panel needs to be able to say so.
+                 */
+                blockInCapture:
+                  afterShot.blockTop > 0 && afterShot.blockTop < afterShot.height,
                 beforeCaptureHeight: beforeShot.height,
                 /* Where the block landed, so the scroller can jump to it. */
                 blockOffsetPx: afterShot.blockTop,

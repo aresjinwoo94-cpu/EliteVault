@@ -97,6 +97,31 @@ export function PreviewPanel({
   const dispatched = useRef(false);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
 
+  /**
+   * Adopt the row the SERVER hands down whenever it changes.
+   *
+   * `useState(initial)` seeds once and then ignores its prop forever, and
+   * WP-F.7 turned that from a latent staleness into a broken happy path.
+   * Choosing a block saves the spec, queues a run and calls router.refresh();
+   * the server re-renders with status "queued" and no images — and this
+   * component kept its own "ready" from the measure-only run. isRunning stayed
+   * false, so no spinner and THE POLL NEVER STARTED, and the panel rendered
+   * "No after image for this project" under a toast promising a preview. It
+   * never recovered on its own.
+   *
+   * The server is authoritative at the moment it re-renders, so adopting is
+   * right. Guarded on content rather than identity: the prop object is new on
+   * every render, and re-seeding state on each one would throw away the poll's
+   * own fresher answer between refreshes.
+   */
+  const adopted = useRef(JSON.stringify(initial));
+  useEffect(() => {
+    const next = JSON.stringify(initial);
+    if (next === adopted.current) return;
+    adopted.current = next;
+    setProject(initial);
+  }, [initial]);
+
   const isRunning = project.status === "queued" || project.status === "capturing";
 
   const run = useCallback(() => {
@@ -208,6 +233,33 @@ export function PreviewPanel({
     );
   }
 
+  if (project.status === "failed") {
+    return (
+      <Card className="p-6 border-destructive/20 bg-destructive/[0.03]">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="size-4 shrink-0 text-destructive mt-0.5" />
+          <div className="min-w-0">
+            <p className="text-sm text-white/80">
+              {project.error ?? "We couldn't build the preview."}
+            </p>
+            <p className="mt-1 text-xs text-white/40">
+              Nothing was charged — the preview is free.
+            </p>
+            <Button
+              variant="secondary"
+              className="mt-4"
+              onClick={run}
+              disabled={isPending}
+            >
+              <RefreshCw className="size-4" />
+              Try again
+            </Button>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
   /**
    * Nothing chosen yet: say so, and point up.
    *
@@ -236,33 +288,6 @@ export function PreviewPanel({
     );
   }
 
-  if (project.status === "failed") {
-    return (
-      <Card className="p-6 border-destructive/20 bg-destructive/[0.03]">
-        <div className="flex items-start gap-3">
-          <AlertTriangle className="size-4 shrink-0 text-destructive mt-0.5" />
-          <div className="min-w-0">
-            <p className="text-sm text-white/80">
-              {project.error ?? "We couldn't build the preview."}
-            </p>
-            <p className="mt-1 text-xs text-white/40">
-              Nothing was charged — the preview is free.
-            </p>
-            <Button
-              variant="secondary"
-              className="mt-4"
-              onClick={run}
-              disabled={isPending}
-            >
-              <RefreshCw className="size-4" />
-              Try again
-            </Button>
-          </div>
-        </div>
-      </Card>
-    );
-  }
-
   const tokens = project.design_tokens;
   /**
    * The captured page's real dimensions, with a viewport-shaped fallback.
@@ -276,6 +301,17 @@ export function PreviewPanel({
     width: typeof diagnostics.captureWidth === "number" ? diagnostics.captureWidth : 1440,
     height: typeof diagnostics.captureHeight === "number" ? diagnostics.captureHeight : 900,
     blockTop: typeof diagnostics.blockOffsetPx === "number" ? diagnostics.blockOffsetPx : 0,
+    /*
+     * Whether the block is actually inside the picture.
+     *
+     * A page taller than the capture ceiling is clipped, and a block below the
+     * cut is simply absent from an image captioned "your product page with the
+     * block added". That reached the merchant with nothing but a server-side
+     * console.warn, and the jump button pointed past the end of the image.
+     * Undefined on rows captured before this existed, which is why the check
+     * below is `=== false` rather than falsy.
+     */
+    blockInCapture: diagnostics.blockInCapture as boolean | undefined,
   };
   const shown = view === "after" ? project.preview_after_url : project.preview_before_url;
 
@@ -303,7 +339,11 @@ export function PreviewPanel({
 
           <div
             className="mt-3 inline-flex w-full sm:w-auto rounded-xl border border-white/[0.10] bg-obsidian-950/60 p-1"
-            role="group"
+            // A focusable scroll container is a landmark, and `region` is the
+            // role that gets announced as one. `group` is generic — and was
+            // already in use by the before/after toggle fifty lines above, so
+            // the panel had two of them.
+            role="region"
             aria-label="Compare your page before and after the block"
           >
             {(["before", "after"] as const).map((v) => (
@@ -327,14 +367,31 @@ export function PreviewPanel({
           <p className="mt-2.5 text-xs text-white/45">
             {view === "after" ? (
               <>
+                {/*
+                  "Same scroll position" described the old viewport crop, where
+                  both shots were pinned to one offset. These are full pages —
+                  there is no single scroll position to share, and the two can
+                  differ in height by the block itself. Claiming otherwise is a
+                  small lie about the one control the product argues with.
+                */}
                 <span className="text-champagne-400/90">Showing the block</span>{" "}
-                — same page, same scroll position, one thing added.
+                — your whole page, with one thing added. Scroll to explore it.
               </>
             ) : (
               <>Your page exactly as it is today. Switch to After to see the block.</>
             )}
           </p>
         </div>
+
+        {shown && capture.blockInCapture === false && (
+          <div className="rounded-lg border border-warning/25 bg-warning/[0.05] px-4 py-3">
+            <p className="text-xs text-warning/90">
+              Your page is taller than we can photograph in one go, and your
+              block sits below the cut — so it is not in the image below. It
+              will still render in the right place on your live page.
+            </p>
+          </div>
+        )}
 
         {shown ? (
           /**
@@ -398,7 +455,7 @@ export function PreviewPanel({
           Hidden when we have no offset (a project measured before WP-F.7),
           rather than scrolling to the top and pretending that was the block.
         */}
-        {shown && capture.blockTop > 0 && (
+        {shown && capture.blockTop > 0 && capture.blockInCapture !== false && (
           <Button
             variant="ghost"
             onClick={() => {
