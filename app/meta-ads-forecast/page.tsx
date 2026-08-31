@@ -9,6 +9,7 @@ import {
   LineChart,
   Calculator,
 } from "lucide-react";
+import { AnonAuditBox } from "@/components/marketing/anon-audit-box";
 import { MarketingNav } from "@/components/marketing/nav";
 import { Footer } from "@/components/marketing/footer";
 import { DataPill } from "@/components/ui/data-pill";
@@ -138,17 +139,21 @@ export default async function MetaAdsForecastPage() {
           <p className="mt-5 max-w-2xl text-lg text-white/55 leading-relaxed">
             {t("metaAdsPage.heroBody")}
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link href="/sign-up?next=/app/analyzer">
-              <span className="inline-flex items-center gap-2 rounded-lg bg-champagne-400 px-6 py-3 text-base font-medium text-obsidian-950 shadow-gold transition-colors hover:bg-champagne-300">
-                {t("metaAdsPage.heroCta")}
-                <ArrowRight className="size-4" />
-              </span>
-            </Link>
-            <span className="font-mono text-xs uppercase tracking-wider text-white/40">
-              {t("metaAdsPage.heroCaption")}
-            </span>
-          </div>
+          {/*
+            The free audit already carries the modeled ROAS range, so the CTA
+            runs it inline rather than gating the page's own "start free"
+            promise behind an account.
+          */}
+          <AnonAuditBox
+            className="mt-8"
+            source="meta-ads-forecast-hero"
+            ctaLabel={t("metaAdsPage.heroCta")}
+            caption={t("metaAdsPage.heroCaption")}
+            secondary={{
+              href: "/sign-up?next=/app/analyzer",
+              label: t("hero.signUpFallback"),
+            }}
+          />
         </div>
 
         {/* Three scenarios */}
@@ -257,12 +262,17 @@ export default async function MetaAdsForecastPage() {
           <p className="mx-auto mt-2 max-w-md text-sm text-white/55 leading-relaxed">
             {t("metaAdsPage.finalBody")}
           </p>
-          <Link href="/sign-up?next=/app/analyzer">
-            <span className="mt-5 inline-flex items-center gap-2 rounded-lg bg-champagne-400 px-6 py-3 text-base font-medium text-obsidian-950 shadow-gold transition-colors hover:bg-champagne-300">
-              {t("metaAdsPage.finalCta")}
-              <ArrowRight className="size-4" />
-            </span>
-          </Link>
+          <AnonAuditBox
+            className="mx-auto mt-5 max-w-xl"
+            source="meta-ads-forecast-final"
+            align="center"
+            ctaLabel={t("metaAdsPage.finalCta")}
+            caption={null}
+            secondary={{
+              href: "/sign-up?next=/app/analyzer",
+              label: t("hero.signUpFallback"),
+            }}
+          />
         </section>
       </main>
       <Footer />

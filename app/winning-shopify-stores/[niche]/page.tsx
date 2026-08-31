@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Lock, TrendingUp } from "lucide-react";
+import { AnonAuditBox } from "@/components/marketing/anon-audit-box";
 import { MarketingNav } from "@/components/marketing/nav";
 import { Footer } from "@/components/marketing/footer";
 import { DataPill } from "@/components/ui/data-pill";
@@ -155,17 +156,21 @@ export default async function NichePage(props: {
             . Study how they structure their hero, trust and offer — then run
             the same audit on your own store, free.
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link href="/sign-up?next=/app/analyzer">
-              <span className="inline-flex items-center gap-2 rounded-lg bg-champagne-400 px-6 py-3 text-base font-medium text-obsidian-950 shadow-gold transition-colors hover:bg-champagne-300">
-                Audit my store free
-                <ArrowRight className="size-4" />
-              </span>
-            </Link>
-            <span className="font-mono text-xs uppercase tracking-wider text-white/40">
-              60 seconds · no card
-            </span>
-          </div>
+          {/*
+            The copy above ends on "run the same audit on your own store,
+            free" — so this runs it, rather than sending the visitor to a
+            signup form.
+          */}
+          <AnonAuditBox
+            className="mt-8"
+            source="winning-shopify-stores-niche-hero"
+            ctaLabel="Audit my store free"
+            caption="60 seconds · no card"
+            secondary={{
+              href: "/sign-up?next=/app/analyzer",
+              label: "or create a free account",
+            }}
+          />
         </div>
 
         {/* Store grid — top 3 show real conv_rate, rest locked (funnel) */}
