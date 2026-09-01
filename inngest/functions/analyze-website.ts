@@ -29,6 +29,8 @@ import {
   isDeadlineError,
   isTotalBudgetError,
   assertTotalBudget as assertWithinTotalBudget,
+  STEP_BUDGET_MS,
+  TOTAL_BUDGET_MS,
 } from "@/lib/deadline";
 import { quickScoreEnabled, nicheWinnersEnabled } from "@/lib/flags";
 
@@ -196,6 +198,24 @@ export const analyzeWebsite = inngest.createFunction(
      * `onFailure` (refund) instead of spending two more attempts discovering
      * the same thing.
      */
+    /**
+     * Step budget CLAMPED to whatever is left of the total ceiling.
+     *
+     * Without this the guard would only bound how many attempts *start*: a step
+     * beginning at t=57s would still open a fresh 50s budget and run to t=107s,
+     * so "we stop at 58s" would not be true of the wall clock. Clamping makes
+     * the in-flight work stop at the ceiling too.
+     *
+     * The floor keeps a clamped budget usable — a step handed 200ms would fail
+     * in a way that looks like a provider error rather than a timeout. Below
+     * the floor the guard above has already aborted the run anyway.
+     */
+    const stepBudgetMs = () =>
+      Math.max(
+        5_000,
+        Math.min(STEP_BUDGET_MS, queuedAtMs + TOTAL_BUDGET_MS - Date.now()),
+      );
+
     const assertTotalBudget = (label: string) => {
       try {
         assertWithinTotalBudget(queuedAtMs, label);
@@ -221,7 +241,7 @@ export const analyzeWebsite = inngest.createFunction(
       // route's maxDuration, otherwise Vercel kills the request mid-step and
       // Inngest only sees "your server returned HTTP 504" — an opaque failure
       // that loses the work and refunds the audit. See lib/deadline.ts.
-      const dl = startDeadline();
+      const dl = startDeadline(stepBudgetMs());
       const extOf = (m: "image/png" | "image/jpeg") =>
         m === "image/png" ? "png" : "jpg";
 
@@ -337,7 +357,7 @@ export const analyzeWebsite = inngest.createFunction(
     // no-op step that still cost a full orchestration round-trip on the path.
     if (quickScoreEnabled()) {
       await step.run("quick-score", async () => {
-        const dl = startDeadline();
+        const dl = startDeadline(stepBudgetMs());
         let preview = null;
         try {
           const base64 = await urlToBase64(screenshot.publicUrl);
@@ -445,7 +465,7 @@ export const analyzeWebsite = inngest.createFunction(
       // retry ladders could add up to well over 60s. The budget now bounds all
       // of it (see ai/providers/gemini.ts) so we fail cleanly — and retryably —
       // instead of being cut off with a 504.
-      const dl = startDeadline();
+      const dl = startDeadline(stepBudgetMs());
       // Pull the image bytes HERE as local vars — never returned/persisted —
       // so a large screenshot can't blow Inngest's step-output size limit.
       const primaryBase64 = await urlToBase64(screenshot.publicUrl);
@@ -521,7 +541,7 @@ export const analyzeWebsite = inngest.createFunction(
     const metaAds = runRewrite
       ? await step.run("run-meta-ads-agent", async () => {
           assertTotalBudget("run-meta-ads-agent");
-          const dl = startDeadline();
+          const dl = startDeadline(stepBudgetMs());
           try {
             return await runMetaAdsOptimizerAgent({
               deadlineAt: dl.at,
