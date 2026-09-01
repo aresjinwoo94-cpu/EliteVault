@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useState, useSyncExternalStore, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Globe, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -39,6 +39,16 @@ import { cn } from "@/lib/utils";
  * in their left-aligned hero blocks, `center` inside their centered final-CTA
  * cards.
  */
+/**
+ * Hydration probe for `useSyncExternalStore`. Module-level so the identities
+ * are stable across renders and React never re-subscribes. The store never
+ * changes — only the server-vs-client snapshot differs, which is the whole
+ * point.
+ */
+const subscribeNoop = () => () => {};
+const getHydratedSnapshot = () => true;
+const getServerSnapshot = () => false;
+
 type Align = "left" | "center" | "center-then-left";
 
 const ROW_ALIGN: Record<Align, string> = {
@@ -91,6 +101,24 @@ export function AnonAuditBox({
   const router = useRouter();
   const [url, setUrl] = useState("");
   const [isPending, startTransition] = useTransition();
+  /**
+   * Submitting is a client-side call, so it does nothing until React hydrates.
+   * The button used to render enabled in the server HTML, which made an early
+   * click a SILENT no-op — no toast, no navigation, nothing. That is worse on
+   * these SEO landings than on the homepage, because search traffic arrives
+   * cold and clicks the CTA immediately. Rendering it disabled until hydration
+   * makes the unavailable moment visible instead of swallowing the click.
+   *
+   * `useSyncExternalStore` rather than a `useEffect` + `setState`: it returns
+   * the server snapshot (false) for SSR and the hydration pass, then the client
+   * snapshot (true), which is precisely "has this component hydrated" without
+   * the cascading-render that setting state inside an effect causes.
+   */
+  const hydrated = useSyncExternalStore(
+    subscribeNoop,
+    getHydratedSnapshot,
+    getServerSnapshot,
+  );
 
   function submit() {
     const value = url.trim();
@@ -161,7 +189,12 @@ export function AnonAuditBox({
             className="h-12 pl-10 text-base text-left"
           />
         </div>
-        <Button size="xl" className="shrink-0" onClick={submit} disabled={isPending}>
+        <Button
+          size="xl"
+          className="shrink-0"
+          onClick={submit}
+          disabled={!hydrated || isPending}
+        >
           {isPending ? (
             <>
               <Loader2 className="size-4 animate-spin" />

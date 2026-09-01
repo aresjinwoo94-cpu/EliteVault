@@ -46,6 +46,81 @@ export const STEP_BUDGET_MS = (() => {
 })();
 
 /**
+ * Hard ceiling on the WHOLE analysis, measured from the moment the row was
+ * queued (`analyses.created_at`) — not per step.
+ *
+ * STEP_BUDGET_MS above bounds one attempt so Vercel never 504s. It says
+ * nothing about how many *full* attempts Inngest is allowed to stack: three
+ * attempts of a 50s step plus Inngest's backoff is how a refunded audit ends
+ * up averaging ~232s before the user is told it failed (docs/analyzer-latency.md
+ * §4a). This budget is the other half — it stops the run outright once the
+ * total elapsed time is spent, so a doomed audit fails fast instead of slowly.
+ *
+ * Deliberately independent of `maxDuration` and of the per-step budgets: it
+ * changes only how long we keep retrying, so it is safe to ship while WP-5
+ * is frozen.
+ */
+export const TOTAL_BUDGET_MS = (() => {
+  const raw = Number(process.env.ANALYZER_TOTAL_BUDGET_MS);
+  return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 58_000;
+})();
+
+/**
+ * Thrown when the whole analysis has outlived TOTAL_BUDGET_MS. Distinct from
+ * DeadlineExceededError, which means "this step ran out of room and is worth
+ * retrying": this one means "stop retrying and refund".
+ */
+export class TotalBudgetExceededError extends Error {
+  readonly elapsedMs: number;
+  readonly budgetMs: number;
+  constructor(label: string, elapsedMs: number, budgetMs: number) {
+    super(
+      `Total analysis budget exhausted at ${label} — ${Math.round(
+        elapsedMs / 1000,
+      )}s elapsed of a ${Math.round(budgetMs / 1000)}s ceiling.`,
+    );
+    this.name = "TotalBudgetExceededError";
+    this.elapsedMs = elapsedMs;
+    this.budgetMs = budgetMs;
+  }
+}
+
+export function isTotalBudgetError(err: unknown): boolean {
+  return (
+    err instanceof TotalBudgetExceededError ||
+    /total analysis budget exhausted/i.test(
+      err instanceof Error ? err.message : String(err ?? ""),
+    )
+  );
+}
+
+/**
+ * Throw if the whole analysis has outlived its ceiling.
+ *
+ * `queuedAtMs` is the epoch-ms of `analyses.created_at` — the moment the user
+ * asked, not the moment this attempt began. Measuring from the attempt would
+ * defeat the purpose: every retry would reset the clock, which is precisely how
+ * a doomed audit reaches ~232s today.
+ *
+ * The comparison is inclusive (`elapsed > budget` aborts), so an audit landing
+ * exactly on the ceiling is still allowed to finish.
+ *
+ * Exported and pure so the shipped guard is the one under test; the Inngest
+ * function wraps the throw in a NonRetriableError so it refunds immediately
+ * instead of burning the remaining attempts.
+ */
+export function assertTotalBudget(
+  queuedAtMs: number,
+  label: string,
+  { now = Date.now(), budgetMs = TOTAL_BUDGET_MS }: { now?: number; budgetMs?: number } = {},
+): void {
+  const elapsed = now - queuedAtMs;
+  if (elapsed > budgetMs) {
+    throw new TotalBudgetExceededError(label, elapsed, budgetMs);
+  }
+}
+
+/**
  * Thrown when a step gives up because its remaining budget can't cover the
  * next unit of work. Distinct from a provider error on purpose: it means
  * "there wasn't time", not "the provider is broken", and callers use that to
