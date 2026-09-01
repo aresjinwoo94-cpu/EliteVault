@@ -52,6 +52,9 @@ const en: Dict = {
     auditButton: "Audit my store — free",
     auditing: "Auditing your store…",
     anonMicro: "No login · no card · 1 free audit",
+    // Fallback for visitors who reach a CTA without pasting a URL — the SEO
+    // landings show this under the inline box so /sign-up stays reachable.
+    signUpFallback: "or create a free account",
   },
   // Anonymous audit reveal + registration gate (activation funnel Tarea 1).
   anonReveal: {
@@ -769,6 +772,9 @@ const es: Dict = {
     auditButton: "Auditar mi tienda — gratis",
     auditing: "Auditando tu tienda…",
     anonMicro: "Sin registro · sin tarjeta · 1 auditoría gratis",
+    // Salida para quien llega a una CTA sin pegar una URL — las landings de
+    // SEO lo muestran bajo la caja para que /sign-up siga siendo alcanzable.
+    signUpFallback: "o crea una cuenta gratis",
   },
   // Reveal anónimo + gate de registro (funnel de activación Tarea 1).
   anonReveal: {

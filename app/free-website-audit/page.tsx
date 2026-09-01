@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   Zap,
 } from "lucide-react";
+import { AnonAuditBox } from "@/components/marketing/anon-audit-box";
 import { MarketingNav } from "@/components/marketing/nav";
 import { Footer } from "@/components/marketing/footer";
 import { DataPill } from "@/components/ui/data-pill";
@@ -162,17 +163,22 @@ export default async function FreeWebsiteAuditPage() {
           <p className="mt-5 max-w-2xl text-lg text-white/55 leading-relaxed">
             {t("freeAudit.heroBody")}
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link href="/sign-up?next=/app/analyzer">
-              <span className="inline-flex items-center gap-2 rounded-lg bg-champagne-400 px-6 py-3 text-base font-medium text-obsidian-950 shadow-gold transition-colors hover:bg-champagne-300">
-                {t("freeAudit.heroCta")}
-                <ArrowRight className="size-4" />
-              </span>
-            </Link>
-            <span className="font-mono text-xs uppercase tracking-wider text-white/40">
-              {t("freeAudit.heroCaption")}
-            </span>
-          </div>
+          {/*
+            This page's whole promise is "free audit, no credit card" — so the
+            CTA runs the audit right here instead of demanding an account
+            first. Same anonymous flow as the homepage hero.
+          */}
+          <AnonAuditBox
+            className="mt-8"
+            source="free-website-audit-hero"
+            ctaLabel={t("freeAudit.heroCta")}
+            caption={t("freeAudit.heroCaption")}
+            captionClassName="font-mono uppercase tracking-wider text-white/40"
+            secondary={{
+              href: "/sign-up?next=/app/analyzer",
+              label: t("hero.signUpFallback"),
+            }}
+          />
         </div>
 
         {/* What it checks */}
@@ -292,12 +298,17 @@ export default async function FreeWebsiteAuditPage() {
           <p className="mx-auto mt-2 max-w-md text-sm text-white/55 leading-relaxed">
             {t("freeAudit.finalBody")}
           </p>
-          <Link href="/sign-up?next=/app/analyzer">
-            <span className="mt-5 inline-flex items-center gap-2 rounded-lg bg-champagne-400 px-6 py-3 text-base font-medium text-obsidian-950 shadow-gold transition-colors hover:bg-champagne-300">
-              {t("freeAudit.finalCta")}
-              <ArrowRight className="size-4" />
-            </span>
-          </Link>
+          <AnonAuditBox
+            className="mx-auto mt-5 max-w-xl"
+            source="free-website-audit-final"
+            align="center"
+            ctaLabel={t("freeAudit.finalCta")}
+            caption={null}
+            secondary={{
+              href: "/sign-up?next=/app/analyzer",
+              label: t("hero.signUpFallback"),
+            }}
+          />
         </section>
       </main>
       <Footer />

@@ -9,6 +9,7 @@ import {
   Sparkles,
   ThumbsDown,
 } from "lucide-react";
+import { AnonAuditBox } from "@/components/marketing/anon-audit-box";
 import { MarketingNav } from "@/components/marketing/nav";
 import { Footer } from "@/components/marketing/footer";
 import { DataPill } from "@/components/ui/data-pill";
@@ -126,17 +127,21 @@ export default async function BuyerPersonaSimulatorPage() {
           <p className="mt-5 max-w-2xl text-lg text-white/55 leading-relaxed">
             {t("personaPage.heroBody")}
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link href="/sign-up?next=/app/analyzer">
-              <span className="inline-flex items-center gap-2 rounded-lg bg-champagne-400 px-6 py-3 text-base font-medium text-obsidian-950 shadow-gold transition-colors hover:bg-champagne-300">
-                {t("personaPage.heroCta")}
-                <ArrowRight className="size-4" />
-              </span>
-            </Link>
-            <span className="font-mono text-xs uppercase tracking-wider text-white/40">
-              {t("personaPage.heroCaption")}
-            </span>
-          </div>
+          {/*
+            The persona simulation is part of the free audit, so the visitor
+            can watch one react without creating an account first.
+          */}
+          <AnonAuditBox
+            className="mt-8"
+            source="ai-buyer-persona-simulator-hero"
+            ctaLabel={t("personaPage.heroCta")}
+            caption={t("personaPage.heroCaption")}
+            captionClassName="font-mono uppercase tracking-wider text-white/40"
+            secondary={{
+              href: "/sign-up?next=/app/analyzer",
+              label: t("hero.signUpFallback"),
+            }}
+          />
         </div>
 
         {/* How it works */}
@@ -247,12 +252,17 @@ export default async function BuyerPersonaSimulatorPage() {
           <p className="mx-auto mt-2 max-w-md text-sm text-white/55 leading-relaxed">
             {t("personaPage.finalBody")}
           </p>
-          <Link href="/sign-up?next=/app/analyzer">
-            <span className="mt-5 inline-flex items-center gap-2 rounded-lg bg-champagne-400 px-6 py-3 text-base font-medium text-obsidian-950 shadow-gold transition-colors hover:bg-champagne-300">
-              {t("personaPage.finalCta")}
-              <ArrowRight className="size-4" />
-            </span>
-          </Link>
+          <AnonAuditBox
+            className="mx-auto mt-5 max-w-xl"
+            source="ai-buyer-persona-simulator-final"
+            align="center"
+            ctaLabel={t("personaPage.finalCta")}
+            caption={null}
+            secondary={{
+              href: "/sign-up?next=/app/analyzer",
+              label: t("hero.signUpFallback"),
+            }}
+          />
         </section>
       </main>
       <Footer />

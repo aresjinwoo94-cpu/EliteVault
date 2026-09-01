@@ -1,6 +1,9 @@
 "use server";
 
-import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import {
+  createSupabaseServerClient,
+  createSupabaseServiceClient,
+} from "@/lib/supabase/server";
 import { inngest } from "@/inngest/client";
 import { validatePublicStoreUrl } from "@/lib/security/url-guard";
 import { isBareIpHost, BARE_IP_REASON } from "@/lib/analyzer/store-url-policy";
@@ -24,11 +27,36 @@ import { checkAnonAuditRate } from "@/lib/anon/rate-limit";
 
 export type CreateAnonAnalysisResult =
   | { ok: true; id: string }
-  | { ok: false; error: string; limited?: boolean };
+  /**
+   * The visitor is already signed in — `signedIn` tells the caller to send them
+   * to their own analyzer instead of creating an unowned audit. See the guard
+   * at the top of `createAnonAnalysis()`.
+   */
+  | { ok: false; error: string; limited?: boolean; signedIn?: boolean };
 
 export async function createAnonAnalysis(input: {
   url: string;
 }): Promise<CreateAnonAnalysisResult> {
+  // 0) Signed-in visitors must never land in the anonymous flow. Before the
+  //    SEO landings used this box they linked to /sign-up, and the middleware
+  //    bounced an authenticated user straight to /app/analyzer. Without this
+  //    guard that routing is lost: the audit would be created with user_id
+  //    null, so it would never appear in their history, it would burn the
+  //    household's 1/day anonymous IP quota, and /audit/[id] would show a
+  //    "create a free account" gate to someone who already has an account
+  //    (that page only redirects when user_id is set, which it wouldn't be).
+  const auth = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await auth.auth.getUser();
+  if (user) {
+    return {
+      ok: false,
+      signedIn: true,
+      error: "You're already signed in — running this in your account.",
+    };
+  }
+
   // 1) Validate the URL first — cheapest rejection, and it protects the fetch.
   const guard = validatePublicStoreUrl(input.url ?? "");
   if (!guard.ok) {

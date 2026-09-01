@@ -8,6 +8,7 @@ import {
   Brain,
   ShieldCheck,
 } from "lucide-react";
+import { AnonAuditBox } from "@/components/marketing/anon-audit-box";
 import { MarketingNav } from "@/components/marketing/nav";
 import { Footer } from "@/components/marketing/footer";
 import { DataPill } from "@/components/ui/data-pill";
@@ -180,17 +181,22 @@ export default function ConvertMateAlternativePage() {
             audit with a library of revenue-validated winning stores so you can
             copy what already converts in your niche.
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link href="/sign-up?next=/app/analyzer">
-              <span className="inline-flex items-center gap-2 rounded-lg bg-champagne-400 px-6 py-3 text-base font-medium text-obsidian-950 shadow-gold transition-colors hover:bg-champagne-300">
-                Audit my store free
-                <ArrowRight className="size-4" />
-              </span>
-            </Link>
-            <span className="font-mono text-xs uppercase tracking-wider text-white/40">
-              60 seconds · no card · no install
-            </span>
-          </div>
+          {/*
+            Traffic here is migrating off a sunsetting tool and is the least
+            likely to accept a signup wall before seeing anything — run the
+            free diagnosis inline.
+          */}
+          <AnonAuditBox
+            className="mt-8"
+            source="convertmate-alternative-hero"
+            ctaLabel="Audit my store free"
+            caption="60 seconds · no card · no install"
+            captionClassName="font-mono uppercase tracking-wider text-white/40"
+            secondary={{
+              href: "/sign-up?next=/app/analyzer",
+              label: "or create a free account",
+            }}
+          />
         </div>
 
         {/* Proof points */}
@@ -319,12 +325,17 @@ export default function ConvertMateAlternativePage() {
             Run the free diagnosis now — see your score and annotated screenshot
             before ConvertMate&apos;s lights go out.
           </p>
-          <Link href="/sign-up?next=/app/analyzer">
-            <span className="mt-5 inline-flex items-center gap-2 rounded-lg bg-champagne-400 px-6 py-3 text-base font-medium text-obsidian-950 shadow-gold transition-colors hover:bg-champagne-300">
-              Audit my store free
-              <ArrowRight className="size-4" />
-            </span>
-          </Link>
+          <AnonAuditBox
+            className="mx-auto mt-5 max-w-xl"
+            source="convertmate-alternative-final"
+            align="center"
+            ctaLabel="Audit my store free"
+            caption={null}
+            secondary={{
+              href: "/sign-up?next=/app/analyzer",
+              label: "or create a free account",
+            }}
+          />
         </section>
       </main>
       <Footer />
