@@ -67,6 +67,12 @@ export type AnonAuditBoxProps = {
    * line; pass a page's own caption to keep its wording, or `null` for none.
    */
   caption?: string | null;
+  /**
+   * Overrides the caption's typography. The SEO landings pass their original
+   * mono/uppercase treatment so swapping the CTA for this box doesn't quietly
+   * restyle their hero captions.
+   */
+  captionClassName?: string;
   /** Optional quiet link beside the caption (e.g. the /sign-up fallback). */
   secondary?: { href: string; label: string } | null;
   className?: string;
@@ -77,6 +83,7 @@ export function AnonAuditBox({
   ctaLabel,
   align = "left",
   caption,
+  captionClassName,
   secondary,
   className,
 }: AnonAuditBoxProps) {
@@ -105,6 +112,13 @@ export function AnonAuditBox({
       }
       const res = await createAnonAnalysis({ url: value });
       if (!res.ok) {
+        // Already signed in → send them to their OWN analyzer, carrying the
+        // URL so they don't retype it. Restores the routing the /sign-up CTA
+        // used to get from the middleware.
+        if (res.signedIn) {
+          router.push(`/app/analyzer?url=${encodeURIComponent(value)}`);
+          return;
+        }
         // Over the daily limit → nudge to a free account, don't just error.
         if (res.limited) {
           toast(res.error, {
@@ -141,7 +155,10 @@ export function AnonAuditBox({
             placeholder={t("hero.inputPlaceholder")}
             aria-label={t("hero.inputPlaceholder")}
             disabled={isPending}
-            className="h-12 pl-10 text-base"
+            // `text-left` is load-bearing: the final-CTA cards these boxes sit
+            // in are `text-center`, and text-align inherits into <input>, so
+            // without it the typed URL centres away from the Globe icon.
+            className="h-12 pl-10 text-base text-left"
           />
         </div>
         <Button size="xl" className="shrink-0" onClick={submit} disabled={isPending}>
@@ -166,7 +183,14 @@ export function AnonAuditBox({
           )}
         >
           {captionText && (
-            <p className="text-xs tracking-wide text-white/35">{captionText}</p>
+            <p
+              className={cn(
+                "text-xs tracking-wide text-white/35",
+                captionClassName,
+              )}
+            >
+              {captionText}
+            </p>
           )}
           {secondary && (
             <Link

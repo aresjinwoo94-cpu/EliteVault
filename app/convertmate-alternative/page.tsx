@@ -191,6 +191,7 @@ export default function ConvertMateAlternativePage() {
             source="convertmate-alternative-hero"
             ctaLabel="Audit my store free"
             caption="60 seconds · no card · no install"
+            captionClassName="font-mono uppercase tracking-wider text-white/40"
             secondary={{
               href: "/sign-up?next=/app/analyzer",
               label: "or create a free account",

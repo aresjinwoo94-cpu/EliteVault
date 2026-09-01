@@ -166,6 +166,7 @@ export default async function NichePage(props: {
             source="winning-shopify-stores-niche-hero"
             ctaLabel="Audit my store free"
             caption="60 seconds · no card"
+            captionClassName="font-mono uppercase tracking-wider text-white/40"
             secondary={{
               href: "/sign-up?next=/app/analyzer",
               label: "or create a free account",

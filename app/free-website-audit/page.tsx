@@ -173,6 +173,7 @@ export default async function FreeWebsiteAuditPage() {
             source="free-website-audit-hero"
             ctaLabel={t("freeAudit.heroCta")}
             caption={t("freeAudit.heroCaption")}
+            captionClassName="font-mono uppercase tracking-wider text-white/40"
             secondary={{
               href: "/sign-up?next=/app/analyzer",
               label: t("hero.signUpFallback"),

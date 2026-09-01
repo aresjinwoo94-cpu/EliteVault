@@ -136,6 +136,7 @@ export default async function BuyerPersonaSimulatorPage() {
             source="ai-buyer-persona-simulator-hero"
             ctaLabel={t("personaPage.heroCta")}
             caption={t("personaPage.heroCaption")}
+            captionClassName="font-mono uppercase tracking-wider text-white/40"
             secondary={{
               href: "/sign-up?next=/app/analyzer",
               label: t("hero.signUpFallback"),

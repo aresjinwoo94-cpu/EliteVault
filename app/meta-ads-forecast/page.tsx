@@ -149,6 +149,7 @@ export default async function MetaAdsForecastPage() {
             source="meta-ads-forecast-hero"
             ctaLabel={t("metaAdsPage.heroCta")}
             caption={t("metaAdsPage.heroCaption")}
+            captionClassName="font-mono uppercase tracking-wider text-white/40"
             secondary={{
               href: "/sign-up?next=/app/analyzer",
               label: t("hero.signUpFallback"),
