@@ -1,7 +1,7 @@
 # Total-elapsed abort — stop a doomed audit and refund, instead of dying slowly
 
 Owner decision, not a finding from the brief: if an analysis has not finished
-~58 seconds after it was **queued**, abort it and refund the credit
+**150 seconds** after the run started, abort it and refund the credit
 automatically — the same refund path that already runs on a provider error,
 triggered by total elapsed time instead.
 
@@ -29,11 +29,11 @@ This changes **only how long we keep retrying**. It does not touch
 `app/api/inngest/route.ts` is not modified. It is safe to ship while WP-5
 stays frozen pending Liquid Blocks landing `maxDuration=300` on `main`.
 
-## 3. The trade-off — read this before choosing the number
+## 3. The trade-off, and why the ceiling is 150s
 
 **Slow-but-successful audits now refund instead of completing.** How many
-depends entirely on the ceiling, and the honest answer at 58s is: *most of
-them.*
+depends entirely on the ceiling. An earlier draft of this work defaulted to
+58s; that was wrong, and the number below is why.
 
 `docs/analyzer-latency.md` §4a, 30 days of production data on audits that
 **succeeded** (n=51):
@@ -45,19 +45,29 @@ them.*
 | p95 | 211.5s |
 | share finishing ≤50s | **32%** |
 
-A 58s ceiling sits **below the median of a successful audit**. Roughly
-two-thirds of the audits that succeed today take longer than that. This is not
-a safety valve that trims a pathological tail — at 58s it culls the middle of
-the distribution.
+A ~58s ceiling would sit **below the median of a successful audit** — roughly
+two thirds of the audits that succeed today take longer than that. That is not
+a safety valve trimming a pathological tail; it culls the middle of the
+distribution.
 
-That is a legitimate product choice (a user refunded at 58s may well be better
-served than one who waits 232s to be told nothing), but it should be made with
-the number in view, not by accident. **`ANALYZER_TOTAL_BUDGET_MS` tunes it
-without a deploy**; something in the 120–180s range would cut the ~232s tail
-while leaving the p50 audit alone.
+**150s is the chosen ceiling.** It clears the p50 (79.5s) and the mean (98.3s)
+with room to spare, sits just under the p95 (211.5s), and still cuts the end
+that this exists for: refunds today average **~232s** and reach **534s**. The
+owner made this call explicitly after seeing the distribution.
 
-The smaller sample from the 5-store checklist run immediately before this
-change points the same way — 2 of 5 flip to refunds:
+`ANALYZER_TOTAL_BUDGET_MS` overrides it without a deploy; the code default is
+now 150s so no environment silently inherits a tighter value.
+
+Against the 5-store checklist run just before this change, **all five now
+complete** — allbirds 49.1s, gymshark 49.0s, vitallivingstore 53.4s, aesop
+63.1s, brilliantearth 168.4s. brilliantearth is the interesting one: at 168.4s
+it is over the ceiling on *wall* time but that figure includes queue wait, and
+the ceiling is measured from the run start (§7), so it depends on how much of
+those 168s was queueing. Treat it as the borderline case to watch after
+deploy.
+
+For reference, the same table under the rejected 58s ceiling — 2 of 5 would
+have refunded:
 
 | store | wall time | under the new ceiling? |
 |---|---|---|
@@ -248,13 +258,58 @@ Note on measuring typecheck: stop the dev server first. Generated files under
 reporting a misleadingly small error count (this happened once during this
 work — 5 "errors", all syntax errors in generated files).
 
-### Not verified
+### The abort, verified end to end
 
-**The abort has not been exercised end to end.** Doing so needs a real run
-that crosses the ceiling, and the anonymous entry point is rate-limited to
-1/IP/day (already spent by the checklist), so no live trigger was available.
-The guard is unit-tested and the wiring is argued above, but the full
-queue → abort → `onFailure` → `refunded` + credit-return path has not been
-watched happening. Worth one deliberate trigger after deploy — set
-`ANALYZER_TOTAL_BUDGET_MS=1` in a preview, run any audit, and confirm the row
-lands `refunded` with the "we stopped this audit" message and the credit back.
+Forced with `ANALYZER_TOTAL_BUDGET_MS=1` against a local dev server plus a
+local Inngest dev server, using the pre-existing synthetic test account
+`test-pro@elitevault.local` (no account was created). The row was inserted and
+the `analysis/requested` event sent directly, bypassing only the per-IP rate
+limit — which is not what was under test. A credit was decremented first to
+simulate the charge the real action performs, so the refund nets to zero.
+
+Observed:
+
+```
+[setup]  credits BEFORE = 1  →  simulated charge → 0
+[result] status   = refunded
+[result] error    = "We stopped this audit because it passed our time limit —
+                     you haven't been charged for it. …"
+[result] started_at  19:16:00.448
+[result] finished_at 19:16:01.626
+[result] credits AFTER = 1   → CREDIT WAS REFUNDED, net zero
+```
+
+**1.18 seconds from start to refunded** — which is the point. It gave up
+immediately instead of stacking retries; three attempts plus backoff could not
+fit in that window.
+
+The app log shows the whole chain intact:
+
+```
+[analyzer] Total analysis budget exhausted at capture-screenshot
+Error [NonRetriableError]: Total analysis budget exhausted at capture-screenshot
+  [cause]: Error [TotalBudgetExceededError]: …
+```
+
+and Inngest emitted exactly one `inngest/function.failed`, then ran
+`Analyze website (failure)` — the `onFailure` handler. No retry attempts.
+
+So all four links are confirmed live: the guard fires **inside**
+`capture-screenshot`, the `NonRetriableError` wrapping survives, the message
+round-trips to `onFailure` intact, and the credit is returned.
+
+### Still not verified
+
+- **A real ceiling crossing at the production value.** The forced test used a
+  1ms ceiling, so it aborted on the first guard. Nothing has yet been observed
+  crossing 150s naturally and aborting mid-pipeline.
+- **The signed-in path of the WP-1 session guard** (separate work, owner is
+  doing that click-through).
+
+### Cleanup note
+
+The forced test left one row in the production `analyses` table:
+`a8bcb67e-5b4a-4157-9797-b32876fb3400`, status `refunded`, owned by the
+`test-pro@elitevault.local` test account. It was left in place rather than
+deleted; remove it if you'd rather the table stayed clean. The account's credit
+balance was restored to exactly what it was (1).

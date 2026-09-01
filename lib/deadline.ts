@@ -59,10 +59,20 @@ export const STEP_BUDGET_MS = (() => {
  * Deliberately independent of `maxDuration` and of the per-step budgets: it
  * changes only how long we keep retrying, so it is safe to ship while WP-5
  * is frozen.
+ *
+ * # Why 150s and not something tighter
+ * The number has to be read against the distribution it cuts. Production over
+ * 30 days (docs/analyzer-latency.md §4a) on audits that SUCCEEDED: p50 79.5s,
+ * mean 98.3s, p95 211.5s, and only 32% finishing under 50s. A ceiling near 60s
+ * would sit *below the median of a successful audit* and refund roughly two
+ * thirds of the work that completes today — culling the middle of the
+ * distribution rather than trimming a tail. 150s clears the p50 and the mean
+ * comfortably while still cutting the pathological end, where refunds
+ * currently average ~232s and reach 534s.
  */
 export const TOTAL_BUDGET_MS = (() => {
   const raw = Number(process.env.ANALYZER_TOTAL_BUDGET_MS);
-  return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 58_000;
+  return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 150_000;
 })();
 
 /**
