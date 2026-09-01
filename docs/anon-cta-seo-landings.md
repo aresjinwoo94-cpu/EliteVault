@@ -152,7 +152,82 @@ deliberately left alone — a parallel session owns that checkout):
   (`free-website-audit-hero`, `…-final`, etc.), so the effect is measurable in
   PostHog once deployed — measure it before claiming it.
 
-## 8. Not touched
+## 8. Adversarial verification pass
+
+An independent subagent reviewed the branch read-only, instructed to find
+defects rather than approve. It re-ran every gate itself and reproduced the
+numbers in §6. **No P0.** It found one real regression this branch introduced
+and several smaller issues.
+
+### Fixed (commit `cfe9aa4`)
+
+**P1 — signed-in visitors got an orphaned, quota-burning audit.** The real
+defect, and one this branch caused. `createAnonAnalysis()` never checked for a
+session. Before this change a signed-in user clicking these CTAs hit
+`/sign-up?next=/app/analyzer` and `lib/supabase/middleware.ts:120-128` bounced
+them to `/app/analyzer`. Wiring in the anonymous box removed that routing:
+the audit was created with `user_id: null`, so it never appeared in their
+history, it burned the household's 1/day anonymous IP quota, and
+`/audit/[id]` fell through to the anonymous reveal — that page only redirects
+when `user_id` is set (`app/audit/[id]/page.tsx:74`), which it is not — so it
+showed a "create a free account" gate to someone who already had an account.
+
+Fixed with a session guard at the top of the action, placed *before* the
+rate-limit check so a signed-in user cannot burn anon quota; the client routes
+them to `/app/analyzer?url=…`, which already accepts that param as
+`initialUrl`. Fixing it in the action rather than per page also closes the
+same hole on the homepage hero, which had it first.
+
+**P2 — the typed URL rendered centred** in the four final-CTA boxes: those
+sections are `text-center` and `text-align` inherits into `<input>`, which
+`components/ui/input.tsx` never sets. Explicit `text-left` added.
+
+**P2 — the five hero captions silently lost their mono/uppercase treatment**
+when their `<span>` was replaced by the box's caption line. Added a
+`captionClassName` prop and restored the original styling per call site.
+
+### Checked and deliberately not changed
+
+- **Claimed mobile overflow does not reproduce.** The reviewer flagged
+  `whitespace-nowrap` on `size="xl"` as likely overflow for long CTA labels,
+  explicitly as "likely, not certain". Measured at 375px on the longest label
+  in each locale — "Simular un comprador en mi tienda" (33 chars) and "Correr
+  mi auditoría web gratis" (30): `documentElement.scrollWidth == 375 ==`
+  viewport, and `button.scrollWidth == button.clientWidth`. No page overflow,
+  no text overflow. Disproven by measurement, so nothing was changed.
+- **Rate-limit TOCTOU race** (count-then-insert in `lib/anon/rate-limit.ts:44`
+  → `anon-analyzer.ts:63` is not atomic, so two concurrent submits can both
+  pass a limit of 1) and the **fail-open branch** on a DB error are
+  pre-existing properties of that module, not introduced here. Both are real
+  and worth a follow-up — the race is now cheaper to hit, since each page
+  renders two boxes — but widening this branch into abuse hardening would mix
+  two unrelated changes. Recorded here instead.
+- **`personaPage.heroCta` ("Simulate a buyer on my store") now labels a
+  generic audit.** Defensible — the persona simulation is part of the free
+  audit — but it is a copy decision, not a bug, so it is left to the owner.
+- **The empty-input error toast shows the placeholder string** ("Paste your
+  store URL…"), and the input has no `type="url"`/`inputMode="url"` and no
+  wrapping `<form>`, so mobile keyboards show no Go key. All carried over
+  verbatim from the homepage hero; pre-existing, now on more surfaces.
+
+### Verified after the fixes
+
+Gates re-run: typecheck **252** (baseline 252, 0 new, none in touched files),
+tests **252 pass / 0 fail**, lint **116 problems (2 errors, 114 warnings)** —
+byte-identical to baseline, none in touched files — build **exit 0**.
+
+The anonymous path was re-tested through the browser after adding the session
+guard: submitting still reaches the server action and returns its validation
+error, so the guard does not block anonymous visitors. Measured in the DOM
+after the fixes: both inputs `text-align: left`, caption renders `fontMono` +
+`uppercase`.
+
+**The signed-in branch is not verified live.** It needs real credentials, and
+creating or signing into an account is out of bounds here. The guard is a
+plain `getUser()` null-check, but it has not been exercised end to end — worth
+one manual click-through after deploy.
+
+## 9. Not touched
 
 Nothing under `app/(app)/app/liquid`, `ai/agents/liquid-block-agent.ts`,
 `inngest/functions/blocks-preview.ts`, `components/**/blocks-*`,
