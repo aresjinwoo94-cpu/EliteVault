@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   TOTAL_BUDGET_MS,
   TotalBudgetExceededError,
@@ -18,13 +19,14 @@ import {
  * conflating them is how a "stop retrying" abort would get retried anyway.
  */
 
-test("defaults to a ceiling just under the 60s platform limit", () => {
-  // The default must leave room for onFailure's own writes. If someone raises
-  // maxDuration later, this is an env override — not a code edit.
-  assert.ok(
-    TOTAL_BUDGET_MS > 0 && TOTAL_BUDGET_MS <= 60_000,
-    `expected a positive ceiling at or under 60s, got ${TOTAL_BUDGET_MS}`,
-  );
+test("the ceiling is a usable positive integer, however it was configured", () => {
+  // Deliberately NOT asserting 58_000: the value is an env override by design,
+  // so pinning it would fail for anyone who tuned it. What must hold is that
+  // junk never leaves the guard in a state where it silently does nothing —
+  // NaN would make every comparison false and disable the ceiling entirely.
+  assert.equal(Number.isFinite(TOTAL_BUDGET_MS), true);
+  assert.equal(Number.isInteger(TOTAL_BUDGET_MS), true);
+  assert.ok(TOTAL_BUDGET_MS > 0, `expected a positive ceiling, got ${TOTAL_BUDGET_MS}`);
 });
 
 test("carries the numbers a human needs to see in the message", () => {
@@ -119,6 +121,64 @@ test("assertTotalBudget measures from QUEUED, so retries do not reset it", () =>
         budgetMs,
       }),
     TotalBudgetExceededError,
+  );
+});
+
+/**
+ * Structural guards on analyze-website.ts.
+ *
+ * The most important safety property of this feature cannot be reached from a
+ * unit test — it is *where* the guard is called. An Inngest function body
+ * re-executes at every step boundary, so a guard placed after `save-result`,
+ * or in a step that runs after the audit is computed, would refund work the
+ * user already has. These read the source and pin that placement, because an
+ * accidental move is silent, costly, and exactly the P0 an earlier revision of
+ * this branch shipped.
+ */
+const analyzerSource = readFileSync(
+  new URL("../../inngest/functions/analyze-website.ts", import.meta.url),
+  "utf8",
+);
+
+test("no total-budget guard runs after save-result", () => {
+  const saveIdx = analyzerSource.indexOf('step.run("save-result"');
+  assert.ok(saveIdx > 0, "save-result step not found — did the step get renamed?");
+  const after = analyzerSource.slice(saveIdx);
+  assert.equal(
+    /assertTotalBudget\s*\(/.test(after),
+    false,
+    "a total-budget guard appears at or after save-result: it could flip an " +
+      "already-succeeded audit into refunded",
+  );
+});
+
+test("run-meta-ads-agent has no total-budget guard", () => {
+  // It runs after the audit is computed but before save-result, so throwing
+  // there discards a finished, paid-for audit AND breaks the documented
+  // best-effort contract (a meta-ads failure must yield null, not kill the run).
+  const start = analyzerSource.indexOf('step.run("run-meta-ads-agent"');
+  assert.ok(start > 0, "run-meta-ads-agent step not found");
+  const body = analyzerSource.slice(start, analyzerSource.indexOf('step.run("save-result"'));
+  assert.equal(
+    /assertTotalBudget\s*\(/.test(body),
+    false,
+    "run-meta-ads-agent must not abort the run on the total budget",
+  );
+});
+
+test("the guard is measured from the run start, not from row creation", () => {
+  // created_at includes time spent waiting behind the concurrency limits,
+  // which is our scheduling, not the audit failing. Measuring from it refunds
+  // audits that never executed any work.
+  assert.equal(
+    /assertWithinTotalBudget\(\s*runStartedAtMs/.test(analyzerSource),
+    true,
+    "expected the ceiling to be measured from runStartedAtMs",
+  );
+  assert.equal(
+    /assertWithinTotalBudget\(\s*queuedAtMs/.test(analyzerSource),
+    false,
+    "the ceiling must not be measured from the queued instant",
   );
 });
 

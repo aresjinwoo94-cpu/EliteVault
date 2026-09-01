@@ -115,14 +115,25 @@ export const analyzeWebsite = inngest.createFunction(
       // Surface a useful — but bounded — error to the user
       const friendly = humanizeError(error);
 
-      await service
+      // Never demote an audit the user is already looking at. `save-result`
+      // writes `succeeded`, but steps AFTER it (the niche enrichment, and the
+      // un-caught `step.sendEvent` for activation) can still fail the run and
+      // land here — which without this guard would flip a finished audit to
+      // `refunded` and hand out a free credit. The total-budget ceiling routes
+      // more traffic through this handler, so the guard earns its place now.
+      const { data: demoted } = await service
         .from("analyses")
         .update({
           status: "refunded",
           error: friendly,
           finished_at: new Date().toISOString(),
         })
-        .eq("id", data.analysisId);
+        .eq("id", data.analysisId)
+        .neq("status", "succeeded")
+        .select("id");
+
+      // Nothing was updated → the audit had already succeeded. Do not refund.
+      if (Array.isArray(demoted) && demoted.length === 0) return;
 
       // Credit refund only applies to OWNED audits. An anonymous audit
       // (userId null) charged no credit, so there's nothing to refund and no
@@ -169,23 +180,32 @@ export const analyzeWebsite = inngest.createFunction(
     // and this is the one write whose whole job is to say "we started when we
     // said we started".
     //
-    // It also returns the QUEUED instant (`created_at`), which is what the
+    // It also returns the instant this run actually BEGAN, which is what the
     // total-budget ceiling below is measured from. Returning it as a step
     // output matters: step outputs are memoized, so every later attempt
     // reconstructs the same deadline instead of restarting the clock on each
     // retry — which is exactly the failure mode the ceiling exists to stop.
-    const queuedAtMs = await step.run("mark-running", async () => {
-      const { data: row } = await service
+    //
+    // Deliberately `started_at`, NOT `created_at`. The two differ by however
+    // long the event sat behind the `concurrency` limits configured above, and
+    // that wait is our scheduling decision, not time the audit spent failing.
+    // Measuring from `created_at` would refund audits that never executed a
+    // single unit of work: with GLOBAL_CONCURRENCY = 5 and a ~80s median run,
+    // the sixth concurrent submission waits ~80s in a queue that exists on
+    // purpose, and would then be aborted on its first line and told it "passed
+    // our time limit". That turns the queue — built so a burst becomes a
+    // slightly longer wait — back into the wave of failures it was meant to
+    // prevent. The ceiling exists to stop RETRIES stacking, and every retry
+    // happens after this point, so this clock covers the whole problem.
+    const runStartedAtMs = await step.run("mark-running", async () => {
+      // Stamped locally and returned as epoch-ms: no read-back, so there is no
+      // unparseable-timestamp path that could silently disable the ceiling.
+      const startedAt = new Date();
+      await service
         .from("analyses")
-        .update({ status: "running", started_at: new Date().toISOString() })
-        .eq("id", analysisId)
-        .select("created_at")
-        .single();
-      const createdAt = (row as { created_at?: string } | null)?.created_at;
-      // Fall back to "now" if the row somehow didn't come back: a missing
-      // created_at must not make the budget look already-spent and refund a
-      // perfectly good audit.
-      return createdAt ? new Date(createdAt).getTime() : Date.now();
+        .update({ status: "running", started_at: startedAt.toISOString() })
+        .eq("id", analysisId);
+      return startedAt.getTime();
     });
 
     /**
@@ -213,12 +233,12 @@ export const analyzeWebsite = inngest.createFunction(
     const stepBudgetMs = () =>
       Math.max(
         5_000,
-        Math.min(STEP_BUDGET_MS, queuedAtMs + TOTAL_BUDGET_MS - Date.now()),
+        Math.min(STEP_BUDGET_MS, runStartedAtMs + TOTAL_BUDGET_MS - Date.now()),
       );
 
     const assertTotalBudget = (label: string) => {
       try {
-        assertWithinTotalBudget(queuedAtMs, label);
+        assertWithinTotalBudget(runStartedAtMs, label);
       } catch (err) {
         console.warn(`[analyzer] ${(err as Error).message}`);
         // NonRetriableError is what makes this a *hard* stop: a plain throw
@@ -540,7 +560,17 @@ export const analyzeWebsite = inngest.createFunction(
     // yields null and the core audit still saves.
     const metaAds = runRewrite
       ? await step.run("run-meta-ads-agent", async () => {
-          assertTotalBudget("run-meta-ads-agent");
+          // NO total-budget guard here, deliberately. This step runs AFTER
+          // run-analyzer-agent has produced and memoized a finished audit, but
+          // BEFORE save-result persists it — so a throw here would discard a
+          // completed, already-paid-for vision audit and refund it. It would
+          // also break the best-effort contract three lines below, where any
+          // meta-ads failure yields null and the core audit still saves.
+          //
+          // Nothing after run-analyzer-agent may prevent save-result. The
+          // clamped step budget below is what bounds this step's time: once
+          // the ceiling is spent it gets the 5s floor, fails fast, and the
+          // catch turns that into `metaAds = null`.
           const dl = startDeadline(stepBudgetMs());
           try {
             return await runMetaAdsOptimizerAgent({
@@ -784,8 +814,14 @@ function humanizeError(err: unknown): string {
   // one step misbehaved. Deliberately says "stopped", not "failed" — the
   // audit was abandoned by policy, and saying otherwise would blame the
   // store for a limit we chose.
-  if (isTotalBudgetError(err) || /total analysis budget exhausted/i.test(raw)) {
-    return "We stopped this audit because it passed our time limit, and refunded your credit. Some stores — very tall pages especially — need longer than we allow. Try again, or upload a screenshot to skip the capture step.";
+  // `isTotalBudgetError` already runs this regex over `err.message` (and over
+  // String(err) for non-Errors), so it is the whole test — no second clause.
+  //
+  // "you haven't been charged" rather than "we refunded your credit": this
+  // message is also shown on ANONYMOUS audits, which never charged a credit to
+  // refund. The wording is true for both.
+  if (isTotalBudgetError(err)) {
+    return "We stopped this audit because it passed our time limit — you haven't been charged for it. Some stores, very tall pages especially, need longer than we allow. Try again, or upload a screenshot to skip the capture step.";
   }
 
   // Ran out of the per-step wall-clock budget (lib/deadline.ts). This is the
