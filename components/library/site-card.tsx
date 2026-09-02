@@ -46,7 +46,10 @@ export function SiteCard({
   canSave?: boolean;
   initialSaved?: boolean;
 }) {
-  const m = site.metrics as {
+  // `metrics` is null on locked rows — the server strips it rather than
+  // shipping numbers for CSS to blur. Falling back to {} makes every figure
+  // below render as an em dash, which is exactly what a locked card should say.
+  const m = (site.metrics ?? {}) as {
     ctr?: number;
     roi?: number;
     conv_rate?: number;
@@ -194,15 +197,22 @@ export function SiteCard({
         </div>
 
         <div className="mt-3 grid grid-cols-4 gap-2">
+          {/*
+            On a locked card every figure is an em dash. The server already
+            strips `metrics` (applyMetricsCap), so `m` is empty and these would
+            render "—" anyway — but saying it explicitly means the UI still
+            withholds the number if a future change ever puts the data back on
+            the wire. Defence in depth for a paywall that used to be CSS.
+          */}
           {(
             [
-              ["CTR", m.ctr ? `${m.ctr.toFixed(1)}%` : "—", false],
-              ["ROI", m.roi ? `${m.roi.toFixed(1)}x` : "—", false],
+              ["CTR", locked || !m.ctr ? "—" : `${m.ctr.toFixed(1)}%`, false],
+              ["ROI", locked || !m.roi ? "—" : `${m.roi.toFixed(1)}x`, false],
               // Conversion is the number an operator will challenge first —
               // flag it explicitly as an estimate with an accessible tooltip
               // explaining the source. We don't have anyone's Shopify data.
-              ["Est. conv.", m.conv_rate ? `${m.conv_rate.toFixed(1)}%` : "—", true],
-              ["Traffic", m.traffic_est ? formatCompact(m.traffic_est) : "—", false],
+              ["Est. conv.", locked || !m.conv_rate ? "—" : `${m.conv_rate.toFixed(1)}%`, true],
+              ["Traffic", locked || !m.traffic_est ? "—" : formatCompact(m.traffic_est), false],
             ] as const
           ).map(([label, val, withTip]) => (
             <div

@@ -16,7 +16,12 @@ export interface WinningSiteCard {
   title: string;
   niche: string;
   thumbnail_url: string;
-  metrics: Record<string, unknown>;
+  /**
+   * Null on rows the plan has locked — the numbers are stripped SERVER-SIDE by
+   * applyMetricsCap so they never reach the client, rather than being sent and
+   * hidden with CSS. Consumers must treat null as "no data to show".
+   */
+  metrics: Record<string, unknown> | null;
   description?: string | null;
   is_featured: boolean;
   is_preselected?: boolean;

@@ -152,10 +152,11 @@ One test asserts the plan table itself still reads Free = 3, paid = unlimited,
 so if the product rule changes the suite fails loudly instead of quietly
 testing a stale expectation.
 
-## 4a-bis. ⚠️ The Library paywall is cosmetic — the locked numbers ship to the browser
+## 4a-bis. The Library paywall was cosmetic — FIXED
 
-Found by the adversarial review of this very change, and it is the most
-important thing in this document.
+Found by the adversarial review of this change, and the most important thing in
+this document. What follows describes the defect; the fix and its verification
+are at the end of this section.
 
 `applyMetricsCap` decides a **boolean**, `metrics_locked`. It does not withhold
 anything:
@@ -170,23 +171,67 @@ So a free user reads every paywalled number by opening devtools, or by
 toggling off one CSS class. The gate is a visual treatment, not an
 authorization boundary.
 
-**Pre-existing — this change did not introduce it.** But it matters here
+**Pre-existing — this change did not introduce it.** But it mattered here
 precisely because this commit's premise is "the shipped rule is now under
-test": the seven tests above give the free/paid boundary a green checkmark it
-has not earned. They pin *who gets `metrics_locked: true`*, which is correct
-and worth pinning, but that flag currently controls a blur and nothing else.
+test": the tests pinned *who gets `metrics_locked: true`*, which is correct and
+worth pinning, while that flag controlled a blur and nothing else.
 
-**Not fixed here, because the fix is a product decision.** The mechanical part
-is small — null out `metrics` server-side on locked rows before returning, so
-the numbers never leave the server. What that should *look like* is not
-mechanical: today the card shows real-but-blurred figures, which reads as "we
-have this data". With the values withheld the card renders `—` under a blur,
-which is a different (and more honest) teaser. That trade-off is the owner's
-call, so it is flagged rather than unilaterally changed.
+### FIXED — the owner chose the em dash
 
-If the intent is genuinely to gate the data, the tests above should be extended
-to assert that a locked row comes back with `metrics: null` — at which point
-they would be pinning something real.
+`applyMetricsCap` now returns `metrics: null` on every locked row, so the
+numbers never leave the server; `WinningSiteCard.metrics` is nullable and
+`site-card.tsx` renders `—` for each figure on a locked card. The value cells
+also gate on `locked` directly rather than relying on `metrics` being absent —
+defence in depth, so the UI still withholds the number if a future change ever
+puts the data back on the wire.
+
+This brings the Library in line with `lib/library/niche-winners.ts`
+`gateWinners()`, which already did it correctly (`winners: []` for Free, only a
+row COUNT crossing the wire).
+
+### Verified against the real payload, not the type
+
+A free session was minted for the pre-existing synthetic account via the
+Supabase admin API (no password involved), `/app/library` was fetched with that
+cookie, and the RSC payload inspected. Rows were attributed **by domain** —
+comparing bare values cannot distinguish a leak from two stores sharing a
+`conv_rate` of 4.4.
+
+| | payload with the fix | payload with the fix reverted |
+|---|---|---|
+| rows serialized | 48 | 48 |
+| locked rows | 45 | 45 |
+| **`metrics` objects sent** | **3** (= the unlocked count) | **48** |
+| `metrics: null` sent | 45 | 0 |
+| `conv_rate` occurrences | 3 | 48 |
+| locked rows inspected | 13 | 13 |
+| **leaks found** | **0** | **13 of 13** |
+
+Reverted, the check prints the actual exposed data, e.g.
+`caddislife.com metrics={"ctr":1.9,"roi":2.7,"conv_rate":2.2,"traffic_est":250000}`.
+
+**Two false starts are worth recording, because both would have produced a
+green result that meant nothing:**
+
+1. The first check searched for `"conv_rate":4.3`. The RSC payload embeds
+   *escaped* JSON (`\"conv_rate\":4.3`), so it matched nothing and reported
+   "no leaks" **against the known-leaking code**. Same class of error as the
+   regex that matched a commented-out call earlier in this branch.
+2. The second searched bare values with no terminator, so `roi=4` matched
+   `\"roi\":4.8` in a different row and invented 5 leaks that did not exist.
+
+Only the domain-attributed version distinguishes the two states, and it was
+confirmed to fail on the reverted code before being trusted.
+
+### Also checked: the Analyzer's "Winners in your niche" teaser — already correct
+
+The same audit was applied to the anon/free winners module in the Analyzer
+report. It does **not** have this defect: `gateWinners()`
+(`lib/library/niche-winners.ts:688-712`) returns `winners: []` for Free with
+only `lockedCount` crossing the wire, and its docblock says so explicitly —
+*"NONE of the real store data is sent to a Free client (winners: []), so there
+is nothing to read in the RSC payload; only a row COUNT crosses the wire."*
+No change needed there.
 
 ## 4b. A store that is NOT Shopify — done, two platforms
 

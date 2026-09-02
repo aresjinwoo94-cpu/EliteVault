@@ -17,6 +17,7 @@ import { PLANS } from "../../lib/stripe/plans";
 const store = (id: number, preselected: boolean) => ({
   id: `s${id}`,
   is_preselected: preselected,
+  metrics: { ctr: 2.5, roi: 4.1, conv_rate: 3.3, traffic_est: 900_000 },
 });
 
 test("the plan table still says Free = 3, paid = unlimited", () => {
@@ -137,6 +138,58 @@ test("null/undefined is_preselected is treated as not preselected", () => {
     out.map((o) => o.metrics_locked),
     [true, true, false],
   );
+});
+
+/**
+ * The lock must REMOVE the data, not merely flag it.
+ *
+ * These are the tests that would have caught the original defect: the cap set
+ * `metrics_locked: true` and shipped the real numbers anyway, so every
+ * paywalled figure was readable in the RSC payload with devtools open. A
+ * boolean assertion alone cannot see that — only asserting on the payload
+ * itself can.
+ */
+test("locked rows carry NO metrics — the numbers are stripped, not flagged", () => {
+  const items = [store(1, true), store(2, false), store(3, true), store(4, true), store(5, true)];
+  const out = applyMetricsCap(items, "free");
+  for (const row of out) {
+    if (row.metrics_locked) {
+      assert.equal(
+        row.metrics,
+        null,
+        "a locked row still carries its metrics — they would ship to the client",
+      );
+    }
+  }
+  // …and the ones that ARE unlocked must keep theirs, or the cap is just a mute.
+  const unlocked = out.filter((o) => !o.metrics_locked);
+  assert.equal(unlocked.length, 3);
+  for (const row of unlocked) {
+    assert.equal(typeof row.metrics, "object");
+    assert.notEqual(row.metrics, null);
+  }
+});
+
+test("no numeric metric value survives on any locked row", () => {
+  // Value-level rather than shape-level: a future change that replaced the
+  // object with a partial one ({conv_rate} only, say) would pass the null
+  // check above but still leak.
+  const out = applyMetricsCap(
+    Array.from({ length: 10 }, (_, i) => store(i, i < 5)),
+    "free",
+  );
+  const leaked = out
+    .filter((o) => o.metrics_locked)
+    .flatMap((o) => Object.values((o.metrics ?? {}) as Record<string, unknown>))
+    .filter((v) => typeof v === "number");
+  assert.deepEqual(leaked, [], "numeric metrics present on locked rows");
+});
+
+test("paid plans keep every metric — the strip is scoped to locked rows", () => {
+  for (const plan of ["pro", "scale"] as const) {
+    const out = applyMetricsCap([store(1, false), store(2, true)], plan);
+    assert.equal(out.every((o) => o.metrics !== null), true, `${plan} lost its metrics`);
+  }
 });
 
 test("does not mutate the input rows", () => {
