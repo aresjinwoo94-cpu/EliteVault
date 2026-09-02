@@ -73,9 +73,17 @@ This one is answerable from production data, and the answer is a clear no.
 the run itself. Raising `GLOBAL_CONCURRENCY` would not have moved that number
 by any amount worth measuring.
 
-Across the window the queue median is 1.8s. The one outlier — 26.9s — was
-self-inflicted: it happened during the 5-store checklist, when five audits were
-fired back-to-back by one operator, which is not organic traffic.
+The single-case evidence is the strongest part: **that audit, the one being
+complained about, waited 0.8s.** No sampling argument is needed to conclude
+concurrency did not cause it.
+
+The aggregate is weaker and should not be leaned on. n=9 is small, and a
+majority of it is the 5-store checklist — audits fired back-to-back by one
+operator. That burst is the *worst* case for queueing, so it biases toward the
+conclusion rather than against it (even under it the median wait was 1.8s), but
+it is not organic traffic and the 26.9s max comes from the same burst. Treat
+the table as "no evidence of a queueing problem", not as proof of its absence
+under real load.
 
 There is also a reason *not* to raise it while #1 is unresolved: concurrency
 and the key pool are coupled. More simultaneous runs on one Google project's
@@ -118,13 +126,62 @@ seven tests:
 - Pro and Scale unlock everything.
 - Anonymous is the free case (the action's default), so logged-out visitors
   can never be handed full metrics by a default change.
-- `null` / missing `is_preselected` coerces to "not preselected" — `undefined
-  && n < cap` would otherwise evaluate to `undefined`, not `false`.
+- `null` / missing `is_preselected` coerces to "not preselected".
 - The input rows are not mutated.
+
+Extracting a rule buys testability and creates a new failure mode: the rule
+can be perfectly correct and simply **not called**. Deleting that one line in
+the action would leave every unit test above green, typecheck silent
+(`metrics_locked` is optional on the row type) and the build silent
+(`next.config.mjs` ignores both type and lint errors) — while every free user
+saw every metric. Two structural tests now read the action's source and pin the
+wiring: that `items = applyMetricsCap(items, plan)` is present, and that `plan`
+is resolved from the session rather than accepted in `opts`.
+
+Both were mutation-checked, and the first attempt **failed the check**: the
+initial regex matched the commented-out call, so the guard passed while the
+paywall was off. It now strips comments before matching, and re-running the
+same mutation fails the suite.
 
 One test asserts the plan table itself still reads Free = 3, paid = unlimited,
 so if the product rule changes the suite fails loudly instead of quietly
 testing a stale expectation.
+
+## 4a-bis. ⚠️ The Library paywall is cosmetic — the locked numbers ship to the browser
+
+Found by the adversarial review of this very change, and it is the most
+important thing in this document.
+
+`applyMetricsCap` decides a **boolean**, `metrics_locked`. It does not withhold
+anything:
+
+- `app/actions/search.ts:120` selects `metrics` for **all** rows regardless of
+  plan, and the full object is serialized into the RSC payload for every card.
+- `components/library/site-card.tsx:235,244` renders the real values —
+  `m.roi.toFixed(1)`, `m.conv_rate`, `m.traffic_est` — and applies
+  `blur-[3px]` when locked.
+
+So a free user reads every paywalled number by opening devtools, or by
+toggling off one CSS class. The gate is a visual treatment, not an
+authorization boundary.
+
+**Pre-existing — this change did not introduce it.** But it matters here
+precisely because this commit's premise is "the shipped rule is now under
+test": the seven tests above give the free/paid boundary a green checkmark it
+has not earned. They pin *who gets `metrics_locked: true`*, which is correct
+and worth pinning, but that flag currently controls a blur and nothing else.
+
+**Not fixed here, because the fix is a product decision.** The mechanical part
+is small — null out `metrics` server-side on locked rows before returning, so
+the numbers never leave the server. What that should *look like* is not
+mechanical: today the card shows real-but-blurred figures, which reads as "we
+have this data". With the values withheld the card renders `—` under a blur,
+which is a different (and more honest) teaser. That trade-off is the owner's
+call, so it is flagged rather than unilaterally changed.
+
+If the intent is genuinely to gate the data, the tests above should be extended
+to assert that a locked row comes back with `metrics: null` — at which point
+they would be pinning something real.
 
 ## 4b. A store that is NOT Shopify — done, two platforms
 
@@ -152,8 +209,10 @@ the pipeline**, not inferred:
 [discovery] https://www.bulkapothecary.com → 1 pages, ... (bigcommerce)
 ```
 
-Notably both were *faster* than the Shopify median — WooCommerce and
-BigCommerce are not a latency problem.
+These times are **not** comparable to the production figures elsewhere in this
+doc: they came from a local dev server on the single local key, so they say
+nothing about whether either platform is faster or slower in production. They
+are compatibility evidence only.
 
 ### What this run does NOT cover
 
@@ -184,7 +243,7 @@ Of everything available without WP-2:
 
 | lever | verdict |
 |---|---|
-| `GLOBAL_CONCURRENCY` | **Ruled out by data** — queue median 1.8s, 0.8s on the 140s audit |
+| `GLOBAL_CONCURRENCY` | **Not the cause of the 140s audit** (0.8s queue). No evidence of a queueing problem in the window, but n=9 |
 | `GEMINI_HEDGE_AFTER_MS` | Blocked on #1; **negative** with a single key |
 | More Gemini keys, new Google projects | **The real lever, and the prerequisite for the hedge** |
 | Image height / max tokens | Already disproven in `docs/analyzer-latency.md` §4b — do not re-spend that time |
@@ -199,7 +258,13 @@ Vercel access to even diagnose.
 
 | gate | baseline (`f549544`) | this branch |
 |---|---|---|
-| `npm run typecheck` | 252 errors | **252** — 0 new, none in touched files |
+| `npm run typecheck` | 252 errors | **252** — 0 new |
 | `npm test` | 264 pass / 0 fail | **271 pass / 0 fail** (+7) |
 | `npm run lint` | 2 errors, 114 warnings | **identical** |
 | `npm run build` | — | **exit 0** |
+
+`app/actions/search.ts` carries 13 of the 252 typecheck errors, all
+pre-existing (the stale `Database` type — `Property 'plan' does not exist on
+type 'never'`, `docs/infra-debt.md`). The new files
+(`lib/library/metrics-cap.ts`, `scripts/tests/library-metrics-cap.test.ts`)
+contribute zero.

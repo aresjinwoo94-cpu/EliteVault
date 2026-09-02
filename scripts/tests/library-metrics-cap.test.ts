@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { applyMetricsCap } from "../../lib/library/metrics-cap";
 import { PLANS } from "../../lib/stripe/plans";
 
@@ -65,18 +66,69 @@ test("paid plans unlock everything, preselected or not", () => {
   }
 });
 
-test("anonymous viewers are treated as free — the server default", () => {
-  // searchLibrary defaults `plan` to "free" when there is no session, so the
-  // anonymous case is the free case. Pinning it so a future default change
-  // can't quietly hand logged-out visitors full metrics.
-  const items = Array.from({ length: 8 }, (_, i) => store(i, true));
-  const out = applyMetricsCap(items, "free");
-  assert.equal(out.filter((o) => !o.metrics_locked).length, 3);
+/**
+ * Structural guards on app/actions/search.ts.
+ *
+ * Extracting the rule bought testability and created a new failure mode: the
+ * rule can now be perfectly correct and simply not called. Deleting one line
+ * in the action would leave all the unit tests above green, typecheck silent
+ * (`metrics_locked` is optional on the row type) and the build silent
+ * (next.config ignores type and lint errors) — while every free user silently
+ * saw every metric. These read the source and pin the wiring.
+ */
+const rawSearchSource = readFileSync(
+  new URL("../../app/actions/search.ts", import.meta.url),
+  "utf8",
+);
+
+/**
+ * Comments stripped before matching. Without this the guard is worthless: a
+ * commented-out call still contains the text, so `// items = applyMetricsCap(…)`
+ * would satisfy the assertion while the paywall was off. (Verified — the first
+ * version of this test passed against exactly that mutation.)
+ */
+const searchSource = rawSearchSource
+  .replace(/\/\*[\s\S]*?\*\//g, "")
+  .replace(/^[ \t]*\/\/.*$/gm, "")
+  .replace(/([^:])\/\/.*$/gm, "$1");
+
+test("searchLibrary actually calls the cap", () => {
+  assert.match(
+    searchSource,
+    /^\s*items\s*=\s*applyMetricsCap\(\s*items\s*,\s*plan\s*\)/m,
+    "search.ts must assign the capped items back — a commented-out or " +
+      "discarded call means every free user sees every metric",
+  );
+});
+
+test("the plan is resolved from the session, never accepted from the caller", () => {
+  // This is what makes the gate unspoofable. `opts` is the caller-supplied
+  // object; a `plan` field appearing there would let a client ask for pro.
+  const optsBlock = searchSource.slice(
+    searchSource.indexOf("export async function searchLibrary"),
+    searchSource.indexOf("}): Promise<"),
+  );
+  assert.equal(
+    /\bplan\b\s*\??:/.test(optsBlock),
+    false,
+    "searchLibrary's options must not accept a `plan` — it comes from the session",
+  );
+  assert.match(
+    searchSource,
+    /let plan[^\n]*=\s*"free"/,
+    "plan must default to free when there is no session",
+  );
+  assert.match(
+    searchSource,
+    /supabase\s*\n?\s*\.from\("profiles"\)\s*\n?\s*\.select\("plan"\)/,
+    "plan must be read from the profiles row for the authenticated user",
+  );
 });
 
 test("null/undefined is_preselected is treated as not preselected", () => {
-  // The column is nullable, and `undefined && n < cap` would evaluate to
-  // undefined rather than false — this pins the coercion.
+  // The column is nullable. (The `Boolean()` wrapper added during extraction
+  // changed nothing observable — `!undefined` was already `true` — but this
+  // pins the behaviour against a future rewrite to an explicit `=== false`.)
   const out = applyMetricsCap(
     [{ id: "a", is_preselected: null }, { id: "b" }, { id: "c", is_preselected: true }],
     "free",
