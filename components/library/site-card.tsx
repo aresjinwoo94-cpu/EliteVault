@@ -217,10 +217,10 @@ export function SiteCard({
           ).map(([label, val, withTip]) => (
             <div
               key={label}
-              className={cn(
-                "rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-1.5 text-center",
-                locked && "select-none",
-              )}
+              // `select-none` used to exist so the blurred real numbers
+              // couldn't be selected and copied. There is nothing to protect in
+              // an em dash, so it goes with the blur.
+              className="rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-1.5 text-center"
             >
               {withTip && !locked ? (
                 <Tooltip>
@@ -239,23 +239,18 @@ export function SiteCard({
                   </TooltipContent>
                 </Tooltip>
               ) : (
-                <p
-                  className={cn(
-                    "font-mono text-[10px] uppercase tracking-widest text-white/40",
-                    locked && "blur-[3px]",
-                  )}
-                >
+                <p className="font-mono text-[10px] uppercase tracking-widest text-white/40">
                   {label}
                 </p>
               )}
-              <p
-                className={cn(
-                  "mt-0.5 text-xs font-medium text-white num",
-                  locked && "blur-[3px]",
-                )}
-              >
-                {val}
-              </p>
+              {/*
+                No blur. The figure on a locked card is an em dash and the data
+                is gone from the payload entirely, so there is nothing left to
+                obscure — blurring a dash just reads as a rendering glitch. The
+                lock overlay below ("Unlock metrics with Pro") is what says the
+                card is gated.
+              */}
+              <p className="mt-0.5 text-xs font-medium text-white num">{val}</p>
             </div>
           ))}
         </div>

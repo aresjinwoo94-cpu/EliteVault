@@ -185,6 +185,14 @@ also gate on `locked` directly rather than relying on `metrics` being absent —
 defence in depth, so the UI still withholds the number if a future change ever
 puts the data back on the wire.
 
+**No blur.** The `blur-[3px]` on the value and its label is gone, and so is the
+`select-none` that existed only to stop the blurred real numbers being copied.
+Blurring an em dash obscures nothing and reads as a rendering glitch; the lock
+overlay ("Unlock metrics with Pro") is what communicates that the card is
+gated. Verified in the browser on a real Free session: **0 elements on the page
+carry a blur filter**, the three unlocked cards show real values (`3.1%`,
+`4.2x`, `480K`) and every locked card shows `— — — —`.
+
 This brings the Library in line with `lib/library/niche-winners.ts`
 `gateWinners()`, which already did it correctly (`winners: []` for Free, only a
 row COUNT crossing the wire).
