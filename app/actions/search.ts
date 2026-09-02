@@ -7,7 +7,7 @@ import {
 import { runSearchAgent } from "@/ai/agents/search-agent";
 import { detectImageNiche, type NicheDetection } from "@/ai/agents/image-niche-detector";
 import { imageHash } from "@/lib/image-hash";
-import { PLANS } from "@/lib/stripe/plans";
+import { applyMetricsCap } from "@/lib/library/metrics-cap";
 
 export interface WinningSiteCard {
   id: string;
@@ -16,7 +16,12 @@ export interface WinningSiteCard {
   title: string;
   niche: string;
   thumbnail_url: string;
-  metrics: Record<string, unknown>;
+  /**
+   * Null on rows the plan has locked — the numbers are stripped SERVER-SIDE by
+   * applyMetricsCap so they never reach the client, rather than being sent and
+   * hidden with CSS. Consumers must treat null as "no data to show".
+   */
+  metrics: Record<string, unknown> | null;
   description?: string | null;
   is_featured: boolean;
   is_preselected?: boolean;
@@ -183,14 +188,10 @@ export async function searchLibrary(opts: {
   // all non-preselected) is locked. Enforcing the count in code — instead of
   // relying on however many rows happen to have is_preselected=true — makes
   // "3 winners on Free" literally true without a data migration.
-  const cap = PLANS[plan].libraryFullMetricsCap;
-  let unlocked = 0;
-  items = items.map((it) => {
-    if (cap === null) return { ...it, metrics_locked: false };
-    const canUnlock = it.is_preselected && unlocked < cap;
-    if (canUnlock) unlocked++;
-    return { ...it, metrics_locked: !canUnlock };
-  });
+  // The rule itself lives in lib/library/metrics-cap.ts so it can be tested
+  // directly — `plan` above is still resolved from the session, never from the
+  // caller, which is what keeps the gate unspoofable.
+  items = applyMetricsCap(items, plan);
 
   return {
     items,

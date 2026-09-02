@@ -46,7 +46,10 @@ export function SiteCard({
   canSave?: boolean;
   initialSaved?: boolean;
 }) {
-  const m = site.metrics as {
+  // `metrics` is null on locked rows — the server strips it rather than
+  // shipping numbers for CSS to blur. Falling back to {} makes every figure
+  // below render as an em dash, which is exactly what a locked card should say.
+  const m = (site.metrics ?? {}) as {
     ctr?: number;
     roi?: number;
     conv_rate?: number;
@@ -194,23 +197,30 @@ export function SiteCard({
         </div>
 
         <div className="mt-3 grid grid-cols-4 gap-2">
+          {/*
+            On a locked card every figure is an em dash. The server already
+            strips `metrics` (applyMetricsCap), so `m` is empty and these would
+            render "—" anyway — but saying it explicitly means the UI still
+            withholds the number if a future change ever puts the data back on
+            the wire. Defence in depth for a paywall that used to be CSS.
+          */}
           {(
             [
-              ["CTR", m.ctr ? `${m.ctr.toFixed(1)}%` : "—", false],
-              ["ROI", m.roi ? `${m.roi.toFixed(1)}x` : "—", false],
+              ["CTR", locked || !m.ctr ? "—" : `${m.ctr.toFixed(1)}%`, false],
+              ["ROI", locked || !m.roi ? "—" : `${m.roi.toFixed(1)}x`, false],
               // Conversion is the number an operator will challenge first —
               // flag it explicitly as an estimate with an accessible tooltip
               // explaining the source. We don't have anyone's Shopify data.
-              ["Est. conv.", m.conv_rate ? `${m.conv_rate.toFixed(1)}%` : "—", true],
-              ["Traffic", m.traffic_est ? formatCompact(m.traffic_est) : "—", false],
+              ["Est. conv.", locked || !m.conv_rate ? "—" : `${m.conv_rate.toFixed(1)}%`, true],
+              ["Traffic", locked || !m.traffic_est ? "—" : formatCompact(m.traffic_est), false],
             ] as const
           ).map(([label, val, withTip]) => (
             <div
               key={label}
-              className={cn(
-                "rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-1.5 text-center",
-                locked && "select-none",
-              )}
+              // `select-none` used to exist so the blurred real numbers
+              // couldn't be selected and copied. There is nothing to protect in
+              // an em dash, so it goes with the blur.
+              className="rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-1.5 text-center"
             >
               {withTip && !locked ? (
                 <Tooltip>
@@ -229,23 +239,18 @@ export function SiteCard({
                   </TooltipContent>
                 </Tooltip>
               ) : (
-                <p
-                  className={cn(
-                    "font-mono text-[10px] uppercase tracking-widest text-white/40",
-                    locked && "blur-[3px]",
-                  )}
-                >
+                <p className="font-mono text-[10px] uppercase tracking-widest text-white/40">
                   {label}
                 </p>
               )}
-              <p
-                className={cn(
-                  "mt-0.5 text-xs font-medium text-white num",
-                  locked && "blur-[3px]",
-                )}
-              >
-                {val}
-              </p>
+              {/*
+                No blur. The figure on a locked card is an em dash and the data
+                is gone from the payload entirely, so there is nothing left to
+                obscure — blurring a dash just reads as a rendering glitch. The
+                lock overlay below ("Unlock metrics with Pro") is what says the
+                card is gated.
+              */}
+              <p className="mt-0.5 text-xs font-medium text-white num">{val}</p>
             </div>
           ))}
         </div>
