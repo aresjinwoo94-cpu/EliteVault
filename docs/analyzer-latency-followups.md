@@ -7,6 +7,11 @@ Base: `main` @ `f549544` (the 150s total-elapsed ceiling is live).
 
 ---
 
+> **Superseded by the addendum at the end of this document.** §1 and §2 below
+> record what could be established from this machine *before* the owner
+> confirmed the key pool directly. The conclusion changed; the reasoning is
+> kept because it explains why the script could not settle it.
+
 ## 1. Are there ≥2 independent Gemini keys in production? — CANNOT VERIFY FROM HERE
 
 `scripts/gemini-pool-check.mts`, run against the only env this machine has:
@@ -237,6 +242,126 @@ deleted: `d5cceaba-9329-4aac-829d-780845710434` (porterandyork),
 
 ---
 
+---
+
+# Addendum — the hedge, once the key pool was confirmed
+
+The owner confirmed directly, as administrator of the Google Cloud accounts,
+that all six production keys (`GEMINI_API_KEY` … `_6`) live in **six distinct
+Google Cloud projects with no shared quota**. That could not be established
+with `gemini-pool-check.mts`: all six are marked *Sensitive* in Vercel, which
+permanently blocks reading the values back — not a limitation of the script and
+not reachable via CLI or API. The confirmation is owner testimony, and it is
+recorded as such rather than as a measurement.
+
+With independence established, §2's objection ("with one key the hedge is
+negative") no longer applies.
+
+## Does the hedge require more than 60s in one invocation? — **No.**
+
+This was the blocking question, and the answer is in the code, not in
+reasoning by analogy. `ai/providers/gemini.ts:427-478`:
+
+1. **It returns on the first SUCCESS, not on both.** `firstFulfilled(primary,
+   hedge)` (`:199`) resolves as soon as either call fulfils, and rejects only
+   if both reject. So on the success path the wall time is
+   `min(t_primary, HEDGE_AFTER_MS + t_hedge)` — never *more* than the
+   un-hedged call.
+2. **It is deadline-aware and refuses to start when there isn't room.** The
+   guard at `:434-438` skips hedging entirely unless
+   `dl.has(HEDGE_AFTER_MS + MIN_CALL_MS)` — 12s + 8s = 20s of step budget must
+   remain.
+3. **Everything stays inside the same `Deadline`** the analyzer step already
+   passes (`STEP_BUDGET_MS`, 50s, itself clamped by `TOTAL_BUDGET_MS`). The
+   hedge does not widen that bound; it spends it differently.
+4. **One call is already capped at 25s** (`CALL_CAP_MS`, `:183`).
+5. **The loser is aborted** in `finally` (`:472-477`), so nothing keeps running
+   after a winner returns.
+
+The step therefore still cannot exceed its 50s budget, and `maxDuration = 60`
+remains sufficient. **This is not coupled to WP-2 and does not need to wait for
+Liquid Blocks.**
+
+One honest caveat, on the *failure* path rather than the success path: if the
+primary rejects quickly (say a 429 at t=3s), `firstFulfilled` deliberately does
+not propagate that error while the hedge is still outstanding — so surfacing
+the failure can be delayed by up to `HEDGE_AFTER_MS`. It remains bounded by the
+deadline, and it is the intended trade (one bad draw must not decide the run),
+but it is a reason not to set the value higher than necessary.
+
+## Recommended starting value: `GEMINI_HEDGE_AFTER_MS=12000`
+
+Chosen on the following reasoning rather than because the brief named it:
+
+- **It must land before `CALL_CAP_MS` (25s).** A hedge that fires at 20s leaves
+  the primary only 5s before it is killed, so the second draw is doing the work
+  alone — most of the benefit is gone. 12s gives two overlapping draws covering
+  roughly [0,25] and [12,37], both inside a 50s step.
+- **It must land after the fast band.** The measured distribution has about a
+  third of calls finishing under 15s; those pay nothing extra only if the hedge
+  has not yet fired. 12s is slightly inside that band, which is the deliberate
+  cost — see below.
+- **The cost is real and worth stating**: at 12s the hedge fires on roughly
+  two thirds of calls, so vision spend on those roughly doubles. Six
+  independent free-tier projects (15 RPM each, ~90 RPM aggregate) is what makes
+  that affordable, and is exactly the precondition that was missing before.
+- **If AI spend turns out to matter more than latency**, 15000–18000 fires on
+  materially fewer calls while still clearing the 25s cap. That is the dial to
+  turn, and it needs no deploy.
+
+## Before/after measurement — the named script cannot do this
+
+`scripts/measure-analyzer-latency.mts` **cannot measure the hedge**, for a
+reason that is structural rather than incidental:
+
+- It loads `.env.local` (`:41-46`), which holds **one** key. With
+  `CLIENTS.length < 2` the hedge branch at `:436` is skipped outright, so a
+  local run measures the un-hedged path no matter what `GEMINI_HEDGE_AFTER_MS`
+  is set to. The six real keys cannot be pulled down, being *Sensitive*.
+- Its own "KNOWN LIMITS" header disqualifies it anyway for this purpose: it
+  measures **the vision call only** (stored screenshot fixtures, so no capture,
+  discovery or DB writes), runs **n=1 per cell**, leaks `cooldownUntil` module
+  state between arms, and the header records two independent runs disagreeing
+  (1/3 vs 2/3 completing). It ends: *"Fixing the first three is what would make
+  this a real before/after harness."*
+
+So the measurement has to come from production `analyses` rows —
+`finished_at - started_at`, which is what `docs/analyzer-latency.md` §4a used
+for its own baseline and what the brief itself asks to compare against.
+
+### BEFORE baseline — measured, production, hedge OFF
+
+Taken at `main` @ `f549544`, synthetic test-account rows excluded:
+
+| window | status | n | mean | **p50** | p90 | **p95** | max |
+|---|---|---|---|---|---|---|---|
+| 30 days | succeeded | 61 | 70.9s | **50.5s** | 129.4s | **155.2s** | 179.2s |
+| 30 days | refunded | 33 | 232.5s | 205.5s | 386.1s | 446.3s | 534.9s |
+| 7 days | succeeded | 12 | 55.2s | **43.8s** | 137.4s | **141.5s** | 141.5s |
+| 7 days | refunded | 4 | 173.5s | 180.6s | 190.7s | 190.7s | 190.7s |
+
+**Success rate: 65% (61/94) over 30 days, 75% (12/16) over 7 days.**
+
+Worth flagging: this is materially better than the figures the brief and
+`docs/analyzer-latency.md` §4a quote (47% success, 79.5s p50). Those were an
+August window. Anything comparing against 47%/79.5s today is comparing against
+a stale baseline — the table above is the one to beat.
+
+### AFTER — the protocol
+
+1. Set `GEMINI_HEDGE_AFTER_MS=12000` in Vercel (Production) and redeploy; env
+   changes only apply to new deployments.
+2. Let it run for a week, or at least ~40 terminal audits — the 7-day cell
+   above is n=16, too thin to move a p95 conclusion.
+3. Re-run the same query and compare p50/p95 and success rate against the
+   table above, not against the August numbers.
+4. Reverting is a single env change; nothing here is a code path that needs
+   removing.
+
+The one thing to watch that is not latency: hedge firings are logged as
+`[gemini] … slow past 12s — hedging onto key #N`. If that line appears on
+nearly every call, the value is too low for the cost; raise it toward 18000.
+
 ## Where the typical-time lever actually is
 
 Of everything available without WP-2:
@@ -244,8 +369,8 @@ Of everything available without WP-2:
 | lever | verdict |
 |---|---|
 | `GLOBAL_CONCURRENCY` | **Not the cause of the 140s audit** (0.8s queue). No evidence of a queueing problem in the window, but n=9 |
-| `GEMINI_HEDGE_AFTER_MS` | Blocked on #1; **negative** with a single key |
-| More Gemini keys, new Google projects | **The real lever, and the prerequisite for the hedge** |
+| `GEMINI_HEDGE_AFTER_MS` | **Unblocked** — 6 independent projects confirmed by the owner. Recommend `12000`; safe under `maxDuration=60`. See the addendum |
+| More Gemini keys, new Google projects | Already done — six, one project each |
 | Image height / max tokens | Already disproven in `docs/analyzer-latency.md` §4b — do not re-spend that time |
 | Step/screenshot budgets (WP-5) | Frozen pending Liquid Blocks landing `maxDuration=300` |
 
