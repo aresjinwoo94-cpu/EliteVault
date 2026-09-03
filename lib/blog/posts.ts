@@ -9,7 +9,12 @@
  *   • `title`        → keyword-rich <title>, ~55-60 chars
  *   • `description`  → meta description, ~150-160 chars, with intent
  *   • `keyword`      → the primary query the post targets
- *   • cross-links    → internal links between posts + to /sign-up & /pricing
+ *   • cross-links    → internal links between posts + to the money pages
+ *
+ * Audit CTAs point at /free-website-audit, never /sign-up: that page is the
+ * indexable analyzer and it runs the audit anonymously, so a cold reader gets
+ * the thing the copy promised instead of a signup wall. Forecast CTAs go to
+ * /meta-ads-forecast, which carries the same anonymous box.
  */
 export type BlogPost = {
   slug: string;
@@ -70,7 +75,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <h2>Readiness first, forecast second</h2>
 <p>You don't need perfection to start — you need a store that doesn't fight the campaign. Once it can take the traffic, model the campaign before you fund it: the <a href="/meta-ads-forecast">Meta Ads scenario modeler</a> projects a 7-day campaign across conservative, balanced and aggressive cases from your AOV and budget, so you spend knowing the floor, not just the dream. And if the clicks are already coming but not converting, start with <a href="/blog/why-meta-ads-arent-converting">why your Meta ads aren't converting</a>.</p>
 <h2>The fastest way to know</h2>
-<p>You could check all six by hand — or get a senior-media-buyer read of your store in under a minute. <a href="/sign-up?next=/app/analyzer">EliteVault's free audit</a> annotates your homepage with the exact issues from this list, scores your readiness across the six categories, simulates how a buyer persona reacts, and ranks what to fix first by leverage — free, no card. When you know which leak is yours, fixing it before you spend is the easy part.</p>
+<p>You could check all six by hand — or get a senior-media-buyer read of your store in under a minute. <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=is-your-store-ready-for-meta-ads">EliteVault's free audit</a> annotates your homepage with the exact issues from this list, scores your readiness across the six categories, simulates how a buyer persona reacts, and ranks what to fix first by leverage — free, no card. When you know which leak is yours, fixing it before you spend is the easy part.</p>
 `.trim(),
     faqs: [
       {
@@ -203,7 +208,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>By the time you've done five stores in your niche this way, patterns scream at you. The winners almost always share the same three or four moves. Those shared moves are your roadmap.</p>
 <h2>Step 3 — Find your store's closest converting "sibling"</h2>
 <p>Here's where most teardowns go wrong: founders copy a store that looks nothing like theirs structurally. A single-product hero brand and a 200-SKU catalog store have almost no transferable lessons for each other.</p>
-<p>The shortcut is <strong>visual-structure matching</strong> — finding the winning stores whose layout and product presentation most resemble yours, then copying their moves. This is exactly why <a href="/#analyzer">EliteVault's image-similarity search</a> exists: drop a screenshot of your store and it surfaces the closest converting siblings by visual structure, not by tags. You skip the guesswork of "which winner is even relevant to me."</p>
+<p>The shortcut is <strong>visual-structure matching</strong> — finding the winning stores whose layout and product presentation most resemble yours, then copying their moves. This is exactly why <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=reverse-engineer-winning-shopify-stores">EliteVault's image-similarity search</a> exists: drop a screenshot of your store and it surfaces the closest converting siblings by visual structure, not by tags. You skip the guesswork of "which winner is even relevant to me."</p>
 <h2>Step 4 — Translate, don't transplant</h2>
 <p>The mistake that wastes the whole exercise: lifting a winner's tactic without adapting it to your niche. <strong>What converts in skincare can destroy conversion in supplements.</strong> Skincare buyers want sensory, aspirational imagery and a founder story. Supplement buyers want ingredients, dosages, third-party testing, and proof. Same layer, opposite execution.</p>
 <p>So for every pattern you extract, ask: <em>does this work because of the tactic, or because of the audience?</em> Only transplant the ones that survive that question.</p>
@@ -429,7 +434,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>If your Meta ad promises one thing and the landing page shows another, paid traffic bounces. Message-match the angle, the image, and the offer.</p>
 
 <h2>How to find <em>your</em> specific leaks</h2>
-<p>The fixes above are universal, but the order that matters for <strong>your</strong> store is specific. The fastest way to find it is to look at your homepage the way a skeptical buyer (or a senior media buyer) would. That's exactly what <a href="/sign-up?next=/app/analyzer">EliteVault's free audit</a> does: it scores your store across layout, imagery, CRO principles and niche fit, annotates the screenshot with the exact problems, and ranks the fixes by leverage — so you're not guessing which of these 11 to do first.</p>
+<p>The fixes above are universal, but the order that matters for <strong>your</strong> store is specific. The fastest way to find it is to look at your homepage the way a skeptical buyer (or a senior media buyer) would. That's exactly what <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=how-to-increase-shopify-conversion-rate">EliteVault's free audit</a> does: it scores your store across layout, imagery, CRO principles and niche fit, annotates the screenshot with the exact problems, and ranks the fixes by leverage — so you're not guessing which of these 11 to do first.</p>
 
 <p>Once you've shipped the top three, re-audit and measure. Conversion optimization is a loop, not a one-time project. If you're not sure where you stand, start by checking <a href="/blog/why-your-shopify-store-isnt-converting">why your store might not be converting</a>, then <a href="/pricing">see how the full audit works</a>.</p>
 `.trim(),
@@ -499,7 +504,7 @@ export const BLOG_POSTS: BlogPost[] = [
 </ol>
 
 <h2>Measure your own baseline, then beat it</h2>
-<p>A number in isolation tells you little; a number with context and a trend tells you everything. EliteVault scores your store the way a buyer experiences it and tracks that score week over week, so you can see whether you're improving regardless of where the "industry average" sits. You can <a href="/sign-up?next=/app/analyzer">run a free audit</a> to get your baseline, or <a href="/pricing">see how weekly monitoring works</a>.</p>
+<p>A number in isolation tells you little; a number with context and a trend tells you everything. EliteVault scores your store the way a buyer experiences it and tracks that score week over week, so you can see whether you're improving regardless of where the "industry average" sits. You can <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=good-conversion-rate-for-shopify">run a free audit</a> to get your baseline, or <a href="/pricing">see how weekly monitoring works</a>.</p>
 
 <p><em>A note on honesty: any benchmark — including ours — is an estimate, not a precise stat. Use these ranges as direction, and trust your own segmented data over any blanket figure.</em></p>
 `.trim(),
@@ -565,7 +570,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>Sometimes the store is fine and the targeting is off — you're buying clicks from people who were never going to buy. <strong>Diagnose:</strong> if on-page metrics look healthy but a specific campaign tanks, suspect targeting before the store.</p>
 
 <h2>The fastest way to find your reason</h2>
-<p>You could check all eight by hand — or get a senior-media-buyer read of your store in under a minute. <a href="/sign-up?next=/app/analyzer">EliteVault's free audit</a> annotates your homepage with the exact issues from this list, simulates how a buyer persona reacts, and ranks what to fix first by leverage. When you know <em>which</em> reason is yours, fixing it is the easy part — then work the <a href="/blog/how-to-increase-shopify-conversion-rate">11 highest-leverage fixes</a>.</p>
+<p>You could check all eight by hand — or get a senior-media-buyer read of your store in under a minute. <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=why-your-shopify-store-isnt-converting">EliteVault's free audit</a> annotates your homepage with the exact issues from this list, simulates how a buyer persona reacts, and ranks what to fix first by leverage. When you know <em>which</em> reason is yours, fixing it is the easy part — then work the <a href="/blog/how-to-increase-shopify-conversion-rate">11 highest-leverage fixes</a>.</p>
 `.trim(),
     faqs: [
       {

@@ -257,6 +257,19 @@ export function AnalysisView({
     </p>
   );
 
+  /**
+   * Scroll offset for the section anchors, tied to whichever nav is mounted.
+   *
+   * These anchors are shared: with the spine reframe OFF the sticky ReportNav
+   * jumps to them, and with it ON the growth map's lens deep-links do
+   * (growth-map.tsx). Only the OFF path grows a sticky bar, so only the OFF
+   * path needs the extra clearance — hard-coding the larger value would push
+   * the spine path's landings 32px down for a bar that isn't there.
+   */
+  const anchorOffset = (viewer.mapSpine ?? false)
+    ? "scroll-mt-24"
+    : "scroll-mt-32";
+
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
       <header className="flex items-start justify-between gap-4">
@@ -429,8 +442,20 @@ export function AnalysisView({
               feedback (the fusion of "leaking sales" + this nav). So it renders
               only when the spine reframe is OFF — which keeps the flags-off
               report byte-identical to before.
+
+              It is STICKY: Buyer Persona and Meta Readiness are the two
+              sections nobody else ships and they sit at the bottom of a long
+              report. The reading order is deliberate, so the fix is keeping
+              the jump targets reachable from every scroll position rather
+              than moving the sections. `belowTopbar` offsets it under the
+              authenticated AppTopbar (h-14); the anonymous page has no
+              chrome. The section anchors below carry `anchorOffset`, which is
+              128px on this path so a jumped-to heading clears the topbar +
+              this bar (56 + 53 = 109px measured) instead of landing
+              underneath them. 112px was tried first and left only 3px —
+              enough to look like a bug at one zoom level.
             */}
-            {!(viewer.mapSpine ?? false) && <ReportNav />}
+            {!(viewer.mapSpine ?? false) && <ReportNav belowTopbar={!isAnon} />}
 
             {/*
               THE GROWTH MAP — hero, at the very top of the result (spec §9).
@@ -439,7 +464,7 @@ export function AnalysisView({
               the map + their rank + the current-node diagnosis; the escape
               route (nodes ahead) is gated to Pro.
             */}
-            <div id="section-growth-map" className="scroll-mt-24">
+            <div id="section-growth-map" className={anchorOffset}>
               <GrowthMap
                 analysisId={data.id}
                 result={data.result}
@@ -486,7 +511,7 @@ export function AnalysisView({
               Winners module. Two stacks of similar height, so the columns
               balance. If the Winners module is hidden, fixes go full width.
             */}
-            <div id="section-fixes" className="scroll-mt-24">
+            <div id="section-fixes" className={anchorOffset}>
               {(() => {
                 const winnersCard = nicheWinners ? (
                   <NicheWinners
@@ -525,7 +550,7 @@ export function AnalysisView({
 
             <div
               id="section-audit"
-              className="grid lg:grid-cols-[1fr_360px] gap-6 items-start scroll-mt-24"
+              className={`grid lg:grid-cols-[1fr_360px] gap-6 items-start ${anchorOffset}`}
             >
               <div className="min-w-0">
                 <AnnotationsOverlay
@@ -534,7 +559,7 @@ export function AnalysisView({
                   result={data.result}
                 />
               </div>
-              <div id="section-leaks" className="min-w-0 scroll-mt-24">
+              <div id="section-leaks" className={`min-w-0 ${anchorOffset}`}>
                 <CategoryRadar
                   scores={data.result.category_scores}
                   overall={data.result.score}
@@ -547,7 +572,7 @@ export function AnalysisView({
               4 — Buyer-persona reaction. Paid users see it; Free sees it blurred
               behind a Pro upgrade CTA (their real computed response).
             */}
-            <div id="section-persona" className="scroll-mt-24">
+            <div id="section-persona" className={anchorOffset}>
               {viewer.isPaid ? (
                 <PersonaResponse response={data.result.buyer_persona_response} />
               ) : (
@@ -596,7 +621,7 @@ export function AnalysisView({
               modelable ROAS panel (free). The live Meta tools follow for plans
               that can run them.
             */}
-            <div id="section-meta" className="space-y-6 scroll-mt-24">
+            <div id="section-meta" className={`space-y-6 ${anchorOffset}`}>
               {/* Brief §4 — seam 3: roadmap → ready-for-Meta. */}
               {handoff("report.handoffRoadmapToMeta")}
               <AdReadinessCard

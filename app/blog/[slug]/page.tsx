@@ -179,8 +179,16 @@ export default async function BlogPostPage({
             Run a free EliteVault audit — an annotated score of your homepage and
             a ranked punch-list of fixes, in under a minute.
           </p>
+          {/*
+            Points at the PUBLIC analyzer, not /sign-up. The copy above promises
+            a free audit in under a minute; /sign-up?next=/app/analyzer made
+            cold blog traffic create an account before seeing anything, which
+            broke that promise at the worst moment. /free-website-audit embeds
+            the anonymous audit box and runs the same pipeline with no account,
+            and it is the indexable page we already rank.
+          */}
           <Link
-            href="/sign-up?next=/app/analyzer"
+            href="/free-website-audit?utm_source=blog&utm_medium=cta&utm_campaign=post-footer"
             className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-champagne-400 px-5 py-3 text-sm font-medium text-obsidian-950 hover:bg-champagne-300 transition-colors"
           >
             Audit my store free
