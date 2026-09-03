@@ -704,6 +704,410 @@ export const BLOG_POSTS: BlogPost[] = [
       },
     ],
   },
+  {
+    slug: "ecommerce-design-trends-2026",
+    title: "Ecommerce Design Trends 2026 That Actually Convert",
+    h1: "Ecommerce design trends 2026: the 9 that lift conversions (and 3 that just look nice)",
+    description:
+      "The 2026 ecommerce design trends that actually move conversions — speed, mobile, trust, checkout — and how to see which ones your own store is missing.",
+    keyword: "ecommerce design trends 2026",
+    keywords: [
+      "ecommerce design trends 2026",
+      "shopify design trends 2026",
+      "ecommerce web design trends",
+      "best ecommerce design 2026",
+      "ecommerce website design 2026",
+      "conversion focused ecommerce design",
+    ],
+    date: "2026-09-02",
+    updated: "2026-09-02",
+    author: "Ariel Jiménez",
+    readingMinutes: 7,
+    excerpt:
+      "Nine 2026 design trends with an actual conversion mechanism behind them — speed, mobile, trust, checkout — and the three getting more attention than they return.",
+    bodyHtml: `
+<p class="lede">Of the ecommerce design trends 2026 keeps putting in front of you, only a handful move money: mobile-first layouts, sub-two-second load times, visible trust signals, and a checkout without friction. A store that loads in one second converts at 3.05%; at four seconds, it's 0.67% (Portent). Here are the nine that lift conversion, and the three you can skip.</p>
+
+<h2>What ecommerce design trends actually matter in 2026?</h2>
+<p>Only the ones that change what a buyer does. Average ecommerce conversion globally sits at <strong>2.74%</strong> (Dynamic Yield, 2026) — about 97 of every 100 visitors leave without buying. A design decision that doesn't touch that number is decoration, however good it looks in a case study.</p>
+<p>The nine worth your 2026 budget all attack the same four failure points — speed, mobile, trust, and checkout friction:</p>
+<ol>
+<li><strong>Mobile-first layouts</strong> — designed for a thumb, not shrunk down from desktop.</li>
+<li><strong>Speed treated as a design constraint</strong> — every hero video and app script is a budget decision.</li>
+<li><strong>Simplified checkout</strong> — fewer steps, zero surprises.</li>
+<li><strong>Trust signals near the buy button</strong> — reviews, returns, secure-checkout marks.</li>
+<li><strong>Minimalism with real hierarchy</strong> — one obvious next action per screen.</li>
+<li><strong>Smart search and filtering</strong> — the moment your catalogue outgrows one scrollable page.</li>
+<li><strong>High-quality visual content</strong> — your own photography, not supplier stock.</li>
+<li><strong>AI personalization</strong> — once you have enough traffic to make it meaningful.</li>
+<li><strong>Accessibility</strong> — bigger tap targets, real contrast, legible type.</li>
+</ol>
+<p>All nine show up on the mainstream 2026 lists, including <a href="https://breakingac.com/news/2026/mar/26/ecommerce-website-design-trends-for-2026/" rel="nofollow">BreakingAC's 14 ecommerce design trends for 2026</a>. The difference is that these nine have a mechanism you can point at.</p>
+
+<h2>How fast does your store really need to load?</h2>
+<p>Under two seconds — and every tenth of a second before that is worth money. The drop-off isn't gentle; it's the steepest curve in ecommerce design.</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">Ecommerce conversion rate by page load time</div>
+<svg viewBox="0 0 640 240" class="w-full h-auto" role="img" aria-label="Ecommerce conversion rate by page load time (Portent, 2022): a site that loads in 1 second converts at 3.05%; 2 seconds, 1.68%; 3 seconds, 1.12%; 4 seconds, 0.67%."><line x1="16" y1="200.0" x2="624" y2="200.0" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><line x1="16" y1="157.0" x2="624" y2="157.0" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><line x1="16" y1="114.0" x2="624" y2="114.0" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><line x1="16" y1="71.0" x2="624" y2="71.0" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><line x1="16" y1="28.0" x2="624" y2="28.0" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><path d="M 52.48,200 L 52.48,54.11 Q 52.48,50.11 56.48,50.11 L 127.52,50.11 Q 131.52,50.11 131.52,54.11 L 131.52,200 Z" fill="#2DD4BF" /><text x="92.0" y="40.1" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">3.05%</text><text x="92.0" y="218.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">Loads in</text><text x="92.0" y="232.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">1 second</text><path d="M 204.48,200 L 204.48,121.44 Q 204.48,117.44 208.48,117.44 L 279.52,117.44 Q 283.52,117.44 283.52,121.44 L 283.52,200 Z" fill="rgba(255,255,255,0.14)" /><text x="244.0" y="107.4" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">1.68%</text><text x="244.0" y="218.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">Loads in</text><text x="244.0" y="232.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">2 seconds</text><path d="M 356.48,200 L 356.48,148.96 Q 356.48,144.96 360.48,144.96 L 431.52,144.96 Q 435.52,144.96 435.52,148.96 L 435.52,200 Z" fill="rgba(255,255,255,0.14)" /><text x="396.0" y="135.0" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">1.12%</text><text x="396.0" y="218.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">Loads in</text><text x="396.0" y="232.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">3 seconds</text><path d="M 508.48,200 L 508.48,171.07 Q 508.48,167.07 512.48,167.07 L 583.52,167.07 Q 587.52,167.07 587.52,171.07 L 587.52,200 Z" fill="rgba(255,255,255,0.14)" /><text x="548.0" y="157.1" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">0.67%</text><text x="548.0" y="218.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">Loads in</text><text x="548.0" y="232.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">4 seconds</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Source: Portent, 2022, via <a href="https://cartflows.com/statistics/ecommerce-conversion/" rel="nofollow">CartFlows ecommerce conversion statistics</a></figcaption>
+</figure>
+
+<p>That's a <strong>4.6x</strong> difference in conversion between a one-second and a four-second store, on identical traffic. And it stays worth chasing at the margin: Google and Deloitte measured an <strong>8.4%</strong> lift in retail conversion from a <strong>0.1-second</strong> improvement in mobile load time (2019, via CartFlows).</p>
+<p>Which reframes the whole redesign. An autoplaying hero video, five review apps, three chat widgets and a 4MB above-the-fold image are design choices — and they are the ones costing you sales. Your 2026 design budget is a performance budget.</p>
+<p>Your store nails a few of these and quietly fails others. <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=ecommerce-design-trends-2026">See it scored in 60 seconds →</a></p>
+
+<h2>Is designing mobile-first still worth it in 2026?</h2>
+<p>Yes — and for a reason that only recently became true. Mobile no longer just carries the traffic; it converts as well as desktop.</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">Average ecommerce conversion rate by device</div>
+<div class="mt-4 grid gap-3 sm:grid-cols-3">
+<div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+<div class="font-mono text-[11px] uppercase tracking-widest text-white/40">Mobile</div>
+<div class="mt-1 text-2xl font-semibold text-white">2.86%</div>
+<div class="mt-1 text-xs text-white/45">and 70%+ of US ecommerce traffic</div>
+</div>
+<div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+<div class="font-mono text-[11px] uppercase tracking-widest text-white/40">Tablet</div>
+<div class="mt-1 text-2xl font-semibold text-white">2.89%</div>
+<div class="mt-1 text-xs text-white/45">highest of the three, smallest share</div>
+</div>
+<div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+<div class="font-mono text-[11px] uppercase tracking-widest text-white/40">Desktop</div>
+<div class="mt-1 text-2xl font-semibold text-white">2.46%</div>
+<div class="mt-1 text-xs text-white/45">no longer the conversion leader</div>
+</div>
+</div>
+<figcaption class="mt-3 text-xs text-white/35">Sources: device conversion rates — Dynamic Yield, 2026, via <a href="https://cartflows.com/statistics/ecommerce-conversion/" rel="nofollow">CartFlows</a>; mobile traffic share — <a href="https://breakingac.com/news/2026/mar/26/ecommerce-website-design-trends-for-2026/" rel="nofollow">BreakingAC, 2026</a></figcaption>
+</figure>
+
+<p>For years mobile carried the visits and converted far worse, which let people justify designing on a 27-inch monitor and checking the phone view last. That excuse is gone: mobile at 2.86% versus desktop at 2.46% means the phone layout <em>is</em> the store, and the desktop layout is the adaptation.</p>
+<p>Practically, mobile-first in 2026 means the price, the primary CTA and at least one trust signal are visible without scrolling, tap targets are big enough for a thumb in motion, and nothing above the fold waits on a third-party script.</p>
+
+<h2>Do reviews and trust signals really change conversion?</h2>
+<p>More than any other single element you can add to a page. The Spiegel Research Center found purchase likelihood rises <strong>270%</strong> for a product showing five reviews versus none — <strong>380%</strong> for higher-priced items — with a further <strong>15%</strong> lift when reviews carry a verified-buyer badge (2017, via CartFlows).</p>
+<p>The 2026 trend isn't <em>having</em> reviews. Almost everyone has them. It's placement: reviews, return policy and secure-checkout marks sitting next to the buy button instead of buried in a tab or the footer. Trust a buyer has to hunt for doesn't count — that's the single most common miss on stores that otherwise look modern.</p>
+
+<h2>Which 2026 trends are hype you can skip?</h2>
+<p><em>Opinion, not data</em> — there's no conversion study behind this section, just the pattern across stores I audit. Three trends take more attention than they return for any store under seven figures:</p>
+<ul>
+<li><strong>Voice commerce.</strong> Real, growing, and almost never the reason your store isn't converting today.</li>
+<li><strong>Dark mode as a storefront default.</strong> Great for apps and dashboards. For a product catalogue it usually flattens your photography, which is the thing actually selling.</li>
+<li><strong>Heavy microinteractions and scroll animation.</strong> They demo beautifully and they spend the exact performance budget the speed chart above says you can't afford.</li>
+</ul>
+<p>None of the three are wrong. They're just far below the four things that decide whether a stranger buys.</p>
+
+<h2>So where should you actually start?</h2>
+<p>Pick the failure point, not the trend. If you're unsure which is yours, the <a href="/blog/how-to-increase-shopify-conversion-rate">highest-leverage conversion fixes</a> and the <a href="/blog/why-your-shopify-store-isnt-converting">eight usual reasons a store doesn't convert</a> are the fastest read. Or skip the guessing entirely: <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=ecommerce-design-trends-2026">run a free audit</a> and get your homepage scored on exactly these four — speed, mobile, trust, checkout friction — with a ranked list of what to fix first. Trends are easier to follow once you know which one you're actually failing.</p>
+`.trim(),
+    faqs: [
+      {
+        q: "What is the biggest ecommerce design trend in 2026?",
+        a: "Mobile-first design, because mobile now both carries the traffic and converts best: 2.86% on mobile versus 2.46% on desktop (Dynamic Yield, 2026). More than 70% of US ecommerce traffic is on phones (BreakingAC, 2026), so the phone layout is the store, not an adaptation of the desktop one.",
+      },
+      {
+        q: "Does mobile convert better than desktop in 2026?",
+        a: "Yes, narrowly. Dynamic Yield's 2026 figures put tablet at 2.89%, mobile at 2.86% and desktop at 2.46%, against a global ecommerce average of 2.74%. The old gap where mobile brought traffic but desktop brought sales has essentially closed.",
+      },
+      {
+        q: "How much does site speed affect ecommerce conversion?",
+        a: "Enormously. Portent measured 3.05% conversion for sites loading in one second, 1.68% at two seconds, 1.12% at three and 0.67% at four — a 4.6x spread. Google and Deloitte separately found an 8.4% retail conversion lift from a 0.1-second mobile improvement.",
+      },
+      {
+        q: "Do product reviews actually increase conversions?",
+        a: "Yes, more than almost any other page element. Spiegel Research Center found purchase likelihood rises 270% for a product with five reviews versus none, 380% for higher-priced items, plus 15% when reviews show a verified-buyer badge. Placement matters: reviews near the buy button, not in a tab.",
+      },
+    ],
+  },
+  {
+    slug: "best-shopify-tools-increase-roas-2026",
+    title: "Best Shopify Tools to Increase ROAS in 2026 (No Fluff)",
+    h1: "The best Shopify tools to increase ROAS in 2026 (ranked by what actually moves it)",
+    description:
+      "The Shopify tools that actually raise ROAS in 2026 — tracking, attribution, CRO — ranked by what works. Plus a free way to forecast your ROAS.",
+    keyword: "best shopify tools to increase roas",
+    keywords: [
+      "best shopify tools to increase roas",
+      "shopify roas tools 2026",
+      "increase meta ads roas shopify",
+      "shopify apps for roas",
+      "how to improve roas shopify",
+    ],
+    date: "2026-09-02",
+    updated: "2026-09-02",
+    author: "Ariel Jiménez",
+    readingMinutes: 7,
+    excerpt:
+      "Average Meta ecommerce ROAS sits near 2.87x. The tools that actually move it, by category — and why more spend almost never fixes a stuck number.",
+    bodyHtml: `
+<p class="lede">The best Shopify tools to increase ROAS in 2026 fall into four buckets: server-side tracking, attribution, ad optimization, and on-site CRO. With average Meta ecommerce ROAS around 2.87x in one 2026 analysis (Zentric Digital), the leverage isn't more spend — it's fixing the tracking and the store that receives the click. Here's what's worth it.</p>
+
+<h2>What's a good ROAS for a Shopify store in 2026?</h2>
+<p>Above 3x is solid and above 4x puts you in the top quartile. One 2026 analysis by Zentric Digital puts average Meta ROAS for ecommerce at <strong>2.87x</strong>, against 2.19x across all industries — so if you're sitting at 2.5x you're near the middle of the pack, not failing.</p>
+<p>The average is close to useless on its own, though, because your niche sets the ceiling before you touch a single setting:</p>
+
+<figure class="my-8">
+<table>
+<thead>
+<tr><th>Niche</th><th>Average ROAS</th><th>Top 25%</th></tr>
+</thead>
+<tbody>
+<tr><td>Pet</td><td>3.0–4.0x</td><td>5.0x+</td></tr>
+<tr><td>Beauty</td><td>3.0–4.0x</td><td>5.0x+</td></tr>
+<tr><td>Health &amp; supplements</td><td>2.8–3.6x</td><td>4.5x+</td></tr>
+<tr><td>Food &amp; beverage</td><td>2.5–3.5x</td><td>4.0x+</td></tr>
+<tr><td>Fashion</td><td>2.4–3.2x</td><td>4.0x+</td></tr>
+<tr><td>Electronics</td><td>2.2–3.0x</td><td>4.0x+</td></tr>
+<tr><td>Home</td><td>1.8–2.5x</td><td>3.0x+</td></tr>
+</tbody>
+</table>
+<figcaption class="mt-3 text-xs text-white/35">Source: <a href="https://www.zentric.digital/insights/meta-ads-roas-benchmarks-2026" rel="nofollow">Zentric Digital, Meta Ads ROAS benchmarks 2026</a>. One 2026 analysis — treat it as directional, not as a law of physics.</figcaption>
+</figure>
+
+<p>Read your own number against your row, not against the blended average. A 2.4x in home goods is a good campaign. The same 2.4x in pet is a leak.</p>
+
+<h2>Why is your ROAS stuck even with a good product?</h2>
+<p>Because ROAS is a ratio, and almost everyone spends their effort on the wrong half of it. Two causes account for most stuck accounts:</p>
+<p><strong>Broken or partial tracking.</strong> If conversions aren't reported back cleanly, Meta's algorithm optimizes on an incomplete picture — you're not buying worse traffic, you're teaching the auction with bad data. This is why server-side tracking and first-party data have become the first line item rather than a nice-to-have.</p>
+<p><strong>Conversion leaks on the page the ad lands on.</strong> Doubling your budget doubles the traffic hitting the same leaky product page. If the store converts cold traffic at 1%, no amount of creative testing turns that into a 4x. That's the whole argument in <a href="/blog/why-meta-ads-arent-converting">why your Meta ads aren't converting</a>, and it's the more common of the two.</p>
+<p>Before you spend another dollar on Meta, <a href="/meta-ads-forecast?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=best-shopify-tools-increase-roas-2026">see the ROAS your store could realistically hit →</a></p>
+
+<h2>What are the best Shopify tools to increase ROAS in 2026?</h2>
+<p>Grouped by the job they do, because stacking three tools from the same bucket is the most common way to spend money without moving the number:</p>
+
+<figure class="my-8">
+<table>
+<thead>
+<tr><th>Tool</th><th>Category</th><th>What it actually solves</th></tr>
+</thead>
+<tbody>
+<tr><td>Aimerce</td><td>Server-side tracking / first-party data</td><td>Recovers conversion signal lost to cookie and tracking restrictions, so the ad platform optimizes on real data</td></tr>
+<tr><td>Triple Whale</td><td>Attribution</td><td>Shows which campaigns and creatives actually produced revenue instead of trusting one platform's self-report</td></tr>
+<tr><td>Madgicx</td><td>AI ad optimization</td><td>Automates budget and creative decisions inside the ad account</td></tr>
+<tr><td>Loox</td><td>Social proof / CRO</td><td>Puts photo reviews on product pages, so cold traffic has a reason to trust an unfamiliar brand</td></tr>
+<tr><td>Klaviyo</td><td>CDP / audiences</td><td>Turns first-party data into segments and retention revenue, which lifts blended ROAS</td></tr>
+<tr><td>EliteVault <em>(ours — full disclosure)</em></td><td>Pre-spend forecast + CRO audit</td><td>Scores the page the ad lands on and models the campaign before you fund it</td></tr>
+</tbody>
+</table>
+<figcaption class="mt-3 text-xs text-white/35">Third-party tools and categories compiled from <a href="https://www.aimerce.ai/blogs/seo/top-5-shopify-apps-for-increasing-meta-ads-revenue-in-2026" rel="nofollow">Aimerce, Top 5 Shopify apps for increasing Meta ads revenue in 2026</a>. Categories and functions only — we don't publish per-app performance claims we can't source.</figcaption>
+</figure>
+
+<p>If you're starting from zero, the order that protects your budget is tracking first, then the landing experience, then attribution, then automation. Automation applied to bad signal just makes bad decisions faster.</p>
+
+<h2>So where do most of these tools fall short?</h2>
+<p>Here's the uncomfortable pattern: most of this stack measures or optimizes <em>after</em> the money is spent. Attribution tells you which campaign wasted it. AI optimization reallocates within the same pool. Tracking makes the reporting honest. All useful — none of it changes the page where the visitor decides.</p>
+<p>Only two entries in that table touch the page itself, and they touch a slice of it: Loox adds photo reviews to product pages, and Klaviyo works the audience after the visit. Neither tells you that your price is invisible above the fold or that your checkout leaks. That's the gap worth naming, because it's where most of a stuck 2.5x actually lives. The store gets the click and loses the sale, and no tool in the ad stack can see it. Fixing the landing experience is also the only lever that improves email, organic and every other channel at the same time — which is why it belongs before the next budget increase, not after.</p>
+<p>If you're about to scale, two things are worth ten minutes: the <a href="/blog/is-your-store-ready-for-meta-ads">six-point readiness check</a> before you fund a campaign, and a <a href="/meta-ads-forecast?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=best-shopify-tools-increase-roas-2026">forecast of what your store could realistically return</a> at your AOV and budget — conservative, balanced and aggressive cases, free, before you commit the spend. Knowing the floor beats discovering it.</p>
+`.trim(),
+    faqs: [
+      {
+        q: "What is a good ROAS for a Shopify store in 2026?",
+        a: "One 2026 analysis (Zentric Digital) puts average Meta ROAS for ecommerce at 2.87x, versus 2.19x across all industries. Above 3x is generally solid and above 4x is top-quartile — but read it against your niche: home goods average 1.8–2.5x while pet and beauty average 3.0–4.0x.",
+      },
+      {
+        q: "Which Shopify tool increases ROAS the most?",
+        a: "There isn't one, and any tool claiming to be it is selling. The tools split into tracking and first-party data, attribution, ad optimization, and on-site CRO. Which one moves your number depends on which is broken — usually tracking or the landing experience, not the ad account.",
+      },
+      {
+        q: "Why isn't my ROAS improving even though I increased my budget?",
+        a: "Because more budget sends more traffic to the same page. If the store converts cold traffic poorly, scaling multiplies the leak rather than the return. Broken conversion tracking is the other common cause: the algorithm optimizes on incomplete data no matter how much you spend.",
+      },
+      {
+        q: "Do I need server-side tracking for my Shopify store?",
+        a: "If you spend meaningfully on paid social, yes. Cookie and tracking restrictions mean a portion of conversions never make it back to the ad platform, so it optimizes on a partial picture. Restoring that signal is usually the first fix, before attribution or automation tools.",
+      },
+    ],
+  },
+  {
+    slug: "why-customers-abandon-cart-2026",
+    title: "Why Customers Add to Cart but Don't Buy (2026 Data)",
+    h1: "Why customers add to cart but don't buy in 2026 (the 7 real reasons, ranked)",
+    description:
+      "About 70% of ready-to-buy shoppers leave at checkout. Why customers abandon cart — the 7 real reasons, ranked by data — and how to spot each on your store.",
+    keyword: "why customers abandon cart",
+    keywords: [
+      "why customers abandon cart",
+      "cart abandonment reasons 2026",
+      "add to cart but not buying",
+      "checkout abandonment shopify",
+      "how to reduce cart abandonment",
+    ],
+    date: "2026-09-02",
+    updated: "2026-09-02",
+    author: "Ariel Jiménez",
+    readingMinutes: 7,
+    excerpt:
+      "70.22% of carts are abandoned. The ranked reasons — starting with surprise costs at 40% — and how to tell which one is costing you the most.",
+    bodyHtml: `
+<p class="lede">Roughly 70% of shoppers who reach checkout still don't buy — 70.22% across 50 studies (Baymard, 2025). Why customers abandon cart at the last step is rarely price. It's friction: surprise extra costs (40%), slow delivery (20%), card-security doubts (19%), forced account creation (18%), a checkout that runs too long (17%). Fix these before you touch ad spend.</p>
+
+<h2>How many customers abandon checkout in 2026?</h2>
+<p>About seven in ten. Baymard Institute's running average across 50 separate studies is the most reliable number in the field, and it has barely moved in a decade:</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">Cart abandonment, in context</div>
+<div class="mt-4 grid gap-3 sm:grid-cols-3">
+<div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+<div class="font-mono text-[11px] uppercase tracking-widest text-white/40">Abandoned</div>
+<div class="mt-1 text-2xl font-semibold text-white">70.22%</div>
+<div class="mt-1 text-xs text-white/45">average cart abandonment rate</div>
+</div>
+<div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+<div class="font-mono text-[11px] uppercase tracking-widest text-white/40">Based on</div>
+<div class="mt-1 text-2xl font-semibold text-white">50</div>
+<div class="mt-1 text-xs text-white/45">separate studies, not one survey</div>
+</div>
+<div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+<div class="font-mono text-[11px] uppercase tracking-widest text-white/40">Just browsing</div>
+<div class="mt-1 text-2xl font-semibold text-white">42%</div>
+<div class="mt-1 text-xs text-white/45">abandon because they weren't ready</div>
+</div>
+</div>
+<figcaption class="mt-3 text-xs text-white/35">Source: <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">Baymard Institute, cart abandonment rate</a> (updated September 2025). Respondents could select more than one reason.</figcaption>
+</figure>
+
+<p>That 42% matters, and most articles skip it. More than four in ten abandonments come from people who were only browsing or comparing — not ready to buy, and not something design can fix. Chasing them is how founders waste months.</p>
+<p>The reasons below are different. They come from shoppers who <em>were</em> going to buy and stopped anyway. That group is winnable, and it's where your money is.</p>
+
+<h2>What are the 7 reasons shoppers abandon checkout?</h2>
+<p>Extra costs at checkout is the runaway number one — twice the next reason on the list. Here are the ranked reasons, including the eighth that just misses the top seven:</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">Why shoppers who intended to buy abandoned checkout</div>
+<svg viewBox="0 0 760 250" class="w-full h-auto" role="img" aria-label="Reasons shoppers abandon checkout, among those who were going to buy (Baymard Institute, updated September 2025): extra costs at checkout 40%; delivery too slow 20%; card security doubts 19%; forced account creation 18%; checkout too long 17%; site errors or crashes 17%; return policy concerns 13%; no visible order total 12%."><line x1="16" y1="210.0" x2="744" y2="210.0" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><line x1="16" y1="164.5" x2="744" y2="164.5" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><line x1="16" y1="119.0" x2="744" y2="119.0" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><line x1="16" y1="73.5" x2="744" y2="73.5" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><line x1="16" y1="28.0" x2="744" y2="28.0" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><path d="M 35.11,210 L 35.11,52.22 Q 35.11,48.22 39.11,48.22 L 83.89,48.22 Q 87.89,48.22 87.89,52.22 L 87.89,210 Z" fill="#2DD4BF" /><text x="61.5" y="38.2" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">40%</text><text x="61.5" y="228.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">Extra costs</text><text x="61.5" y="242.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">at checkout</text><path d="M 126.11,210 L 126.11,133.11 Q 126.11,129.11 130.11,129.11 L 174.89,129.11 Q 178.89,129.11 178.89,133.11 L 178.89,210 Z" fill="#2DD4BF" /><text x="152.5" y="119.1" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">20%</text><text x="152.5" y="228.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">Delivery</text><text x="152.5" y="242.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">too slow</text><path d="M 217.11,210 L 217.11,137.16 Q 217.11,133.16 221.11,133.16 L 265.89,133.16 Q 269.89,133.16 269.89,137.16 L 269.89,210 Z" fill="#2DD4BF" /><text x="243.5" y="123.2" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">19%</text><text x="243.5" y="228.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">Card security</text><text x="243.5" y="242.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">doubts</text><path d="M 308.11,210 L 308.11,141.20 Q 308.11,137.20 312.11,137.20 L 356.89,137.20 Q 360.89,137.20 360.89,141.20 L 360.89,210 Z" fill="#2DD4BF" /><text x="334.5" y="127.2" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">18%</text><text x="334.5" y="228.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">Forced account</text><text x="334.5" y="242.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">creation</text><path d="M 399.11,210 L 399.11,145.24 Q 399.11,141.24 403.11,141.24 L 447.89,141.24 Q 451.89,141.24 451.89,145.24 L 451.89,210 Z" fill="#2DD4BF" /><text x="425.5" y="131.2" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">17%</text><text x="425.5" y="228.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">Checkout</text><text x="425.5" y="242.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">too long</text><path d="M 490.11,210 L 490.11,145.24 Q 490.11,141.24 494.11,141.24 L 538.89,141.24 Q 542.89,141.24 542.89,145.24 L 542.89,210 Z" fill="#2DD4BF" /><text x="516.5" y="131.2" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">17%</text><text x="516.5" y="228.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">Site errors</text><text x="516.5" y="242.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">or crashes</text><path d="M 581.11,210 L 581.11,161.42 Q 581.11,157.42 585.11,157.42 L 629.89,157.42 Q 633.89,157.42 633.89,161.42 L 633.89,210 Z" fill="#2DD4BF" /><text x="607.5" y="147.4" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">13%</text><text x="607.5" y="228.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">Return policy</text><text x="607.5" y="242.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">concerns</text><path d="M 672.11,210 L 672.11,165.47 Q 672.11,161.47 676.11,161.47 L 720.89,161.47 Q 724.89,161.47 724.89,165.47 L 724.89,210 Z" fill="#2DD4BF" /><text x="698.5" y="151.5" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">12%</text><text x="698.5" y="228.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">No visible</text><text x="698.5" y="242.0" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.40)">order total</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Source: <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">Baymard Institute</a> (updated September 2025). Respondents could select more than one reason.</figcaption>
+</figure>
+
+<p>Two more sit just below the chart and are worth knowing because they're pure plumbing: a declined card (10%) and too few payment methods (9%), both from the same Baymard data. Neither is a design problem, and both are quietly fixable — which makes them the cheapest percentage points on the whole list.</p>
+<p>Read the ranking again and notice what isn't on it anywhere: the price of the product. Nobody abandons because your candle costs $34. They abandon because it cost $34 on the product page and $51.80 at checkout. Every reason above the 13% mark is a promise the checkout broke — about cost, about speed, about safety, or about how long this was going to take.</p>
+<p>You can guess which of these seven is costing you — or <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=why-customers-abandon-cart-2026">see it in about 60 seconds →</a></p>
+
+<h2>Which one is killing your checkout?</h2>
+<p>Only one of these is your biggest leak, and the honest answer is that you can't tell by staring at your own store — you already know where everything is, which is exactly the knowledge a first-time buyer doesn't have.</p>
+<p>Two things that do work. First, buy from your own store on your own phone, with a real card, at full price, and count every surprise and every extra tap — the number of surprises is your abandonment rate in miniature. Second, check where your Shopify drop-off actually sits: if people are leaving before they ever reach checkout, this isn't your article, and <a href="/blog/why-your-shopify-store-isnt-converting">why your Shopify store isn't converting</a> is the better starting point.</p>
+
+<h2>How do you fix the top three fast?</h2>
+<p><strong>1. Kill the cost surprise (40%).</strong> The single highest-return change in ecommerce, and it's free. Show shipping cost, taxes and any fees before checkout — a threshold banner ("free shipping over $60") on the cart, or a shipping estimate on the product page. If your margins can carry it, free shipping over a threshold turns the number-one abandonment reason into an average-order-value lever.</p>
+<p><strong>2. Turn on guest checkout (18%).</strong> Forcing account creation costs you nearly one in five ready buyers so you can collect an email you could have asked for after the sale. Enable guest checkout, then offer the account at the thank-you page, when they've already given you the email anyway.</p>
+<p><strong>3. Put security and returns where the doubt happens (19% + 13%).</strong> Card-security doubts and return-policy concerns are both trust failures, and both get solved by placement rather than policy: payment marks and a one-line return promise next to the pay button, not linked in the footer.</p>
+<p>The two 17% reasons — a checkout that runs too long, and site errors or crashes — are worth a pass after those three, and both are measurable rather than debatable: count the fields and the steps between cart and confirmation, then complete a purchase on a mid-range Android phone on mobile data rather than your office wifi. Most checkout errors founders never see are the ones that only happen on a slower device.</p>
+<p>Do those three and you've addressed the reasons behind most winnable abandonment, without spending a dollar on traffic. Then work the <a href="/blog/how-to-increase-shopify-conversion-rate">highest-leverage conversion fixes</a> upstream of the cart — or have it done for you: a <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=why-customers-abandon-cart-2026">free audit</a> scores your store against exactly these friction points and ranks what to fix first. Recovering a fraction of that 70% is cheaper than buying the traffic twice.</p>
+`.trim(),
+    faqs: [
+      {
+        q: "What percentage of customers abandon their cart in 2026?",
+        a: "70.22% on average, per Baymard Institute's running figure across 50 separate studies (updated September 2025). It has been stable around 70% for years, so treat a rate near it as normal and anything well above it as a friction problem.",
+      },
+      {
+        q: "What is the number one reason customers abandon cart?",
+        a: "Extra costs at checkout — shipping, taxes and fees — cited by 40% of shoppers who intended to buy. It's twice as common as the next reason (delivery being too slow, at 20%) and it's the cheapest one to fix.",
+      },
+      {
+        q: "Do surprise shipping costs really matter that much?",
+        a: "Yes. It's the single most-cited reason in Baymard's data at 40%. The problem isn't the amount, it's the surprise: a price that changes between the product page and the payment step reads as a bait-and-switch even when the total is reasonable.",
+      },
+      {
+        q: "How do I reduce cart abandonment on Shopify?",
+        a: "Start with the three biggest: show all costs before checkout (or set a free-shipping threshold), enable guest checkout instead of forcing account creation, and put payment-security marks and your return policy next to the pay button rather than in the footer.",
+      },
+      {
+        q: "Is a 70% cart abandonment rate bad?",
+        a: "No — it's the average. About 42% of abandonment comes from people who were only browsing and were never going to buy on that visit. The winnable share is the shoppers who intended to buy and hit friction, which is what the ranked reasons measure.",
+      },
+    ],
+  },
+  {
+    slug: "new-free-shopify-tools-2026",
+    title: "New Free Shopify Tools in 2026 (and Which Are Worth It)",
+    h1: "New free Shopify tools in 2026: what just launched, and what's actually worth using",
+    description:
+      "Every new free Shopify tool in 2026 — Sidekick, SimGym, checkout extensions — with what's genuinely free, what needs a paid plan, and what's still Plus-only.",
+    keyword: "new free shopify tools 2026",
+    keywords: [
+      "new free shopify tools 2026",
+      "shopify editions 2026",
+      "shopify winter 2026 features",
+      "free shopify features 2026",
+      "shopify sidekick free",
+    ],
+    date: "2026-09-02",
+    updated: "2026-09-02",
+    author: "Ariel Jiménez",
+    readingMinutes: 8,
+    excerpt:
+      "Two Shopify Editions, 150+ updates each, and a lot of loose talk about what's free. What's actually included, what needs a paid plan, and what's still Plus-only.",
+    bodyHtml: `
+<p class="lede">Shopify shipped two Editions in 2026 — Winter '26 and Spring '26, 150+ updates each. Genuinely free: Sidekick, included in every plan at no extra cost, and SimGym, free to install but charged per simulation. Checkout UI extensions? Still Plus-only for the checkout steps themselves. Here's which new free Shopify tools 2026 actually delivered, and what to skip.</p>
+
+<p>A note before the list, because this topic is full of bad summaries: nearly every roundup calls all of this "free," and a lot of it isn't. Everything below was checked against Shopify's own Editions pages, Help Center and App Store listings in September 2026 — and where a third-party summary disagreed with Shopify, Shopify won.</p>
+
+<h2>What new free Shopify tools launched in 2026?</h2>
+<p>Six things are worth knowing about. Only two of them are free in the way people mean when they say free:</p>
+
+<figure class="my-8">
+<table>
+<thead>
+<tr><th>Tool or feature</th><th>What it does</th><th>Free, paid plan, or Plus?</th></tr>
+</thead>
+<tbody>
+<tr><td>Sidekick</td><td>AI assistant in the admin: multi-step tasks, theme edits, custom reports, block generation, voice chat on mobile, and app integrations added in Spring '26</td><td><strong>Free — included in your plan.</strong> Shopify's own wording: "Sidekick is included with your Shopify plan. Features and usage limits vary by plan"</td></tr>
+<tr><td>Shopify SimGym</td><td>Simulates buyer behaviour on your theme with AI shoppers — compare two themes, or analyse one live or draft theme</td><td><strong>Free to install, charged per simulation run.</strong> AI research preview, eligible stores only</td></tr>
+<tr><td>Checkout UI extensions</td><td>Apps that add content to the checkout flow</td><td><strong>Split.</strong> Thank-you and order-status pages: Basic plan or higher. Information, shipping and payment steps: <strong>Shopify Plus only</strong></td></tr>
+<tr><td>Rollouts</td><td>A/B testing and scheduling for themes, extended to checkout configurations in Spring '26</td><td>No plan exclusivity marked — unlike neighbouring features the same page flags "Exclusive to Shopify Plus" or "Exclusive to POS Pro"</td></tr>
+<tr><td>Analytics upgrades</td><td>Heatmaps, bot filtering, the 180-day inventory-history cap removed, precise date and time controls</td><td>In the Winter '26 Edition. Single-view multi-store analytics is <strong>Plus only</strong></td></tr>
+<tr><td>B2B in the admin</td><td>Company profiles, volume pricing, up to three B2B catalogs</td><td>Spring '26 brought these to <strong>Basic, Grow and Advanced</strong> — Shopify's wording is "at no extra cost"</td></tr>
+</tbody>
+</table>
+<figcaption class="mt-3 text-xs text-white/35">Sources: <a href="https://www.shopify.com/editions/winter2026" rel="nofollow">Shopify Editions Winter '26</a>, <a href="https://www.shopify.com/editions/spring2026" rel="nofollow">Spring '26</a>, <a href="https://www.shopify.com/sidekick" rel="nofollow">Shopify's Sidekick page</a>, and the <a href="https://apps.shopify.com/simgym" rel="nofollow">SimGym App Store listing</a>. Checked September 2026.</figcaption>
+</figure>
+
+<p>Two corrections worth making loudly, because the wrong version is everywhere. <strong>Checkout UI extensions did not become free for all paid plans.</strong> Apps can customise the thank-you and order-status pages on Basic and up — that part is real — but the information, shipping and payment steps are still Shopify Plus. And <strong>SimGym is not a component library</strong>. It's an AI-shopper simulator for your theme, closer to a flight simulator for your storefront than to a set of React components.</p>
+<p>None of which tells you whether your store converts today. <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=new-free-shopify-tools-2026">Get that scored free in about 60 seconds →</a></p>
+
+<h2>Which ones are actually worth using?</h2>
+<p>Ranked for a single owner running the store alone, not for an agency with a roadmap:</p>
+<ol>
+<li><strong>Sidekick — use it today.</strong> It's the highest-value thing Shopify gives away, it's on your plan already (which capabilities you get depends on which plan that is), and the 2026 releases moved it from "answers questions" to "does multi-step work": generating theme blocks, writing custom reports, building automations. If you only adopt one thing on this list, this is it.</li>
+<li><strong>SimGym — worth a run before a redesign.</strong> Free to install, and the theme-comparison mode gives you a directional read before you ship a change to real traffic. Watch the per-simulation cost, and treat the output as a signal rather than a verdict — it's AI shoppers, not your customers.</li>
+<li><strong>Analytics upgrades — check bot filtering first.</strong> Unglamorous and immediately useful. If your traffic numbers have ever looked better than your revenue, filtering bots out changes what you think your conversion rate is.</li>
+<li><strong>Rollouts — only with traffic.</strong> Real A/B testing in the admin is genuinely good, but a store doing a few hundred sessions a week will never reach significance. Below that volume, fix known problems instead of testing unknown ones.</li>
+<li><strong>Checkout extensions — read the plan line first.</strong> Useful on thank-you and order-status pages. If you were planning a checkout-step redesign on a non-Plus plan, that's still not available.</li>
+<li><strong>B2B in the admin — only if you sell wholesale.</strong> Excellent if you do, irrelevant if you don't.</li>
+</ol>
+<p>Skipping the rest isn't laziness. Across 300+ updates in two Editions, most are platform depth for merchants at a scale you may not be at yet. The ones above are the ones that pay off at any size.</p>
+
+<h2>What can't Shopify's free tools tell you?</h2>
+<p>Everything on that list helps you <em>build</em> faster — write a section, test a theme, read a cleaner report. None of it tells you why a stranger landed on your store and left without buying. Shopify's analytics show you that conversion dropped; they don't show you that your price is invisible above the fold on a phone, that your only trust signal is in the footer, or that your hero image takes four seconds to paint.</p>
+<p>SimGym is the closest Shopify has come, and it's a genuinely interesting product — but it simulates behaviour on a theme change rather than diagnosing the store you have today, and it bills per run. That gap is exactly the one we built for, so treat the next sentence as an ad: <em>full disclosure, EliteVault is our tool.</em></p>
+<p>Shopify's new tools help you build faster — but not fix what isn't converting. <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=new-free-shopify-tools-2026">See your store's conversion leaks free →</a></p>
+
+<h2>So what should you actually do this week?</h2>
+<p>Turn Sidekick on, run bot filtering, and leave the rest until it's clearly relevant to your stage. If you want a wider view of what free diagnostics can and can't do, <a href="/blog/free-website-audit-tools">free website audit tools: what they check</a> compares the categories honestly, and <a href="/blog/reverse-engineer-winning-shopify-stores">how to reverse-engineer a winning Shopify store</a> is the better use of an afternoon than reading all 300 release notes. New tools are worth adopting; they're just never the reason a store starts converting.</p>
+`.trim(),
+    faqs: [
+      {
+        q: "What new free Shopify tools launched in 2026?",
+        a: "Across the Winter '26 and Spring '26 Editions (150+ updates each), the notable ones are the upgraded Sidekick AI assistant, the SimGym AI-shopper theme simulator, Rollouts for A/B testing and scheduling, native analytics upgrades including heatmaps and bot filtering, and B2B features extended to more plans at no extra cost.",
+      },
+      {
+        q: "Is Shopify Sidekick free?",
+        a: "Yes. Shopify's own answer is that Sidekick is included with your Shopify plan, and that features and usage limits vary by plan. There is no separate subscription for it — but which Sidekick capabilities you get depends on the plan you're already on.",
+      },
+      {
+        q: "Are checkout UI extensions still Plus-only?",
+        a: "Partly. Apps that customise the thank-you and order-status pages work on Basic plan or higher. Extensions for the information, shipping and payment steps of checkout remain available only to Shopify Plus stores, despite frequent claims otherwise.",
+      },
+      {
+        q: "Is Shopify SimGym free?",
+        a: "It's free to install, but it charges per simulation run, and it's currently an AI research preview available to eligible stores. It simulates how AI shoppers respond to a theme — comparing two themes or analysing one — rather than being a component library, as some summaries describe it.",
+      },
+      {
+        q: "Is it worth updating my theme for the 2026 Shopify features?",
+        a: "Only if you have a specific problem it solves. A theme update is a real risk to a converting store, and most of the 2026 releases are platform depth rather than conversion wins. Diagnose what's actually costing you sales first, then decide whether a theme change is the fix.",
+      },
+    ],
+  },
 ];
 
 const BY_DATE = [...BLOG_POSTS].sort((a, b) =>
