@@ -303,6 +303,13 @@ const en: Dict = {
       "Clear these and you shift from “regular” toward “top buyer” up top.",
     handoffMetaToModeler:
       "With those fixed, this projection stops being optimistic.",
+    // One-line teaser under the Growth Map. The two strongest sections sit at
+    // the bottom of a long report, so this names what they GIVE you (not what
+    // they're called) while the reader is still in the first screen. Kept to a
+    // single row on purpose — it must not read as a second nav.
+    teaserLead: "Also inside",
+    teaserPersona: "how a real buyer reacts",
+    teaserMeta: "your Meta readiness",
     // Brief §1 — ad-readiness reframed as a LENS on the same audit, never a
     // second competing score. {adScore} interpolated by the caller.
     adLensLabel: "A lens on the same audit",
@@ -1022,6 +1029,13 @@ const es: Dict = {
       "Arréglalos y pasas de “regular” hacia “top buyer” allá arriba.",
     handoffMetaToModeler:
       "Con eso corregido, esta proyección deja de ser optimista.",
+    // Teaser de una línea bajo el Growth Map. Las dos secciones más fuertes
+    // quedan al fondo de un reporte largo, así que esto nombra lo que te DAN
+    // (no cómo se llaman) mientras el lector sigue en la primera pantalla. Una
+    // sola fila a propósito: no debe leerse como una segunda nav.
+    teaserLead: "También adentro",
+    teaserPersona: "la reacción real de tu comprador",
+    teaserMeta: "tu readiness para Meta",
     // Brief §1 — ad-readiness como LENTE del mismo audit, nunca un segundo
     // score que compite. El llamador interpola {adScore}.
     adLensLabel: "Una lente del mismo audit",

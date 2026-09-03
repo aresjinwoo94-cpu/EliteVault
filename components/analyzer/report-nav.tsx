@@ -8,6 +8,7 @@ import {
   ScanSearch,
   MessageSquare,
   Megaphone,
+  Star,
   type LucideIcon,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -137,34 +138,50 @@ export function ReportNav({
                 type="button"
                 onClick={() => jump(s.id)}
                 /*
-                  The accent rest state is deliberately DIMMER than the shared
-                  hover state, not equal to it. Setting rest = hover is the easy
-                  mistake here: the two differentiator chips then look
-                  permanently pointed-at and give no feedback when they actually
-                  are. Every accented value below sits one step under its hover
-                  counterpart so hover still has somewhere to go.
+                  Accented and plain chips carry their OWN hover states rather
+                  than sharing one. A shared hover caps how much presence the
+                  accent can have at rest — push the fill up and it collides
+                  with hover, which is how these two ended up looking
+                  permanently pointed-at. Separate scales let the accent read
+                  loudly while every accented value still sits a step under its
+                  own hover counterpart.
                 */
-                className={`group inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11.5px] transition-colors hover:border-signal-400/30 hover:bg-signal-500/[0.06] hover:text-white ${
+                className={`group inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11.5px] transition-colors ${
                   s.accent
-                    ? "border-signal-400/20 bg-signal-500/[0.035] text-white/75"
-                    : "border-white/[0.07] bg-white/[0.02] text-white/60"
+                    ? "border-signal-400/35 bg-signal-500/[0.09] text-white/85 hover:border-signal-400/55 hover:bg-signal-500/[0.15] hover:text-white"
+                    : "border-white/[0.07] bg-white/[0.02] text-white/60 hover:border-signal-400/30 hover:bg-signal-500/[0.06] hover:text-white"
                 }`}
               >
                 <span
-                  className={`grid size-4 place-items-center rounded-full text-[9px] font-semibold group-hover:bg-signal-500/15 group-hover:text-signal-200 ${
+                  className={`grid size-4 place-items-center rounded-full text-[9px] font-semibold ${
                     s.accent
-                      ? "bg-signal-500/10 text-signal-300/70"
-                      : "bg-white/[0.05] text-white/45"
+                      ? "bg-signal-500/20 text-signal-200 group-hover:bg-signal-500/30 group-hover:text-signal-100"
+                      : "bg-white/[0.05] text-white/45 group-hover:bg-signal-500/15 group-hover:text-signal-200"
                   }`}
                 >
                   {i + 1}
                 </span>
                 <s.Icon
-                  className={`size-3 group-hover:text-signal-300 ${
-                    s.accent ? "text-signal-300/65" : "text-white/40"
+                  className={`size-3 ${
+                    s.accent
+                      ? "text-signal-300/85 group-hover:text-signal-200"
+                      : "text-white/40 group-hover:text-signal-300"
                   }`}
                 />
                 {s.label}
+                {/*
+                  The "don't miss this" marker. A 10px star sits under the 16px
+                  numeral badge that already sets the chip's height, so it adds
+                  a little width and no height — the bar stays one 53px row.
+                  Filled rather than outlined: at this size an outline reads as
+                  a smudge. Decorative only; the label is the accessible name.
+                */}
+                {s.accent && (
+                  <Star
+                    aria-hidden="true"
+                    className="size-2.5 shrink-0 fill-signal-300/85 text-signal-300/85 group-hover:fill-signal-200 group-hover:text-signal-200"
+                  />
+                )}
               </button>
             ))}
           </nav>

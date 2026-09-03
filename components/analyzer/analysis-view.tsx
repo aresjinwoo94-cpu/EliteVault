@@ -270,6 +270,23 @@ export function AnalysisView({
     ? "scroll-mt-24"
     : "scroll-mt-32";
 
+  /**
+   * Smooth-scroll to a section id, for the teaser strip under the Growth Map.
+   *
+   * Deliberately a local copy of ReportNav's `jump` rather than an import:
+   * the teaser renders on both the spine and non-spine paths, and ReportNav
+   * only mounts on one of them. A missing target is a harmless no-op, same as
+   * there. Buttons rather than <a href="#id"> so a click never writes a
+   * fragment into the URL of a report the visitor may be about to share.
+   */
+  const jumpTo = (id: string) => {
+    if (typeof document === "undefined") return;
+    document.getElementById(id)?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
       <header className="flex items-start justify-between gap-4">
@@ -474,6 +491,45 @@ export function AnalysisView({
                 storedPageKind={data.discovery_signals?.pageKind}
               />
             </div>
+
+            {/*
+              Teaser strip — one line, in normal flow, immediately under the
+              Growth Map so it lands in the first screen.
+
+              Buyer Persona and Meta Readiness are the two things nobody else
+              ships and they sit at the bottom of a long report. The sticky nav
+              makes them REACHABLE; this makes them WANTED — it names what they
+              give you rather than what they're called, which a chip labelled
+              "Buyer Persona" cannot do.
+
+              Deliberately not a card and not sticky: a second bar under the
+              nav would read as a duplicate index. A dim rule-height line with
+              two underlined jumps reads as prose, which is the point.
+
+              Rendered on BOTH the spine and non-spine paths: it depends on
+              nothing the flag changes, and gating it would silently remove the
+              discoverability fix the day the flag is turned on.
+            */}
+            <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-[11.5px] text-white/40">
+              <span>{t("report.teaserLead")} ↓</span>
+              <button
+                type="button"
+                onClick={() => jumpTo("section-persona")}
+                className="underline decoration-signal-400/30 underline-offset-2 transition-colors hover:text-signal-200 hover:decoration-signal-300"
+              >
+                {t("report.teaserPersona")}
+              </button>
+              <span aria-hidden="true" className="text-white/20">
+                ·
+              </span>
+              <button
+                type="button"
+                onClick={() => jumpTo("section-meta")}
+                className="underline decoration-signal-400/30 underline-offset-2 transition-colors hover:text-signal-200 hover:decoration-signal-300"
+              >
+                {t("report.teaserMeta")}
+              </button>
+            </p>
 
             {/*
               Brief §3 — the ONE canonical disclaimer, shown once here, right
