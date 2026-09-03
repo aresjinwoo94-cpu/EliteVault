@@ -841,7 +841,7 @@ export const BLOG_POSTS: BlogPost[] = [
     excerpt:
       "Average Meta ecommerce ROAS sits near 2.87x. The tools that actually move it, by category — and why more spend almost never fixes a stuck number.",
     bodyHtml: `
-<p class="lede">The best Shopify tools to increase ROAS in 2026 fall into four buckets: server-side tracking and first-party data, attribution, ad optimization, and on-site CRO. With average Meta ecommerce ROAS around 2.87x in one 2026 analysis (Zentric Digital), the leverage isn't more spend — it's fixing the tracking and the store that receives the click. Here's what's worth it.</p>
+<p class="lede">The best Shopify tools to increase ROAS in 2026 fall into four buckets: server-side tracking, attribution, ad optimization, and on-site CRO. With average Meta ecommerce ROAS around 2.87x in one 2026 analysis (Zentric Digital), the leverage isn't more spend — it's fixing the tracking and the store that receives the click. Here's what's worth it.</p>
 
 <h2>What's a good ROAS for a Shopify store in 2026?</h2>
 <p>Above 3x is solid and above 4x puts you in the top quartile. One 2026 analysis by Zentric Digital puts average Meta ROAS for ecommerce at <strong>2.87x</strong>, against 2.19x across all industries — so if you're sitting at 2.5x you're near the middle of the pack, not failing.</p>
@@ -1038,7 +1038,7 @@ export const BLOG_POSTS: BlogPost[] = [
     excerpt:
       "Two Shopify Editions, 150+ updates each, and a lot of loose talk about what's free. What's actually included, what needs a paid plan, and what's still Plus-only.",
     bodyHtml: `
-<p class="lede">Shopify shipped two Editions in 2026 — Winter '26 and Spring '26, 150+ updates each. Genuinely free: Sidekick, included in every plan at no extra cost, and SimGym, free to install but charged per simulation. Checkout UI extensions? Still Plus-only for the checkout steps themselves. Here's the shortlist of new free Shopify tools in 2026 that's actually worth your time.</p>
+<p class="lede">Shopify shipped two Editions in 2026 — Winter '26 and Spring '26, 150+ updates each. Genuinely free: Sidekick, included in every plan at no extra cost, and SimGym, free to install but charged per simulation. Checkout UI extensions? Still Plus-only for the checkout steps themselves. Here's which new free Shopify tools 2026 actually delivered, and what to skip.</p>
 
 <p>A note before the list, because this topic is full of bad summaries: nearly every roundup calls all of this "free," and a lot of it isn't. Everything below was checked against Shopify's own Editions pages, Help Center and App Store listings in September 2026 — and where a third-party summary disagreed with Shopify, Shopify won.</p>
 
