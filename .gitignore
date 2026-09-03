@@ -22,3 +22,5 @@ scripts/inngest-dev.cmd
 # Logs
 *.log
 npm-debug.log*
+
+.vercel
