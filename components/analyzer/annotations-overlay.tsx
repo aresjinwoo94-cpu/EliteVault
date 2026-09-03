@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ImageOff, Layers, Maximize2, Wrench } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -109,6 +109,26 @@ export function AnnotationsOverlay({
   // The finding currently in focus: an explicit click wins over a hover.
   const focusIdx = activeIdx ?? hoverIdx;
 
+  /**
+   * The screenshot scrolls inside a capped box now, so a pin can be activated
+   * from the rail below while sitting outside the visible slice — clicking
+   * finding #7 would otherwise highlight something you can't see.
+   *
+   * ACTIVE (clicked) findings only, never hovered ones: hovering down the rail
+   * would yank the image under the cursor. `block: "nearest"` scrolls the
+   * minimum amount and only when the pin is actually out of view, so an
+   * already-visible pin doesn't move anything. No-ops if the ref is missing.
+   */
+  const pinRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  useEffect(() => {
+    if (activeIdx == null) return;
+    pinRefs.current[activeIdx]?.scrollIntoView({
+      block: "nearest",
+      inline: "nearest",
+      behavior: "smooth",
+    });
+  }, [activeIdx]);
+
   return (
     <Card className="overflow-hidden p-0">
       <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.04]">
@@ -147,15 +167,42 @@ export function AnnotationsOverlay({
 
       <div className="px-5 py-2.5 border-b border-white/[0.04] bg-champagne-400/[0.025] flex items-center gap-2">
         <Layers className="size-3 text-champagne-300" />
+        {/*
+          This said "above-the-fold capture", which was simply untrue:
+          lib/screenshot-core.ts captures with `full_page: true` (the AI reads
+          the whole funnel, so a fold-height shot would starve it). Now that the
+          image scrolls inside a capped box, the copy also has to say so.
+        */}
         <p className="text-[11px] text-white/65 leading-tight">
-          <span className="text-white">First-impression view</span>
-          <span className="text-white/40"> · This screenshot shows the
-          above-the-fold capture. The audit findings below also analyzed
-          the full page text — reviews, trust badges, FAQ, descriptions
-          and CTAs from the entire URL.</span>
+          <span className="text-white">Full-page capture</span>
+          <span className="text-white/40"> · Scroll inside the image to see the
+          whole page. The audit findings below analyzed all of it — reviews,
+          trust badges, FAQ, descriptions and CTAs from the entire URL.</span>
         </p>
       </div>
 
+      {/*
+        Three nested divs, and which one carries what is load-bearing:
+
+          outer  `relative`            positioning context for the fade ONLY
+          middle `max-h`/`overflow-y`  the scroll box. NO position, so it is
+                                       not a containing block for the pins
+          inner  `relative`            unchanged: pins, spotlight and callout
+                                       resolve their % against THIS, which is
+                                       still the image's full height
+
+        Capping the inner div instead would shrink the very box those
+        percentages resolve against, dragging every pin off its target. The cap
+        exists because the capture is full-page — often thousands of pixels —
+        so at full height it buried Buyer Persona and Meta Readiness under a
+        screenshot nobody scrolled to the end of.
+
+        Lower cap on phones: 70vh there leaves only a third of the screen, so
+        you still couldn't see that anything follows the image, which is the
+        whole point of capping it.
+      */}
+      <div className="relative">
+        <div className="max-h-[60vh] sm:max-h-[70vh] overflow-y-auto overscroll-contain">
       <div className="relative bg-obsidian-950 select-none">
         {hasImage ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -222,6 +269,9 @@ export function AnnotationsOverlay({
             return (
               <motion.button
                 key={i}
+                ref={(el) => {
+                  pinRefs.current[i] = el;
+                }}
                 type="button"
                 initial={{ opacity: 0, y: 6, scale: 0.8 }}
                 animate={{ opacity: dim ? 0.45 : 1, y: 0, scale: 1 }}
@@ -345,6 +395,17 @@ export function AnnotationsOverlay({
                 );
               })()}
           </AnimatePresence>
+        )}
+      </div>
+        </div>
+        {/*
+          Fade hint that the image continues past the cap. Lives OUTSIDE the
+          scroll box (pinned to the outer `relative`) so it stays at the bottom
+          edge instead of scrolling away with the image, and pointer-events-none
+          so it never eats a click meant for a pin.
+        */}
+        {hasImage && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-obsidian-950 to-transparent" />
         )}
       </div>
 
