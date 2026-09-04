@@ -267,23 +267,28 @@ export function AnnotationsOverlay({
             const isFocus = focusIdx === i;
             const dim = focusIdx != null && !isFocus;
             return (
-              <motion.button
+              /*
+                CENTERING AND ANIMATION LIVE ON DIFFERENT ELEMENTS, ON PURPOSE.
+
+                This used to be one motion.button carrying both: `left`/`top` in
+                %, plus an inline `transform: translate(-50%,-50%) scale(...)` to
+                pull its own centre onto that point. But the button ANIMATES `y`
+                and `scale`, and framer-motion drives `transform` from its own
+                motion values — so it overwrote the inline string and the
+                -50%/-50% silently vanished. The 44px tap target was then hung by
+                its TOP-LEFT corner on the coordinate instead of its centre, and
+                every pin sat 22px down and right of what it pointed at.
+
+                So: this static wrapper does the centering (framer never touches
+                it, because nothing here animates), and the button inside only
+                animates. Its transforms are now relative to an already-centred
+                box, so entrance and focus can scale freely without moving the
+                anchor. Coordinates, normalizeCoords, the 44px target and the
+                28px disc are all unchanged.
+              */
+              <div
                 key={i}
-                ref={(el) => {
-                  pinRefs.current[i] = el;
-                }}
-                type="button"
-                initial={{ opacity: 0, y: 6, scale: 0.8 }}
-                animate={{ opacity: dim ? 0.45 : 1, y: 0, scale: 1 }}
-                transition={{
-                  delay: 0.15 + i * 0.05,
-                  duration: 0.35,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                onClick={() => setActiveIdx(activeIdx === i ? null : i)}
-                onMouseEnter={() => setHoverIdx(i)}
-                onMouseLeave={() => setHoverIdx(null)}
-                className="absolute z-20 grid place-items-center transition-transform"
+                className="absolute z-20"
                 style={{
                   left: `${a.x * 100}%`,
                   top: `${a.y * 100}%`,
@@ -291,25 +296,57 @@ export function AnnotationsOverlay({
                   // 28px disc is the inner span so the pin still looks small.
                   width: 44,
                   height: 44,
-                  transform: `translate(-50%, -50%) scale(${isFocus ? 1.18 : 1})`,
+                  transform: "translate(-50%, -50%)",
                 }}
-                aria-label={`Issue ${i + 1}: ${a.message}`}
               >
-                <span
-                  className="grid place-items-center rounded-full text-[11px] font-semibold text-white"
-                  style={{
-                    width: 28,
-                    height: 28,
-                    background: c,
-                    border: "2px solid rgba(255,255,255,0.92)",
-                    boxShadow: isFocus
-                      ? `0 0 0 4px ${c}55, 0 4px 14px -2px rgba(0,0,0,0.6)`
-                      : "0 2px 8px -1px rgba(0,0,0,0.55)",
+                <motion.button
+                  /*
+                    The scroll-into-view ref rides the BUTTON, not the wrapper:
+                    it is `size-full` inside it, so the two rects coincide, and
+                    keeping it here means the ref type stays HTMLButtonElement.
+                  */
+                  ref={(el) => {
+                    pinRefs.current[i] = el;
                   }}
+                  type="button"
+                  initial={{ opacity: 0, y: 6, scale: 0.8 }}
+                  /*
+                    `scale` carries the focus pop that the old inline transform
+                    was trying (and failing) to apply — same 1.18, now on the
+                    axis framer actually controls, so it finally happens.
+                  */
+                  animate={{
+                    opacity: dim ? 0.45 : 1,
+                    y: 0,
+                    scale: isFocus ? 1.18 : 1,
+                  }}
+                  transition={{
+                    delay: 0.15 + i * 0.05,
+                    duration: 0.35,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  onClick={() => setActiveIdx(activeIdx === i ? null : i)}
+                  onMouseEnter={() => setHoverIdx(i)}
+                  onMouseLeave={() => setHoverIdx(null)}
+                  className="grid size-full place-items-center"
+                  aria-label={`Issue ${i + 1}: ${a.message}`}
                 >
-                  {i + 1}
-                </span>
-              </motion.button>
+                  <span
+                    className="grid place-items-center rounded-full text-[11px] font-semibold text-white"
+                    style={{
+                      width: 28,
+                      height: 28,
+                      background: c,
+                      border: "2px solid rgba(255,255,255,0.92)",
+                      boxShadow: isFocus
+                        ? `0 0 0 4px ${c}55, 0 4px 14px -2px rgba(0,0,0,0.6)`
+                        : "0 2px 8px -1px rgba(0,0,0,0.55)",
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                </motion.button>
+              </div>
             );
           })}
 
