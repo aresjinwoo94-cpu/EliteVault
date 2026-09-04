@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ImageOff, Layers, Maximize2, Wrench } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -109,6 +109,26 @@ export function AnnotationsOverlay({
   // The finding currently in focus: an explicit click wins over a hover.
   const focusIdx = activeIdx ?? hoverIdx;
 
+  /**
+   * The screenshot scrolls inside a capped box now, so a pin can be activated
+   * from the rail below while sitting outside the visible slice — clicking
+   * finding #7 would otherwise highlight something you can't see.
+   *
+   * ACTIVE (clicked) findings only, never hovered ones: hovering down the rail
+   * would yank the image under the cursor. `block: "nearest"` scrolls the
+   * minimum amount and only when the pin is actually out of view, so an
+   * already-visible pin doesn't move anything. No-ops if the ref is missing.
+   */
+  const pinRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  useEffect(() => {
+    if (activeIdx == null) return;
+    pinRefs.current[activeIdx]?.scrollIntoView({
+      block: "nearest",
+      inline: "nearest",
+      behavior: "smooth",
+    });
+  }, [activeIdx]);
+
   return (
     <Card className="overflow-hidden p-0">
       <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.04]">
@@ -147,15 +167,42 @@ export function AnnotationsOverlay({
 
       <div className="px-5 py-2.5 border-b border-white/[0.04] bg-champagne-400/[0.025] flex items-center gap-2">
         <Layers className="size-3 text-champagne-300" />
+        {/*
+          This said "above-the-fold capture", which was simply untrue:
+          lib/screenshot-core.ts captures with `full_page: true` (the AI reads
+          the whole funnel, so a fold-height shot would starve it). Now that the
+          image scrolls inside a capped box, the copy also has to say so.
+        */}
         <p className="text-[11px] text-white/65 leading-tight">
-          <span className="text-white">First-impression view</span>
-          <span className="text-white/40"> · This screenshot shows the
-          above-the-fold capture. The audit findings below also analyzed
-          the full page text — reviews, trust badges, FAQ, descriptions
-          and CTAs from the entire URL.</span>
+          <span className="text-white">Full-page capture</span>
+          <span className="text-white/40"> · Scroll inside the image to see the
+          whole page. The audit findings below analyzed all of it — reviews,
+          trust badges, FAQ, descriptions and CTAs from the entire URL.</span>
         </p>
       </div>
 
+      {/*
+        Three nested divs, and which one carries what is load-bearing:
+
+          outer  `relative`            positioning context for the fade ONLY
+          middle `max-h`/`overflow-y`  the scroll box. NO position, so it is
+                                       not a containing block for the pins
+          inner  `relative`            unchanged: pins, spotlight and callout
+                                       resolve their % against THIS, which is
+                                       still the image's full height
+
+        Capping the inner div instead would shrink the very box those
+        percentages resolve against, dragging every pin off its target. The cap
+        exists because the capture is full-page — often thousands of pixels —
+        so at full height it buried Buyer Persona and Meta Readiness under a
+        screenshot nobody scrolled to the end of.
+
+        Lower cap on phones: 70vh there leaves only a third of the screen, so
+        you still couldn't see that anything follows the image, which is the
+        whole point of capping it.
+      */}
+      <div className="relative">
+        <div className="max-h-[60vh] sm:max-h-[70vh] overflow-y-auto overscroll-contain">
       <div className="relative bg-obsidian-950 select-none">
         {hasImage ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -220,20 +267,28 @@ export function AnnotationsOverlay({
             const isFocus = focusIdx === i;
             const dim = focusIdx != null && !isFocus;
             return (
-              <motion.button
+              /*
+                CENTERING AND ANIMATION LIVE ON DIFFERENT ELEMENTS, ON PURPOSE.
+
+                This used to be one motion.button carrying both: `left`/`top` in
+                %, plus an inline `transform: translate(-50%,-50%) scale(...)` to
+                pull its own centre onto that point. But the button ANIMATES `y`
+                and `scale`, and framer-motion drives `transform` from its own
+                motion values — so it overwrote the inline string and the
+                -50%/-50% silently vanished. The 44px tap target was then hung by
+                its TOP-LEFT corner on the coordinate instead of its centre, and
+                every pin sat 22px down and right of what it pointed at.
+
+                So: this static wrapper does the centering (framer never touches
+                it, because nothing here animates), and the button inside only
+                animates. Its transforms are now relative to an already-centred
+                box, so entrance and focus can scale freely without moving the
+                anchor. Coordinates, normalizeCoords, the 44px target and the
+                28px disc are all unchanged.
+              */
+              <div
                 key={i}
-                type="button"
-                initial={{ opacity: 0, y: 6, scale: 0.8 }}
-                animate={{ opacity: dim ? 0.45 : 1, y: 0, scale: 1 }}
-                transition={{
-                  delay: 0.15 + i * 0.05,
-                  duration: 0.35,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                onClick={() => setActiveIdx(activeIdx === i ? null : i)}
-                onMouseEnter={() => setHoverIdx(i)}
-                onMouseLeave={() => setHoverIdx(null)}
-                className="absolute z-20 grid place-items-center transition-transform"
+                className="absolute z-20"
                 style={{
                   left: `${a.x * 100}%`,
                   top: `${a.y * 100}%`,
@@ -241,25 +296,57 @@ export function AnnotationsOverlay({
                   // 28px disc is the inner span so the pin still looks small.
                   width: 44,
                   height: 44,
-                  transform: `translate(-50%, -50%) scale(${isFocus ? 1.18 : 1})`,
+                  transform: "translate(-50%, -50%)",
                 }}
-                aria-label={`Issue ${i + 1}: ${a.message}`}
               >
-                <span
-                  className="grid place-items-center rounded-full text-[11px] font-semibold text-white"
-                  style={{
-                    width: 28,
-                    height: 28,
-                    background: c,
-                    border: "2px solid rgba(255,255,255,0.92)",
-                    boxShadow: isFocus
-                      ? `0 0 0 4px ${c}55, 0 4px 14px -2px rgba(0,0,0,0.6)`
-                      : "0 2px 8px -1px rgba(0,0,0,0.55)",
+                <motion.button
+                  /*
+                    The scroll-into-view ref rides the BUTTON, not the wrapper:
+                    it is `size-full` inside it, so the two rects coincide, and
+                    keeping it here means the ref type stays HTMLButtonElement.
+                  */
+                  ref={(el) => {
+                    pinRefs.current[i] = el;
                   }}
+                  type="button"
+                  initial={{ opacity: 0, y: 6, scale: 0.8 }}
+                  /*
+                    `scale` carries the focus pop that the old inline transform
+                    was trying (and failing) to apply — same 1.18, now on the
+                    axis framer actually controls, so it finally happens.
+                  */
+                  animate={{
+                    opacity: dim ? 0.45 : 1,
+                    y: 0,
+                    scale: isFocus ? 1.18 : 1,
+                  }}
+                  transition={{
+                    delay: 0.15 + i * 0.05,
+                    duration: 0.35,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  onClick={() => setActiveIdx(activeIdx === i ? null : i)}
+                  onMouseEnter={() => setHoverIdx(i)}
+                  onMouseLeave={() => setHoverIdx(null)}
+                  className="grid size-full place-items-center"
+                  aria-label={`Issue ${i + 1}: ${a.message}`}
                 >
-                  {i + 1}
-                </span>
-              </motion.button>
+                  <span
+                    className="grid place-items-center rounded-full text-[11px] font-semibold text-white"
+                    style={{
+                      width: 28,
+                      height: 28,
+                      background: c,
+                      border: "2px solid rgba(255,255,255,0.92)",
+                      boxShadow: isFocus
+                        ? `0 0 0 4px ${c}55, 0 4px 14px -2px rgba(0,0,0,0.6)`
+                        : "0 2px 8px -1px rgba(0,0,0,0.55)",
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                </motion.button>
+              </div>
             );
           })}
 
@@ -345,6 +432,17 @@ export function AnnotationsOverlay({
                 );
               })()}
           </AnimatePresence>
+        )}
+      </div>
+        </div>
+        {/*
+          Fade hint that the image continues past the cap. Lives OUTSIDE the
+          scroll box (pinned to the outer `relative`) so it stays at the bottom
+          edge instead of scrolling away with the image, and pointer-events-none
+          so it never eats a click meant for a pin.
+        */}
+        {hasImage && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-obsidian-950 to-transparent" />
         )}
       </div>
 

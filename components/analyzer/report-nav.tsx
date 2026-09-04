@@ -8,6 +8,7 @@ import {
   ScanSearch,
   MessageSquare,
   Megaphone,
+  Star,
   type LucideIcon,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -32,6 +33,16 @@ export interface ReportSection {
   id: string;
   label: string;
   Icon: LucideIcon;
+  /**
+   * Differentiators worth surfacing from the first frame.
+   *
+   * Buyer Persona and Meta Readiness are the two sections nobody else ships,
+   * and both sit at the BOTTOM of a long report — the reading order is
+   * deliberate (see analysis-view) so the fix is discovery, not reordering.
+   * These chips get a signal-tinted rest state so they read differently from
+   * the other three without shouting.
+   */
+  accent?: boolean;
 }
 
 /** The canonical five, in report order. Exported so the parent stays in sync. */
@@ -39,14 +50,37 @@ export const REPORT_SECTIONS: ReportSection[] = [
   { id: "section-growth-map", label: "Growth Map", Icon: TrendingUp },
   { id: "section-fixes", label: "Priority Fixes", Icon: Wrench },
   { id: "section-audit", label: "Annotated Audit", Icon: ScanSearch },
-  { id: "section-persona", label: "Buyer Persona", Icon: MessageSquare },
-  { id: "section-meta", label: "Meta Readiness", Icon: Megaphone },
+  {
+    id: "section-persona",
+    label: "Buyer Persona",
+    Icon: MessageSquare,
+    accent: true,
+  },
+  {
+    id: "section-meta",
+    label: "Meta Readiness",
+    Icon: Megaphone,
+    accent: true,
+  },
 ];
 
 export function ReportNav({
   sections = REPORT_SECTIONS,
+  belowTopbar = false,
 }: {
   sections?: ReportSection[];
+  /**
+   * Offset the sticky bar by the height of a fixed header above it.
+   *
+   * The authenticated report renders inside app/(app)/layout.tsx, whose
+   * AppTopbar is `sticky top-0 z-40 h-14` — so the nav has to start at 56px
+   * or it hides underneath it. The anonymous page (app/audit/[id]) renders
+   * AnalysisView with no chrome at all, so there it starts at 0.
+   *
+   * z-30 keeps the bar under that z-40 topbar while still covering report
+   * content, which carries no z-index at this level.
+   */
+  belowTopbar?: boolean;
 }) {
   const jump = useCallback((id: string) => {
     if (typeof document === "undefined") return;
@@ -55,30 +89,99 @@ export function ReportNav({
     el.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
 
+  // Fades in but does NOT slide: a `y` on a sticky element is a translate on
+  // the element whose whole job is to sit at an exact offset, so until the
+  // animation settles the bar rests that many pixels low and content shows
+  // through the gap above it. Opacity alone reads the same and the bar is
+  // pixel-exact from the first frame.
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
+      className={`sticky z-30 bg-obsidian-900 ${belowTopbar ? "top-14" : "top-0"}`}
     >
+      {/*
+        `bg-card` is opaque (#101019), so scrolled content never shows through
+        the body of the stuck bar — no backdrop-blur needed, and `.glass` is
+        reserved for nav/overlays anyway (see components/ui/card.tsx).
+
+        The wrapper repeats a background because the Card is `rounded-2xl`: the
+        two ~16px arcs it cuts out of its own top corners are transparent, and
+        while the bar is stuck that is exactly where scrolling content would
+        show through. `bg-obsidian-900` is the page ground, so the arcs read as
+        page rather than as moving content.
+      */}
       <Card className="px-4 py-3">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <span className="text-[10px] font-medium uppercase tracking-widest text-white/35">
+        <div className="flex items-center gap-x-3">
+          <span className="shrink-0 text-[10px] font-medium uppercase tracking-widest text-white/35">
             In this report
           </span>
-          <nav className="flex flex-1 flex-wrap items-center gap-1.5">
+          {/*
+            One row that scrolls sideways instead of wrapping: a wrapped bar
+            grows to two or three lines on a phone, and a sticky element that
+            tall eats the viewport it is supposed to help navigate. The
+            scrollbar itself is hidden — the chips are visibly clipped, which
+            is the affordance.
+          */}
+          {/*
+            `py-1 -my-1` buys vertical room for the focus ring: `overflow-x`
+            other than `visible` forces `overflow-y` to compute the same way,
+            so without the padding a keyboard user's ring is clipped top and
+            bottom. The negative margin gives the padding back to the layout,
+            so the bar height is unchanged.
+          */}
+          <nav className="flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto py-1 -my-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {sections.map((s, i) => (
               <button
                 key={s.id}
                 type="button"
                 onClick={() => jump(s.id)}
-                className="group inline-flex items-center gap-1.5 rounded-full border border-white/[0.07] bg-white/[0.02] px-2.5 py-1 text-[11.5px] text-white/60 transition-colors hover:border-signal-400/30 hover:bg-signal-500/[0.06] hover:text-white"
+                /*
+                  Accented and plain chips carry their OWN hover states rather
+                  than sharing one. A shared hover caps how much presence the
+                  accent can have at rest — push the fill up and it collides
+                  with hover, which is how these two ended up looking
+                  permanently pointed-at. Separate scales let the accent read
+                  loudly while every accented value still sits a step under its
+                  own hover counterpart.
+                */
+                className={`group inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11.5px] transition-colors ${
+                  s.accent
+                    ? "border-signal-400/35 bg-signal-500/[0.09] text-white/85 hover:border-signal-400/55 hover:bg-signal-500/[0.15] hover:text-white"
+                    : "border-white/[0.07] bg-white/[0.02] text-white/60 hover:border-signal-400/30 hover:bg-signal-500/[0.06] hover:text-white"
+                }`}
               >
-                <span className="grid size-4 place-items-center rounded-full bg-white/[0.05] text-[9px] font-semibold text-white/45 group-hover:bg-signal-500/15 group-hover:text-signal-200">
+                <span
+                  className={`grid size-4 place-items-center rounded-full text-[9px] font-semibold ${
+                    s.accent
+                      ? "bg-signal-500/20 text-signal-200 group-hover:bg-signal-500/30 group-hover:text-signal-100"
+                      : "bg-white/[0.05] text-white/45 group-hover:bg-signal-500/15 group-hover:text-signal-200"
+                  }`}
+                >
                   {i + 1}
                 </span>
-                <s.Icon className="size-3 text-white/40 group-hover:text-signal-300" />
+                <s.Icon
+                  className={`size-3 ${
+                    s.accent
+                      ? "text-signal-300/85 group-hover:text-signal-200"
+                      : "text-white/40 group-hover:text-signal-300"
+                  }`}
+                />
                 {s.label}
+                {/*
+                  The "don't miss this" marker. A 10px star sits under the 16px
+                  numeral badge that already sets the chip's height, so it adds
+                  a little width and no height — the bar stays one 53px row.
+                  Filled rather than outlined: at this size an outline reads as
+                  a smudge. Decorative only; the label is the accessible name.
+                */}
+                {s.accent && (
+                  <Star
+                    aria-hidden="true"
+                    className="size-2.5 shrink-0 fill-signal-300/85 text-signal-300/85 group-hover:fill-signal-200 group-hover:text-signal-200"
+                  />
+                )}
               </button>
             ))}
           </nav>
