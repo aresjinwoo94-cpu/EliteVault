@@ -17,6 +17,9 @@ import {
   type PlanFeature,
 } from "@/lib/stripe/plans";
 import { EmbeddedCheckoutForm } from "@/components/billing/embedded-checkout";
+import { ResultsBars } from "@/components/billing/results-bars";
+import { PaymentMethods } from "@/components/billing/payment-methods";
+import { CheckoutReviews } from "@/components/billing/checkout-reviews";
 import { formatCurrency } from "@/lib/utils";
 
 export const metadata = { title: "Checkout" };
@@ -170,6 +173,9 @@ export default async function CheckoutPage({
               </ul>
             </div>
 
+            {/* Survey proof — self-reported, always captioned as an estimate. */}
+            <ResultsBars />
+
             {/* Trust footer */}
             <div className="grid grid-cols-2 gap-3 text-xs text-white/45">
               <div className="flex items-center gap-2">
@@ -193,8 +199,14 @@ export default async function CheckoutPage({
               Payment is processed by Stripe. EliteVault never sees or stores
               your card details.
             </p>
+            {/* Static badge row (our chrome, outside Stripe's iframe). */}
+            <PaymentMethods />
           </div>
         </div>
+
+        {/* Social proof — renders its own separator, or nothing at all when
+            the owner's switches / the 3-review floor say so. */}
+        <CheckoutReviews />
       </div>
     </div>
   );

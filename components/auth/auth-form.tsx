@@ -153,12 +153,16 @@ export function AuthForm({
         )}
       </div>
 
+      {/* Carry the post-auth destination across the sign-up ↔ sign-in toggle.
+          Without this, a buyer who arrives from a pricing CTA
+          (/sign-up?plan=pro) and realises they already have an account loses
+          the plan and lands in the analyzer instead of checkout. */}
       <p className="mt-5 text-center text-xs text-white/40">
         {mode === "sign-in" ? (
           <>
             {t("auth.noAccountPrompt")}{" "}
             <Link
-              href="/sign-up"
+              href={`/sign-up?next=${encodeURIComponent(nextUrl)}`}
               className="text-champagne-400 hover:text-champagne-300 transition-colors"
             >
               {t("auth.signUpLink")}
@@ -168,7 +172,7 @@ export function AuthForm({
           <>
             {t("auth.haveAccountPrompt")}{" "}
             <Link
-              href="/sign-in"
+              href={`/sign-in?next=${encodeURIComponent(nextUrl)}`}
               className="text-champagne-400 hover:text-champagne-300 transition-colors"
             >
               {t("auth.signInLink")}
