@@ -112,19 +112,34 @@ export async function updateSession(request: NextRequest) {
 
   if (isApp && !user) {
     const url = request.nextUrl.clone();
+    // Preserve the FULL destination — path AND query. Sending only `path`
+    // dropped ?plan=&interval=, so a signed-out visitor who clicked a
+    // checkout link (pricing CTA, analyzer paywall, recovery email) signed
+    // in and landed on a checkout with no plan, which bounces to /pricing.
+    const dest = `${path}${request.nextUrl.search}`;
     url.pathname = "/sign-in";
-    url.searchParams.set("next", path);
+    // Clear first: the clone still carries the destination's own params and
+    // we don't want them duplicated alongside `next`.
+    url.search = "";
+    url.searchParams.set("next", dest);
     return redirectPreservingCookies(url);
   }
 
   if (isAuth && user) {
     const url = request.nextUrl.clone();
     const explicitNext = request.nextUrl.searchParams.get("next");
-    url.pathname =
+    const target =
       explicitNext && explicitNext.startsWith("/app")
         ? explicitNext
         : "/app/analyzer";
-    url.search = "";
+    // `next` can carry a query string (…/app/checkout?plan=pro&interval=month).
+    // Assigning that to url.pathname percent-encodes the "?" into the path
+    // ("/app/checkout%3Fplan=pro") and the following url.search = "" then
+    // threw the query away — a 404 instead of the checkout they asked for.
+    // Split the two halves and assign each to its own field.
+    const q = target.indexOf("?");
+    url.pathname = q === -1 ? target : target.slice(0, q);
+    url.search = q === -1 ? "" : target.slice(q);
     return redirectPreservingCookies(url);
   }
 

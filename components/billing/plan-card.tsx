@@ -44,7 +44,12 @@ export function PlanCard({
         try {
           const res = await fetch("/api/stripe/portal", { method: "POST" });
           if (!res.ok) {
-            const j = (await res.json()) as { error?: string; detail?: string };
+            // .catch → an empty/non-JSON error body must not surface as
+            // "Unexpected end of JSON input" on top of the real failure.
+            const j = (await res.json().catch(() => ({}))) as {
+              error?: string;
+              detail?: string;
+            };
             throw new Error(j.detail ?? j.error ?? "Portal failed");
           }
           const { url } = (await res.json()) as { url: string };

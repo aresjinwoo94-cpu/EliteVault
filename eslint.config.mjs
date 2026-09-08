@@ -12,6 +12,12 @@ const eslintConfig = [
       "out/**",
       "next-env.d.ts",
       "*.tsbuildinfo",
+      // Claude Code scratch space — git worktrees of other branches live
+      // here, each with its own build output. The root ".next/**" pattern
+      // doesn't reach a nested one, so ESLint was linting stale generated
+      // chunks from a sibling checkout (39 of the 42 reported errors) —
+      // findings that belong to another branch, if anywhere.
+      ".claude/**",
     ],
   },
   ...coreWebVitals,
