@@ -7,9 +7,9 @@ import { getT } from "@/lib/i18n/server";
  * This lives in OUR page chrome, OUTSIDE the cross-origin Stripe iframe — it
  * is purely a static badge row. It does not enable anything; the real list of
  * accepted methods is `payment_method_types` in app/api/stripe/checkout/route.ts
- * (currently ["card", "cashapp", "link"], where "card" covers Visa /
- * Mastercard / Amex / Discover / Diners / JCB). Keep the two in sync: never
- * advertise a brand here that Stripe won't actually offer.
+ * (currently ["card", "amazon_pay", "cashapp", "link"], where "card" covers
+ * Visa / Mastercard / Amex / Discover / Diners / JCB). Keep the two in sync:
+ * never advertise a brand here that Stripe won't actually offer.
  *
  * The marks are hand-drawn wordmarks (inline SVG, `currentColor`) rather than
  * copies of the official brand logos — no external asset, no pixel-copy, and
@@ -26,6 +26,7 @@ const METHODS = [
   "amex",
   "discover",
   "cashapp",
+  "amazonpay",
   "link",
 ] as const;
 
@@ -39,7 +40,7 @@ interface Wordmark {
   /** viewBox width; sets the chip's aspect ratio at a fixed height. */
   width: number;
   weight: number;
-  /** Extra typographic character so the six chips don't read as one font. */
+  /** Extra typographic character so the chips don't read as one font. */
   italic?: boolean;
   tracking?: number;
 }
@@ -74,6 +75,7 @@ const WORDMARKS: Record<Method, Wordmark> = {
     tracking: 0.6,
   },
   cashapp: { label: "Cash App Pay", word: "Cash App", width: 52, weight: 700 },
+  amazonpay: { label: "Amazon Pay", word: "Amazon Pay", width: 62, weight: 700 },
   link: { label: "Link by Stripe", word: "Link", width: 26, weight: 700 },
 };
 
