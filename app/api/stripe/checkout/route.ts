@@ -1,198 +1,54 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { stripe } from "@/lib/stripe/server";
-import { getCheckoutPriceId } from "@/lib/stripe/plans";
-import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server";
-import { absoluteUrl } from "@/lib/utils";
-import { inngest } from "@/inngest/client";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createEmbeddedCheckoutSession } from "@/lib/stripe/checkout-session";
 
 const Body = z.object({
   plan: z.enum(["pro", "scale"]),
   interval: z.enum(["month", "year"]),
 });
 
+/**
+ * Embedded Checkout session endpoint.
+ *
+ * The session-building logic moved to lib/stripe/checkout-session.ts so the
+ * /app/checkout page can start the same work during its SERVER render instead
+ * of waiting for the client to hydrate and fetch. This route keeps its exact
+ * request/response contract for any caller that still wants the HTTP path.
+ *
+ * createEmbeddedCheckoutSession never throws — it returns a discriminated
+ * union — so the previous catch-all that turned Stripe SDK throws into empty
+ * 500s (and "Unexpected end of JSON input" on the client) is no longer needed
+ * here; the same logging and error shape live in the shared module.
+ */
 export async function POST(req: NextRequest) {
-  try {
-    return await handleCheckout(req);
-  } catch (err) {
-    // v3.9.4 — catch-all so a Stripe SDK throw NEVER produces an empty
-    // response. Before this, `stripe.checkout.sessions.create` errors
-    // (most commonly "No such price" when Live keys are mixed with Test
-    // price IDs) bubbled up unhandled — Next.js returned a generic 500
-    // with HTML or empty body, and the client got
-    // "Failed to execute 'json' on 'Response': Unexpected end of JSON input"
-    // (which is what the user just hit).
-    const msg = err instanceof Error ? err.message : "checkout_failed";
-    const code =
-      err instanceof Error && "code" in err
-        ? (err as unknown as { code?: string }).code
-        : undefined;
-    const detail =
-      err instanceof Error && "raw" in err
-        ? (err as unknown as { raw?: { message?: string } }).raw?.message
-        : undefined;
-    console.error("[stripe/checkout] failed:", { msg, code, detail });
-    return NextResponse.json(
-      {
-        error: code ?? "checkout_failed",
-        detail: detail ?? msg,
-      },
-      { status: 500 },
-    );
-  }
-}
-
-async function handleCheckout(req: NextRequest) {
   const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
 
-  const parsed = Body.safeParse(await req.json());
+  const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
   const { plan, interval } = parsed.data;
 
-  const price = getCheckoutPriceId(plan, interval);
-  if (!price) {
+  const result = await createEmbeddedCheckoutSession({
+    userId: user.id,
+    userEmail: user.email ?? null,
+    plan,
+    interval,
+  });
+
+  if (!result.ok) {
     return NextResponse.json(
-      { error: "price_not_configured", detail: `Set STRIPE_PRICE_${plan.toUpperCase()}_${interval === "month" ? "MONTHLY" : "YEARLY"}` },
-      { status: 500 },
+      { error: result.error, detail: result.detail },
+      { status: result.status },
     );
   }
 
-  // Ensure Stripe customer exists (idempotent)
-  const service = createSupabaseServiceClient();
-  const { data: profile } = await service
-    .from("profiles")
-    .select("stripe_customer_id, email, full_name")
-    .eq("id", user.id)
-    .single();
-
-  let customerId = profile?.stripe_customer_id ?? null;
-
-  // v3.9.5 — auto-heal stale customer IDs. The profile may hold a
-  // stripe_customer_id created in TEST mode that doesn't exist now that
-  // we're using LIVE keys (or vice-versa). Probe the customer first; if
-  // Stripe says resource_missing, drop the stale ID and create a fresh
-  // customer below. Without this, the upgrade flow hard-fails for every
-  // user whose customer was provisioned in the previous mode.
-  if (customerId) {
-    try {
-      const existing = await stripe.customers.retrieve(customerId);
-      // Customers can be "deleted" without being missing; treat as stale too.
-      if ((existing as { deleted?: boolean }).deleted) {
-        customerId = null;
-      }
-    } catch (err) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const code = (err as any)?.code as string | undefined;
-      if (code === "resource_missing") {
-        customerId = null;
-      } else {
-        throw err;
-      }
-    }
-  }
-
-  if (!customerId) {
-    const customer = await stripe.customers.create({
-      email: profile?.email ?? user.email ?? undefined,
-      name: profile?.full_name ?? undefined,
-      metadata: { supabase_user_id: user.id },
-    });
-    customerId = customer.id;
-    await service
-      .from("profiles")
-      .update({ stripe_customer_id: customerId })
-      .eq("id", user.id);
-  }
-
-  // Plan-aware label so the checkout page reflects what they're buying.
-  // Stripe shows the line-item name from the Price/Product config in the
-  // Dashboard — these custom_text strings add EliteVault-specific copy
-  // ABOVE and BELOW the standard payment fields.
-  const planLabel = plan === "pro" ? "Pro" : "Scale";
-  const trialLine =
-    plan === "scale"
-      ? "Includes Meta Campaign Scenario Modeler + Meta Ads optimizer + REST API."
-      : "Includes the full Analyzer + Library + Community publishing.";
-
-  // v3.8.3 — switched from Hosted Checkout (ui_mode default) to Embedded
-  // Checkout (ui_mode: "embedded"). The session now returns a
-  // `client_secret` that the client-side EmbeddedCheckout component
-  // mounts inside our dark-themed wrapper at /app/checkout. Stripe still
-  // owns PCI compliance + the actual payment form, but we own the
-  // surrounding page chrome.
-  //
-  // success_url/cancel_url are replaced by a single return_url that
-  // both successful and canceled checkouts hit. We disambiguate in
-  // /app/checkout/return based on the retrieved session's status.
-  const session = await stripe.checkout.sessions.create({
-    ui_mode: "embedded",
-    mode: "subscription",
-    customer: customerId,
-    line_items: [{ price, quantity: 1 }],
-    return_url: absoluteUrl(
-      "/app/checkout/return?session_id={CHECKOUT_SESSION_ID}",
-    ),
-    allow_promotion_codes: true,
-    billing_address_collection: "auto",
-
-    // Explicit payment methods — Stripe SHOULD auto-detect from the
-    // dashboard config, but for Embedded Checkout sessions some accounts
-    // only show a subset (Amazon Pay + Link) unless we name the methods
-    // explicitly. Including "card" enables BOTH the regular card form
-    // AND Google Pay / Apple Pay wallets (Stripe surfaces them as express
-    // checkout buttons IF the user's browser supports the wallet AND the
-    // domain is registered in Stripe Dashboard for the wallet).
-    payment_method_types: ["card", "amazon_pay", "cashapp", "link"],
-
-    // Locale follows the user's browser language.
-    locale: "auto",
-
-    // Embedded checkout still respects custom_text. Less critical now
-    // that the page is fully ours, but keeps the upgrade-context copy
-    // consistent if Stripe shows it.
-    custom_text: {
-      submit: {
-        message: `You're upgrading to EliteVault ${planLabel}. ${trialLine}`,
-      },
-    },
-
-    customer_update: {
-      name: "auto",
-      address: "auto",
-    },
-
-    subscription_data: {
-      metadata: { supabase_user_id: user.id, plan },
-      description: `EliteVault ${planLabel} — ${interval === "year" ? "annual" : "monthly"} subscription`,
-    },
-    metadata: { supabase_user_id: user.id, plan },
-  });
-
-  // Abandoned-checkout recovery (Part 2). Additive and best-effort: emit a
-  // `checkout/started` event so the Inngest sequence can email the user if they
-  // don't complete payment. Gated by CHECKOUT_RECOVERY_ENABLED (default off).
-  // Wrapped so a failed emit NEVER breaks the checkout — the outer catch-all
-  // would turn it into a 500 and block the upgrade.
-  if (process.env.CHECKOUT_RECOVERY_ENABLED === "true") {
-    try {
-      await inngest.send({
-        name: "checkout/started",
-        data: {
-          sessionId: session.id,
-          userId: user.id,
-          email: profile?.email ?? user.email ?? "",
-          plan,
-          interval,
-        },
-      });
-    } catch (err) {
-      console.error("[stripe/checkout] recovery emit failed:", err);
-    }
-  }
-
-  return NextResponse.json({ client_secret: session.client_secret });
+  return NextResponse.json({ client_secret: result.clientSecret });
 }

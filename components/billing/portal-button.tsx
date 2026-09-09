@@ -17,8 +17,15 @@ export function PortalButton({
       try {
         const res = await fetch("/api/stripe/portal", { method: "POST" });
         if (!res.ok) {
-          const j = (await res.json()) as { error?: string };
-          throw new Error(j.error ?? "Portal failed");
+          // /api/stripe/portal puts the actionable sentence in `detail`
+          // ("The Stripe Customer Portal isn't set up yet…"); `error` is only
+          // a machine code. Prefer detail so the toast tells the user what to
+          // do — matches how plan-card.tsx reads the same endpoint.
+          const j = (await res.json().catch(() => ({}))) as {
+            error?: string;
+            detail?: string;
+          };
+          throw new Error(j.detail ?? j.error ?? "Portal failed");
         }
         const { url } = (await res.json()) as { url: string };
         window.location.href = url;

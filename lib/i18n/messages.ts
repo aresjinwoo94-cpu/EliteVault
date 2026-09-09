@@ -574,6 +574,20 @@ const en: Dict = {
     photoRemove: "Remove photo",
     photoSaveFirst: "Save your review first to add photos.",
   },
+  checkout: {
+    safePayments: "Guaranteed safe & encrypted checkout",
+    resultsHeading: "What users report after fixing what EliteVault found",
+    resultsRoas: "increased their Meta Ads ROAS",
+    resultsCpp: "lowered their cost per purchase by retaining more traffic",
+    // {n} is the survey respondent count. When it's unknown the whole
+    // "(n = …)" fragment is dropped and only the disclaimer survives — see
+    // resultsCaptionNoN.
+    resultsCaption:
+      "Based on our user survey (n = {n}). Self-reported results — an estimate, not a guarantee.",
+    resultsCaptionNoN:
+      "Based on our user survey. Self-reported results — an estimate, not a guarantee.",
+    reviewsHeading: "Trusted by ecommerce founders",
+  },
   lang: {
     label: "Language",
     en: "English",
@@ -1299,6 +1313,18 @@ const es: Dict = {
     photoUploading: "Subiendo…",
     photoRemove: "Quitar foto",
     photoSaveFirst: "Guarda tu reseña primero para poder añadir fotos.",
+  },
+  checkout: {
+    safePayments: "Pago 100% seguro y encriptado",
+    resultsHeading:
+      "Lo que reportan los usuarios tras aplicar lo que EliteVault encontró",
+    resultsRoas: "aumentaron su ROAS en Meta Ads",
+    resultsCpp: "redujeron su costo por compra reteniendo más tráfico",
+    resultsCaption:
+      "Según nuestra encuesta a usuarios (n = {n}). Resultados auto-reportados — estimación, no una garantía.",
+    resultsCaptionNoN:
+      "Según nuestra encuesta a usuarios. Resultados auto-reportados — estimación, no una garantía.",
+    reviewsHeading: "Con la confianza de founders de ecommerce",
   },
   lang: {
     label: "Idioma",

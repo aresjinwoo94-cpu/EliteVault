@@ -75,13 +75,13 @@ export const PLANS: Record<PlanTier, Plan> = {
     quotas: { analysesPerMonth: 1, trackedNiches: 1, metaRunsPerMonth: 0 },
     features: [
       { text: "1 free audit: score + annotated screenshot", included: true, highlight: true },
-      { text: "Your #1 priority fix — unlocked & actionable", included: true, highlight: true },
-      { text: "3 hand-picked winners with full metrics", included: true },
+      { text: "Your #1 highest-impact fix — unlocked & actionable", included: true, highlight: true },
+      { text: "3 hand-picked winning stores with full metrics", included: true },
       { text: "Browse the Community feed", included: true },
       { text: "The rest of your ranked fixes + buyer-persona simulation", included: false },
-      { text: "AI image + text search across 45+ stores", included: false },
+      { text: "AI image & text search across 45+ stores", included: false },
       { text: "Unlimited audits + publish to Community", included: false },
-      { text: "Meta Campaign Scenario Modeler + Ads optimizer + API", included: false },
+      { text: "Meta Scenario Modeler + Ads optimizer + API", included: false },
     ],
   },
   pro: {
@@ -105,21 +105,25 @@ export const PLANS: Record<PlanTier, Plan> = {
     highlight: true,
     features: [
       { text: "Everything in Free", included: true },
-      { text: "Unlimited Library + full metrics", included: true },
+      { text: "Unlimited Library with full metrics", included: true },
       { text: "Image-similarity search", included: true },
       {
-        text: "Website Analyzer with annotated screenshots",
+        text: "Full Website Analyzer with annotated screenshots",
         included: true,
         highlight: true,
       },
-      { text: "Buyer-Persona simulations", included: true },
-      { text: "40 analyses / month", included: true },
-      { text: "Publish to Community + Compare Mode", included: true },
+      { text: "Buyer-persona simulations (all your ranked fixes)", included: true },
+      // Order matters: checkout and plan-card render only the first SIX
+      // included features (.slice(0, 6)), so this highlighted Pro→Scale
+      // bridge has to sit inside that window — below "40 analyses / month"
+      // it was visible on /pricing only.
       {
         text: "1 Meta campaign projection / month",
         included: true,
         highlight: true,
       },
+      { text: "40 analyses / month", included: true },
+      { text: "Publish to Community + Compare Mode", included: true },
       { text: "Unlimited Meta projections + Ads optimizer + REST API", included: false },
     ],
   },
@@ -144,7 +148,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     features: [
       { text: "Everything in Pro", included: true },
       {
-        text: "Meta Campaign Scenario Modeler: 7-day, 3-scenario AI projection",
+        text: "Meta Scenario Modeler: 7-day, 3-scenario AI projection",
         included: true,
         highlight: true,
       },

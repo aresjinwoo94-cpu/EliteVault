@@ -17,6 +17,10 @@ import {
   type PlanFeature,
 } from "@/lib/stripe/plans";
 import { EmbeddedCheckoutForm } from "@/components/billing/embedded-checkout";
+import { createEmbeddedCheckoutSession } from "@/lib/stripe/checkout-session";
+import { ResultsBars } from "@/components/billing/results-bars";
+import { PaymentMethods } from "@/components/billing/payment-methods";
+import { CheckoutReviews } from "@/components/billing/checkout-reviews";
 import { formatCurrency } from "@/lib/utils";
 
 export const metadata = { title: "Checkout" };
@@ -63,6 +67,20 @@ export default async function CheckoutPage({
 
   const plan = PLANS[planId];
   const price = plan.price[interval];
+
+  // Deliberately NOT awaited. Starting the Stripe session here gets the
+  // customer probe + session create in flight at request time, overlapping the
+  // document response instead of waiting for the client bundle to hydrate and
+  // fetch. The promise is handed to a client component that unwraps it under
+  // Suspense, so everything else on this page paints immediately.
+  // createEmbeddedCheckoutSession never rejects — a rejected promise crossing
+  // the server/client boundary would take the page down.
+  const sessionPromise = createEmbeddedCheckoutSession({
+    userId: user.id,
+    userEmail: user.email ?? null,
+    plan: planId,
+    interval,
+  });
 
   return (
     <div className="min-h-screen bg-obsidian-950">
@@ -170,17 +188,31 @@ export default async function CheckoutPage({
               </ul>
             </div>
 
-            {/* Trust footer */}
-            <div className="grid grid-cols-2 gap-3 text-xs text-white/45">
-              <div className="flex items-center gap-2">
-                <Shield className="size-3.5 text-white/30" />
+            {/* Survey proof — self-reported, always captioned as an estimate. */}
+            <ResultsBars />
+
+            {/*
+              Trust footer. Previously a `grid grid-cols-2`, which forced two
+              equal columns onto two very unequal strings — leaving a big gap
+              after "Cancel anytime", and letting "Credits load instantly" wrap
+              under its own vertically-centred icon. Sizing each item to its
+              content and pinning the icon to the first text line keeps them
+              aligned at every width.
+            */}
+            <div className="flex flex-wrap items-start gap-x-6 gap-y-2 text-xs text-white/45">
+              <span className="inline-flex items-start gap-2">
+                <Shield className="size-3.5 shrink-0 mt-px text-white/30" />
                 Cancel anytime
-              </div>
-              <div className="flex items-center gap-2">
-                <Zap className="size-3.5 text-white/30" />
+              </span>
+              <span className="inline-flex items-start gap-2">
+                <Zap className="size-3.5 shrink-0 mt-px text-white/30" />
                 Credits load instantly
-              </div>
+              </span>
             </div>
+
+            {/* Accepted methods — our own chrome, outside Stripe's iframe.
+                Sits with the rest of the reassurance copy in this column. */}
+            <PaymentMethods />
           </div>
 
           {/* RIGHT — Stripe Embedded Checkout */}
@@ -188,13 +220,21 @@ export default async function CheckoutPage({
             <p className="text-[11px] uppercase tracking-widest text-white/40 mb-3">
               Payment
             </p>
-            <EmbeddedCheckoutForm plan={planId} interval={interval} />
+            <EmbeddedCheckoutForm
+              plan={planId}
+              interval={interval}
+              sessionPromise={sessionPromise}
+            />
             <p className="mt-4 text-xs text-white/30 text-center leading-relaxed">
               Payment is processed by Stripe. EliteVault never sees or stores
               your card details.
             </p>
           </div>
         </div>
+
+        {/* Social proof — renders its own separator, or nothing at all when
+            the owner's switches / the 3-review floor say so. */}
+        <CheckoutReviews />
       </div>
     </div>
   );
