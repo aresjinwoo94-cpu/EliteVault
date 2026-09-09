@@ -141,20 +141,20 @@ async function handleCheckout(req: NextRequest) {
 
     // Explicit payment methods — Stripe SHOULD auto-detect from the
     // dashboard config, but for Embedded Checkout sessions some accounts
-    // only show a subset unless we name the methods explicitly.
-    // Including "card" enables BOTH the regular card form AND Google Pay /
-    // Apple Pay wallets (Stripe surfaces them as express checkout buttons
-    // IF the user's browser supports the wallet AND the domain is
-    // registered in Stripe Dashboard for the wallet).
+    // only show a subset (Amazon Pay + Link) unless we name the methods
+    // explicitly. Including "card" enables BOTH the regular card form
+    // AND Google Pay / Apple Pay wallets (Stripe surfaces them as express
+    // checkout buttons IF the user's browser supports the wallet AND the
+    // domain is registered in Stripe Dashboard for the wallet).
     //
-    // "amazon_pay" was REMOVED: Amazon Pay isn't fully activated for this
-    // account/domain, so Stripe rendered its express button with a broken
-    // logo image inside the (cross-origin) Embedded Checkout iframe — which
-    // our CSS/DOM can't reach or repair. Link + card + Cash App Pay cover
-    // the same ground. To bring it back, first complete Amazon Pay
-    // activation and register the payment-method domain in the Stripe
-    // Dashboard, then re-add it here AND in app/actions/blocks-export.ts.
-    payment_method_types: ["card", "cashapp", "link"],
+    // "amazon_pay" was briefly removed while its express button rendered a
+    // broken logo — the cause was Dashboard-side, not code (Amazon Pay not
+    // fully activated + the payment-method domain unregistered), and our CSS
+    // can't reach inside Stripe's cross-origin iframe to patch it. Both are
+    // now done for elitevaultapp.com, so it's back on. If the broken logo
+    // ever returns, check that activation and the domain registration are
+    // still in place before touching this array.
+    payment_method_types: ["card", "amazon_pay", "cashapp", "link"],
 
     // Locale follows the user's browser language.
     locale: "auto",
