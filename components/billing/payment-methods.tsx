@@ -6,10 +6,14 @@ import { getT } from "@/lib/i18n/server";
  *
  * This lives in OUR page chrome, OUTSIDE the cross-origin Stripe iframe — it
  * is purely a static badge row. It does not enable anything; the real list of
- * accepted methods is `payment_method_types` in app/api/stripe/checkout/route.ts
- * (currently ["card", "amazon_pay", "cashapp", "link"], where "card" covers
- * Visa / Mastercard / Amex / Discover / Diners / JCB). Keep the two in sync:
- * never advertise a brand here that Stripe won't actually offer.
+ * accepted methods is `payment_method_types` in
+ * lib/stripe/checkout-session.ts (currently
+ * ["card", "amazon_pay", "cashapp", "link"], where "card" covers Visa /
+ * Mastercard / Amex / Discover / Diners / JCB). Keep the two in sync: never
+ * advertise a brand here that Stripe won't actually offer.
+ *
+ * Left-aligned: it renders in the checkout's LEFT column alongside the plan
+ * summary and the "cancel anytime" trust copy, not under the Stripe iframe.
  *
  * The marks are hand-drawn wordmarks (inline SVG, `currentColor`) rather than
  * copies of the official brand logos — no external asset, no pixel-copy, and
@@ -112,12 +116,12 @@ function BrandMark({ method }: { method: Method }) {
 export async function PaymentMethods() {
   const { t } = await getT();
   return (
-    <div className="mt-5">
-      <p className="flex items-center justify-center gap-1.5 text-[11px] uppercase tracking-widest text-white/40">
+    <div>
+      <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-white/40">
         <Lock className="size-3" aria-hidden="true" />
         {t("checkout.safePayments")}
       </p>
-      <ul className="mt-3 flex flex-wrap items-center justify-center gap-1.5">
+      <ul className="mt-3 flex flex-wrap items-center gap-1.5">
         {METHODS.map((m) => (
           <li
             key={m}
