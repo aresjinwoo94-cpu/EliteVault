@@ -256,9 +256,9 @@ async function doStartExportCheckout(
         purchase: "liquid_export",
       },
       // Kept in lockstep with app/api/stripe/checkout/route.ts — "amazon_pay"
-      // is out until Amazon Pay is fully activated for this account/domain
-      // (it rendered a broken logo inside Stripe's iframe).
-      payment_method_types: ["card", "cashapp", "link"],
+      // is back now that Amazon Pay is activated and elitevaultapp.com is
+      // registered under Stripe's Payment method domains.
+      payment_method_types: ["card", "amazon_pay", "cashapp", "link"],
       locale: "auto",
     });
 
