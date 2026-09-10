@@ -72,6 +72,7 @@ test("email builder produces a valid recovery email for every step", () => {
     const { subject, html } = buildAbandonedCheckout({
       plan: "pro",
       price: 19,
+      interval: "month",
       recoveryUrl: "https://elitevaultapp.com/app/checkout?plan=pro&interval=month",
       unsubscribeUrl: "https://elitevaultapp.com/api/email/unsubscribe?sid=cs_1&t=abc",
       step,
@@ -94,6 +95,7 @@ test("step 3 is short — it drops the feature/price detail block", () => {
   const opts = {
     plan: "scale" as const,
     price: 29,
+    interval: "month" as const,
     recoveryUrl: "https://x/app/checkout?plan=scale&interval=month",
     unsubscribeUrl: "https://x/api/email/unsubscribe?sid=cs_1&t=abc",
     appUrl: "https://x",
@@ -102,4 +104,40 @@ test("step 3 is short — it drops the feature/price detail block", () => {
   const s3 = buildAbandonedCheckout({ ...opts, step: 3 });
   assert.ok(s1.html.includes("WHAT SCALE UNLOCKS"));
   assert.ok(!s3.html.includes("WHAT SCALE UNLOCKS"));
+});
+
+const BASE_OPTS = {
+  plan: "pro" as const,
+  recoveryUrl: "https://x/app/checkout?plan=pro&interval=year",
+  unsubscribeUrl: "https://x/api/email/unsubscribe?sid=cs_1&t=abc",
+  appUrl: "https://x",
+  step: 1 as const,
+};
+
+test("an annual checkout is priced per year, never '/mo'", () => {
+  const { html, text } = buildAbandonedCheckout({
+    ...BASE_OPTS,
+    price: 180,
+    interval: "year",
+  });
+  assert.ok(html.includes("$180/yr"));
+  assert.ok(text.includes("$180/yr"));
+  assert.ok(!html.includes("/mo"));
+  assert.ok(!text.includes("/mo"));
+});
+
+test("email uses the sign-in brand palette and Outlook-safe markup", () => {
+  const { html } = buildAbandonedCheckout({
+    ...BASE_OPTS,
+    price: 19,
+    interval: "month",
+  });
+  assert.ok(html.includes("#2DD4BF"), "brand teal");
+  assert.ok(html.includes("#06060a") && html.includes("#0a0a0f"), "brand blacks");
+  assert.ok(!/#5AE7D0|#070D0B|#0B1512/i.test(html), "no legacy green palette");
+  assert.ok(html.includes('<meta name="color-scheme" content="dark" />'));
+  assert.ok(html.includes('<meta name="supported-color-schemes" content="dark" />'));
+  assert.ok(!html.includes("transform"), "no CSS transform on the logo");
+  assert.ok(html.includes("<v:roundrect"), "VML button fallback for Outlook");
+  assert.ok(html.includes('width="520"'), "fixed card width for Outlook");
 });

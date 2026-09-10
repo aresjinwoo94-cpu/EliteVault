@@ -94,11 +94,14 @@ async function sendRecoveryStep(
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
   const recoveryUrl = `${appUrl}/app/checkout?plan=${plan}&interval=${interval}`;
   const unsubscribeUrl = buildUnsubscribeUrl(sessionId, appUrl);
-  const price = PLANS[plan]?.price.month ?? 0;
+  // Price for the interval they actually abandoned — an annual checkout must
+  // not be told "$19/mo".
+  const price = PLANS[plan]?.price[interval] ?? 0;
 
   const { subject, html, text } = buildAbandonedCheckout({
     plan,
     price,
+    interval,
     recoveryUrl,
     unsubscribeUrl,
     step: stepNo,
