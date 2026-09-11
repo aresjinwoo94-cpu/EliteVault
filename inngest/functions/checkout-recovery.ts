@@ -7,7 +7,11 @@ import {
 } from "@/lib/email/abandoned-checkout";
 import { buildUnsubscribeUrl } from "@/lib/email/unsubscribe";
 import { PLANS } from "@/lib/stripe/plans";
-import { decideRecoveryAction } from "@/lib/checkout/recovery-logic";
+import {
+  decideRecoveryAction,
+  summarizeSiblingSequences,
+  type SiblingSequence,
+} from "@/lib/checkout/recovery-logic";
 
 /**
  * Abandoned-checkout recovery (Part 2). Fired by `checkout/started` when a user
@@ -65,12 +69,30 @@ async function sendRecoveryStep(
 
   const { data: row } = await service
     .from("checkout_recovery")
-    .select("status, emails_sent")
+    .select("status, emails_sent, created_at")
     .eq("session_id", sessionId)
     .single();
   const r = row as
-    | { status?: "pending" | "recovered" | "unsubscribed"; emails_sent?: number }
+    | {
+        status?: "pending" | "recovered" | "unsubscribed";
+        emails_sent?: number;
+        created_at?: string;
+      }
     | null;
+
+  // The user's other sequences — send-time dedupe + cross-sequence unsubscribe
+  // (see summarizeSiblingSequences). Runs inside this step, so sequences
+  // already sleeping in Inngest pick it up on their next step. A failed read
+  // yields no siblings, i.e. the pre-dedupe behaviour.
+  const { data: others } = await service
+    .from("checkout_recovery")
+    .select("session_id, status, created_at")
+    .eq("user_id", userId)
+    .neq("session_id", sessionId);
+  const siblings = summarizeSiblingSequences(
+    { sessionId, createdAt: r?.created_at ?? "" },
+    (others as SiblingSequence[] | null) ?? [],
+  );
 
   // Pure decision (unit-tested in recovery-logic).
   const decision = decideRecoveryAction(
@@ -79,6 +101,7 @@ async function sendRecoveryStep(
       hasActiveSubscription,
       rowStatus: r?.status ?? null,
       emailsSent: r?.emails_sent ?? 0,
+      ...siblings,
     },
     stepNo,
   );
@@ -94,11 +117,14 @@ async function sendRecoveryStep(
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
   const recoveryUrl = `${appUrl}/app/checkout?plan=${plan}&interval=${interval}`;
   const unsubscribeUrl = buildUnsubscribeUrl(sessionId, appUrl);
-  const price = PLANS[plan]?.price.month ?? 0;
+  // Price for the interval they actually abandoned — an annual checkout must
+  // not be told "$19/mo".
+  const price = PLANS[plan]?.price[interval] ?? 0;
 
   const { subject, html, text } = buildAbandonedCheckout({
     plan,
     price,
+    interval,
     recoveryUrl,
     unsubscribeUrl,
     step: stepNo,

@@ -186,16 +186,35 @@ export async function createEmbeddedCheckoutSession({
     // off). Wrapped so a failed emit NEVER breaks the checkout.
     if (process.env.CHECKOUT_RECOVERY_ENABLED === "true") {
       try {
-        await inngest.send({
-          name: "checkout/started",
-          data: {
-            sessionId: session.id,
-            userId,
-            email: p?.email ?? userEmail ?? "",
-            plan,
-            interval,
-          },
-        });
+        // One sequence per user, not per session. Every render of
+        // /app/checkout creates a NEW Stripe session and checkout_recovery is
+        // keyed by session_id, so without this guard each reload started its
+        // own 3-email sequence (3 reloads → up to 9 emails). Skip the emit
+        // while a pending sequence from the last 72h (the sequence's length)
+        // already exists. The row is written by the Inngest `register` step,
+        // so a reload within a second or two of the first can still slip
+        // through; ordinary reloads are caught.
+        const since = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
+        const { data: existing } = await service
+          .from("checkout_recovery")
+          .select("session_id")
+          .eq("user_id", userId)
+          .eq("status", "pending")
+          .gte("created_at", since)
+          .limit(1);
+
+        if (!existing || existing.length === 0) {
+          await inngest.send({
+            name: "checkout/started",
+            data: {
+              sessionId: session.id,
+              userId,
+              email: p?.email ?? userEmail ?? "",
+              plan,
+              interval,
+            },
+          });
+        }
       } catch (err) {
         console.error("[stripe/checkout] recovery emit failed:", err);
       }
