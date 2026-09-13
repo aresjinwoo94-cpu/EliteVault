@@ -245,6 +245,9 @@ export function shouldHedge({
  * ON by default at 25s, which is the change of behaviour here — see the long
  * note on `callCapMs`. 25s sits above the measured fast band (a third of calls
  * finish under 15s) and still leaves the rest of a 50s step for a second try.
+ * It only applies while at least 2×cap of budget remains (see callCapMs), so
+ * it never caps the analyzer's vision call: that step downloads the screenshot
+ * first and starts the call with a little under 50s left.
  *
  * Projected from the same 15 samples the hedge was sized on: step completion is
  * about unchanged (~72% vs 73%), while the share finishing within 30s goes from
@@ -293,6 +296,11 @@ export function firstFulfilled<T>(a: Promise<T>, b: Promise<T>): Promise<T> {
  *     after the hedge delay.
  *   • Only a usable answer wins (`isUsable`). An empty or truncated hedge answer
  *     must not abort a primary that may still answer properly.
+ *   • A FINAL primary answer (`isFinal`) ends the race at once even though it
+ *     isn't usable, and aborts the hedge. That is for answers the hedge can't
+ *     improve on: a truncated one is recovered by retrying with a wider token
+ *     ceiling, and the hedge runs with the same ceiling, so waiting for it only
+ *     delays that retry (past the deadline, in the worst case).
  *   • When neither side wins, the result is exactly the PRIMARY's outcome (its
  *     error, or its unusable answer), never the hedge's. The ladder attributes
  *     what it gets to the primary key: a hedge key's 429 surfacing here would
@@ -310,12 +318,15 @@ export function hedgedCall<R>({
   hedge,
   parent,
   isUsable = () => true,
+  isFinal = () => false,
 }: {
   hedgeAfterMs: number;
   primary: (signal: AbortSignal) => Promise<R>;
   hedge: (signal: AbortSignal) => Promise<R> | null;
   parent?: AbortSignal;
   isUsable?: (result: R) => boolean;
+  /** A primary answer that ends the race even though it isn't usable. */
+  isFinal?: (result: R) => boolean;
 }): Promise<R> {
   if (parent?.aborted) return Promise.reject(parent.reason);
 
@@ -337,8 +348,10 @@ export function hedgedCall<R>({
   } catch (err) {
     first = Promise.reject(err);
   }
-  // …which only counts as a win when it is usable.
-  const firstWin = first.then(winOnlyIfUsable);
+  // …which ends the race when it is usable, or final (see isFinal).
+  const firstWin = first.then((r) =>
+    isUsable(r) || isFinal(r) ? r : Promise.reject(unusable()),
+  );
 
   let timer: ReturnType<typeof setTimeout> | undefined;
   let hedgeStarted = false;
@@ -594,11 +607,14 @@ async function generateStructured<T>(
    * raises on purpose. It shows up in AI Studio metrics and in the
    * "[gemini] … hedging onto key" log. It does NOT add `usage_events` rows:
    * only the answer we use is metered (reportUsage), and the aborted loser
-   * returns no usage metadata. So the metered row of an answer whose call was
-   * hedged carries `meta.hedged = true`: that is how the hedged share, and the
-   * roughly doubled prompt cost on it, can be counted in SQL.
+   * returns no usage metadata. So the metered row carries
+   * `meta: { hedged: true, hedges: n }`, where n counts every hedge sent while
+   * producing that answer, including hedges on earlier attempts that failed.
+   * That is how the hedged share, and the extra prompt cost on it, can be
+   * counted in SQL. (An audit whose every attempt fails writes no row at all,
+   * hedged or not.)
    */
-  const hedgedResponses = new WeakSet<object>();
+  let hedgesSent = 0;
   const callWithKey = async (
     keyIdx: number,
     model: string,
@@ -616,21 +632,23 @@ async function generateStructured<T>(
       return callOnce(keyIdx, model, maxOutputTokens);
     }
 
-    let hedgeSent = false;
-    // Explicit: with the `isUsable` callback in the object, inference falls
-    // back to `unknown` and the response type is lost for the ladder below.
-    const response = await hedgedCall<Awaited<ReturnType<typeof callOnce>>>({
+    // Explicit: with callbacks in the object, inference falls back to
+    // `unknown` and the response type is lost for the ladder below.
+    return hedgedCall<Awaited<ReturnType<typeof callOnce>>>({
       hedgeAfterMs: HEDGE_AFTER_MS,
       parent: opts.signal,
-      // An empty or cut-off answer isn't a win; the ladder below retries those.
+      // An empty or cut-off answer isn't a win; the ladder below retries those…
       isUsable: (r) => Boolean(extractText(r)) && !isTruncated(r),
+      // …but a cut-off PRIMARY ends the race: the ladder recovers it with a
+      // wider token ceiling, which the hedge (same ceiling) can't provide.
+      isFinal: (r) => isTruncated(r),
       primary: (signal) => callOnce(keyIdx, model, maxOutputTokens, signal),
       hedge: (signal) => {
         const alt = pickAvailableKey();
         // Only hedge onto a DIFFERENT key — a second call on the same one
         // shares its quota and its queue, so it isn't an independent draw.
         if (alt === null || alt === keyIdx) return null;
-        hedgeSent = true;
+        hedgesSent++;
         console.warn(
           `[gemini] ${model} key #${keyIdx + 1} slow past ${HEDGE_AFTER_MS / 1000}s — hedging onto key #${alt + 1}`,
         );
@@ -643,8 +661,6 @@ async function generateStructured<T>(
         return call;
       },
     });
-    if (hedgeSent) hedgedResponses.add(response);
-    return response;
   };
 
   // Google 503 ("model experiencing high demand") is server-side, not
@@ -731,7 +747,7 @@ async function generateStructured<T>(
               `Gemini: response truncated at the ${maxTokensForCall}-token ceiling`,
             );
           }
-          reportUsage(response, Boolean(opts.fast), hedgedResponses.has(response));
+          reportUsage(response, Boolean(opts.fast), hedgesSent);
           return parseJsonText<T>(text);
         } catch (err) {
           const raw = errMsg(err);
@@ -826,7 +842,7 @@ async function generateStructured<T>(
             "Gemini: response truncated at the token ceiling (after cooldown wait)",
           );
         }
-        reportUsage(response, Boolean(opts.fast), hedgedResponses.has(response));
+        reportUsage(response, Boolean(opts.fast), hedgesSent);
         return parseJsonText<T>(text);
       } catch (err) {
         if (is429(errMsg(err))) {
@@ -928,7 +944,7 @@ export function is503(raw: string): boolean {
  * usage_event (attributed to the active AsyncLocalStorage meter context).
  * Never throws — recordUsage is fire-and-forget.
  */
-function reportUsage(response: unknown, fast: boolean, hedged = false): void {
+function reportUsage(response: unknown, fast: boolean, hedges = 0): void {
   const u = (
     response as {
       usageMetadata?: {
@@ -944,8 +960,8 @@ function reportUsage(response: unknown, fast: boolean, hedged = false): void {
     promptTokens: u?.promptTokenCount ?? 0,
     outputTokens: u?.candidatesTokenCount ?? 0,
     totalTokens: u?.totalTokenCount ?? 0,
-    // A hedged call also sent this prompt to a second key; see callWithKey.
-    ...(hedged ? { meta: { hedged: true } } : {}),
+    // Each hedge also sent this prompt to another key; see callWithKey.
+    ...(hedges > 0 ? { meta: { hedged: true, hedges } } : {}),
   });
 }
 

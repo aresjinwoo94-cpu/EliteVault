@@ -267,6 +267,30 @@ test("an unusable hedge answer + a failing primary → the primary's error", asy
   );
 });
 
+test("a FINAL primary answer (truncated) returns at once, even after the hedge started, and aborts the hedge", async () => {
+  // The ladder's recovery for truncation is a retry with a WIDER token ceiling.
+  // The hedge runs with the primary's ceiling, so it can only truncate too;
+  // waiting for it just delays the wider retry, possibly past the deadline.
+  type Answer = { text: string; truncated?: boolean };
+  const primaryAnswer: Answer = { text: '{"half":', truncated: true };
+  let hedgeSignal: AbortSignal | undefined;
+  const started = Date.now();
+  const result = await hedgedCall<Answer>({
+    hedgeAfterMs: HEDGE_MS,
+    isUsable: (r) => r.text !== "" && !r.truncated,
+    isFinal: (r) => Boolean(r.truncated),
+    primary: (s) => fakeCall(HEDGE_MS + 20, primaryAnswer, s),
+    hedge: (s) => {
+      hedgeSignal = s;
+      return fakeCall(1_000, { text: '{"half":', truncated: true }, s);
+    },
+  });
+  assert.equal(result, primaryAnswer);
+  assert.ok(Date.now() - started < 500, `must not wait for the hedge (took ${Date.now() - started}ms)`);
+  assert.ok(hedgeSignal, "the hedge had started");
+  assert.equal(hedgeSignal.aborted, true, "…and is aborted once the primary's answer is final");
+});
+
 // ─── Factories that throw synchronously ─────────────────────────────────────
 
 test("a hedge factory that throws synchronously does not hang or crash the timer", async () => {

@@ -29,7 +29,7 @@ const geminiPath = resolve(import.meta.dirname, "../../ai/providers/gemini.ts");
 
 type Req = {
   model: string;
-  config: { thinkingConfig?: unknown; abortSignal?: AbortSignal };
+  config: { thinkingConfig?: unknown; abortSignal?: AbortSignal; maxOutputTokens?: number };
 };
 type Behaviour = (apiKey: string, signal: AbortSignal | undefined, req: Req) => Promise<unknown>;
 
@@ -215,7 +215,7 @@ test("two keys: the same slow call is hedged onto the OTHER key, which wins", as
   // The loser is invisible in usage_events (no usage metadata comes back), so
   // the winner's row is the only place the hedge's extra cost can be counted.
   assert.equal(usage.length, 1, "still one metered row per answer used");
-  assert.equal(usage[0].meta?.hedged, true, "the metered row must say a hedge fired");
+  assert.deepEqual(usage[0].meta, { hedged: true, hedges: 1 }, "the metered row must say a hedge fired");
 });
 
 test("REGRESSION: a hedge key's 429 is not pinned on the primary key", async () => {
@@ -244,6 +244,42 @@ test("REGRESSION: a hedge key's 429 is not pinned on the primary key", async () 
     "the paid audit must be answered by the paid model, not the fallback",
   );
   assert.equal(k1Calls, 2, "k1 is retried after its 503 back-off");
+  // The answer came from an un-hedged retry, but a hedge was paid for on the
+  // way. Counting only the winning call's hedge would hide exactly the hedges
+  // that went badly.
+  assert.deepEqual(usage[0].meta, { hedged: true, hedges: 1 });
+});
+
+test("REGRESSION: a truncated primary goes straight to the wider retry, without waiting for the hedge", async () => {
+  // The hedge shares the primary's 8192 ceiling, so it would truncate too.
+  // Un-fixed, this waits for the 6s hedge draw (~8s total) before the wider
+  // retry; with a deadline in play that is how a completable call fails.
+  const mod = await loadGemini({
+    GEMINI_API_KEY: "k1",
+    GEMINI_API_KEY_2: "k2",
+    GEMINI_HEDGE_AFTER_MS: "2000",
+  });
+  const TRUNCATED = {
+    text: '{"ok": tr',
+    candidates: [{ finishReason: "MAX_TOKENS" }],
+    usageMetadata: {},
+  };
+  let k1Calls = 0;
+  behaviour = (key, signal) => {
+    if (key === "k2") return after(6_000, signal, { value: TRUNCATED });
+    return k1Calls++ === 0 ? after(2_500, signal, { value: TRUNCATED }) : after(50, signal);
+  };
+  const started = Date.now();
+  assert.deepEqual(await run(mod), { ok: true });
+  const took = Date.now() - started;
+  assert.ok(took < 4_500, `the wider retry must not wait for the hedge (took ${took}ms)`);
+  assert.deepEqual(
+    calls.map((c) => c.apiKey),
+    ["k1", "k2", "k1"],
+    "primary, hedge, then the primary key's wider retry",
+  );
+  assert.equal(calls[1].config.abortSignal?.aborted, true, "the hedge is aborted");
+  assert.equal(calls[2].config.maxOutputTokens, 16_384, "the retry widens the ceiling");
 });
 
 test("REGRESSION: an empty hedge answer does not abort a good primary", async () => {
