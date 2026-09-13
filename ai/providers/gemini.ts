@@ -79,12 +79,19 @@ export function thinkingConfigFor(budget: number, rejected: boolean) {
 }
 
 /**
- * Set once if a model rejects `thinkingConfig` (not every model accepts a
+ * Models that rejected `thinkingConfig` (not every model accepts a given
  * budget, and some can't disable thinking at all). Same self-healing shape as
  * the ScreenshotOne breaker: we learn it costs one retry, then stop sending it
- * for the life of the lambda rather than failing audits over a tuning knob.
+ * to THAT model for the life of the lambda rather than failing audits over a
+ * tuning knob.
+ *
+ * Per model, not global: budgets are model-specific. Live, gemini-2.5-flash-lite
+ * refuses 256 ("choose a value between 512 and 24576") while gemini-2.5-flash,
+ * gemini-3.1-flash-lite and gemini-3.6-flash accept it (probed 2026-09-13). One
+ * global flag let a fallback model's refusal silently unbound the premium
+ * vision call too.
  */
-let thinkingConfigRejected = false;
+const thinkingConfigRejectedBy = new Set<string>();
 
 /** True when the error is the model refusing our thinkingConfig, not real work failing. */
 export function isThinkingConfigError(raw: string): boolean {
@@ -180,23 +187,30 @@ const COOLDOWN_MS = 65_000; // per-minute window + small buffer
  * keys in six independent Google projects, which is the precondition (see the
  * hedge addendum in docs/analyzer-latency-followups.md). Why 12s: it lands after
  * the fast band, where about a third of calls finish under 15s and pay nothing,
- * and well before CALL_CAP_MS (25s), so the two draws overlap on roughly [0,25]
- * and [12,37] inside a 50s step. See `callWithKey` for what it costs.
+ * and leaves most of the step for the second draw. For the analyzer's vision
+ * call neither draw is capped by CALL_CAP_MS: the step downloads the screenshot
+ * before calling, so the call starts with a little under 50s left, below the
+ * 2×cap `callCapMs()` needs. Both draws run to the step deadline, the primary
+ * from 0 and the hedge from 12s. See `callWithKey` for what it costs.
  *
  * It switches itself off with fewer than 2 keys (local dev); see shouldHedge.
  *   GEMINI_HEDGE_AFTER_MS=0      rollback: no hedge, no deploy needed
  *   GEMINI_HEDGE_AFTER_MS=18000  hedge fewer calls if AI spend matters more
- * Values under 2s also disable it (hedging sooner just doubles every call). A
- * blank value counts as unset.
+ * This is the rollback knob, so it fails CLOSED: a value under 2s (hedging
+ * sooner just doubles every call), a non-numeric one ("off", a typo), or one
+ * past setTimeout's range (which clamps to ~1ms) all disable it. Only a blank
+ * value counts as unset.
  */
 const DEFAULT_HEDGE_AFTER_MS = 12_000;
 const HEDGE_FLOOR_MS = 2_000;
+const MAX_TIMER_MS = 2_147_483_647;
 
 export function resolveHedgeAfterMs(raw: string | undefined): number {
   if (raw === undefined || raw.trim() === "") return DEFAULT_HEDGE_AFTER_MS;
   const n = Number(raw);
-  if (!Number.isFinite(n)) return DEFAULT_HEDGE_AFTER_MS;
-  return n >= HEDGE_FLOOR_MS ? Math.round(n) : 0;
+  return Number.isFinite(n) && n >= HEDGE_FLOOR_MS && n <= MAX_TIMER_MS
+    ? Math.round(n)
+    : 0;
 }
 
 const HEDGE_AFTER_MS = resolveHedgeAfterMs(process.env.GEMINI_HEDGE_AFTER_MS);
@@ -270,28 +284,38 @@ export function firstFulfilled<T>(a: Promise<T>, b: Promise<T>): Promise<T> {
 
 /**
  * Run `primary`. If it hasn't answered after `hedgeAfterMs`, start `hedge` as
- * well and take whichever SUCCEEDS first, then abort the other.
+ * well and take whichever answers USABLY first, then abort the other.
  *
- * Two rules keep it from ever being worse than an un-hedged call:
- *   • A primary that fails BEFORE the hedge fires fails right away with its own
- *     error, and no hedge goes out. The caller's ladder (429 → rotate key, 503 →
- *     back off) then acts at once instead of after the hedge delay.
+ * The rules that keep it from ever being worse than an un-hedged call:
+ *   • A primary that fails, or answers unusably, BEFORE the hedge fires comes
+ *     back right away as-is, and no hedge goes out. The caller's ladder (429 →
+ *     rotate key, 503 → back off, empty → retry) then acts at once instead of
+ *     after the hedge delay.
+ *   • Only a usable answer wins (`isUsable`). An empty or truncated hedge answer
+ *     must not abort a primary that may still answer properly.
+ *   • When neither side wins, the result is exactly the PRIMARY's outcome (its
+ *     error, or its unusable answer), never the hedge's. The ladder attributes
+ *     what it gets to the primary key: a hedge key's 429 surfacing here would
+ *     put the wrong key on cooldown and leave the exhausted one hot.
  *   • `hedge` returns null when there is no independent key to use, and the
  *     result is then exactly the primary's. Before, that case left the second
  *     promise pending forever, so a failing primary hung the step until the
  *     platform killed it.
- * A caller cancel (`parent`) aborts both calls.
+ * A caller cancel (`parent`) aborts both calls. A factory that throws
+ * synchronously counts as that call failing.
  */
 export function hedgedCall<R>({
   hedgeAfterMs,
   primary,
   hedge,
   parent,
+  isUsable = () => true,
 }: {
   hedgeAfterMs: number;
   primary: (signal: AbortSignal) => Promise<R>;
   hedge: (signal: AbortSignal) => Promise<R> | null;
   parent?: AbortSignal;
+  isUsable?: (result: R) => boolean;
 }): Promise<R> {
   if (parent?.aborted) return Promise.reject(parent.reason);
 
@@ -303,34 +327,54 @@ export function hedgedCall<R>({
   };
   parent?.addEventListener("abort", abortBoth, { once: true });
 
-  const first = primary(primaryCtl.signal);
+  const unusable = () => new Error("hedge: no usable answer from this call");
+  const winOnlyIfUsable = (r: R) => (isUsable(r) ? r : Promise.reject(unusable()));
+
+  // The primary's own outcome, exactly as an un-hedged call would have seen it…
+  let first: Promise<R>;
+  try {
+    first = primary(primaryCtl.signal);
+  } catch (err) {
+    first = Promise.reject(err);
+  }
+  // …which only counts as a win when it is usable.
+  const firstWin = first.then(winOnlyIfUsable);
 
   let timer: ReturnType<typeof setTimeout> | undefined;
   let hedgeStarted = false;
-  const second = new Promise<R>((resolve, reject) => {
-    first.catch((err) => {
+  const secondWin = new Promise<R>((resolve, reject) => {
+    firstWin.catch(() => {
       if (hedgeStarted) return; // the hedge is already running; let it try
       clearTimeout(timer);
-      reject(err);
+      reject(unusable());
     });
     timer = setTimeout(() => {
       hedgeStarted = true;
-      const call = hedge(hedgeCtl.signal);
-      if (call) call.then(resolve, reject);
-      else first.then(resolve, reject);
+      let call: Promise<R> | null;
+      try {
+        call = hedge(hedgeCtl.signal);
+      } catch (err) {
+        call = Promise.reject(err);
+      }
+      (call ? call.then(winOnlyIfUsable) : firstWin).then(resolve, reject);
     }, hedgeAfterMs);
     // Don't hold the event loop open on a hedge that never fires.
     (timer as unknown as { unref?: () => void }).unref?.();
   });
 
-  // First to SUCCEED wins. A rejection from one side must not cancel the other:
+  // First USABLE answer wins. A failure on one side must not cancel the other:
   // the whole point is that one bad draw shouldn't decide the run.
-  return firstFulfilled(first, second).finally(() => {
-    clearTimeout(timer);
-    // Stop whichever lost. A generation nobody will read is pure quota.
-    abortBoth();
-    parent?.removeEventListener("abort", abortBoth);
-  });
+  return (
+    firstFulfilled(firstWin, secondWin)
+      // Neither won, so both have settled: hand back the primary's own outcome.
+      .catch(() => first)
+      .finally(() => {
+        clearTimeout(timer);
+        // Stop whichever lost. A generation nobody will read is pure quota.
+        abortBoth();
+        parent?.removeEventListener("abort", abortBoth);
+      })
+  );
 }
 
 /**
@@ -512,7 +556,7 @@ async function generateStructured<T>(
         responseSchema: toGeminiSchema(tool.schema),
         // Bound the model's thinking time. -1 means "model default", which is
         // what this used to do implicitly and what was blowing the step budget.
-        ...thinkingConfigFor(THINKING_BUDGET, thinkingConfigRejected),
+        ...thinkingConfigFor(THINKING_BUDGET, thinkingConfigRejectedBy.has(model)),
         // Abort as soon as the budget is gone (or the caller cancels) so a
         // hanging generation can't run into the platform timeout — AND cap any
         // single call so it can't spend the whole step on one bad draw. See
@@ -550,8 +594,11 @@ async function generateStructured<T>(
    * raises on purpose. It shows up in AI Studio metrics and in the
    * "[gemini] … hedging onto key" log. It does NOT add `usage_events` rows:
    * only the answer we use is metered (reportUsage), and the aborted loser
-   * returns no usage metadata.
+   * returns no usage metadata. So the metered row of an answer whose call was
+   * hedged carries `meta.hedged = true`: that is how the hedged share, and the
+   * roughly doubled prompt cost on it, can be counted in SQL.
    */
+  const hedgedResponses = new WeakSet<object>();
   const callWithKey = async (
     keyIdx: number,
     model: string,
@@ -569,21 +616,35 @@ async function generateStructured<T>(
       return callOnce(keyIdx, model, maxOutputTokens);
     }
 
-    return hedgedCall({
+    let hedgeSent = false;
+    // Explicit: with the `isUsable` callback in the object, inference falls
+    // back to `unknown` and the response type is lost for the ladder below.
+    const response = await hedgedCall<Awaited<ReturnType<typeof callOnce>>>({
       hedgeAfterMs: HEDGE_AFTER_MS,
       parent: opts.signal,
+      // An empty or cut-off answer isn't a win; the ladder below retries those.
+      isUsable: (r) => Boolean(extractText(r)) && !isTruncated(r),
       primary: (signal) => callOnce(keyIdx, model, maxOutputTokens, signal),
       hedge: (signal) => {
         const alt = pickAvailableKey();
         // Only hedge onto a DIFFERENT key — a second call on the same one
         // shares its quota and its queue, so it isn't an independent draw.
         if (alt === null || alt === keyIdx) return null;
+        hedgeSent = true;
         console.warn(
           `[gemini] ${model} key #${keyIdx + 1} slow past ${HEDGE_AFTER_MS / 1000}s — hedging onto key #${alt + 1}`,
         );
-        return callOnce(alt, model, maxOutputTokens, signal);
+        const call = callOnce(alt, model, maxOutputTokens, signal);
+        // The ladder only ever sees the PRIMARY key's outcome, so this key's
+        // quota exhaustion has to be recorded here or it stays in rotation.
+        call.catch((err) => {
+          if (is429(errMsg(err))) cooldownUntil.set(alt, Date.now() + COOLDOWN_MS);
+        });
+        return call;
       },
     });
+    if (hedgeSent) hedgedResponses.add(response);
+    return response;
   };
 
   // Google 503 ("model experiencing high demand") is server-side, not
@@ -670,7 +731,7 @@ async function generateStructured<T>(
               `Gemini: response truncated at the ${maxTokensForCall}-token ceiling`,
             );
           }
-          reportUsage(response, Boolean(opts.fast));
+          reportUsage(response, Boolean(opts.fast), hedgedResponses.has(response));
           return parseJsonText<T>(text);
         } catch (err) {
           const raw = errMsg(err);
@@ -678,10 +739,10 @@ async function generateStructured<T>(
           // budget; some can't turn thinking off). Drop it for the rest of this
           // lambda and retry the SAME key immediately — a latency knob must
           // never be the reason a paid audit fails.
-          if (!thinkingConfigRejected && isThinkingConfigError(raw)) {
-            thinkingConfigRejected = true;
+          if (!thinkingConfigRejectedBy.has(model) && isThinkingConfigError(raw)) {
+            thinkingConfigRejectedBy.add(model);
             console.warn(
-              `[gemini] ${model} rejected thinkingConfig (${raw.slice(0, 80)}) — retrying without it and not sending it again`,
+              `[gemini] ${model} rejected thinkingConfig (${raw.slice(0, 80)}) — retrying without it and not sending it to this model again`,
             );
             continue; // retry same key, now without the config
           }
@@ -765,7 +826,7 @@ async function generateStructured<T>(
             "Gemini: response truncated at the token ceiling (after cooldown wait)",
           );
         }
-        reportUsage(response, Boolean(opts.fast));
+        reportUsage(response, Boolean(opts.fast), hedgedResponses.has(response));
         return parseJsonText<T>(text);
       } catch (err) {
         if (is429(errMsg(err))) {
@@ -867,7 +928,7 @@ export function is503(raw: string): boolean {
  * usage_event (attributed to the active AsyncLocalStorage meter context).
  * Never throws — recordUsage is fire-and-forget.
  */
-function reportUsage(response: unknown, fast: boolean): void {
+function reportUsage(response: unknown, fast: boolean, hedged = false): void {
   const u = (
     response as {
       usageMetadata?: {
@@ -883,6 +944,8 @@ function reportUsage(response: unknown, fast: boolean): void {
     promptTokens: u?.promptTokenCount ?? 0,
     outputTokens: u?.candidatesTokenCount ?? 0,
     totalTokens: u?.totalTokenCount ?? 0,
+    // A hedged call also sent this prompt to a second key; see callWithKey.
+    ...(hedged ? { meta: { hedged: true } } : {}),
   });
 }
 

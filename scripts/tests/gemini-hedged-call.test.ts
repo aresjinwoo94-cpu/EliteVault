@@ -161,17 +161,161 @@ test("a primary failing AFTER the hedge started does not cancel the hedge", asyn
   assert.equal(result, "hedge");
 });
 
-test("if both calls fail, the first error in time propagates", async () => {
-  const first = new Error("503 UNAVAILABLE");
-  const second = new Error("429 RESOURCE_EXHAUSTED");
+test("if both calls fail, the PRIMARY's error propagates even when the hedge failed first", async () => {
+  // The caller's ladder attributes the error to the PRIMARY key: a 429 puts
+  // that key on cooldown, a 503 backs off and retries it. Surfacing the hedge
+  // key's 429 would cool down the wrong key (and leave the exhausted one hot).
+  const primaryErr = new Error('{"code": 503, "status": "UNAVAILABLE"}');
+  const hedgeErr = new Error("429 RESOURCE_EXHAUSTED");
   await assert.rejects(
     hedgedCall({
       hedgeAfterMs: HEDGE_MS,
-      primary: (s) => fakeFailure(HEDGE_MS + 10, first, s),
-      hedge: (s) => fakeFailure(60, second, s),
+      primary: (s) => fakeFailure(HEDGE_MS + 60, primaryErr, s),
+      hedge: (s) => fakeFailure(5, hedgeErr, s),
     }),
-    (e) => e === first,
+    (e) => e === primaryErr,
   );
+  await assert.rejects(
+    hedgedCall({
+      hedgeAfterMs: HEDGE_MS,
+      primary: (s) => fakeFailure(HEDGE_MS + 5, primaryErr, s),
+      hedge: (s) => fakeFailure(60, hedgeErr, s),
+    }),
+    (e) => e === primaryErr,
+  );
+});
+
+// ─── Unusable answers (empty / truncated) ───────────────────────────────────
+
+type Res = { text: string };
+const usable = (r: Res) => r.text !== "";
+
+test("an unusable hedge answer does not beat a good primary still running", async () => {
+  let primarySignal: AbortSignal | undefined;
+  const result = await hedgedCall<Res>({
+    hedgeAfterMs: HEDGE_MS,
+    isUsable: usable,
+    primary: (s) => {
+      primarySignal = s;
+      return fakeCall(HEDGE_MS + 60, { text: "good" }, s);
+    },
+    // Answers in a microtask, not a timer: under a loaded test runner a timer
+    // created inside the hedge timer can land AFTER an already-due primary
+    // timer, which would invert the race this test depends on.
+    hedge: () => Promise.resolve({ text: "" }),
+  });
+  assert.deepEqual(result, { text: "good" });
+  assert.ok(primarySignal, "primary was started");
+});
+
+test("if neither answer is usable, the primary's own answer comes back for the ladder to retry", async () => {
+  const primaryAnswer = { text: "" };
+  const result = await hedgedCall<Res>({
+    hedgeAfterMs: HEDGE_MS,
+    isUsable: usable,
+    primary: (s) => fakeCall(HEDGE_MS + 30, primaryAnswer, s),
+    // Answers in a microtask, not a timer: under a loaded test runner a timer
+    // created inside the hedge timer can land AFTER an already-due primary
+    // timer, which would invert the race this test depends on.
+    hedge: () => Promise.resolve({ text: "" }),
+  });
+  assert.equal(result, primaryAnswer);
+});
+
+test("an unusable primary answer before the hedge fires comes back at once, with no hedge", async () => {
+  let hedgeStarts = 0;
+  const primaryAnswer = { text: "" };
+  const started = Date.now();
+  const result = await hedgedCall<Res>({
+    hedgeAfterMs: 1_000,
+    isUsable: usable,
+    primary: (s) => fakeCall(5, primaryAnswer, s),
+    hedge: (s) => {
+      hedgeStarts++;
+      return fakeCall(5, { text: "hedge" }, s);
+    },
+  });
+  assert.equal(result, primaryAnswer);
+  assert.ok(Date.now() - started < 500, "the ladder's empty-response retry must not wait for the hedge");
+  await new Promise((r) => setTimeout(r, 1_100));
+  assert.equal(hedgeStarts, 0);
+});
+
+test("an unusable primary answer after the hedge started lets a usable hedge win", async () => {
+  const result = await hedgedCall<Res>({
+    hedgeAfterMs: HEDGE_MS,
+    isUsable: usable,
+    primary: (s) => fakeCall(HEDGE_MS + 5, { text: "" }, s),
+    hedge: (s) => fakeCall(60, { text: "hedge" }, s),
+  });
+  assert.deepEqual(result, { text: "hedge" });
+});
+
+test("an unusable hedge answer + a failing primary → the primary's error", async () => {
+  const primaryErr = new Error('{"code": 503}');
+  await assert.rejects(
+    hedgedCall<Res>({
+      hedgeAfterMs: HEDGE_MS,
+      isUsable: usable,
+      primary: (s) => fakeFailure(HEDGE_MS + 60, primaryErr, s),
+      // Answers in a microtask, not a timer: under a loaded test runner a timer
+    // created inside the hedge timer can land AFTER an already-due primary
+    // timer, which would invert the race this test depends on.
+    hedge: () => Promise.resolve({ text: "" }),
+    }),
+    (e) => e === primaryErr,
+  );
+});
+
+// ─── Factories that throw synchronously ─────────────────────────────────────
+
+test("a hedge factory that throws synchronously does not hang or crash the timer", async () => {
+  const result = await within(
+    hedgedCall({
+      hedgeAfterMs: HEDGE_MS,
+      primary: (s) => fakeCall(HEDGE_MS + 40, "primary", s),
+      hedge: () => {
+        throw new Error("sync boom in hedge");
+      },
+    }),
+    2_000,
+    "hedgedCall with a throwing hedge factory",
+  );
+  assert.equal(result, "primary");
+});
+
+test("a primary factory that throws synchronously rejects and leaves no cancel listener behind", async () => {
+  const parent = new AbortController();
+  let added = 0;
+  let removed = 0;
+  const add = parent.signal.addEventListener.bind(parent.signal);
+  const remove = parent.signal.removeEventListener.bind(parent.signal);
+  parent.signal.addEventListener = ((...a: Parameters<typeof add>) => {
+    added++;
+    return add(...a);
+  }) as typeof add;
+  parent.signal.removeEventListener = ((...a: Parameters<typeof remove>) => {
+    removed++;
+    return remove(...a);
+  }) as typeof remove;
+
+  const boom = new Error("sync boom in primary");
+  await assert.rejects(
+    within(
+      hedgedCall({
+        hedgeAfterMs: HEDGE_MS,
+        parent: parent.signal,
+        primary: () => {
+          throw boom;
+        },
+        hedge: (s) => fakeCall(5, "hedge", s),
+      }),
+      2_000,
+      "hedgedCall with a throwing primary factory",
+    ),
+    (e) => e === boom,
+  );
+  assert.equal(added, removed, "every cancel listener added must be removed");
 });
 
 test("a caller cancel aborts both calls", async () => {

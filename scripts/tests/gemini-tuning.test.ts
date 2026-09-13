@@ -47,10 +47,20 @@ test("hedge: in-range overrides are honoured", () => {
   assert.equal(resolveHedgeAfterMs("12000.6"), 12_001);
 });
 
-test("hedge: garbage falls back to the default, like every other knob here", () => {
-  for (const v of ["abc", "NaN", "Infinity"]) {
-    assert.equal(resolveHedgeAfterMs(v), 12_000, `"${v}" should fall back`);
+test("hedge: a non-numeric value turns it OFF — a rollback typo must fail closed", () => {
+  // Someone writing GEMINI_HEDGE_AFTER_MS=off during an incident means off.
+  // Falling back to the 12s default would silently keep doubling calls.
+  for (const v of ["off", "false", "disabled", "abc", "NaN", "Infinity", "12000ms"]) {
+    assert.equal(resolveHedgeAfterMs(v), 0, `"${v}" should disable the hedge`);
   }
+});
+
+test("hedge: values past the timer range turn it off instead of firing at ~1ms", () => {
+  // setTimeout clamps anything above 2^31-1 ms to 1ms, which would hedge
+  // every call almost immediately — the opposite of "wait a very long time".
+  assert.equal(resolveHedgeAfterMs("2147483647"), 2_147_483_647);
+  assert.equal(resolveHedgeAfterMs("2147483648"), 0);
+  assert.equal(resolveHedgeAfterMs("99999999999"), 0);
 });
 
 test("hedge: never fires with a single key (local dev), whatever the delay", () => {
