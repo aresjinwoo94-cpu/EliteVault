@@ -301,6 +301,12 @@ export function firstFulfilled<T>(a: Promise<T>, b: Promise<T>): Promise<T> {
  *     improve on: a truncated one is recovered by retrying with a wider token
  *     ceiling, and the hedge runs with the same ceiling, so waiting for it only
  *     delays that retry (past the deadline, in the worst case).
+ *   • A FINAL primary error (`isFinalError`) likewise ends the race at once and
+ *     aborts the hedge. That is for failures the hedge doesn't escape: a 503 is
+ *     server-side overload on the model, so a hedge on another key of the same
+ *     model isn't an independent draw. And waiting for it doesn't use up the
+ *     caller's own same-model retry, so it would pay for two same-model rounds
+ *     before falling back to a different model.
  *   • When neither side wins, the result is exactly the PRIMARY's outcome (its
  *     error, or its unusable answer), never the hedge's. The ladder attributes
  *     what it gets to the primary key: a hedge key's 429 surfacing here would
@@ -319,6 +325,7 @@ export function hedgedCall<R>({
   parent,
   isUsable = () => true,
   isFinal = () => false,
+  isFinalError = () => false,
 }: {
   hedgeAfterMs: number;
   primary: (signal: AbortSignal) => Promise<R>;
@@ -327,6 +334,8 @@ export function hedgedCall<R>({
   isUsable?: (result: R) => boolean;
   /** A primary answer that ends the race even though it isn't usable. */
   isFinal?: (result: R) => boolean;
+  /** A primary error that ends the race even though the hedge is still running. */
+  isFinalError?: (error: unknown) => boolean;
 }): Promise<R> {
   if (parent?.aborted) return Promise.reject(parent.reason);
 
@@ -377,28 +386,38 @@ export function hedgedCall<R>({
 
   // First USABLE answer wins. A failure on one side must not cancel the other:
   // the whole point is that one bad draw shouldn't decide the run.
-  return (
-    firstFulfilled(firstWin, secondWin)
+  return new Promise<R>((resolve, reject) => {
+    // …except a FINAL primary error, which ends the race at once.
+    first.catch((err) => {
+      try {
+        if (isFinalError(err)) reject(err);
+      } catch {
+        // A classifier that throws just means "not final".
+      }
+    });
+    firstFulfilled(firstWin, secondWin).then(
+      resolve,
       // Neither won, so both have settled: hand back the primary's own outcome.
-      .catch(() => first)
-      .finally(() => {
-        clearTimeout(timer);
-        // Stop whichever lost. A generation nobody will read is pure quota.
-        abortBoth();
-        parent?.removeEventListener("abort", abortBoth);
-      })
-  );
+      () => first.then(resolve, reject),
+    );
+  }).finally(() => {
+    clearTimeout(timer);
+    // Stop whichever lost. A generation nobody will read is pure quota.
+    abortBoth();
+    parent?.removeEventListener("abort", abortBoth);
+  });
 }
 
 /**
- * Pick the next non-cooled-down key in round-robin order.
- * Returns the index into CLIENTS, or null if every key is on cooldown.
+ * Pick the next non-cooled-down key in round-robin order, skipping `exclude`.
+ * Returns the index into CLIENTS, or null if every eligible key is on cooldown.
  */
-function pickAvailableKey(): number | null {
+function pickAvailableKey(exclude?: number): number | null {
   if (CLIENTS.length === 0) return null;
   const now = Date.now();
   for (let i = 0; i < CLIENTS.length; i++) {
     const idx = (rrCursor + i) % CLIENTS.length;
+    if (idx === exclude) continue;
     const cd = cooldownUntil.get(idx) ?? 0;
     if (cd <= now) {
       rrCursor = (idx + 1) % CLIENTS.length;
@@ -608,13 +627,14 @@ async function generateStructured<T>(
    * "[gemini] … hedging onto key" log. It does NOT add `usage_events` rows:
    * only the answer we use is metered (reportUsage), and the aborted loser
    * returns no usage metadata. So the metered row carries
-   * `meta: { hedged: true, hedges: n }`, where n counts every hedge sent while
-   * producing that answer, including hedges on earlier attempts that failed.
-   * That is how the hedged share, and the extra prompt cost on it, can be
-   * counted in SQL. (An audit whose every attempt fails writes no row at all,
-   * hedged or not.)
+   * `meta: { hedged: true, hedges: n, hedgesByModel }`, counting every hedge
+   * sent while producing that answer, including hedges on earlier attempts that
+   * failed. Hedges can span the model fallback chain, so they are also counted
+   * per model to price them correctly. That is how the hedged share, and the
+   * extra prompt cost on it, can be measured in SQL. (An audit whose every
+   * attempt fails writes no row at all, hedged or not.)
    */
-  let hedgesSent = 0;
+  const hedgesByModel: Record<string, number> = {};
   const callWithKey = async (
     keyIdx: number,
     model: string,
@@ -642,13 +662,19 @@ async function generateStructured<T>(
       // …but a cut-off PRIMARY ends the race: the ladder recovers it with a
       // wider token ceiling, which the hedge (same ceiling) can't provide.
       isFinal: (r) => isTruncated(r),
+      // A 503 is model-side overload: the hedge (same model) won't escape it,
+      // and the ladder's own 503 retry and model fallback must run on time.
+      isFinalError: (err) => is503(errMsg(err)),
       primary: (signal) => callOnce(keyIdx, model, maxOutputTokens, signal),
       hedge: (signal) => {
-        const alt = pickAvailableKey();
         // Only hedge onto a DIFFERENT key — a second call on the same one
         // shares its quota and its queue, so it isn't an independent draw.
-        if (alt === null || alt === keyIdx) return null;
-        hedgesSent++;
+        // Excluded inside the scan rather than rejected after it: after a
+        // hedge the cursor often points back at the primary, and a same-key
+        // retry would otherwise find "no key" while another one is free.
+        const alt = pickAvailableKey(keyIdx);
+        if (alt === null) return null;
+        hedgesByModel[model] = (hedgesByModel[model] ?? 0) + 1;
         console.warn(
           `[gemini] ${model} key #${keyIdx + 1} slow past ${HEDGE_AFTER_MS / 1000}s — hedging onto key #${alt + 1}`,
         );
@@ -747,7 +773,7 @@ async function generateStructured<T>(
               `Gemini: response truncated at the ${maxTokensForCall}-token ceiling`,
             );
           }
-          reportUsage(response, Boolean(opts.fast), hedgesSent);
+          reportUsage(response, Boolean(opts.fast), hedgesByModel);
           return parseJsonText<T>(text);
         } catch (err) {
           const raw = errMsg(err);
@@ -842,7 +868,7 @@ async function generateStructured<T>(
             "Gemini: response truncated at the token ceiling (after cooldown wait)",
           );
         }
-        reportUsage(response, Boolean(opts.fast), hedgesSent);
+        reportUsage(response, Boolean(opts.fast), hedgesByModel);
         return parseJsonText<T>(text);
       } catch (err) {
         if (is429(errMsg(err))) {
@@ -944,7 +970,12 @@ export function is503(raw: string): boolean {
  * usage_event (attributed to the active AsyncLocalStorage meter context).
  * Never throws — recordUsage is fire-and-forget.
  */
-function reportUsage(response: unknown, fast: boolean, hedges = 0): void {
+function reportUsage(
+  response: unknown,
+  fast: boolean,
+  hedgesByModel: Record<string, number> = {},
+): void {
+  const hedges = Object.values(hedgesByModel).reduce((sum, n) => sum + n, 0);
   const u = (
     response as {
       usageMetadata?: {
@@ -961,7 +992,9 @@ function reportUsage(response: unknown, fast: boolean, hedges = 0): void {
     outputTokens: u?.candidatesTokenCount ?? 0,
     totalTokens: u?.totalTokenCount ?? 0,
     // Each hedge also sent this prompt to another key; see callWithKey.
-    ...(hedges > 0 ? { meta: { hedged: true, hedges } } : {}),
+    ...(hedges > 0
+      ? { meta: { hedged: true, hedges, hedgesByModel: { ...hedgesByModel } } }
+      : {}),
   });
 }
 

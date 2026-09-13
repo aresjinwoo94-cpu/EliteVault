@@ -215,7 +215,11 @@ test("two keys: the same slow call is hedged onto the OTHER key, which wins", as
   // The loser is invisible in usage_events (no usage metadata comes back), so
   // the winner's row is the only place the hedge's extra cost can be counted.
   assert.equal(usage.length, 1, "still one metered row per answer used");
-  assert.deepEqual(usage[0].meta, { hedged: true, hedges: 1 }, "the metered row must say a hedge fired");
+  assert.deepEqual(
+    usage[0].meta,
+    { hedged: true, hedges: 1, hedgesByModel: { "gemini-2.5-flash": 1 } },
+    "the metered row must say a hedge fired, and on which model",
+  );
 });
 
 test("REGRESSION: a hedge key's 429 is not pinned on the primary key", async () => {
@@ -247,7 +251,56 @@ test("REGRESSION: a hedge key's 429 is not pinned on the primary key", async () 
   // The answer came from an un-hedged retry, but a hedge was paid for on the
   // way. Counting only the winning call's hedge would hide exactly the hedges
   // that went badly.
-  assert.deepEqual(usage[0].meta, { hedged: true, hedges: 1 });
+  assert.deepEqual(usage[0].meta, {
+    hedged: true,
+    hedges: 1,
+    hedgesByModel: { "gemini-2.5-flash": 1 },
+  });
+});
+
+test("REGRESSION: a late 503 on every key still falls back to the fast model in time", async () => {
+  // Measured by adversarial review: premium model 503s after the hedge fired,
+  // on every key. Un-hedged, the ladder backs off once, retries, and falls back
+  // to the fast model with budget to spare. Waiting for a same-model hedge ran
+  // two same-model rounds and left no budget for the fallback — a completable
+  // audit failed.
+  const mod = await loadGemini({
+    GEMINI_API_KEY: "k1",
+    GEMINI_API_KEY_2: "k2",
+    GEMINI_HEDGE_AFTER_MS: "2000",
+  });
+  const overload = () =>
+    new Error('{"code": 503, "status": "UNAVAILABLE", "message": "model is experiencing high demand"}');
+  behaviour = (_key, signal, req) =>
+    req.model === "gemini-3.1-flash-lite"
+      ? after(2_000, signal)
+      : after(2_600, signal, { error: overload() });
+  assert.deepEqual(await run(mod, { deadlineAt: Date.now() + 19_000 }), { ok: true });
+  assert.equal(calls.at(-1)?.model, "gemini-3.1-flash-lite", "answered by the fallback model");
+});
+
+test("a same-key retry is still hedged when the round-robin cursor points back at the primary", async () => {
+  // 2 keys: k1 primary, hedge picks k2 and moves the cursor back to k1. The
+  // ladder's 503 retry reuses k1 without a pick, so the next hedge's scan
+  // started AT k1 and gave up although k2 was free.
+  const mod = await loadGemini({
+    GEMINI_API_KEY: "k1",
+    GEMINI_API_KEY_2: "k2",
+    GEMINI_HEDGE_AFTER_MS: "2000",
+  });
+  let k1Calls = 0;
+  behaviour = (key, signal) => {
+    if (key === "k2") return after(k1Calls >= 2 ? 50 : 10_000, signal);
+    return k1Calls++ === 0
+      ? after(2_500, signal, { error: new Error('{"code": 503, "status": "UNAVAILABLE"}') })
+      : after(3_000, signal);
+  };
+  assert.deepEqual(await run(mod), { ok: true });
+  assert.deepEqual(
+    calls.map((c) => c.apiKey),
+    ["k1", "k2", "k1", "k2"],
+    "the retry on k1 must be hedged onto the free k2",
+  );
 });
 
 test("REGRESSION: a truncated primary goes straight to the wider retry, without waiting for the hedge", async () => {

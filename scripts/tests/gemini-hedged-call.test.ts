@@ -291,6 +291,31 @@ test("a FINAL primary answer (truncated) returns at once, even after the hedge s
   assert.equal(hedgeSignal.aborted, true, "…and is aborted once the primary's answer is final");
 });
 
+test("a FINAL primary error (a 503) ends the race at once, even after the hedge started, and aborts the hedge", async () => {
+  // A 503 is Google-side overload: a hedge on another key of the same model is
+  // not an independent draw. Worse, waiting for it doesn't use up the caller's
+  // own same-model 503 retry, so the caller would pay two same-model rounds
+  // before it could fall back to a different model.
+  const err503 = new Error('{"code": 503, "status": "UNAVAILABLE"}');
+  let hedgeSignal: AbortSignal | undefined;
+  const started = Date.now();
+  await assert.rejects(
+    hedgedCall({
+      hedgeAfterMs: HEDGE_MS,
+      isFinalError: (e) => e === err503,
+      primary: (s) => fakeFailure(HEDGE_MS + 20, err503, s),
+      hedge: (s) => {
+        hedgeSignal = s;
+        return fakeCall(1_000, "hedge", s);
+      },
+    }),
+    (e) => e === err503,
+  );
+  assert.ok(Date.now() - started < 500, `must not wait for the hedge (took ${Date.now() - started}ms)`);
+  assert.ok(hedgeSignal, "the hedge had started");
+  assert.equal(hedgeSignal.aborted, true, "…and is aborted once the primary's error is final");
+});
+
 // ─── Factories that throw synchronously ─────────────────────────────────────
 
 test("a hedge factory that throws synchronously does not hang or crash the timer", async () => {
