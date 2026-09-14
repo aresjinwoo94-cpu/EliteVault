@@ -120,7 +120,8 @@ export function BrandMark({ mark }: { mark: PaymentMark }) {
       aria-label={m.label}
       className="block w-auto"
     >
-      <title>{m.label}</title>
+      {/* No <title>: next to aria-label it becomes a description, so screen
+          readers would say "Visa, graphic, Visa" for every chip. */}
       <text
         x={m.width / 2}
         y={11}

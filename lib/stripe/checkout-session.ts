@@ -147,12 +147,15 @@ export async function createEmbeddedCheckoutSession({
       // can't reach inside Stripe's cross-origin iframe to patch it. Both are
       // now done for elitevaultapp.com, so it's back on. If the broken logo
       // ever returns, check that activation and the domain registration are
-      // still in place before touching this array. Mirrored in
-      // app/actions/blocks-export.ts — keep the two in lockstep.
+      // still in place before touching this array.
       //
       // The list lives in lib/stripe/payment-method-types.ts (same four
       // methods) so the "we accept" badge rows in the checkout and the footer
-      // derive their brands from exactly what Stripe is asked to offer.
+      // derive their brands from exactly what Stripe is asked to offer. Any
+      // other Checkout Session must import that constant too: the unmerged
+      // Liquid Blocks branches still hard-code the list (blocks-export.ts,
+      // app/api/stripe/checkout/route.ts), and scripts/tests/payment-marks.test.ts
+      // fails until they don't.
       payment_method_types: [...CHECKOUT_PAYMENT_METHOD_TYPES],
 
       // Locale follows the user's browser language.

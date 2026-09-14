@@ -35,7 +35,9 @@ function sourceFiles(dir: string): string[] {
   for (const name of readdirSync(resolve(ROOT, dir))) {
     const full = join(resolve(ROOT, dir), name);
     if (statSync(full).isDirectory()) out.push(...sourceFiles(relative(ROOT, full)));
-    else if (/\.(ts|tsx|mts)$/.test(name)) out.push(relative(ROOT, full).replace(/\\/g, "/"));
+    else if (/\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$/.test(name)) {
+      out.push(relative(ROOT, full).replace(/\\/g, "/"));
+    }
   }
   return out;
 }
@@ -50,9 +52,10 @@ test("the checkout's Stripe payment methods are pinned: card, amazon_pay, cashap
 
 test("the Stripe session is created with exactly the shared list, and nothing else sets it", () => {
   const session = code("lib/stripe/checkout-session.ts");
-  const values = [...session.matchAll(/payment_method_types\s*:\s*([^,\n]+)/g)].map((m) =>
-    m[1].trim(),
-  );
+  // Quoted keys too: `"payment_method_types": [...]` is the same Stripe param.
+  const values = [
+    ...session.matchAll(/["']?payment_method_types["']?\s*:\s*([^,\n]+)/g),
+  ].map((m) => m[1].trim());
   assert.deepEqual(
     values,
     ["[...CHECKOUT_PAYMENT_METHOD_TYPES]"],
@@ -70,12 +73,35 @@ test("the Stripe session is created with exactly the shared list, and nothing el
 // ─── The badge end ──────────────────────────────────────────────────────────
 
 test("HARD RULE: every advertised brand is backed by a method Stripe checkout offers", () => {
+  // An independent truth table, written here on purpose. Checking the badges
+  // against the module's own mapping would pass whatever that mapping says,
+  // including a Klarna mark filed under "card".
+  const STRIPE_METHOD_FOR_BRAND: Record<string, string> = {
+    visa: "card",
+    mastercard: "card",
+    amex: "card",
+    discover: "card",
+    amazonpay: "amazon_pay",
+    cashapp: "cashapp",
+    link: "link",
+  };
+  const offered: readonly string[] = CHECKOUT_PAYMENT_METHOD_TYPES;
   for (const mark of ACCEPTED_PAYMENT_MARKS) {
-    const backedBy = CHECKOUT_PAYMENT_METHOD_TYPES.filter((t) =>
-      MARKS_BY_PAYMENT_METHOD_TYPE[t].includes(mark),
-    );
-    assert.ok(backedBy.length > 0, `"${mark}" is shown but no enabled Stripe method offers it`);
+    const method = STRIPE_METHOD_FOR_BRAND[mark];
+    assert.ok(method, `"${mark}" is shown but isn't a brand of any Stripe method we use`);
+    assert.ok(offered.includes(method), `"${mark}" needs "${method}", which checkout doesn't offer`);
   }
+});
+
+test("the row draws the DERIVED list, not a hand-kept one", () => {
+  // No renderer is available under the test runner's react-server condition,
+  // so pin the structure instead: the only list PaymentMarks iterates is
+  // ACCEPTED_PAYMENT_MARKS, and the display order is used only to sort it.
+  const marks = code("components/billing/payment-marks.tsx");
+  assert.match(marks, /\{ACCEPTED_PAYMENT_MARKS\.map\(/);
+  assert.equal((marks.match(/\.map\(/g) ?? []).length, 1, "exactly one rendered list");
+  assert.equal((marks.match(/\bDISPLAY_ORDER\b/g) ?? []).length, 2, "declared + used to sort");
+  assert.doesNotMatch(marks, /Object\.(keys|values|entries)\(\s*WORDMARKS/);
 });
 
 test("each enabled method maps to its brands (card → Visa / Mastercard / Amex / Discover)", () => {
@@ -115,15 +141,20 @@ test("the checkout keeps showing the same seven brands, in the same order", () =
 // ─── One SVG, reused ────────────────────────────────────────────────────────
 
 test("the wordmark SVG is defined once and reused by the checkout AND the footer", () => {
+  // Neither host may add its own mark or logo next to the shared row — an
+  // <img src="/klarna.svg"> would bypass every rule above.
+  const hostForbidden =
+    /<svg|<text|<img\b|<Image\b|WORDMARKS|klarna|afterpay|affirm|blik|paypal|apple ?pay|google ?pay/i;
+
   const checkout = code("components/billing/payment-methods.tsx");
   assert.match(checkout, /from\s+["']@\/components\/billing\/payment-marks["']/);
   assert.match(checkout, /<PaymentMarks\b/);
-  assert.doesNotMatch(checkout, /<svg|<text|WORDMARKS/, "checkout must not draw its own marks");
+  assert.doesNotMatch(checkout, hostForbidden, "checkout must not draw its own marks");
 
   const footer = code("components/marketing/footer.tsx");
   assert.match(footer, /from\s+["']@\/components\/billing\/payment-marks["']/);
   assert.match(footer, /<PaymentMarks\b/);
-  assert.doesNotMatch(footer, /<svg|<text|WORDMARKS/, "footer must not draw its own marks");
+  assert.doesNotMatch(footer, hostForbidden, "footer must not draw its own marks");
 
   const drawers = ["app", "components"]
     .flatMap(sourceFiles)
@@ -139,6 +170,12 @@ test("the shared marks are client-safe and asset-free (CSP-safe, no network)", (
     "must be importable from the client footer",
   );
   assert.doesNotMatch(marks, /<img\b|\bsrc=|\bhref=|url\(|https?:/, "no external or linked asset");
+  // One accessible name per chip. An SVG with both aria-label and <title>
+  // exposes the title as a description, so screen readers say "Visa, graphic,
+  // Visa" — seven times, on every marketing page.
+  assert.match(marks, /role="img"/);
+  assert.match(marks, /aria-label=\{m\.label\}/);
+  assert.doesNotMatch(marks, /<title>/, "aria-label alone names the chip");
 
   const types = readFileSync(resolve(ROOT, "lib/stripe/payment-method-types.ts"), "utf8");
   assert.doesNotMatch(types, /^\s*import\s/m, "the shared list must not pull anything into the client bundle");
