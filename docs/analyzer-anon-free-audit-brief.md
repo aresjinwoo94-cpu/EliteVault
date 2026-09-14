@@ -269,16 +269,14 @@ exactly, in order, on its own branch:
 
 `GEMINI_HEDGE_AFTER_MS` (`ai/providers/gemini.ts`) — a second Gemini call on
 a *different* API key fires after N ms with no answer yet; whichever
-answers first wins. Currently off by default, gated on having ≥2 independent
-Gemini API keys in the pool (`GEMINI_API_KEY_2`/`_3`, which the latency doc
-says were verified as independent projects — re-verify in production for the
-same reason as step 1 above). This is **projected, not measured live**: the
-code comment estimates completion 73%→93% and within-30s 53%→78% from a
-15-sample run, explicitly caveated as unproven at scale. A sensible starting
-value per the code's own comment is `12000`. Turn it on in the same
-measurement window as WP-5 so you get one clean before/after rather than two
-confounded ones — or stagger them by a few days if you want to attribute the
-improvement to each independently.
+answers first wins. **On by default at `12000` since WP-1** (PR #50; set
+`GEMINI_HEDGE_AFTER_MS=0` to turn it off), and it switches itself off with
+fewer than 2 keys in the pool. The owner has confirmed six keys in six
+independent Google projects. The benefit is still **projected, not measured
+live**: the code comment estimates completion 73%→93% and within-30s 53%→78%
+from a 15-sample run, explicitly caveated as unproven at scale. Measure it
+before WP-5 lands, or stagger the two by a few days, so each improvement can
+be attributed on its own rather than confounded.
 
 **Why this serves "make it shorter, especially on failure"**: a single
 Gemini call is already capped at 25s (`GEMINI_CALL_CAP_MS`, on by default),

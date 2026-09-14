@@ -43,7 +43,14 @@ ENV_FILE=.env.production.local npx tsx --tsconfig scripts/tests/tsconfig.json sc
 The script saturates one key until it 429s, then probes the others: a sibling
 that also 429s shares the project and adds no quota.
 
-## 2. Turn on `GEMINI_HEDGE_AFTER_MS=12000` — BLOCKED, and would be harmful if #1 is "one key"
+## 2. Turn on `GEMINI_HEDGE_AFTER_MS=12000` — DONE: now the code default (WP-1)
+
+> **Update (WP-1, PR #50):** both blockers below were cleared — the owner
+> confirmed six keys in six independent Google projects (see the addendum) —
+> and `12000` is now the code default in `ai/providers/gemini.ts`, with
+> `GEMINI_HEDGE_AFTER_MS=0` as the no-deploy rollback. The hedge still switches
+> itself off with fewer than 2 keys. What follows is kept as the record of why
+> it was blocked at the time.
 
 Blocked twice over: it depends on #1, and setting a Vercel env var needs the
 dashboard access this machine does not have.
@@ -342,6 +349,12 @@ the failure can be delayed by up to `HEDGE_AFTER_MS`. It remains bounded by the
 deadline, and it is the intended trade (one bad draw must not decide the run),
 but it is a reason not to set the value higher than necessary.
 
+> **Update (WP-1, PR #50):** this caveat no longer holds. A primary that fails
+> before the hedge fires now fails at once, with no hedge sent. Once the hedge
+> is running, a primary 503 or a truncated answer still ends the race
+> immediately. See `hedgedCall()` in `ai/providers/gemini.ts`. The line numbers
+> cited in this addendum predate that refactor.
+
 ## Recommended starting value: `GEMINI_HEDGE_AFTER_MS=12000`
 
 Chosen on the following reasoning rather than because the brief named it:
@@ -402,8 +415,10 @@ a stale baseline — the table above is the one to beat.
 
 ### AFTER — the protocol
 
-1. Set `GEMINI_HEDGE_AFTER_MS=12000` in Vercel (Production) and redeploy; env
-   changes only apply to new deployments.
+1. Deploy WP-1 (PR #50), which makes `12000` the code default. In Vercel
+   (Production), delete `GEMINI_HEDGE_AFTER_MS` or set it to `12000`, because an
+   existing `0` there overrides the default. Redeploy; env changes only apply to
+   new deployments.
 2. Let it run for a week, or at least ~40 terminal audits — the 7-day cell
    above is n=16, too thin to move a p95 conclusion.
 3. Re-run the same query and compare p50/p95 and success rate against the
@@ -422,7 +437,7 @@ Of everything available without WP-2:
 | lever | verdict |
 |---|---|
 | `GLOBAL_CONCURRENCY` | **Not the cause of the 140s audit** (0.8s queue). No evidence of a queueing problem in the window, but n=9 |
-| `GEMINI_HEDGE_AFTER_MS` | **Unblocked** — 6 independent projects confirmed by the owner. Recommend `12000`; safe under `maxDuration=60`. See the addendum |
+| `GEMINI_HEDGE_AFTER_MS` | **Done** — `12000` is the code default since WP-1 (PR #50); 6 independent projects confirmed by the owner; safe under `maxDuration=60`. See the addendum |
 | More Gemini keys, new Google projects | Already done — six, one project each |
 | Image height / max tokens | Already disproven in `docs/analyzer-latency.md` §4b — do not re-spend that time |
 | Step/screenshot budgets (WP-5) | Frozen pending Liquid Blocks landing `maxDuration=300` |
