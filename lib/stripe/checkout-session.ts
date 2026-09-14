@@ -4,6 +4,7 @@ import { getCheckoutPriceId } from "@/lib/stripe/plans";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { absoluteUrl } from "@/lib/utils";
 import { inngest } from "@/inngest/client";
+import { CHECKOUT_PAYMENT_METHOD_TYPES } from "@/lib/stripe/payment-method-types";
 
 /**
  * Embedded Checkout session creation, extracted from
@@ -148,7 +149,11 @@ export async function createEmbeddedCheckoutSession({
       // ever returns, check that activation and the domain registration are
       // still in place before touching this array. Mirrored in
       // app/actions/blocks-export.ts — keep the two in lockstep.
-      payment_method_types: ["card", "amazon_pay", "cashapp", "link"],
+      //
+      // The list lives in lib/stripe/payment-method-types.ts (same four
+      // methods) so the "we accept" badge rows in the checkout and the footer
+      // derive their brands from exactly what Stripe is asked to offer.
+      payment_method_types: [...CHECKOUT_PAYMENT_METHOD_TYPES],
 
       // Locale follows the user's browser language.
       locale: "auto",

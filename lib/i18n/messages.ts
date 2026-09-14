@@ -175,6 +175,7 @@ const en: Dict = {
     privacy: "Privacy",
     terms: "Terms",
     refunds: "Refunds",
+    weAccept: "We accept",
   },
   pricing: {
     heading: "Free diagnosis. Pay for the cure.",
@@ -915,6 +916,7 @@ const es: Dict = {
     privacy: "Privacidad",
     terms: "Términos",
     refunds: "Reembolsos",
+    weAccept: "Aceptamos",
   },
   pricing: {
     heading: "Diagnóstico gratis. Paga por la cura.",
