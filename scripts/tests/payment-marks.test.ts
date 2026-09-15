@@ -99,12 +99,21 @@ test("the row draws the DERIVED list, not a hand-kept one", () => {
   // ACCEPTED_PAYMENT_MARKS, and the display order is used only to sort it.
   const marks = code("components/billing/payment-marks.tsx");
   assert.match(marks, /\{ACCEPTED_PAYMENT_MARKS\.map\(/);
-  assert.equal((marks.match(/\.map\(/g) ?? []).length, 1, "exactly one rendered list");
+  assert.equal((marks.match(/\.map\s*\(/g) ?? []).length, 1, "exactly one rendered list");
+  // …and no chip drawn outside that loop: BrandMark is private and rendered once.
+  assert.equal((marks.match(/<BrandMark\b/g) ?? []).length, 1, "BrandMark is rendered only by the loop");
+  assert.doesNotMatch(marks, /export\s+(function|const)\s+BrandMark\b/, "BrandMark must not be exported");
   assert.equal((marks.match(/\bDISPLAY_ORDER\b/g) ?? []).length, 2, "declared + used to sort");
   assert.doesNotMatch(marks, /Object\.(keys|values|entries)\(\s*WORDMARKS/);
 });
 
 test("each enabled method maps to its brands (card → Visa / Mastercard / Amex / Discover)", () => {
+  // No leftover entry for a method checkout no longer offers: removing a method
+  // from the Stripe list must remove its brands everywhere, not just the key.
+  assert.deepEqual(
+    Object.keys(MARKS_BY_PAYMENT_METHOD_TYPE).sort(),
+    [...CHECKOUT_PAYMENT_METHOD_TYPES].sort(),
+  );
   assert.deepEqual(
     Object.fromEntries(
       CHECKOUT_PAYMENT_METHOD_TYPES.map((t) => [t, [...MARKS_BY_PAYMENT_METHOD_TYPE[t]]]),
@@ -141,20 +150,28 @@ test("the checkout keeps showing the same seven brands, in the same order", () =
 // ─── One SVG, reused ────────────────────────────────────────────────────────
 
 test("the wordmark SVG is defined once and reused by the checkout AND the footer", () => {
-  // Neither host may add its own mark or logo next to the shared row — an
-  // <img src="/klarna.svg"> would bypass every rule above.
-  const hostForbidden =
-    /<svg|<text|<img\b|<Image\b|WORDMARKS|klarna|afterpay|affirm|blik|paypal|apple ?pay|google ?pay/i;
+  // Neither host may add a payment brand of its own next to the shared row: an
+  // <img src="/klarna.svg">, or a hand-placed chip for a method checkout no
+  // longer offers, would bypass every rule above.
+  const paymentBrands =
+    /visa|mastercard|amex|american express|discover|cash ?app|amazon ?pay|link by stripe|klarna|afterpay|affirm|blik|paypal|apple ?pay|google ?pay/i;
+  const drawsMarks = /<text|WORDMARKS|BrandMark/;
 
+  // The checkout row has no reason to render any other image.
   const checkout = code("components/billing/payment-methods.tsx");
   assert.match(checkout, /from\s+["']@\/components\/billing\/payment-marks["']/);
   assert.match(checkout, /<PaymentMarks\b/);
-  assert.doesNotMatch(checkout, hostForbidden, "checkout must not draw its own marks");
+  assert.doesNotMatch(checkout, /<svg|<img\b|<Image\b/, "checkout must not draw its own marks");
+  assert.doesNotMatch(checkout, drawsMarks, "checkout must not draw its own marks");
+  assert.doesNotMatch(checkout, paymentBrands, "checkout must not name a brand itself");
 
+  // The footer may grow unrelated icons (socials, badges), so it is held to
+  // "no payment brand of its own" rather than "no images at all".
   const footer = code("components/marketing/footer.tsx");
   assert.match(footer, /from\s+["']@\/components\/billing\/payment-marks["']/);
   assert.match(footer, /<PaymentMarks\b/);
-  assert.doesNotMatch(footer, hostForbidden, "footer must not draw its own marks");
+  assert.doesNotMatch(footer, drawsMarks, "footer must not draw its own marks");
+  assert.doesNotMatch(footer, paymentBrands, "footer must not name a payment brand itself");
 
   const drawers = ["app", "components"]
     .flatMap(sourceFiles)

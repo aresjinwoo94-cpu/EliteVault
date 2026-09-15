@@ -110,7 +110,12 @@ export const WORDMARKS: Record<PaymentMark, Wordmark> = {
   link: { label: "Link by Stripe", word: "Link", width: 26, weight: 700 },
 };
 
-export function BrandMark({ mark }: { mark: PaymentMark }) {
+/**
+ * Private on purpose: the only way to put a brand on screen is PaymentMarks,
+ * which draws exactly the derived list. An exported BrandMark could be
+ * hand-placed to show a brand whose Stripe method was removed.
+ */
+function BrandMark({ mark }: { mark: PaymentMark }) {
   const m = WORDMARKS[mark];
   return (
     <svg
