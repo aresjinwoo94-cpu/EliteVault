@@ -448,6 +448,7 @@ const en: Dict = {
     signIn: "Sign in",
     signingIn: "Signing in…",
     continueWithGoogle: "Continue with Google",
+    redirecting: "Redirecting…",
     orDivider: "or",
   },
   sidebar: {
@@ -1188,6 +1189,7 @@ const es: Dict = {
     signIn: "Iniciar sesión",
     signingIn: "Iniciando sesión…",
     continueWithGoogle: "Continuar con Google",
+    redirecting: "Redirigiendo…",
     orDivider: "o",
   },
   sidebar: {

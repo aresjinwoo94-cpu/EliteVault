@@ -2,9 +2,17 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
+import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Lock, Mail, Sparkles, CheckCircle2 } from "lucide-react";
+import {
+  ArrowRight,
+  Lock,
+  Mail,
+  Sparkles,
+  CheckCircle2,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -193,15 +201,40 @@ export function AuthForm({
  * Inline SVG (no external favicon request) keeps it CSP-clean and offline-safe.
  */
 function GoogleButton({ nextUrl }: { nextUrl: string }) {
-  const { t } = useT();
   return (
     <form action={signInWithGoogle}>
       <input type="hidden" name="next" value={nextUrl} />
-      <Button type="submit" variant="secondary" size="lg" className="w-full">
-        <GoogleGlyph />
-        {t("auth.continueWithGoogle")}
-      </Button>
+      <GoogleSubmitButton />
     </form>
+  );
+}
+
+/**
+ * The OAuth handshake is a server round trip followed by a full-page redirect
+ * to Google, so without feedback the click looks like it did nothing. This
+ * reads the enclosing form's submission with useFormStatus (which only works in
+ * a component rendered INSIDE that <form>) and shows a disabled, busy state
+ * with a spinner until the browser leaves the page.
+ */
+function GoogleSubmitButton() {
+  const { t } = useT();
+  const { pending } = useFormStatus();
+  return (
+    <Button
+      type="submit"
+      variant="secondary"
+      size="lg"
+      className="w-full"
+      disabled={pending}
+      aria-busy={pending}
+    >
+      {pending ? (
+        <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+      ) : (
+        <GoogleGlyph />
+      )}
+      {pending ? t("auth.redirecting") : t("auth.continueWithGoogle")}
+    </Button>
   );
 }
 
