@@ -3,6 +3,9 @@ import {
   createSupabaseServerClient,
   createSupabaseServiceClient,
 } from "@/lib/supabase/server";
+import { gateMetaAds } from "@/lib/analyzer/client-payload";
+import { PLANS } from "@/lib/stripe/plans";
+import type { PlanTier } from "@/lib/supabase/types";
 
 /**
  * Polling endpoint for an analysis. Returns the current state.
@@ -111,6 +114,21 @@ export async function GET(
     credits_charged: number | null;
   };
 
+  // The Meta Ads Optimizer payload only goes to viewers who can run Meta (see
+  // lib/analyzer/client-payload.ts). Only look the plan up when there is
+  // something to withhold — almost every poll has meta_ads = null.
+  let payload: typeof row = row;
+  if (row.meta_ads != null) {
+    const { data: prof } = await supabase
+      .from("profiles")
+      .select("plan")
+      .eq("id", user.id)
+      .single();
+    const planKey = (prof as { plan?: string } | null)?.plan;
+    const plan = planKey && planKey in PLANS ? PLANS[planKey as PlanTier] : null;
+    payload = gateMetaAds(row, plan != null && (plan.quotas.metaRunsPerMonth ?? 1) !== 0);
+  }
+
   // Stale-job detection
   if (row.status === "queued" || row.status === "running") {
     const startedRef = row.started_at ?? row.created_at;
@@ -142,7 +160,7 @@ export async function GET(
 
       return NextResponse.json(
         {
-          ...row,
+          ...payload,
           status: "refunded",
           error:
             "Analysis timed out — the worker likely crashed or restarted. Your credit was refunded.",
@@ -153,7 +171,7 @@ export async function GET(
     }
   }
 
-  return NextResponse.json(row, {
+  return NextResponse.json(payload, {
     headers: { "Cache-Control": "no-store" },
   });
 }

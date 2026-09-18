@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -49,6 +49,15 @@ import type { NicheWinner } from "@/lib/library/niche-winners";
 import type { DiscoverySignals } from "@/lib/analyzer/discovery-signals";
 import { resolveCaptureBlocked } from "@/lib/analyzer/challenge-detect";
 import { CaptureBlockedNotice } from "./capture-blocked-notice";
+import {
+  MetaPromoMobileBar,
+  MetaPromoRail,
+  MetaSimulatorTeaser,
+} from "./meta-promo";
+import {
+  metaPromoMovesSectionUp,
+  metaPromoTier,
+} from "@/lib/analyzer/meta-promo";
 
 /** Serializable payload for the "Winners in your niche" module (Change 3). */
 interface NicheWinnersData {
@@ -129,6 +138,11 @@ interface ViewerCtx {
    * stays the face, ad-readiness shows its number, the radar keeps its heading.
    */
   mapSpine?: boolean;
+  /**
+   * WP-4 — promote the Meta Campaign Simulator (flag ANALYZER_META_PROMO,
+   * resolved server-side). When false the report renders exactly as before.
+   */
+  metaPromo?: boolean;
 }
 
 export function AnalysisView({
@@ -287,8 +301,67 @@ export function AnalysisView({
     });
   };
 
+  // WP-4 — Meta Campaign Simulator promo (flag ANALYZER_META_PROMO). Gating is
+  // unchanged: the tier only picks the copy and the CTA; what a viewer can RUN
+  // is still canRunMeta, and the data they receive is gated server-side.
+  const metaPromo = viewer.metaPromo ?? false;
+  const promoTier = metaPromoTier({
+    isAnon,
+    isPaid: viewer.isPaid,
+    isScale: viewer.isScale,
+    canRunMeta: viewer.canRunMeta,
+  });
+  const metaFirst = metaPromo && metaPromoMovesSectionUp(promoTier);
+  const goToMeta = () => jumpTo("section-meta");
+
+  /**
+   * The Meta section — ad-readiness, the conversion gauges / free ROAS panel,
+   * and the live tools for plans that can run them. Rendered at the end of the
+   * report, or, with the promo on, for Pro/Scale right under the teaser
+   * (brief §3 B). `movedUp` drops the "roadmap → Meta" seam, which only reads
+   * right at the end of the narrative.
+   */
+  const renderMetaSection = (result: AnalysisResult, movedUp = false) => (
+    <div id="section-meta" className={`space-y-6 ${anchorOffset}`}>
+      {/* Brief §4 — seam 3: roadmap → ready-for-Meta. */}
+      {!movedUp && handoff("report.handoffRoadmapToMeta")}
+      <AdReadinessCard
+        data={result.ad_readiness}
+        overallScore={result.score}
+        result={result}
+        semaphoreOnly={viewer.mapSpine ?? false}
+      />
+      {/* Brief §4 — seam 4: ready-for-Meta → modeler. */}
+      {handoff("report.handoffMetaToModeler")}
+      {viewer.isPaid ? (
+        <ConversionGauges score={result.score} niche={niche} />
+      ) : (
+        <FreeMetaPanel score={result.score} niche={niche} />
+      )}
+      {viewer.canRunMeta && (
+        <>
+          {data.meta_ads != null ? (
+            <MetaAdsOptimizer meta={data.meta_ads as never} />
+          ) : viewer.isScale ? (
+            <MetaAdsPending />
+          ) : null}
+          <MetaCampaignSimulator
+            analysisId={data.id}
+            initial={initialSimulation ?? null}
+            quota={{ limit: viewer.metaLimit, used: viewer.metaUsed }}
+          />
+        </>
+      )}
+    </div>
+  );
+
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    <div
+      className={`p-6 md:p-8 max-w-7xl mx-auto space-y-6${
+        // WP-4 (C) — room for the bottom bar so it never covers the report end.
+        metaPromo && isDone ? " pb-28 xl:pb-8" : ""
+      }`}
+    >
       <header className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <Link
@@ -448,8 +521,13 @@ export function AnalysisView({
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="space-y-6"
+          className={
+            metaPromo
+              ? "xl:grid xl:grid-cols-[minmax(0,1fr)_16rem] xl:items-start xl:gap-6"
+              : "space-y-6"
+          }
         >
+          <ReportColumn on={metaPromo}>
             {/*
               Report index (jump nav) — a compact overview of what the finished
               audit contains, with smooth-scroll to each section.
@@ -519,17 +597,36 @@ export function AnalysisView({
               >
                 {t("report.teaserPersona")}
               </button>
-              <span aria-hidden="true" className="text-white/20">
-                ·
-              </span>
-              <button
-                type="button"
-                onClick={() => jumpTo("section-meta")}
-                className="underline decoration-signal-400/30 underline-offset-2 transition-colors hover:text-signal-200 hover:decoration-signal-300"
-              >
-                {t("report.teaserMeta")}
-              </button>
+              {/* WP-4 — with the promo on, the visual teaser below replaces
+                  this text jump to Meta. */}
+              {!metaPromo && (
+                <>
+                  <span aria-hidden="true" className="text-white/20">
+                    ·
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => jumpTo("section-meta")}
+                    className="underline decoration-signal-400/30 underline-offset-2 transition-colors hover:text-signal-200 hover:decoration-signal-300"
+                  >
+                    {t("report.teaserMeta")}
+                  </button>
+                </>
+              )}
             </p>
+
+            {/* WP-4 (A) — the simulator, visible in the first screen. */}
+            {metaPromo && (
+              <MetaSimulatorTeaser
+                tier={promoTier}
+                analysisId={data.id}
+                onRun={goToMeta}
+              />
+            )}
+
+            {/* WP-4 (B) — plans that already pay for the simulator get it
+                right here instead of at the end of the report. */}
+            {metaFirst && renderMetaSection(data.result, true)}
 
             {/*
               Brief §3 — the ONE canonical disclaimer, shown once here, right
@@ -677,37 +774,7 @@ export function AnalysisView({
               modelable ROAS panel (free). The live Meta tools follow for plans
               that can run them.
             */}
-            <div id="section-meta" className={`space-y-6 ${anchorOffset}`}>
-              {/* Brief §4 — seam 3: roadmap → ready-for-Meta. */}
-              {handoff("report.handoffRoadmapToMeta")}
-              <AdReadinessCard
-                data={data.result.ad_readiness}
-                overallScore={data.result.score}
-                result={data.result}
-                semaphoreOnly={viewer.mapSpine ?? false}
-              />
-              {/* Brief §4 — seam 4: ready-for-Meta → modeler. */}
-              {handoff("report.handoffMetaToModeler")}
-              {viewer.isPaid ? (
-                <ConversionGauges score={data.result.score} niche={niche} />
-              ) : (
-                <FreeMetaPanel score={data.result.score} niche={niche} />
-              )}
-              {viewer.canRunMeta && (
-                <>
-                  {data.meta_ads != null ? (
-                    <MetaAdsOptimizer meta={data.meta_ads as never} />
-                  ) : viewer.isScale ? (
-                    <MetaAdsPending />
-                  ) : null}
-                  <MetaCampaignSimulator
-                    analysisId={data.id}
-                    initial={initialSimulation ?? null}
-                    quota={{ limit: viewer.metaLimit, used: viewer.metaUsed }}
-                  />
-                </>
-              )}
-            </div>
+            {!metaFirst && renderMetaSection(data.result)}
 
             {/*
               Thin upgrade-modal layer (Tarea 3) — ONLY for logged-in free
@@ -735,10 +802,39 @@ export function AnalysisView({
                   />
                 );
               })()}
+          </ReportColumn>
+          {/* WP-4 (C) — the persistent rail: the simulator stays in view on
+              wide screens while the report scrolls on the left. Not 50/50,
+              and not below xl, where the report's own 2-column grids need
+              the width. */}
+          {metaPromo && (
+            <aside className="hidden xl:block xl:sticky xl:top-20">
+              <MetaPromoRail
+                tier={promoTier}
+                analysisId={data.id}
+                onRun={goToMeta}
+              />
+            </aside>
+          )}
         </motion.div>
+      )}
+
+      {/* WP-4 (C) — below xl the rail collapses to a bottom bar. Outside the
+          animated wrapper: its transform would pin a fixed child to it. */}
+      {metaPromo && isDone && data.result && !captureBlocked.blocked && (
+        <MetaPromoMobileBar
+          tier={promoTier}
+          analysisId={data.id}
+          onRun={goToMeta}
+        />
       )}
     </div>
   );
+}
+
+/** WP-4 — with the promo on, the report column shares a grid with the rail. */
+function ReportColumn({ on, children }: { on: boolean; children: ReactNode }) {
+  return on ? <div className="min-w-0 space-y-6">{children}</div> : <>{children}</>;
 }
 
 /**
