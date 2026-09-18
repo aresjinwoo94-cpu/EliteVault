@@ -42,6 +42,11 @@ test("the Google submit button reads its form's pending state with useFormStatus
   assert.match(btn, /disabled=\{pending\}/, "must be disabled while pending (no double submit)");
   assert.match(btn, /aria-busy=\{pending\}/, "must announce the busy state");
   assert.match(btn, /animate-spin/, "must show a spinner while pending");
+  assert.match(
+    btn,
+    /<Loader2\s+className="[^"]*animate-spin[^"]*"\s+aria-hidden="true"\s*\/>/,
+    "the spinner is decorative; the label carries the meaning",
+  );
   assert.match(btn, /t\(\s*["']auth\.redirecting["']\s*\)/, "pending label is i18n");
   assert.match(btn, /t\(\s*["']auth\.continueWithGoogle["']\s*\)/, "idle label unchanged");
   assert.match(btn, /<GoogleGlyph\s*\/>/, "keeps the inline Google glyph");
@@ -55,6 +60,9 @@ test("GoogleButton still posts to signInWithGoogle, carries `next`, and renders 
   const formClose = gb.indexOf("</form>");
   const submitAt = gb.indexOf("<GoogleSubmitButton");
   assert.ok(submitAt > formOpen && submitAt < formClose, "useFormStatus only sees a parent <form>");
+  // Exactly one usage in the whole file, so a second copy rendered outside
+  // any form (where useFormStatus would never report pending) can't slip in.
+  assert.equal((src.match(/<GoogleSubmitButton\b/g) ?? []).length, 1);
 });
 
 test("the glyph stays inline SVG — no external image", () => {
