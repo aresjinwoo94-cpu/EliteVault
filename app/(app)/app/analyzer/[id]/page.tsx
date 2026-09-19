@@ -4,7 +4,8 @@ import { AnalysisView } from "@/components/analyzer/analysis-view";
 import { PLANS } from "@/lib/stripe/plans";
 import { getMetaRunUsage } from "@/lib/quota/guard";
 import { loadNicheWinnersModule } from "@/lib/library/niche-winners";
-import { analyzerMapSpineEnabled } from "@/lib/flags";
+import { analyzerMapSpineEnabled, analyzerMetaPromoEnabled } from "@/lib/flags";
+import { toClientAnalysis } from "@/lib/analyzer/client-payload";
 
 export const dynamic = "force-dynamic";
 
@@ -123,8 +124,10 @@ export default async function AnalysisPage({
 
   return (
     <AnalysisView
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      initial={analysis as any}
+      // Server-side gate: the stored niche winners never leave the server, and
+      // the Meta Ads Optimizer payload only reaches plans that can run Meta
+      // (the only viewers the report renders it for).
+      initial={toClientAnalysis(analysis, { canRunMeta }) as never}
       viewer={{
         canPublish: plan.canPublish,
         publishedSlug,
@@ -138,6 +141,8 @@ export default async function AnalysisPage({
         metaUsed: metaUsage.used,
         // Master brief §B/§C — "map as the spine" reframe (server-resolved flag).
         mapSpine: analyzerMapSpineEnabled(),
+        // WP-4 — promote the Meta Campaign Simulator (server-resolved flag).
+        metaPromo: analyzerMetaPromoEnabled(),
       }}
       initialSimulation={initialSimulation}
       nicheWinners={nicheWinners}

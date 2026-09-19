@@ -5,7 +5,8 @@ import { getAnonToken } from "@/lib/anon/session";
 import { AnalysisView } from "@/components/analyzer/analysis-view";
 import { AnonPending } from "@/components/analyzer/anon-pending";
 import { loadNicheWinnersModule } from "@/lib/library/niche-winners";
-import { analyzerMapSpineEnabled } from "@/lib/flags";
+import { analyzerMapSpineEnabled, analyzerMetaPromoEnabled } from "@/lib/flags";
+import { toClientAnalysis } from "@/lib/analyzer/client-payload";
 import type { DiscoverySignals } from "@/lib/analyzer/discovery-signals";
 
 /**
@@ -111,7 +112,9 @@ export default async function AnonAuditPage({
 
   return (
     <AnalysisView
-      initial={row}
+      // Server-side gate: the stored niche winners (real stores + revenue) are
+      // read above for the locked card and never leave the server.
+      initial={toClientAnalysis(row, { canRunMeta: false }) as never}
       viewer={{
         canPublish: false,
         publishedSlug: null,
@@ -122,6 +125,7 @@ export default async function AnonAuditPage({
         metaLimit: 0,
         metaUsed: 0,
         mapSpine: analyzerMapSpineEnabled(),
+        metaPromo: analyzerMetaPromoEnabled(),
       }}
       initialSimulation={null}
       nicheWinners={nicheWinners}
