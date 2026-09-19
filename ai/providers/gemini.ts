@@ -45,23 +45,53 @@ const MODEL_STABLE = process.env.GEMINI_MODEL_STABLE ?? "gemini-2.5-flash";
  *
  * The default BOUNDS thinking rather than removing it: the audit is a
  * structured extraction against a fixed schema, so a little deliberation helps
- * and an unbounded amount mostly buys latency. Tune without a deploy:
+ * and an unbounded amount mostly buys latency.
+ *
+ * 256, down from 512 (WP-1, docs/analyzer-mejora-definitiva.md §2). Thinking
+ * tokens generate at output speed, so the cut is worth a second or two on EVERY
+ * audit. It lives in code so the ceiling holds whatever Vercel has set. Judge
+ * it on report quality as well as time. Tune without a deploy:
+ *   GEMINI_THINKING_BUDGET=512   the previous default (rollback)
  *   GEMINI_THINKING_BUDGET=0     disable thinking entirely (fastest)
  *   GEMINI_THINKING_BUDGET=-1    model default, i.e. unbounded (pre-fix behaviour)
  *   GEMINI_THINKING_BUDGET=2048  more deliberation, slower
+ * A blank value counts as unset: Number("") is 0, which would otherwise turn
+ * thinking OFF from an empty dashboard field.
  */
-const THINKING_BUDGET = (() => {
-  const raw = Number(process.env.GEMINI_THINKING_BUDGET);
-  return Number.isFinite(raw) ? Math.round(raw) : 512;
-})();
+const DEFAULT_THINKING_BUDGET = 256;
+
+export function resolveThinkingBudget(raw: string | undefined): number {
+  if (raw === undefined || raw.trim() === "") return DEFAULT_THINKING_BUDGET;
+  const n = Number(raw);
+  return Number.isFinite(n) ? Math.round(n) : DEFAULT_THINKING_BUDGET;
+}
+
+const THINKING_BUDGET = resolveThinkingBudget(process.env.GEMINI_THINKING_BUDGET);
 
 /**
- * Set once if a model rejects `thinkingConfig` (not every model accepts a
+ * The request fragment that bounds thinking. Empty for "model default" (a
+ * negative budget) and once a model has refused the config.
+ */
+export function thinkingConfigFor(budget: number, rejected: boolean) {
+  return budget >= 0 && !rejected
+    ? { thinkingConfig: { thinkingBudget: budget } }
+    : {};
+}
+
+/**
+ * Models that rejected `thinkingConfig` (not every model accepts a given
  * budget, and some can't disable thinking at all). Same self-healing shape as
  * the ScreenshotOne breaker: we learn it costs one retry, then stop sending it
- * for the life of the lambda rather than failing audits over a tuning knob.
+ * to THAT model for the life of the lambda rather than failing audits over a
+ * tuning knob.
+ *
+ * Per model, not global: budgets are model-specific. Live, gemini-2.5-flash-lite
+ * refuses 256 ("choose a value between 512 and 24576") while gemini-2.5-flash,
+ * gemini-3.1-flash-lite and gemini-3.6-flash accept it (probed 2026-09-13). One
+ * global flag let a fallback model's refusal silently unbound the premium
+ * vision call too.
  */
-let thinkingConfigRejected = false;
+const thinkingConfigRejectedBy = new Set<string>();
 
 /** True when the error is the model refusing our thinkingConfig, not real work failing. */
 export function isThinkingConfigError(raw: string): boolean {
@@ -152,19 +182,62 @@ const COOLDOWN_MS = 65_000; // per-minute window + small buffer
 /**
  * How long to wait for a call before firing a hedge on a second key.
  *
- * 0 disables hedging entirely, which is the DEFAULT: the projected benefit is
- * large but it is a projection from 15 samples, and it doubles AI calls on the
- * slow tail. See the comment on `callWithKey` for the numbers and the caveat.
+ * ON by default at 12s (WP-1, docs/analyzer-mejora-definitiva.md §2). It was
+ * opt-in while the key pool was unverified; the owner has since confirmed six
+ * keys in six independent Google projects, which is the precondition (see the
+ * hedge addendum in docs/analyzer-latency-followups.md). Why 12s: it lands after
+ * the fast band, where about a third of calls finish under 15s and pay nothing,
+ * and leaves most of the step for the second draw. For the analyzer's vision
+ * call neither draw is capped by CALL_CAP_MS: the step downloads the screenshot
+ * before calling, so the call starts with a little under 50s left, below the
+ * 2×cap `callCapMs()` needs. Both draws run to the step deadline, the primary
+ * from 0 and the hedge from 12s. See `callWithKey` for what it costs.
  *
- * A sensible first value is 12000. Measured, a third of calls finish under 15s
- * and would pay nothing extra, while the slow tail gets a second independent
- * draw with most of the step budget still in hand.
+ * It switches itself off with fewer than 2 keys (local dev); see shouldHedge.
+ *   GEMINI_HEDGE_AFTER_MS=0      rollback: no hedge, no deploy needed
+ *   GEMINI_HEDGE_AFTER_MS=18000  hedge fewer calls if AI spend matters more
+ * This is the rollback knob, so it fails CLOSED: a value under 2s (hedging
+ * sooner just doubles every call), a non-numeric one ("off", a typo), or one
+ * past setTimeout's range (which clamps to ~1ms) all disable it. Only a blank
+ * value counts as unset.
  */
-const HEDGE_AFTER_MS = (() => {
-  const raw = Number(process.env.GEMINI_HEDGE_AFTER_MS);
-  // Floor of 2s — hedging sooner than that just doubles every call.
-  return Number.isFinite(raw) && raw >= 2_000 ? Math.round(raw) : 0;
-})();
+const DEFAULT_HEDGE_AFTER_MS = 12_000;
+const HEDGE_FLOOR_MS = 2_000;
+const MAX_TIMER_MS = 2_147_483_647;
+
+export function resolveHedgeAfterMs(raw: string | undefined): number {
+  if (raw === undefined || raw.trim() === "") return DEFAULT_HEDGE_AFTER_MS;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= HEDGE_FLOOR_MS && n <= MAX_TIMER_MS
+    ? Math.round(n)
+    : 0;
+}
+
+const HEDGE_AFTER_MS = resolveHedgeAfterMs(process.env.GEMINI_HEDGE_AFTER_MS);
+
+/** The resolved tuning, exported for tests only. */
+export const GEMINI_TUNING_FOR_TEST = {
+  hedgeAfterMs: HEDGE_AFTER_MS,
+  thinkingBudget: THINKING_BUDGET,
+} as const;
+
+/**
+ * Whether a call should be hedged at all. With one key the only "second" call
+ * would share the first one's quota and queue, which is not an independent
+ * draw, just double the spend.
+ */
+export function shouldHedge({
+  hedgeAfterMs,
+  keyCount,
+  budgetFits,
+}: {
+  hedgeAfterMs: number;
+  keyCount: number;
+  /** Room left in the step for the wait plus one more full call. */
+  budgetFits: boolean;
+}): boolean {
+  return hedgeAfterMs > 0 && keyCount >= 2 && budgetFits;
+}
 
 /**
  * Ceiling on ONE generation, so a single bad draw can't spend the whole step.
@@ -172,6 +245,9 @@ const HEDGE_AFTER_MS = (() => {
  * ON by default at 25s, which is the change of behaviour here — see the long
  * note on `callCapMs`. 25s sits above the measured fast band (a third of calls
  * finish under 15s) and still leaves the rest of a 50s step for a second try.
+ * It only applies while at least 2×cap of budget remains (see callCapMs), so
+ * it never caps the analyzer's vision call: that step downloads the screenshot
+ * first and starts the call with a little under 50s left.
  *
  * Projected from the same 15 samples the hedge was sized on: step completion is
  * about unchanged (~72% vs 73%), while the share finishing within 30s goes from
@@ -210,14 +286,138 @@ export function firstFulfilled<T>(a: Promise<T>, b: Promise<T>): Promise<T> {
 }
 
 /**
- * Pick the next non-cooled-down key in round-robin order.
- * Returns the index into CLIENTS, or null if every key is on cooldown.
+ * Run `primary`. If it hasn't answered after `hedgeAfterMs`, start `hedge` as
+ * well and take whichever answers USABLY first, then abort the other.
+ *
+ * The rules that keep it from ever being worse than an un-hedged call:
+ *   • A primary that fails, or answers unusably, BEFORE the hedge fires comes
+ *     back right away as-is, and no hedge goes out. The caller's ladder (429 →
+ *     rotate key, 503 → back off, empty → retry) then acts at once instead of
+ *     after the hedge delay.
+ *   • Only a usable answer wins (`isUsable`). An empty or truncated hedge answer
+ *     must not abort a primary that may still answer properly.
+ *   • A FINAL primary answer (`isFinal`) ends the race at once even though it
+ *     isn't usable, and aborts the hedge. That is for answers the hedge can't
+ *     improve on: a truncated one is recovered by retrying with a wider token
+ *     ceiling, and the hedge runs with the same ceiling, so waiting for it only
+ *     delays that retry (past the deadline, in the worst case).
+ *   • A FINAL primary error (`isFinalError`) likewise ends the race at once and
+ *     aborts the hedge. That is for failures the hedge doesn't escape: a 503 is
+ *     server-side overload on the model, so a hedge on another key of the same
+ *     model isn't an independent draw. And waiting for it doesn't use up the
+ *     caller's own same-model retry, so it would pay for two same-model rounds
+ *     before falling back to a different model.
+ *   • When neither side wins, the result is exactly the PRIMARY's outcome (its
+ *     error, or its unusable answer), never the hedge's. The ladder attributes
+ *     what it gets to the primary key: a hedge key's 429 surfacing here would
+ *     put the wrong key on cooldown and leave the exhausted one hot.
+ *   • `hedge` returns null when there is no independent key to use, and the
+ *     result is then exactly the primary's. Before, that case left the second
+ *     promise pending forever, so a failing primary hung the step until the
+ *     platform killed it.
+ * A caller cancel (`parent`) aborts both calls. A factory that throws
+ * synchronously counts as that call failing.
  */
-function pickAvailableKey(): number | null {
+export function hedgedCall<R>({
+  hedgeAfterMs,
+  primary,
+  hedge,
+  parent,
+  isUsable = () => true,
+  isFinal = () => false,
+  isFinalError = () => false,
+}: {
+  hedgeAfterMs: number;
+  primary: (signal: AbortSignal) => Promise<R>;
+  hedge: (signal: AbortSignal) => Promise<R> | null;
+  parent?: AbortSignal;
+  isUsable?: (result: R) => boolean;
+  /** A primary answer that ends the race even though it isn't usable. */
+  isFinal?: (result: R) => boolean;
+  /** A primary error that ends the race even though the hedge is still running. */
+  isFinalError?: (error: unknown) => boolean;
+}): Promise<R> {
+  if (parent?.aborted) return Promise.reject(parent.reason);
+
+  const primaryCtl = new AbortController();
+  const hedgeCtl = new AbortController();
+  const abortBoth = () => {
+    primaryCtl.abort();
+    hedgeCtl.abort();
+  };
+  parent?.addEventListener("abort", abortBoth, { once: true });
+
+  const unusable = () => new Error("hedge: no usable answer from this call");
+  const winOnlyIfUsable = (r: R) => (isUsable(r) ? r : Promise.reject(unusable()));
+
+  // The primary's own outcome, exactly as an un-hedged call would have seen it…
+  let first: Promise<R>;
+  try {
+    first = primary(primaryCtl.signal);
+  } catch (err) {
+    first = Promise.reject(err);
+  }
+  // …which ends the race when it is usable, or final (see isFinal).
+  const firstWin = first.then((r) =>
+    isUsable(r) || isFinal(r) ? r : Promise.reject(unusable()),
+  );
+
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let hedgeStarted = false;
+  const secondWin = new Promise<R>((resolve, reject) => {
+    firstWin.catch(() => {
+      if (hedgeStarted) return; // the hedge is already running; let it try
+      clearTimeout(timer);
+      reject(unusable());
+    });
+    timer = setTimeout(() => {
+      hedgeStarted = true;
+      let call: Promise<R> | null;
+      try {
+        call = hedge(hedgeCtl.signal);
+      } catch (err) {
+        call = Promise.reject(err);
+      }
+      (call ? call.then(winOnlyIfUsable) : firstWin).then(resolve, reject);
+    }, hedgeAfterMs);
+    // Don't hold the event loop open on a hedge that never fires.
+    (timer as unknown as { unref?: () => void }).unref?.();
+  });
+
+  // First USABLE answer wins. A failure on one side must not cancel the other:
+  // the whole point is that one bad draw shouldn't decide the run.
+  return new Promise<R>((resolve, reject) => {
+    // …except a FINAL primary error, which ends the race at once.
+    first.catch((err) => {
+      try {
+        if (isFinalError(err)) reject(err);
+      } catch {
+        // A classifier that throws just means "not final".
+      }
+    });
+    firstFulfilled(firstWin, secondWin).then(
+      resolve,
+      // Neither won, so both have settled: hand back the primary's own outcome.
+      () => first.then(resolve, reject),
+    );
+  }).finally(() => {
+    clearTimeout(timer);
+    // Stop whichever lost. A generation nobody will read is pure quota.
+    abortBoth();
+    parent?.removeEventListener("abort", abortBoth);
+  });
+}
+
+/**
+ * Pick the next non-cooled-down key in round-robin order, skipping `exclude`.
+ * Returns the index into CLIENTS, or null if every eligible key is on cooldown.
+ */
+function pickAvailableKey(exclude?: number): number | null {
   if (CLIENTS.length === 0) return null;
   const now = Date.now();
   for (let i = 0; i < CLIENTS.length; i++) {
     const idx = (rrCursor + i) % CLIENTS.length;
+    if (idx === exclude) continue;
     const cd = cooldownUntil.get(idx) ?? 0;
     if (cd <= now) {
       rrCursor = (idx + 1) % CLIENTS.length;
@@ -388,9 +588,7 @@ async function generateStructured<T>(
         responseSchema: toGeminiSchema(tool.schema),
         // Bound the model's thinking time. -1 means "model default", which is
         // what this used to do implicitly and what was blowing the step budget.
-        ...(THINKING_BUDGET >= 0 && !thinkingConfigRejected
-          ? { thinkingConfig: { thinkingBudget: THINKING_BUDGET } }
-          : {}),
+        ...thinkingConfigFor(THINKING_BUDGET, thinkingConfigRejectedBy.has(model)),
         // Abort as soon as the budget is gone (or the caller cancels) so a
         // hanging generation can't run into the platform timeout — AND cap any
         // single call so it can't spend the whole step on one bad draw. See
@@ -421,60 +619,74 @@ async function generateStructured<T>(
    * false when Google is globally overloaded, and that run did see a 503. At a
    * correlation of 0.6 the benefit is still 81% / 63%.
    *
-   * DEFAULT OFF. It doubles AI calls on the slow tail, and it has not been
-   * measured live — only projected. Set GEMINI_HEDGE_AFTER_MS to turn it on.
+   * ON by default at 12s (see HEDGE_AFTER_MS); GEMINI_HEDGE_AFTER_MS=0 turns it
+   * off without a deploy. The cost is deliberate: on the hedged share of calls
+   * (about two thirds at 12s) Google receives two vision requests instead of
+   * one, so RPM use and AI spend go up there. That is the one number WP-1
+   * raises on purpose. It shows up in AI Studio metrics and in the
+   * "[gemini] … hedging onto key" log. It does NOT add `usage_events` rows:
+   * only the answer we use is metered (reportUsage), and the aborted loser
+   * returns no usage metadata. So the metered row carries
+   * `meta: { hedged: true, hedges: n, hedgesByModel }`, counting every hedge
+   * sent while producing that answer, including hedges on earlier attempts that
+   * failed. Hedges can span the model fallback chain, so they are also counted
+   * per model to price them correctly. That is how the hedged share, and the
+   * extra prompt cost on it, can be measured in SQL. (An audit whose every
+   * attempt fails writes no row at all, hedged or not.)
    */
+  const hedgesByModel: Record<string, number> = {};
   const callWithKey = async (
     keyIdx: number,
     model: string,
     maxOutputTokens: number,
   ) => {
-    // Not enough keys to hedge onto, feature off, or not enough budget left for
-    // the wait plus a second call to be worth starting.
+    // Feature off, not enough keys to hedge onto, or not enough budget left
+    // for the wait plus a second call to be worth starting.
     if (
-      HEDGE_AFTER_MS <= 0 ||
-      CLIENTS.length < 2 ||
-      !dl.has(HEDGE_AFTER_MS + MIN_CALL_MS)
+      !shouldHedge({
+        hedgeAfterMs: HEDGE_AFTER_MS,
+        keyCount: CLIENTS.length,
+        budgetFits: dl.has(HEDGE_AFTER_MS + MIN_CALL_MS),
+      })
     ) {
       return callOnce(keyIdx, model, maxOutputTokens);
     }
 
-    const primaryCtl = new AbortController();
-    const hedgeCtl = new AbortController();
-    const primary = callOnce(keyIdx, model, maxOutputTokens, primaryCtl.signal);
-
-    let settled = false;
-    const hedge = new Promise<Awaited<ReturnType<typeof callOnce>>>(
-      (resolve, reject) => {
-        const timer = setTimeout(() => {
-          if (settled) return;
-          const alt = pickAvailableKey();
-          // Only hedge onto a DIFFERENT key — a second call on the same one
-          // shares its quota and its queue, so it isn't an independent draw.
-          if (alt === null || alt === keyIdx) return;
-          console.warn(
-            `[gemini] ${model} key #${keyIdx + 1} slow past ${HEDGE_AFTER_MS / 1000}s — hedging onto key #${alt + 1}`,
-          );
-          callOnce(alt, model, maxOutputTokens, hedgeCtl.signal).then(
-            resolve,
-            reject,
-          );
-        }, HEDGE_AFTER_MS);
-        // Don't hold the event loop open on a hedge that never fires.
-        (timer as unknown as { unref?: () => void }).unref?.();
+    // Explicit: with callbacks in the object, inference falls back to
+    // `unknown` and the response type is lost for the ladder below.
+    return hedgedCall<Awaited<ReturnType<typeof callOnce>>>({
+      hedgeAfterMs: HEDGE_AFTER_MS,
+      parent: opts.signal,
+      // An empty or cut-off answer isn't a win; the ladder below retries those…
+      isUsable: (r) => Boolean(extractText(r)) && !isTruncated(r),
+      // …but a cut-off PRIMARY ends the race: the ladder recovers it with a
+      // wider token ceiling, which the hedge (same ceiling) can't provide.
+      isFinal: (r) => isTruncated(r),
+      // A 503 is model-side overload: the hedge (same model) won't escape it,
+      // and the ladder's own 503 retry and model fallback must run on time.
+      isFinalError: (err) => is503(errMsg(err)),
+      primary: (signal) => callOnce(keyIdx, model, maxOutputTokens, signal),
+      hedge: (signal) => {
+        // Only hedge onto a DIFFERENT key — a second call on the same one
+        // shares its quota and its queue, so it isn't an independent draw.
+        // Excluded inside the scan rather than rejected after it: after a
+        // hedge the cursor often points back at the primary, and a same-key
+        // retry would otherwise find "no key" while another one is free.
+        const alt = pickAvailableKey(keyIdx);
+        if (alt === null) return null;
+        hedgesByModel[model] = (hedgesByModel[model] ?? 0) + 1;
+        console.warn(
+          `[gemini] ${model} key #${keyIdx + 1} slow past ${HEDGE_AFTER_MS / 1000}s — hedging onto key #${alt + 1}`,
+        );
+        const call = callOnce(alt, model, maxOutputTokens, signal);
+        // The ladder only ever sees the PRIMARY key's outcome, so this key's
+        // quota exhaustion has to be recorded here or it stays in rotation.
+        call.catch((err) => {
+          if (is429(errMsg(err))) cooldownUntil.set(alt, Date.now() + COOLDOWN_MS);
+        });
+        return call;
       },
-    );
-
-    try {
-      // First to SUCCEED wins. A rejection from one side must not cancel the
-      // other — the whole point is that one bad draw shouldn't decide the run.
-      return await firstFulfilled(primary, hedge);
-    } finally {
-      settled = true;
-      // Stop whichever lost. A generation nobody will read is pure quota.
-      primaryCtl.abort();
-      hedgeCtl.abort();
-    }
+    });
   };
 
   // Google 503 ("model experiencing high demand") is server-side, not
@@ -561,7 +773,7 @@ async function generateStructured<T>(
               `Gemini: response truncated at the ${maxTokensForCall}-token ceiling`,
             );
           }
-          reportUsage(response, Boolean(opts.fast));
+          reportUsage(response, Boolean(opts.fast), hedgesByModel);
           return parseJsonText<T>(text);
         } catch (err) {
           const raw = errMsg(err);
@@ -569,10 +781,10 @@ async function generateStructured<T>(
           // budget; some can't turn thinking off). Drop it for the rest of this
           // lambda and retry the SAME key immediately — a latency knob must
           // never be the reason a paid audit fails.
-          if (!thinkingConfigRejected && isThinkingConfigError(raw)) {
-            thinkingConfigRejected = true;
+          if (!thinkingConfigRejectedBy.has(model) && isThinkingConfigError(raw)) {
+            thinkingConfigRejectedBy.add(model);
             console.warn(
-              `[gemini] ${model} rejected thinkingConfig (${raw.slice(0, 80)}) — retrying without it and not sending it again`,
+              `[gemini] ${model} rejected thinkingConfig (${raw.slice(0, 80)}) — retrying without it and not sending it to this model again`,
             );
             continue; // retry same key, now without the config
           }
@@ -656,7 +868,7 @@ async function generateStructured<T>(
             "Gemini: response truncated at the token ceiling (after cooldown wait)",
           );
         }
-        reportUsage(response, Boolean(opts.fast));
+        reportUsage(response, Boolean(opts.fast), hedgesByModel);
         return parseJsonText<T>(text);
       } catch (err) {
         if (is429(errMsg(err))) {
@@ -758,7 +970,12 @@ export function is503(raw: string): boolean {
  * usage_event (attributed to the active AsyncLocalStorage meter context).
  * Never throws — recordUsage is fire-and-forget.
  */
-function reportUsage(response: unknown, fast: boolean): void {
+function reportUsage(
+  response: unknown,
+  fast: boolean,
+  hedgesByModel: Record<string, number> = {},
+): void {
+  const hedges = Object.values(hedgesByModel).reduce((sum, n) => sum + n, 0);
   const u = (
     response as {
       usageMetadata?: {
@@ -774,6 +991,10 @@ function reportUsage(response: unknown, fast: boolean): void {
     promptTokens: u?.promptTokenCount ?? 0,
     outputTokens: u?.candidatesTokenCount ?? 0,
     totalTokens: u?.totalTokenCount ?? 0,
+    // Each hedge also sent this prompt to another key; see callWithKey.
+    ...(hedges > 0
+      ? { meta: { hedged: true, hedges, hedgesByModel: { ...hedgesByModel } } }
+      : {}),
   });
 }
 
