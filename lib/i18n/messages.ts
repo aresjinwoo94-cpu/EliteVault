@@ -175,6 +175,7 @@ const en: Dict = {
     privacy: "Privacy",
     terms: "Terms",
     refunds: "Refunds",
+    weAccept: "We accept",
   },
   metaPromo: {
     eyebrow: "Meta Campaign Simulator",
@@ -935,6 +936,7 @@ const es: Dict = {
     privacy: "Privacidad",
     terms: "Términos",
     refunds: "Reembolsos",
+    weAccept: "Aceptamos",
   },
   metaPromo: {
     eyebrow: "Simulador de campañas Meta",

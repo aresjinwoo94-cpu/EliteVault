@@ -1,12 +1,15 @@
 "use client";
 
+import { useId } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { LanguageToggle } from "@/components/i18n/language-toggle";
 import { useT } from "@/components/i18n/locale-provider";
+import { PaymentMarks } from "@/components/billing/payment-marks";
 
 export function Footer() {
   const { t } = useT();
+  const weAcceptId = useId();
   return (
     <footer className="border-t border-white/[0.04] py-12">
       <div className="container max-w-6xl">
@@ -68,6 +71,18 @@ export function Footer() {
               {t("footer.refunds")}
             </Link>
           </nav>
+        </div>
+        {/* "We accept" — the same brand chips as the checkout, derived from the
+            methods Stripe is configured with (lib/stripe/payment-method-types),
+            so the footer can never promise a method checkout doesn't offer. */}
+        <div className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-white/[0.04] pt-6">
+          <span
+            id={weAcceptId}
+            className="text-[11px] uppercase tracking-widest text-white/35"
+          >
+            {t("footer.weAccept")}
+          </span>
+          <PaymentMarks aria-labelledby={weAcceptId} chipClassName="text-white/45" />
         </div>
       </div>
     </footer>
