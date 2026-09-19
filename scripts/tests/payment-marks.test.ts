@@ -211,3 +211,23 @@ test("the footer label exists in both locales and is the one rendered", () => {
   assert.equal(es.weAccept, "Aceptamos");
   assert.match(code("components/marketing/footer.tsx"), /t\(\s*["']footer\.weAccept["']\s*\)/);
 });
+
+// §6.1 follow-up — the footer row shipped but was effectively invisible: 11px
+// wordmarks at 45% white on a near-transparent chip. It must stay readable.
+test("the footer's We accept row is sized and contrasted to be read", () => {
+  const footer = code("components/marketing/footer.tsx");
+  assert.match(footer, /<PaymentMarks[\s\S]*?size="md"/, "footer uses the larger chip size");
+  const chipText = footer.match(/chipClassName="[^"]*text-white\/(\d+)/);
+  assert.ok(chipText, "footer sets the chip text colour");
+  assert.ok(Number(chipText![1]) >= 70, `chip text white/${chipText![1]} is too faint`);
+  const label = footer.match(/id=\{weAcceptId\}\s*className="[^"]*text-white\/(\d+)/);
+  assert.ok(label, "the label has an explicit colour");
+  assert.ok(Number(label![1]) >= 50, `label white/${label![1]} is too faint`);
+
+  const marks = code("components/billing/payment-marks.tsx");
+  const md = marks.match(/md:\s*\{\s*mark:\s*(\d+)/);
+  assert.ok(md && Number(md[1]) >= 14, "md wordmarks are at least 14px tall");
+  // The checkout keeps its current size (default sm = 11px).
+  assert.match(marks, /sm:\s*\{\s*mark:\s*11\b/);
+  assert.match(marks, /size\s*=\s*"sm"/);
+});

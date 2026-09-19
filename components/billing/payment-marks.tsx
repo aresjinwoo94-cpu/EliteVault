@@ -115,12 +115,12 @@ export const WORDMARKS: Record<PaymentMark, Wordmark> = {
  * which draws exactly the derived list. An exported BrandMark could be
  * hand-placed to show a brand whose Stripe method was removed.
  */
-function BrandMark({ mark }: { mark: PaymentMark }) {
+function BrandMark({ mark, height }: { mark: PaymentMark; height: number }) {
   const m = WORDMARKS[mark];
   return (
     <svg
       viewBox={`0 0 ${m.width} 14`}
-      height={11}
+      height={height}
       role="img"
       aria-label={m.label}
       className="block w-auto"
@@ -146,27 +146,41 @@ function BrandMark({ mark }: { mark: PaymentMark }) {
   );
 }
 
+/**
+ * Chip sizes. `sm` is the checkout trust row (unchanged); `md` is for places
+ * where the row is the only thing carrying the message, like the footer — at
+ * `sm` and footer contrast the wordmarks were too small and faint to read.
+ */
+const SIZES = {
+  sm: { mark: 11, chip: "gap-1.5", item: "px-2 py-1" },
+  md: { mark: 15, chip: "gap-2", item: "px-2.5 py-1.5" },
+} as const;
+
 /** The row of accepted-brand chips. Wraps on narrow screens. */
 export function PaymentMarks({
   className,
   chipClassName,
+  size = "sm",
   ...aria
 }: {
   className?: string;
-  /** Extra classes for each chip (e.g. a quieter text colour in the footer). */
+  /** Extra classes for each chip (e.g. a different text colour in the footer). */
   chipClassName?: string;
+  size?: keyof typeof SIZES;
 } & Pick<HTMLAttributes<HTMLUListElement>, "aria-label" | "aria-labelledby">) {
+  const s = SIZES[size];
   return (
-    <ul className={cn("flex flex-wrap items-center gap-1.5", className)} {...aria}>
+    <ul className={cn("flex flex-wrap items-center", s.chip, className)} {...aria}>
       {ACCEPTED_PAYMENT_MARKS.map((mark) => (
         <li
           key={mark}
           className={cn(
-            "inline-flex items-center rounded-md border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-white/60",
+            "inline-flex items-center rounded-md border border-white/[0.08] bg-white/[0.03] text-white/60",
+            s.item,
             chipClassName,
           )}
         >
-          <BrandMark mark={mark} />
+          <BrandMark mark={mark} height={s.mark} />
         </li>
       ))}
     </ul>

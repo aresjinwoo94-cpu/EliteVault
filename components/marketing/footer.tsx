@@ -75,14 +75,18 @@ export function Footer() {
         {/* "We accept" — the same brand chips as the checkout, derived from the
             methods Stripe is configured with (lib/stripe/payment-method-types),
             so the footer can never promise a method checkout doesn't offer. */}
-        <div className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-white/[0.04] pt-6">
+        <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-white/[0.06] pt-6">
           <span
             id={weAcceptId}
-            className="text-[11px] uppercase tracking-widest text-white/35"
+            className="text-xs font-medium uppercase tracking-widest text-white/60"
           >
             {t("footer.weAccept")}
           </span>
-          <PaymentMarks aria-labelledby={weAcceptId} chipClassName="text-white/45" />
+          <PaymentMarks
+            aria-labelledby={weAcceptId}
+            size="md"
+            chipClassName="border-white/[0.14] bg-white/[0.06] text-white/85"
+          />
         </div>
       </div>
     </footer>
