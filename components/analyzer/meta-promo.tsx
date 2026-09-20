@@ -89,13 +89,21 @@ function PromoAction({
             placement,
             tier,
             target_plan: cta.targetPlan,
+            // Anonymous clicks land on sign-up, not checkout — without this
+            // they'd read as checkout intent in the funnel.
+            destination: cta.href.startsWith("/sign-up") ? "signup" : "checkout",
             analysis_id: analysisId,
           })
         }
       >
         <Button variant="primary" size={size} className={compact ? "" : "w-full sm:w-auto"}>
           <Sparkles className="size-4" />
-          {t("metaPromo.unlockPro").replace("{price}", String(PLANS.pro.price.month))}
+          {/* An anonymous visitor signs up (free) before they can buy
+              anything, so promising them a price on this button would be a
+              lie about what the click does. */}
+          {tier === "anon"
+            ? t("metaPromo.signupCta")
+            : t("metaPromo.unlockPro").replace("{price}", String(PLANS.pro.price.month))}
           {!compact && <ArrowRight className="size-4" />}
         </Button>
       </Link>
@@ -210,7 +218,10 @@ export function MetaSimulatorTeaser({ tier, analysisId, onRun }: PromoProps) {
           {locked && <ExampleRows />}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <PromoAction tier={tier} analysisId={analysisId} onRun={onRun} placement="teaser" />
-            {locked ? (
+            {/* The billing reassurance belongs next to a button that starts a
+                payment. An anonymous visitor's button creates a free account,
+                so pairing it with "cancel anytime" would imply a charge. */}
+            {locked && tier !== "anon" ? (
               <p className="inline-flex items-center gap-1 text-[11px] text-white/40">
                 <Shield className="size-3" />
                 {t("metaPromo.cancelAnytime")}
@@ -248,8 +259,17 @@ export function MetaPromoRail({ tier, analysisId, onRun }: PromoProps) {
   );
 }
 
-/** (C) On narrow screens the rail collapses to a bar pinned to the bottom. */
-export function MetaPromoMobileBar({ tier, analysisId, onRun }: PromoProps) {
+/**
+ * (C) Below the rail's breakpoint it collapses to a bar pinned to the bottom.
+ * `hideAt` must match where the caller shows the rail, so exactly one of the
+ * two is on screen at any width.
+ */
+export function MetaPromoMobileBar({
+  tier,
+  analysisId,
+  onRun,
+  hideAt,
+}: PromoProps & { hideAt: "xl" | "2xl" }) {
   const { t } = useT();
   const ref = useRef<HTMLDivElement>(null);
   useViewOnce(ref, "mobile_bar", tier, analysisId);
@@ -257,7 +277,9 @@ export function MetaPromoMobileBar({ tier, analysisId, onRun }: PromoProps) {
   return (
     <div
       ref={ref}
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-white/[0.08] bg-[#0a0a0f]/90 px-4 py-3 pr-20 backdrop-blur xl:hidden"
+      className={`fixed inset-x-0 bottom-0 z-30 border-t border-white/[0.08] bg-[#0a0a0f]/90 px-4 py-3 pr-20 backdrop-blur ${
+        hideAt === "xl" ? "xl:hidden" : "2xl:hidden"
+      }`}
       style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
     >
       <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">

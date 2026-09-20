@@ -34,17 +34,25 @@ const code = (p: string) =>
 
 // ─── Flag ───────────────────────────────────────────────────────────────────
 
-test("ANALYZER_META_PROMO defaults OFF and is read at call time", () => {
+// The promo ships ON (brief §3). The flag stays, so it can be switched off in
+// the environment without a deploy — that kill switch is what makes shipping
+// it on safe, so it is pinned as hard as the default itself.
+test("ANALYZER_META_PROMO defaults ON, and the env kill switch still works", () => {
   const prev = process.env.ANALYZER_META_PROMO;
   try {
     delete process.env.ANALYZER_META_PROMO;
-    assert.equal(analyzerMetaPromoEnabled(), false);
+    assert.equal(analyzerMetaPromoEnabled(), true, "unset = on");
+    process.env.ANALYZER_META_PROMO = "";
+    assert.equal(analyzerMetaPromoEnabled(), true, "blank = unset");
+    for (const off of ["false", "0", "off", "no"]) {
+      process.env.ANALYZER_META_PROMO = off;
+      assert.equal(analyzerMetaPromoEnabled(), false, off);
+    }
     for (const on of ["true", "1", "on", "yes"]) {
       process.env.ANALYZER_META_PROMO = on;
       assert.equal(analyzerMetaPromoEnabled(), true, on);
     }
-    process.env.ANALYZER_META_PROMO = "false";
-    assert.equal(analyzerMetaPromoEnabled(), false);
+    assert.match(code("lib/flags.ts"), /enabled\("ANALYZER_META_PROMO",\s*true\)/);
   } finally {
     if (prev === undefined) delete process.env.ANALYZER_META_PROMO;
     else process.env.ANALYZER_META_PROMO = prev;
@@ -215,6 +223,7 @@ const KEYS = [
   "balanced",
   "aggressive",
   "unlockPro",
+  "signupCta",
   "runCta",
   "optimizerUpsell",
   "optimizerCta",
@@ -245,4 +254,51 @@ test("promo copy exists in both locales", () => {
       assert.ok((ns[k] as string).length > 0, `[${locale}] metaPromo.${k} empty`);
     }
   }
+});
+
+// Shipping the promo ON made two layout rules load-bearing rather than cosmetic.
+test("the rail and the bottom bar are mutually exclusive, with room left for the bar", () => {
+  const view = code("components/analyzer/analysis-view.tsx");
+  // The app shell already spends 16rem on its sidebar, so the rail waits for
+  // 2xl there; the anonymous report has the full width and gets it at xl.
+  assert.match(view, /railAt:\s*"xl"\s*\|\s*"2xl"\s*=\s*isAnon\s*\?\s*"xl"\s*:\s*"2xl"/);
+  // Mapped the right way round: railAt "xl" must not render the 2xl classes.
+  assert.match(
+    view,
+    /railAt === "xl"\s*\?\s*"hidden xl:block[^"]*"\s*:\s*"hidden 2xl:block[^"]*"/,
+  );
+  assert.match(
+    view,
+    /railAt === "xl"\s*\?\s*"xl:grid[^"]*"\s*:\s*"2xl:grid[^"]*"/,
+  );
+  // The bar hides exactly where the rail appears — never both, never neither.
+  assert.match(view, /hideAt=\{railAt\}/);
+  const bar = code("components/analyzer/meta-promo.tsx");
+  assert.match(bar, /hideAt === "xl" \? "xl:hidden" : "2xl:hidden"/);
+
+  // `md:p-8` also sets padding-bottom and wins over a bare `pb-28`, so the
+  // clearance must be restated at md or the bar covers the report's end
+  // between md and the rail's breakpoint.
+  for (const cls of ["pb-28 md:pb-28 xl:pb-8", "pb-28 md:pb-28 2xl:pb-8"]) {
+    assert.ok(view.includes(cls), `missing clearance "${cls}"`);
+  }
+  // No clearance when no bar is rendered (capture blocked / no result).
+  assert.match(view, /metaPromo && isDone && data\.result && !captureBlocked\.blocked\s*\?\s*railAt/);
+});
+
+test("the anonymous CTA does not put a price on a free sign-up", () => {
+  const ui = code("components/analyzer/meta-promo.tsx");
+  assert.match(ui, /tier === "anon"\s*\?\s*t\("metaPromo\.signupCta"\)/);
+  for (const locale of ["en", "es"] as const) {
+    const ns = (messages[locale] as unknown as { metaPromo: Record<string, string> }).metaPromo;
+    assert.doesNotMatch(ns.signupCta, /\d|\{price\}/, `[${locale}] signupCta must not quote a price`);
+  }
+});
+
+test("the anonymous CTA carries no billing promise and is reported as sign-up intent", () => {
+  const ui = code("components/analyzer/meta-promo.tsx");
+  assert.match(ui, /locked && tier !== "anon" \?/, "cancelAnytime must not sit next to a free sign-up");
+  assert.match(ui, /destination: cta\.href\.startsWith\("\/sign-up"\) \? "signup" : "checkout"/);
+  // The bar must be told where the rail takes over; no silent default.
+  assert.match(ui, /hideAt,\s*\n\}: PromoProps & \{ hideAt: "xl" \| "2xl" \}/);
 });
