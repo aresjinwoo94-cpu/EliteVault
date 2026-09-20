@@ -4,18 +4,27 @@ import { MarketingNav } from "@/components/marketing/nav";
 
 /**
  * Homepage metadata — keyword-led title/description so the strongest page
- * targets the queries we want to rank for ("free website audit", "website
- * analyzer"). The visible hero copy is unchanged; only the SERP title is.
+ * targets the queries we want to rank for.
+ *
+ * WP-D repositions this page from "Meta ads" to the product itself: the
+ * primary keyword is now "shopify store analyzer", and the title, description
+ * and hero all lead with it. Paid traffic stays in the copy as the REASON the
+ * audit matters, not as the thing being sold. The dedicated Meta pages
+ * (/meta-ads-forecast) keep their own keyword — this page stopped competing
+ * with them for it.
  */
 export const metadata: Metadata = {
   title: {
-    // Brief §4.2 — keep the light keywords in <title>, lead with the hook.
     absolute:
-      "Free Shopify Store Audit — Fix Why Visitors Don't Buy Before You Run Meta Ads | EliteVault",
+      "Shopify Store Analyzer — Find What's Costing You Sales | EliteVault",
   },
   description:
-    "Before you lose thousands on Meta ads, test your store first. Free 60-second AI audit like a senior media buyer: score, annotated screenshot and the #1 fix costing you conversions. No login.",
+    "Free AI Shopify store analyzer. Get an annotated audit of your store page, ranked by what's costing you sales on paid traffic, before you scale.",
   keywords: [
+    // WP-D primary.
+    "shopify store analyzer",
+    "shopify analyzer",
+    "analyze shopify store",
     // Core bottom-funnel keywords that already rank — kept intact.
     "free website audit",
     "free shopify store audit",
@@ -37,17 +46,17 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/" },
   openGraph: {
-    // Brief §4.2 — hook-forward og/twitter title + description.
-    title: "Before you lose thousands on Meta ads, try this — EliteVault",
+    // WP-D — the share card leads with the analyzer, like the title does.
+    title: "Shopify Store Analyzer — Find What's Costing You Sales",
     description:
-      "Test your store like a senior media buyer before you spend on Meta: a free 60-second AI audit with your score, an annotated screenshot and the #1 fix costing you conversions.",
+      "A free AI analyzer for your Shopify store: an annotated audit of your store page, ranked by what's costing you sales on paid traffic.",
     type: "website",
     url: "/",
   },
   twitter: {
-    title: "Before you lose thousands on Meta ads, try this — EliteVault",
+    title: "Shopify Store Analyzer — Find What's Costing You Sales",
     description:
-      "Test your store like a senior media buyer before you spend on Meta: a free 60-second AI audit with your score, an annotated screenshot and the #1 fix costing you conversions.",
+      "A free AI analyzer for your Shopify store: an annotated audit of your store page, ranked by what's costing you sales on paid traffic.",
   },
 };
 
@@ -104,7 +113,7 @@ function buildLandingJsonLd() {
     operatingSystem: "Web",
     url: baseUrl,
     description:
-      "AI-powered ecommerce audit with annotated screenshots, buyer-persona simulations, and a 7-day Meta Ads campaign scenario modeler.",
+      "AI Shopify store analyzer: an annotated audit of your storefront with buyer-persona simulations and a 7-day Meta Ads campaign scenario modeler.",
     offers: Object.values(PLANS).map((plan) => ({
       "@type": "Offer",
       name: `EliteVault ${plan.name}`,
@@ -167,7 +176,7 @@ function buildLandingJsonLd() {
     name: "EliteVault",
     url: baseUrl,
     description:
-      "AI conversion audits for ecommerce — a CRO score, annotated screenshot, and ranked fixes in under a minute.",
+      "AI Shopify store analyzer — a CRO score, annotated screenshot, and fixes ranked by impact in under a minute.",
   };
 
   return [softwareApplication, faqPage, website];
