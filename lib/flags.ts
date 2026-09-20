@@ -122,14 +122,16 @@ export function analyzerGroundingEnabled(): boolean {
 /**
  * Promote the Meta Campaign Simulator in the report (WP-4, brief §3).
  *
- * DEFAULT OFF. When ON: (A) a simulator teaser under the Growth Map — locked
+ * DEFAULT ON (brief §3 — the simulator is the paid hook and was buried at the
+ * end of the report). (A) a simulator teaser under the Growth Map — locked
  * with an upgrade CTA for anonymous/Free, "run your simulation" for Pro/Scale;
  * (B) for Pro/Scale, who already pay for it, the Meta section moves up to right
  * after the teaser; (C) a persistent side rail on wide screens and a bottom
  * bar on narrow ones. Pure presentation — no gating, pipeline or scoring
- * change — so turning it off restores the report as it was, without a deploy,
- * and flipping it gives a before/after on the PostHog `meta_promo_*` events.
+ * change — so `ANALYZER_META_PROMO=false` restores the report as it was,
+ * without a deploy, and flipping it gives a before/after on the PostHog
+ * `meta_promo_*` events.
  */
 export function analyzerMetaPromoEnabled(): boolean {
-  return enabled("ANALYZER_META_PROMO", false);
+  return enabled("ANALYZER_META_PROMO", true);
 }

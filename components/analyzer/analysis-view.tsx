@@ -313,6 +313,10 @@ export function AnalysisView({
   });
   const metaFirst = metaPromo && metaPromoMovesSectionUp(promoTier);
   const goToMeta = () => jumpTo("section-meta");
+  // Where the rail may appear. The logged-in report sits next to the app
+  // sidebar (16rem), so at xl the left column would starve the report's own
+  // 2-column grids; the anonymous report has the full width.
+  const railAt: "xl" | "2xl" = isAnon ? "xl" : "2xl";
 
   /**
    * The Meta section — ad-readiness, the conversion gauges / free ROAS panel,
@@ -358,8 +362,15 @@ export function AnalysisView({
   return (
     <div
       className={`p-6 md:p-8 max-w-7xl mx-auto space-y-6${
-        // WP-4 (C) — room for the bottom bar so it never covers the report end.
-        metaPromo && isDone ? " pb-28 xl:pb-8" : ""
+        // WP-4 (C) — room for the bottom bar so it never covers the report
+        // end. `md:pb-28` is not redundant: `md:p-8` sets padding-bottom too
+        // and wins over a bare `pb-28`, which would leave the bar covering
+        // the report between md and xl, exactly where the bar still shows.
+        metaPromo && isDone && data.result && !captureBlocked.blocked
+          ? railAt === "xl"
+            ? " pb-28 md:pb-28 xl:pb-8"
+            : " pb-28 md:pb-28 2xl:pb-8"
+          : ""
       }`}
     >
       <header className="flex items-start justify-between gap-4">
@@ -523,7 +534,9 @@ export function AnalysisView({
           transition={{ duration: 0.5 }}
           className={
             metaPromo
-              ? "xl:grid xl:grid-cols-[minmax(0,1fr)_16rem] xl:items-start xl:gap-6"
+              ? railAt === "xl"
+                ? "xl:grid xl:grid-cols-[minmax(0,1fr)_16rem] xl:items-start xl:gap-6"
+                : "2xl:grid 2xl:grid-cols-[minmax(0,1fr)_16rem] 2xl:items-start 2xl:gap-6"
               : "space-y-6"
           }
         >
@@ -805,10 +818,18 @@ export function AnalysisView({
           </ReportColumn>
           {/* WP-4 (C) — the persistent rail: the simulator stays in view on
               wide screens while the report scrolls on the left. Not 50/50,
-              and not below xl, where the report's own 2-column grids need
-              the width. */}
+              and never where the report's own 2-column grids would be
+              starved: inside the app shell the 16rem sidebar already takes
+              its share, so the rail waits for 2xl there and xl on the
+              anonymous report, which has no sidebar. */}
           {metaPromo && (
-            <aside className="hidden xl:block xl:sticky xl:top-20">
+            <aside
+              className={
+                railAt === "xl"
+                  ? "hidden xl:block xl:sticky xl:top-20"
+                  : "hidden 2xl:block 2xl:sticky 2xl:top-20"
+              }
+            >
               <MetaPromoRail
                 tier={promoTier}
                 analysisId={data.id}
@@ -819,13 +840,15 @@ export function AnalysisView({
         </motion.div>
       )}
 
-      {/* WP-4 (C) — below xl the rail collapses to a bottom bar. Outside the
-          animated wrapper: its transform would pin a fixed child to it. */}
+      {/* WP-4 (C) — below the rail's breakpoint it collapses to a bottom bar.
+          Outside the animated wrapper: its transform would pin a fixed child
+          to it. */}
       {metaPromo && isDone && data.result && !captureBlocked.blocked && (
         <MetaPromoMobileBar
           tier={promoTier}
           analysisId={data.id}
           onRun={goToMeta}
+          hideAt={railAt}
         />
       )}
     </div>
