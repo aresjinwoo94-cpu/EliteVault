@@ -1,10 +1,43 @@
 import "server-only";
+import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe/server";
 import { getCheckoutPriceId } from "@/lib/stripe/plans";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { absoluteUrl } from "@/lib/utils";
 import { inngest } from "@/inngest/client";
 import { CHECKOUT_PAYMENT_METHOD_TYPES } from "@/lib/stripe/payment-method-types";
+
+/**
+ * Brief §5.4 — the embedded form renders in a Stripe-owned iframe on
+ * js.stripe.com, so none of our CSS reaches it: a white payment form sat in
+ * the middle of our obsidian page. `branding_settings` is the only way in.
+ *
+ * It is PER SESSION, so checkout gets our theme while the Dashboard branding
+ * that invoices and emails use is left alone; fields omitted here (brand name,
+ * logo, font) keep their Dashboard values.
+ *
+ * Spread through a cast because this account's API version is pinned to
+ * 2024-12-18.acacia and the pinned SDK types predate the parameter. The live
+ * API does accept it on that version (verified against a test-mode session,
+ * which echoed these exact colours back).
+ */
+const DARK_CHECKOUT_BRANDING = {
+  branding_settings: {
+    background_color: "#0A0A0F", // obsidian-900 — the page's own surface
+    button_color: "#2DD4BF", // champagne-400, the brand teal
+    border_style: "rounded",
+  },
+} as object;
+
+/** A rejection of the branding parameter itself, not a real payment failure. */
+function isBrandingRejection(err: unknown): boolean {
+  const e = err as { type?: string; param?: string; message?: string };
+  if (e?.param?.startsWith("branding_settings")) return true;
+  return (
+    e?.type === "StripeInvalidRequestError" &&
+    /branding_settings/i.test(e?.message ?? "")
+  );
+}
 
 /**
  * Embedded Checkout session creation, extracted from
@@ -122,7 +155,7 @@ export async function createEmbeddedCheckoutSession({
     // success_url/cancel_url are replaced by a single return_url that both
     // successful and canceled checkouts hit. We disambiguate in
     // /app/checkout/return based on the retrieved session's status.
-    const session = await stripe.checkout.sessions.create({
+    const params: Stripe.Checkout.SessionCreateParams = {
       ui_mode: "embedded",
       mode: "subscription",
       customer: customerId,
@@ -132,6 +165,8 @@ export async function createEmbeddedCheckoutSession({
       ),
       allow_promotion_codes: true,
       billing_address_collection: "auto",
+
+      ...DARK_CHECKOUT_BRANDING,
 
       // Explicit payment methods — Stripe SHOULD auto-detect from the
       // dashboard config, but for Embedded Checkout sessions some accounts
@@ -177,7 +212,26 @@ export async function createEmbeddedCheckoutSession({
         description: `EliteVault ${planLabel} — ${interval === "year" ? "annual" : "monthly"} subscription`,
       },
       metadata: { supabase_user_id: userId, plan },
-    });
+    };
+
+    // Brief §5.4 — theming is a nicety; being able to pay is not. If Stripe
+    // ever rejects branding_settings (a live-account difference, a validation
+    // change, the parameter withdrawn from the pinned API version), retry
+    // once WITHOUT it rather than showing the buyer an error instead of a
+    // payment form.
+    let session;
+    try {
+      session = await stripe.checkout.sessions.create(params);
+    } catch (err) {
+      if (!isBrandingRejection(err)) throw err;
+      console.warn(
+        "[stripe/checkout] branding_settings rejected — falling back to Dashboard branding:",
+        (err as { message?: string }).message,
+      );
+      const { ...withoutBranding } = params;
+      delete (withoutBranding as Record<string, unknown>).branding_settings;
+      session = await stripe.checkout.sessions.create(withoutBranding);
+    }
 
     if (!session.client_secret) {
       return {

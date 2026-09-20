@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AppSidebar } from "@/components/dashboard/sidebar";
 import { AppTopbar } from "@/components/dashboard/topbar";
+import { HideChromeOnCheckout } from "@/components/dashboard/focus-chrome";
 import { CommandMenu } from "@/components/dashboard/command-menu";
 import { PostHogIdentify } from "@/components/analytics/posthog-identify";
 
@@ -35,7 +36,11 @@ export default async function AppLayout({
       />
       <AppSidebar profile={profile ?? null} />
       <div className="flex-1 flex flex-col min-w-0">
-        <AppTopbar profile={profile ?? null} />
+        {/* §5.1 — the payment route drops the chrome on phones; see the
+            component. Everywhere else, and on desktop, this is a no-op. */}
+        <HideChromeOnCheckout>
+          <AppTopbar profile={profile ?? null} />
+        </HideChromeOnCheckout>
         <main className="flex-1 min-w-0">{children}</main>
       </div>
       <CommandMenu />
