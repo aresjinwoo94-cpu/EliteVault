@@ -27,7 +27,9 @@ export const metadata: Metadata = {
     "ecommerce web analyzer",
     "ecommerce website analyzer",
     "online store analyzer",
-    "shopify store analyzer",
+    // "shopify store analyzer" moved to the homepage (WP-D), which now leads
+    // with it in its title and H1. Two of our own pages chasing one term just
+    // splits the signal; this page keeps "ecommerce web analyzer".
     "ecommerce store audit tool",
     "website analyzer for ecommerce",
     "free store analyzer",

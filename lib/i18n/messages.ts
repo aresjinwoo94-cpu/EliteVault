@@ -25,21 +25,21 @@ const en: Dict = {
     closeMenu: "Close menu",
   },
   hero: {
-    badge1: "AI CONVERSION AUDIT",
+    badge1: "AI SHOPIFY STORE ANALYZER",
     badge2: "BUILT FOR ECOMMERCE FOUNDERS",
-    // Brief §4.1 — PRIMARY hook: clarity over cleverness. "try this." carries the
-    // gold gradient (line2); line1 is the setup, line3 stays empty.
-    line1: "Before you lose thousands on Meta ads,",
-    line2: "try this.",
+    // WP-D — repositioned from "Meta ads" to the analyzer itself: the store is
+    // what we analyze, and paid traffic is only the reason it matters. The
+    // gradient (line2) carries the keyword.
+    line1: "Find what's costing your",
+    line2: "Shopify store sales.",
     line3: "",
     // Brief §1.1 — subtitle leads with the money (what the owner cares about),
     // then "ideal customer" + "how they see your site" (the analyzer's other two
     // real deliverables), and closes by explaining the mechanism in plain words.
     // "Free, no login" removed here — it already lives in anonMicro + trust below.
-    subPre: "See ",
-    subHighlight: "how much more money your store could be making",
-    subPost:
-      " — who your ideal customer is, and exactly how they see your site. All from a 60-second audit that reads your store like a senior media buyer.",
+    subPre: "Analyze your store before you scale traffic — see ",
+    subHighlight: "the exact leaks, ranked by impact",
+    subPost: ".",
     ctaPrimary: "Audit my store free",
     ctaSecondary: "or see how it works first",
     trust: "No credit card · 1 free analysis · Cancel anytime.",
@@ -104,9 +104,11 @@ const en: Dict = {
   // "Who EliteVault is for" — persona self-identification + niche long-tail SEO.
   whoFor: {
     eyebrow: "Who it's for",
-    heading: "Built for solo founders in design-led niches",
+    // WP-D — the audience is defined by spend, not by team size: someone
+    // already buying traffic has something to lose on every wasted click.
+    heading: "Built for ecommerce owners scaling paid traffic",
     body:
-      "If your product is a want, not a need, your store has one job: make people trust it and desire it fast. That's exactly what EliteVault audits — for founders running the whole thing themselves, no team, no agency.",
+      "For ecommerce owners already investing in acquisition who want to scale without wasting traffic.",
     niches:
       "Accessories, Jewelry, Fashion, Home decor, Beauty, Gadgets, Skincare, Supplements",
   },
@@ -131,12 +133,12 @@ const en: Dict = {
   },
   socialStrip: {
     eyebrow: "What you walk away with",
-    b1Title: "See how to lift your conversion",
-    b1Sub: "The highest-leverage fixes, ranked by impact.",
+    b1Title: "Find your highest-impact fixes",
+    b1Sub: "Ranked by impact, not by how easy they are.",
     b2Title: "Know your store's real potential",
     b2Sub: "Where you stand vs. what's possible.",
-    b3Title: "Find what's costing you sales",
-    b3Sub: "The leaks before they drain your budget.",
+    b3Title: "See every leak on the page",
+    b3Sub: "Caught before they drain your ad budget.",
     b4Title: "$0 to run your first audit",
     b4Sub: "No credit card. One free run.",
   },
@@ -787,21 +789,21 @@ const es: Dict = {
     closeMenu: "Cerrar menú",
   },
   hero: {
-    badge1: "AUDITORÍA DE CONVERSIÓN CON IA",
+    badge1: "ANALIZADOR SHOPIFY CON IA",
     badge2: "HECHO PARA FUNDADORES DE ECOMMERCE",
-    // Brief §4.1 — hook PRIMARY: claridad sobre ingenio. "pruébalo primero."
-    // lleva el degradado dorado (line2); line1 es el gancho, line3 vacío.
-    line1: "Antes de perder miles en anuncios de Meta,",
-    line2: "pruébalo primero.",
+    // WP-D — reposicionado de "anuncios de Meta" al analizador: lo que
+    // analizamos es la tienda, y el tráfico pago es solo el motivo por el que
+    // importa. El degradado (line2) lleva la keyword.
+    line1: "Descubre qué le está costando ventas",
+    line2: "a tu tienda Shopify.",
     line3: "",
     // Brief §1.1 — el subtítulo abre con el dinero (lo que le importa al dueño),
     // luego "cliente ideal" + "cómo ve tu web" (los otros dos entregables reales
     // del analyzer) y cierra explicando el mecanismo en simple. "Gratis, sin
     // registro" se quita de aquí — ya vive en anonMicro + trust más abajo.
-    subPre: "Descubre ",
-    subHighlight: "cuánto más podría estar vendiendo tu tienda",
-    subPost:
-      " — quién es tu cliente ideal y cómo ve tu web exactamente. Todo con una auditoría de 60 segundos que revisa tu tienda como un media buyer senior.",
+    subPre: "Analiza tu tienda antes de escalar tráfico — mira ",
+    subHighlight: "las fugas exactas, ordenadas por impacto",
+    subPost: ".",
     ctaPrimary: "Audita mi tienda gratis",
     ctaSecondary: "o mira cómo funciona primero",
     trust: "Sin tarjeta · 1 análisis gratis · Cancela cuando quieras.",
@@ -866,9 +868,11 @@ const es: Dict = {
   // "¿Para quién es EliteVault?" — self-identificación del persona + long-tail.
   whoFor: {
     eyebrow: "Para quién es",
-    heading: "Hecho para fundadores en solitario de nichos donde manda el diseño",
+    // WP-D — el público se define por la inversión, no por el tamaño del
+    // equipo: quien ya compra tráfico pierde dinero en cada clic desperdiciado.
+    heading: "Hecho para dueños de ecommerce que escalan tráfico pago",
     body:
-      "Si tu producto es un deseo, no una necesidad, tu tienda tiene un solo trabajo: generar confianza y ganas de comprar, rápido. Eso es exactamente lo que EliteVault audita — para fundadores que lo llevan todo ellos mismos, sin equipo, sin agencia.",
+      "Para dueños de ecommerce que ya invierten en adquisición y quieren escalar sin desperdiciar tráfico de pago.",
     niches:
       "Accesorios, Joyería, Moda, Decoración, Belleza, Gadgets, Skincare, Suplementos",
   },
@@ -892,12 +896,12 @@ const es: Dict = {
   },
   socialStrip: {
     eyebrow: "Lo que te llevas",
-    b1Title: "Descubre cómo subir tu conversión",
-    b1Sub: "Las mejoras de mayor impacto, priorizadas.",
+    b1Title: "Encuentra tus arreglos de mayor impacto",
+    b1Sub: "Priorizados por impacto, no por lo fáciles que son.",
     b2Title: "Conoce el potencial real de tu tienda",
     b2Sub: "Dónde estás frente a lo que es posible.",
-    b3Title: "Encuentra qué te está costando ventas",
-    b3Sub: "Las fugas antes de que drenen tu presupuesto.",
+    b3Title: "Mira cada fuga de la página",
+    b3Sub: "Detectadas antes de que drenen tu presupuesto.",
     b4Title: "$0 para tu primera auditoría",
     b4Sub: "Sin tarjeta. Un análisis gratis.",
   },
