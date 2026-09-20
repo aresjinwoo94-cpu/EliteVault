@@ -160,12 +160,12 @@ function CheckoutFrame({
   return (
     <div className="rounded-2xl bg-obsidian-950 ring-1 ring-white/[0.08] overflow-hidden">
       {/*
-        Stripe's Embedded Checkout honors our dark brand (set via Dashboard →
-        Branding), so a white frame around the iframe would read as a jarring
-        border. We match the wrapper to the page's obsidian background so the
-        iframe blends in seamlessly. Any light strip behind the wallet buttons
-        (Link / Amazon Pay) lives INSIDE Stripe's cross-origin iframe and is
-        controlled by Stripe Dashboard branding, not by our CSS.
+        The wrapper matches the page's obsidian background so the iframe blends
+        in. Nothing in here can style what's INSIDE it: Embedded Checkout is a
+        cross-origin iframe on js.stripe.com, so our CSS, variables and theme
+        stop at the boundary. The form's own colours come from the session's
+        `branding_settings` (lib/stripe/checkout-session.ts), which falls back
+        to the Stripe Dashboard's branding.
       */}
       <EmbeddedCheckoutProvider stripe={stripePromise} options={{ clientSecret }}>
         <EmbeddedCheckout />
