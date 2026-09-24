@@ -61,6 +61,7 @@ export function AnalyzerPaywall({
   lockedFixes,
   niche,
   isAnon = false,
+  hideScore = false,
 }: {
   analysisId: string;
   /** Overall audit score (0..100). */
@@ -75,6 +76,12 @@ export function AnalyzerPaywall({
    * collide at the bottom) and keep only the exit-intent Pro nudge.
    */
   isAnon?: boolean;
+  /**
+   * analyzer-report-redesign brief §A.2 — the v2 report never paints the 0–100.
+   * The exit-intent title is the only modal copy that shows it, so switch to the
+   * scoreless variant. The ROAS band is still derived from the score internally.
+   */
+  hideScore?: boolean;
 }) {
   const { t } = useT();
   const roundedScore = Math.round(score > 1 ? score : score * 100);
@@ -222,7 +229,7 @@ export function AnalyzerPaywall({
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="text-balance leading-snug">
-              {fill(t("paywall.cTitle"), vars)}
+              {fill(t(hideScore ? "paywall.cTitleNoScore" : "paywall.cTitle"), vars)}
             </DialogTitle>
           </DialogHeader>
           <div className="mt-2 flex flex-col gap-2">

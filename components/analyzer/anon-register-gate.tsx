@@ -41,7 +41,19 @@ function capture(event: string, props?: Record<string, unknown>) {
   }
 }
 
-export function AnonRegisterGate({ score }: { score: number | null }) {
+export function AnonRegisterGate({
+  score,
+  noScore = false,
+}: {
+  score: number | null;
+  /**
+   * analyzer-report-redesign brief §A.2 — the v2 report never paints a score,
+   * so use the scoreless title/modal. This is DISTINCT from `score == null` on
+   * the OFF path (a blocked/legacy capture), which keeps the original
+   * "Your score is —/100" copy so the flag-off surface stays byte-identical.
+   */
+  noScore?: boolean;
+}) {
   const { t } = useT();
   const roundedScore =
     score != null ? Math.round(score > 1 ? score : score * 100) : null;
@@ -107,7 +119,11 @@ export function AnonRegisterGate({ score }: { score: number | null }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {t("anonGate.title").replace("{score}", String(roundedScore ?? "—"))}
+              {roundedScore != null
+                ? t("anonGate.title").replace("{score}", String(roundedScore))
+                : noScore
+                  ? t("anonGate.titleNoScore")
+                  : t("anonGate.title").replace("{score}", "—")}
             </DialogTitle>
             <DialogDescription>{t("anonGate.modalBody")}</DialogDescription>
           </DialogHeader>

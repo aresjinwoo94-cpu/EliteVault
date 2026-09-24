@@ -85,6 +85,7 @@ import { FAQ } from "@/components/marketing/faq";
 import { Footer } from "@/components/marketing/footer";
 import { PLANS } from "@/lib/stripe/plans";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { analyzerReportV2Enabled } from "@/lib/flags";
 
 /**
  * Landing-page JSON-LD structured data.
@@ -198,6 +199,10 @@ export default async function HomePage() {
   }
 
   const jsonLd = buildLandingJsonLd();
+  // analyzer-report-redesign brief §A.6 — the landing diagram drops the visible
+  // 0–100 when the redesign flag is on (server-resolved, threaded to the client
+  // demo section). Off ⇒ the collage is byte-identical.
+  const reportV2 = analyzerReportV2Enabled();
   return (
     <>
       {/*
@@ -219,7 +224,7 @@ export default async function HomePage() {
         <Hero />
         <SocialStrip />
         <WhoFor />
-        <AnalyzerDemo />
+        <AnalyzerDemo reportV2={reportV2} />
         <ScanDivider />
         <TwoPaths />
         <FeaturesShowcase />

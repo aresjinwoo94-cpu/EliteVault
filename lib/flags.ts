@@ -120,6 +120,29 @@ export function analyzerGroundingEnabled(): boolean {
 }
 
 /**
+ * Analyzer report redesign v2 (analyzer-report-redesign brief §1).
+ *
+ * DEFAULT OFF. When ON, the analyzer report drops the gamified Growth Map, the
+ * 0–100 score and the Copper→Ruby rank from the VISIBLE surface and leads with a
+ * concrete hero (ad-readiness verdict in words + the $ potential band + the top
+ * fixes) plus a compact 6-icon stepper that doubles as the sticky nav
+ * (replacing GrowthMap + ReportNav + teaser). The SAME flag also drops the
+ * visible score from the dashboard (→ $ potential band) and the landing diagram.
+ *
+ * CRITICAL (brief §A.3): the score is NEVER removed from the pipeline — it stays
+ * the internal engine of the $ potential band, the conversion scenarios and the
+ * ROAS panels (derive-score.ts, placement.ts, conversion-scenarios.ts,
+ * roas-range.ts are untouched). This flag only stops PAINTING it.
+ *
+ * Pure presentation — no gating, scoring or pipeline change — so
+ * `ANALYZER_REPORT_V2=false` (the default) restores every surface
+ * byte-identically, without a deploy, while the redesign is validated.
+ */
+export function analyzerReportV2Enabled(): boolean {
+  return enabled("ANALYZER_REPORT_V2", false);
+}
+
+/**
  * Promote the Meta Campaign Simulator in the report (WP-4, brief §3).
  *
  * DEFAULT ON (brief §3 — the simulator is the paid hook and was buried at the

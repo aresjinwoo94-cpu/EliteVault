@@ -31,9 +31,16 @@ import { roasRangeForAudit } from "@/lib/meta/roas-range";
 export function FreeMetaPanel({
   score,
   niche,
+  hideScore = false,
 }: {
   score: number;
   niche: string;
+  /**
+   * analyzer-report-redesign brief §A.2 — the v2 report never paints the 0–100,
+   * so drop the "with a score of N/100" clause. The ROAS range is still derived
+   * from the score internally (brief §A.3); we just stop naming the number.
+   */
+  hideScore?: boolean;
 }) {
   const range = roasRangeForAudit(score, niche);
   const roundedScore = Math.round(score > 1 ? score : score * 100);
@@ -61,18 +68,32 @@ export function FreeMetaPanel({
                 <h3 className="mt-3 font-serif text-2xl md:text-3xl tracking-tight text-white">
                   Your store is modelable.
                 </h3>
-                <p className="mt-3 max-w-xl text-sm md:text-base text-white/70 leading-relaxed">
-                  With a score of{" "}
-                  <span className="font-medium text-white">
-                    {roundedScore}/100
-                  </span>
-                  , stores with a structural profile similar to yours model into
-                  a range of{" "}
-                  <span className="font-medium text-signal-200">
-                    ROAS {range.low.toFixed(1)}× – {range.high.toFixed(1)}×
-                  </span>{" "}
-                  on a 7-day Meta test.
-                </p>
+                {/* v2 drops the "with a score of N/100" clause. The non-v2
+                    paragraph is the ORIGINAL markup verbatim (one text flow), so
+                    the flag-off render stays byte-identical. */}
+                {hideScore ? (
+                  <p className="mt-3 max-w-xl text-sm md:text-base text-white/70 leading-relaxed">
+                    Stores with a structural profile similar to yours model into
+                    a range of{" "}
+                    <span className="font-medium text-signal-200">
+                      ROAS {range.low.toFixed(1)}× – {range.high.toFixed(1)}×
+                    </span>{" "}
+                    on a 7-day Meta test.
+                  </p>
+                ) : (
+                  <p className="mt-3 max-w-xl text-sm md:text-base text-white/70 leading-relaxed">
+                    With a score of{" "}
+                    <span className="font-medium text-white">
+                      {roundedScore}/100
+                    </span>
+                    , stores with a structural profile similar to yours model into
+                    a range of{" "}
+                    <span className="font-medium text-signal-200">
+                      ROAS {range.low.toFixed(1)}× – {range.high.toFixed(1)}×
+                    </span>{" "}
+                    on a 7-day Meta test.
+                  </p>
+                )}
               </>
             ) : (
               <>
@@ -80,18 +101,29 @@ export function FreeMetaPanel({
                   Your store isn&apos;t ready to scale yet — and we know exactly
                   why.
                 </h3>
-                <p className="mt-3 max-w-xl text-sm md:text-base text-white/70 leading-relaxed">
-                  At a score of{" "}
-                  <span className="font-medium text-white">
-                    {roundedScore}/100
-                  </span>
-                  , stores with a similar profile model into just{" "}
-                  <span className="font-medium text-warning">
-                    ROAS {range.low.toFixed(1)}× – {range.high.toFixed(1)}×
-                  </span>{" "}
-                  in a 7-day cold test — a likely net loss. Fix conversion
-                  first; the ranked fixes above are where to start.
-                </p>
+                {hideScore ? (
+                  <p className="mt-3 max-w-xl text-sm md:text-base text-white/70 leading-relaxed">
+                    Stores with a similar profile model into just{" "}
+                    <span className="font-medium text-warning">
+                      ROAS {range.low.toFixed(1)}× – {range.high.toFixed(1)}×
+                    </span>{" "}
+                    in a 7-day cold test — a likely net loss. Fix conversion
+                    first; the ranked fixes above are where to start.
+                  </p>
+                ) : (
+                  <p className="mt-3 max-w-xl text-sm md:text-base text-white/70 leading-relaxed">
+                    At a score of{" "}
+                    <span className="font-medium text-white">
+                      {roundedScore}/100
+                    </span>
+                    , stores with a similar profile model into just{" "}
+                    <span className="font-medium text-warning">
+                      ROAS {range.low.toFixed(1)}× – {range.high.toFixed(1)}×
+                    </span>{" "}
+                    in a 7-day cold test — a likely net loss. Fix conversion
+                    first; the ranked fixes above are where to start.
+                  </p>
+                )}
               </>
             )}
 
