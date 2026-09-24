@@ -194,6 +194,14 @@ export async function runAnalyzerAgent(opts: {
     fast: opts.fast,
     signal: opts.signal,
     deadlineAt: opts.deadlineAt,
+    // Tall/heavy stores fix: DON'T cap this call at the default 25s. The vision
+    // call is the longest in the pipeline, and a tall page's render is
+    // legitimately slow-but-steady (~30-45s) — the 25s cap cut it on every draw
+    // so those audits refunded even though they'd have finished. 0 lets it use
+    // the whole step budget; variance and hard failures are still bounded by the
+    // hedge (GEMINI_HEDGE_AFTER_MS, default on), the step retry and the model
+    // fallback chain. Small stores are unaffected (they finish well under 25s).
+    callCapMs: 0,
     parts,
   };
 
