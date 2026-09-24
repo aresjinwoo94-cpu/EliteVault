@@ -26,6 +26,7 @@ export function CategoryRadar({
   scores,
   overall,
   leaksFraming = false,
+  hideReconcile = false,
 }: {
   scores: CategoryScores;
   /**
@@ -41,6 +42,13 @@ export function CategoryRadar({
    * the numbers are unchanged.
    */
   leaksFraming?: boolean;
+  /**
+   * analyzer-report-redesign brief §A.2 — hide the reconciliation line, which
+   * is the one place this card would surface the overall 0–100 ("these six,
+   * weighted, are your {overall}/100"). The per-category sub-scores stay: they're
+   * a diagnostic breakdown, not the headline grade the redesign removes.
+   */
+  hideReconcile?: boolean;
 }) {
   const { t } = useT();
   // Gemini Flash-Lite sometimes returns scores as 0..1 fractions instead
@@ -170,6 +178,7 @@ export function CategoryRadar({
           weighted, ARE the overall hero score. Derived with the same code the
           persistence path uses, so what's shown here matches the hero exactly. */}
       {(() => {
+        if (hideReconcile) return null;
         const derived = deriveOverallScore(normalized);
         if (derived == null) return null;
         // Only claim the reconciliation when it's true against the hero.

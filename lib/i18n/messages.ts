@@ -89,6 +89,9 @@ const en: Dict = {
   },
   anonGate: {
     title: "Your score is {score}/100. Save your audit before you go.",
+    // analyzer-report-redesign brief §A.2 — v2 hides the visible score, so the
+    // scoreless variant is used when the report doesn't paint a number.
+    titleNoScore: "Your free store audit is ready. Save it before you go.",
     body:
       "Create your free account to unlock your #1 priority fix and save this report — no card needed.",
     ctaPrimary: "Create free account",
@@ -129,6 +132,9 @@ const en: Dict = {
     micro: "Cancel anytime · prorated",
     cTitle:
       "Leaving at {score}/100? Your {lockedFixes} highest-leverage fixes are still locked. Fix them before you spend on ads.",
+    // analyzer-report-redesign brief §A.2 — scoreless variant for the v2 report.
+    cTitleNoScore:
+      "Leaving already? Your {lockedFixes} highest-leverage fixes are still locked. Fix them before you spend on ads.",
     cCtaPro: "Unlock with Pro — $19/mo",
   },
   socialStrip: {
@@ -322,6 +328,9 @@ const en: Dict = {
       "These are the issues dragging your score down to {overall}.",
     handoffAuditToRoadmap:
       "Fix #1 and #2 are the ones that move that number the most.",
+    // v2 variant — the score is hidden, so point at the fixes, not "that number".
+    handoffAuditToRoadmapV2:
+      "Fix #1 and #2 are the ones that move the needle the most.",
     handoffRoadmapToMeta:
       "Clear these and you shift from “regular” toward “top buyer” up top.",
     handoffMetaToModeler:
@@ -418,6 +427,42 @@ const en: Dict = {
     wallCrossed: "· past the stall point",
     movementAdvanced: "· advanced",
     youreAtPrefix: "You're at",
+    // analyzer-report-redesign brief §1 — the v2 report (flag ANALYZER_REPORT_V2).
+    // The score, rank and Growth Map drop off the VISIBLE surface; the hero leads
+    // with the ad-readiness verdict in WORDS, the $ potential band and the top
+    // fixes, and a 6-icon stepper doubles as the sticky nav. None of this removes
+    // the score from the pipeline (brief §A.3) — it only stops painting it.
+    handoffVerdictToAuditV2:
+      "These are the issues holding your store back.",
+    v2Eyebrow: "Your audit",
+    v2VerdictNotReady: "Not ready for cold paid traffic",
+    v2VerdictAlmost: "Almost ready for cold paid traffic",
+    v2VerdictReady: "Ready for cold paid traffic",
+    v2VerdictGeneric: "Here's what's costing you sales",
+    v2SubNotReady: "{n} things are costing you sales — fix these first.",
+    v2SubAlmost:
+      "{n} things stand between you and a clean cold-traffic test.",
+    v2SubReady: "Your fundamentals hold — sharpen these before you scale.",
+    v2SubGeneric: "Your prioritized fixes, ranked by leverage.",
+    v2PotentialLabel: "Revenue potential",
+    v2PotentialCaption: "Potential — not your revenue.",
+    v2FixesStar: "Your top fixes",
+    v2FixesRanked: "ranked by leverage",
+    v2SeeAllFixes: "See all {n} fixes",
+    v2NavLabel: "In this report",
+    v2StepFixes: "Fixes",
+    v2StepWinners: "Winners",
+    v2StepAudit: "Audit",
+    v2StepPersona: "Persona",
+    v2StepMeta: "Meta",
+    v2StepSimulator: "Simulator",
+    v2StepFixesAria: "Jump to your priority fixes",
+    v2StepWinnersAria: "Jump to winning stores in your niche",
+    v2StepAuditAria: "Jump to the annotated audit",
+    v2StepPersonaAria: "Jump to the buyer-persona reaction",
+    v2StepMetaAria: "Jump to your Meta readiness",
+    v2StepSimulatorAria: "Jump to the Meta campaign simulator",
+    v2StepLocked: "— locked, upgrade to unlock",
   },
   analyzerDemo: {
     heading: "What $1,500 of CRO consulting looks like. Free.",
@@ -854,6 +899,8 @@ const es: Dict = {
   },
   anonGate: {
     title: "Tu score es {score}/100. Guarda tu auditoría antes de irte.",
+    // analyzer-report-redesign brief §A.2 — variante sin score para el reporte v2.
+    titleNoScore: "Tu auditoría gratis está lista. Guárdala antes de irte.",
     body:
       "Crea tu cuenta gratis para desbloquear tu fix #1 y guardar este informe — sin tarjeta.",
     ctaPrimary: "Crear cuenta gratis",
@@ -893,6 +940,9 @@ const es: Dict = {
     micro: "Cancela cuando quieras · prorrateado",
     cTitle:
       "¿Te vas con {score}/100? Tus {lockedFixes} fixes de mayor impacto siguen bloqueados. Arréglalos antes de gastar en ads.",
+    // analyzer-report-redesign brief §A.2 — variante sin score para el reporte v2.
+    cTitleNoScore:
+      "¿Ya te vas? Tus {lockedFixes} fixes de mayor impacto siguen bloqueados. Arréglalos antes de gastar en ads.",
     cCtaPro: "Desbloquear con Pro — $19/mes",
   },
   socialStrip: {
@@ -1086,6 +1136,9 @@ const es: Dict = {
       "Estos son los problemas que arrastran tu score hasta {overall}.",
     handoffAuditToRoadmap:
       "El fix #1 y el #2 son los que más mueven ese número.",
+    // Variante v2 — el score está oculto, así que apunta a los fixes.
+    handoffAuditToRoadmapV2:
+      "El fix #1 y el #2 son los que más mueven la aguja.",
     handoffRoadmapToMeta:
       "Arréglalos y pasas de “regular” hacia “top buyer” allá arriba.",
     handoffMetaToModeler:
@@ -1182,6 +1235,41 @@ const es: Dict = {
     wallCrossed: "· ya superaste el estancamiento",
     movementAdvanced: "· avanzaste",
     youreAtPrefix: "Estás en",
+    // analyzer-report-redesign brief §1 — el reporte v2 (flag ANALYZER_REPORT_V2).
+    // El score, el rango y el Growth Map desaparecen de la superficie VISIBLE; el
+    // hero lidera con el veredicto de ad-readiness EN PALABRAS, la banda de $
+    // potencial y los top fixes, y un stepper de 6 íconos hace de sticky-nav.
+    // Nada de esto quita el score del pipeline (§A.3) — solo deja de mostrarlo.
+    handoffVerdictToAuditV2: "Estos son los problemas que frenan tu tienda.",
+    v2Eyebrow: "Tu auditoría",
+    v2VerdictNotReady: "Aún no lista para tráfico pago frío",
+    v2VerdictAlmost: "Casi lista para tráfico pago frío",
+    v2VerdictReady: "Lista para tráfico pago frío",
+    v2VerdictGeneric: "Esto es lo que te está costando ventas",
+    v2SubNotReady: "{n} cosas te están costando ventas — arregla esto primero.",
+    v2SubAlmost:
+      "{n} cosas te separan de un test de tráfico frío limpio.",
+    v2SubReady: "Tus fundamentos aguantan — afina esto antes de escalar.",
+    v2SubGeneric: "Tus arreglos priorizados, ordenados por leverage.",
+    v2PotentialLabel: "Potencial de ingresos",
+    v2PotentialCaption: "Potencial — no tus ingresos.",
+    v2FixesStar: "Tus mejores arreglos",
+    v2FixesRanked: "ordenados por leverage",
+    v2SeeAllFixes: "Ver los {n} arreglos",
+    v2NavLabel: "En este reporte",
+    v2StepFixes: "Arreglos",
+    v2StepWinners: "Winners",
+    v2StepAudit: "Audit",
+    v2StepPersona: "Persona",
+    v2StepMeta: "Meta",
+    v2StepSimulator: "Simulador",
+    v2StepFixesAria: "Ir a tus arreglos prioritarios",
+    v2StepWinnersAria: "Ir a las tiendas ganadoras de tu nicho",
+    v2StepAuditAria: "Ir al audit anotado",
+    v2StepPersonaAria: "Ir a la reacción del buyer persona",
+    v2StepMetaAria: "Ir a tu preparación para Meta",
+    v2StepSimulatorAria: "Ir al simulador de campaña de Meta",
+    v2StepLocked: "— bloqueado, mejora tu plan para desbloquear",
   },
   analyzerDemo: {
     heading: "Así se ve una consultoría CRO de $1,500. Gratis.",

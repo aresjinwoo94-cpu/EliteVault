@@ -1,4 +1,4 @@
-import { CheckCircle2, Quote, Zap } from "lucide-react";
+import { CheckCircle2, Megaphone, Quote, Zap } from "lucide-react";
 
 /**
  * Analyzer collage (landing §2) — the visual in the "A senior media buyer in a
@@ -40,7 +40,7 @@ const SCENARIOS = [
   { label: "Aggr.", roas: "2.3×", tone: "win" },
 ] as const;
 
-export function AnalyzerCollage() {
+export function AnalyzerCollage({ reportV2 = false }: { reportV2?: boolean }) {
   return (
     <div className="relative">
       {/* Ambient glow — teal (signal), matches the section accent. */}
@@ -64,7 +64,10 @@ export function AnalyzerCollage() {
         </div>
 
         <div className="space-y-3 p-4">
-          {/* Headline row — money potential (replaces score) + overall grade. */}
+          {/* Headline row — money potential (replaces score) + overall grade.
+              analyzer-report-redesign brief §A.6: when the redesign flag is on
+              the visible 0–100 drops off, leaving the $ potential band as the
+              single headline metric. */}
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 rounded-xl border border-signal-400/25 bg-signal-600/[0.06] px-3 py-2">
               <span className="text-[10px] uppercase tracking-wide text-white/50">
@@ -78,14 +81,26 @@ export function AnalyzerCollage() {
                 Fitness
               </span>
             </div>
-            <div className="shrink-0 text-right">
-              <p className="font-mono text-lg leading-none tabular-nums text-white">
-                54<span className="text-sm text-white/35">/100</span>
-              </p>
-              <p className="mt-1 text-[10px] uppercase tracking-widest text-white/35">
-                overall
-              </p>
-            </div>
+            {reportV2 ? (
+              <div className="shrink-0 text-right">
+                <p className="flex items-center gap-1.5 text-[11px] text-champagne-300">
+                  <Megaphone className="size-3.5" />
+                  Not ad-ready · 3 fixes
+                </p>
+                <p className="mt-1 text-[10px] uppercase tracking-widest text-white/35">
+                  verdict
+                </p>
+              </div>
+            ) : (
+              <div className="shrink-0 text-right">
+                <p className="font-mono text-lg leading-none tabular-nums text-white">
+                  54<span className="text-sm text-white/35">/100</span>
+                </p>
+                <p className="mt-1 text-[10px] uppercase tracking-widest text-white/35">
+                  overall
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Main row — annotated store wireframe + the six-dimension radar. */}

@@ -36,7 +36,7 @@ const STEPS = [
   },
 ];
 
-export function AnalyzerDemo() {
+export function AnalyzerDemo({ reportV2 = false }: { reportV2?: boolean }) {
   const { t } = useT();
   return (
     <section
@@ -107,7 +107,7 @@ export function AnalyzerDemo() {
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease }}
           >
-            <AnalyzerCollage />
+            <AnalyzerCollage reportV2={reportV2} />
           </motion.div>
         </div>
       </div>

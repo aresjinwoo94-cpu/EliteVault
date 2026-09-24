@@ -7,9 +7,15 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
+  Gem,
   Library as LibraryIcon,
+  Megaphone,
+  MessageSquare,
   RefreshCw,
+  ScanSearch,
   Sparkles,
+  Trophy,
+  Wrench,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +46,8 @@ import { AnalyzerPaywall } from "./analyzer-paywall";
 import { AnonRegisterGate } from "./anon-register-gate";
 import { ShareButton } from "./share-button";
 import { GrowthMap } from "./growth-map/growth-map";
+import { ReportHeroV2 } from "./report-hero-v2";
+import { ReportStepper, type StepperSection } from "./report-stepper";
 import type {
   AnalysisResult,
   RewriteResult,
@@ -143,6 +151,16 @@ interface ViewerCtx {
    * resolved server-side). When false the report renders exactly as before.
    */
   metaPromo?: boolean;
+  /**
+   * analyzer-report-redesign brief §1 — the redesigned report (flag
+   * ANALYZER_REPORT_V2, resolved server-side). When true the Growth Map, the
+   * 0–100 score and the rank drop off the VISIBLE surface: the hero is the
+   * ad-readiness verdict in words + the $ potential band + the top fixes, and a
+   * 6-icon stepper replaces ReportNav + the teaser. When false the report is
+   * byte-identical to before. The score is still computed (brief §A.3); this
+   * only stops painting it.
+   */
+  reportV2?: boolean;
 }
 
 export function AnalysisView({
@@ -301,10 +319,17 @@ export function AnalysisView({
     });
   };
 
+  // analyzer-report-redesign brief §1 — the redesigned report. When on, the
+  // hero + 6-icon stepper replace the Growth Map / ReportNav / teaser, and the
+  // score is never painted (it stays the internal engine — brief §A.3).
+  const v2 = viewer.reportV2 ?? false;
+
   // WP-4 — Meta Campaign Simulator promo (flag ANALYZER_META_PROMO). Gating is
   // unchanged: the tier only picks the copy and the CTA; what a viewer can RUN
   // is still canRunMeta, and the data they receive is gated server-side.
-  const metaPromo = viewer.metaPromo ?? false;
+  // Under v2 the stepper's diamond icon owns simulator discovery, so the promo
+  // teaser/rail/bottom-bar stand down to avoid two competing indexes.
+  const metaPromo = !v2 && (viewer.metaPromo ?? false);
   const promoTier = metaPromoTier({
     isAnon,
     isPaid: viewer.isPaid,
@@ -318,6 +343,69 @@ export function AnalysisView({
   // 2-column grids; the anonymous report has the full width.
   const railAt: "xl" | "2xl" = isAnon ? "xl" : "2xl";
 
+  // v2 — the store's domain for the hero eyebrow (same derivation the rest of
+  // the report uses; null on uploaded screenshots).
+  const domain = (() => {
+    try {
+      return data.url ? new URL(data.url).hostname.replace(/^www\./, "") : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  // v2 — the stepper is the report's ONE index (brief §A.5). Its icons are a
+  // single coherent set, no third-party logos. Winners only appears when the
+  // module actually rendered (nicheWinners present); the simulator is always
+  // present under v2 (locked teaser for free). Gated sections carry `locked`.
+  const stepperSections: StepperSection[] =
+    v2 && isDone && data.result && !captureBlocked.blocked
+      ? [
+          {
+            id: "section-fixes",
+            label: t("report.v2StepFixes"),
+            ariaLabel: t("report.v2StepFixesAria"),
+            Icon: Wrench,
+          },
+          ...(nicheWinners
+            ? [
+                {
+                  id: "section-winners",
+                  label: t("report.v2StepWinners"),
+                  ariaLabel: t("report.v2StepWinnersAria"),
+                  Icon: Trophy,
+                  locked: !!nicheWinners.locked,
+                } satisfies StepperSection,
+              ]
+            : []),
+          {
+            id: "section-audit",
+            label: t("report.v2StepAudit"),
+            ariaLabel: t("report.v2StepAuditAria"),
+            Icon: ScanSearch,
+          },
+          {
+            id: "section-persona",
+            label: t("report.v2StepPersona"),
+            ariaLabel: t("report.v2StepPersonaAria"),
+            Icon: MessageSquare,
+          },
+          {
+            id: "section-meta",
+            label: t("report.v2StepMeta"),
+            ariaLabel: t("report.v2StepMetaAria"),
+            Icon: Megaphone,
+          },
+          {
+            id: "section-simulator",
+            label: t("report.v2StepSimulator"),
+            ariaLabel: t("report.v2StepSimulatorAria"),
+            Icon: Gem,
+            accent: true,
+            locked: !viewer.canRunMeta,
+          },
+        ]
+      : [];
+
   /**
    * The Meta section — ad-readiness, the conversion gauges / free ROAS panel,
    * and the live tools for plans that can run them. Rendered at the end of the
@@ -329,33 +417,62 @@ export function AnalysisView({
     <div id="section-meta" className={`space-y-6 ${anchorOffset}`}>
       {/* Brief §4 — seam 3: roadmap → ready-for-Meta. */}
       {!movedUp && handoff("report.handoffRoadmapToMeta")}
+      {/* v2 also hides the numeric ad_readiness.score — the hero already gave
+          the verdict in words, so a second number would reintroduce a grade. */}
       <AdReadinessCard
         data={result.ad_readiness}
         overallScore={result.score}
         result={result}
-        semaphoreOnly={viewer.mapSpine ?? false}
+        semaphoreOnly={v2 || (viewer.mapSpine ?? false)}
       />
       {/* Brief §4 — seam 4: ready-for-Meta → modeler. */}
       {handoff("report.handoffMetaToModeler")}
       {viewer.isPaid ? (
         <ConversionGauges score={result.score} niche={niche} />
       ) : (
-        <FreeMetaPanel score={result.score} niche={niche} />
+        <FreeMetaPanel score={result.score} niche={niche} hideScore={v2} />
       )}
-      {viewer.canRunMeta && (
-        <>
-          {data.meta_ads != null ? (
-            <MetaAdsOptimizer meta={data.meta_ads as never} />
-          ) : viewer.isScale ? (
-            <MetaAdsPending />
-          ) : null}
-          <MetaCampaignSimulator
+      {/* v2 — the simulator carries the stepper's diamond anchor for EVERY
+          viewer: the real tool for plans that can run it, a locked teaser that
+          pulls free/anon toward the upgrade. Non-v2 renders exactly as before
+          (no wrapper, no anchor). */}
+      {viewer.canRunMeta ? (
+        v2 ? (
+          <div id="section-simulator" className={`space-y-6 ${anchorOffset}`}>
+            {data.meta_ads != null ? (
+              <MetaAdsOptimizer meta={data.meta_ads as never} />
+            ) : viewer.isScale ? (
+              <MetaAdsPending />
+            ) : null}
+            <MetaCampaignSimulator
+              analysisId={data.id}
+              initial={initialSimulation ?? null}
+              quota={{ limit: viewer.metaLimit, used: viewer.metaUsed }}
+            />
+          </div>
+        ) : (
+          <>
+            {data.meta_ads != null ? (
+              <MetaAdsOptimizer meta={data.meta_ads as never} />
+            ) : viewer.isScale ? (
+              <MetaAdsPending />
+            ) : null}
+            <MetaCampaignSimulator
+              analysisId={data.id}
+              initial={initialSimulation ?? null}
+              quota={{ limit: viewer.metaLimit, used: viewer.metaUsed }}
+            />
+          </>
+        )
+      ) : v2 ? (
+        <div id="section-simulator" className={anchorOffset}>
+          <MetaSimulatorTeaser
+            tier={promoTier}
             analysisId={data.id}
-            initial={initialSimulation ?? null}
-            quota={{ limit: viewer.metaLimit, used: viewer.metaUsed }}
+            onRun={goToMeta}
           />
-        </>
-      )}
+        </div>
+      ) : null}
     </div>
   );
 
@@ -419,9 +536,16 @@ export function AnalysisView({
           the anonymous hook ("your store scored N") would be a fabricated
           number shown on the highest-traffic path in the product. Pass null so
           the gate renders its scoreless variant. */}
+      {/* v2 also passes null: the redesigned report never paints a score, so
+          the gate uses its scoreless title/modal variant. */}
       {isDone && isAnon && (
         <AnonRegisterGate
-          score={captureBlocked.blocked ? null : (data.result?.score ?? null)}
+          score={
+            v2 || captureBlocked.blocked
+              ? null
+              : (data.result?.score ?? null)
+          }
+          noScore={v2}
         />
       )}
 
@@ -563,7 +687,26 @@ export function AnalysisView({
               underneath them. 112px was tried first and left only 3px —
               enough to look like a bug at one zoom level.
             */}
-            {!(viewer.mapSpine ?? false) && <ReportNav belowTopbar={!isAnon} />}
+            {/* analyzer-report-redesign brief §A.5 — v2 replaces the sticky
+                ReportNav with the 6-icon stepper (the report's ONE index). Off
+                ⇒ the ReportNav renders exactly as before (still suppressed in
+                map-spine mode, which fuses the nav into the rank feedback). */}
+            {v2 ? (
+              <ReportStepper sections={stepperSections} belowTopbar={!isAnon} />
+            ) : (
+              !(viewer.mapSpine ?? false) && <ReportNav belowTopbar={!isAnon} />
+            )}
+
+            {/* v2 hero (brief §A.4) — the ad-readiness verdict in words + the $
+                potential band + the top fixes, replacing the gamified Growth
+                Map. The score still drives the band internally (brief §A.3). */}
+            {v2 && (
+              <ReportHeroV2
+                result={data.result}
+                domain={domain}
+                onSeeFixes={() => jumpTo("section-fixes")}
+              />
+            )}
 
             {/*
               THE GROWTH MAP — hero, at the very top of the result (spec §9).
@@ -571,17 +714,23 @@ export function AnalysisView({
               touches the analyzer's scoring or the sections below it. Free sees
               the map + their rank + the current-node diagnosis; the escape
               route (nodes ahead) is gated to Pro.
+
+              v2 removes it from the visible surface (brief §A.2) — replaced by
+              the hero above; the placement math it used still runs to derive the
+              $ potential band.
             */}
-            <div id="section-growth-map" className={anchorOffset}>
-              <GrowthMap
-                analysisId={data.id}
-                result={data.result}
-                url={data.url}
-                isPaid={viewer.isPaid}
-                mapSpine={viewer.mapSpine ?? false}
-                storedPageKind={data.discovery_signals?.pageKind}
-              />
-            </div>
+            {!v2 && (
+              <div id="section-growth-map" className={anchorOffset}>
+                <GrowthMap
+                  analysisId={data.id}
+                  result={data.result}
+                  url={data.url}
+                  isPaid={viewer.isPaid}
+                  mapSpine={viewer.mapSpine ?? false}
+                  storedPageKind={data.discovery_signals?.pageKind}
+                />
+              </div>
+            )}
 
             {/*
               Teaser strip — one line, in normal flow, immediately under the
@@ -600,33 +749,39 @@ export function AnalysisView({
               Rendered on BOTH the spine and non-spine paths: it depends on
               nothing the flag changes, and gating it would silently remove the
               discoverability fix the day the flag is turned on.
+
+              v2 folds this discoverability into the stepper (Persona + Meta are
+              two of its six icons), so the standalone teaser is gone to avoid a
+              second index (brief §A.5).
             */}
-            <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-[11.5px] text-white/40">
-              <span>{t("report.teaserLead")} ↓</span>
-              <button
-                type="button"
-                onClick={() => jumpTo("section-persona")}
-                className="underline decoration-signal-400/30 underline-offset-2 transition-colors hover:text-signal-200 hover:decoration-signal-300"
-              >
-                {t("report.teaserPersona")}
-              </button>
-              {/* WP-4 — with the promo on, the visual teaser below replaces
-                  this text jump to Meta. */}
-              {!metaPromo && (
-                <>
-                  <span aria-hidden="true" className="text-white/20">
-                    ·
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => jumpTo("section-meta")}
-                    className="underline decoration-signal-400/30 underline-offset-2 transition-colors hover:text-signal-200 hover:decoration-signal-300"
-                  >
-                    {t("report.teaserMeta")}
-                  </button>
-                </>
-              )}
-            </p>
+            {!v2 && (
+              <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-[11.5px] text-white/40">
+                <span>{t("report.teaserLead")} ↓</span>
+                <button
+                  type="button"
+                  onClick={() => jumpTo("section-persona")}
+                  className="underline decoration-signal-400/30 underline-offset-2 transition-colors hover:text-signal-200 hover:decoration-signal-300"
+                >
+                  {t("report.teaserPersona")}
+                </button>
+                {/* WP-4 — with the promo on, the visual teaser below replaces
+                    this text jump to Meta. */}
+                {!metaPromo && (
+                  <>
+                    <span aria-hidden="true" className="text-white/20">
+                      ·
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => jumpTo("section-meta")}
+                      className="underline decoration-signal-400/30 underline-offset-2 transition-colors hover:text-signal-200 hover:decoration-signal-300"
+                    >
+                      {t("report.teaserMeta")}
+                    </button>
+                  </>
+                )}
+              </p>
+            )}
 
             {/* WP-4 (A) — the simulator, visible in the first screen. */}
             {metaPromo && (
@@ -650,8 +805,13 @@ export function AnalysisView({
               {t("report.disclaimer")}
             </p>
 
-            {/* Brief §4 — seam 1: verdict → audit. */}
-            {handoff("report.handoffVerdictToAudit")}
+            {/* Brief §4 — seam 1: verdict → audit. v2 uses the scoreless variant
+                (the default copy interpolates {overall}, which v2 hides). */}
+            {handoff(
+              v2
+                ? "report.handoffVerdictToAuditV2"
+                : "report.handoffVerdictToAudit",
+            )}
 
             {/*
               Report layout — de-duplicated + re-ordered (tech-fixes §5).
@@ -697,7 +857,14 @@ export function AnalysisView({
                 return winnersCard ? (
                   <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
                     <div className="min-w-0">{topFixes}</div>
-                    <div className="min-w-0">{winnersCard}</div>
+                    {/* v2 — the Winners column carries the stepper's trophy
+                        anchor. Off ⇒ no id/offset (byte-identical). */}
+                    <div
+                      className={v2 ? `min-w-0 ${anchorOffset}` : "min-w-0"}
+                      id={v2 ? "section-winners" : undefined}
+                    >
+                      {winnersCard}
+                    </div>
                   </div>
                 ) : (
                   topFixes
@@ -711,8 +878,13 @@ export function AnalysisView({
               client-side: an empty screenshot_url shows the overlay's clean
               unavailable state.
             */}
-            {/* Brief §4 — seam 2: audit → roadmap. */}
-            {handoff("report.handoffAuditToRoadmap")}
+            {/* Brief §4 — seam 2: audit → roadmap. v2 uses a variant that
+                doesn't point at "that number" (the score is hidden). */}
+            {handoff(
+              v2
+                ? "report.handoffAuditToRoadmapV2"
+                : "report.handoffAuditToRoadmap",
+            )}
 
             <div
               id="section-audit"
@@ -726,10 +898,13 @@ export function AnalysisView({
                 />
               </div>
               <div id="section-leaks" className={`min-w-0 ${anchorOffset}`}>
+                {/* v2 — reframe as "where you're leaking sales" and hide the
+                    reconciliation line (it surfaces the overall 0–100). */}
                 <CategoryRadar
                   scores={data.result.category_scores}
                   overall={data.result.score}
-                  leaksFraming={viewer.mapSpine ?? false}
+                  leaksFraming={v2 || (viewer.mapSpine ?? false)}
+                  hideReconcile={v2}
                 />
               </div>
             </div>
@@ -812,6 +987,7 @@ export function AnalysisView({
                     lockedFixes={lockedFixes}
                     niche={niche}
                     isAnon={isAnon}
+                    hideScore={v2}
                   />
                 );
               })()}

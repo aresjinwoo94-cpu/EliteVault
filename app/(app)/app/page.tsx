@@ -6,6 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { PLANS } from "@/lib/stripe/plans";
 import { formatCompact } from "@/lib/utils";
+import { analyzerReportV2Enabled } from "@/lib/flags";
+import { potentialBandForResult } from "@/lib/analyzer/report-v2";
+import type { AnalysisResult } from "@/lib/supabase/types";
 
 export const metadata = { title: "Overview" };
 
@@ -35,6 +38,25 @@ export default async function OverviewPage() {
 
   const plan = PLANS[(profile?.plan ?? "free") as keyof typeof PLANS];
   const first = (profile?.full_name ?? "").split(" ")[0] ?? "";
+
+  // analyzer-report-redesign brief §A.6 — when the redesign flag is on, the
+  // dashboard stops comparing stores by their 0–100 score and shows the $
+  // potential band instead (the store's revenue stage). The band is derived
+  // from the SAME placement math the report uses (no new number); the score is
+  // still computed, just not painted. Per the owner's call the band reads
+  // aspirationally (higher stage = better), so there's no "less is more" flip.
+  const reportV2 = analyzerReportV2Enabled();
+  // The Supabase select collapses these rows to `never` (the repo's known
+  // hand-written-types limitation), so read `result` through a narrow cast —
+  // the same shape the score column already reads — before placing it.
+  const bandFor = (row: unknown): string | null =>
+    potentialBandForResult(
+      (row as { result?: unknown } | null)?.result as AnalysisResult | null,
+    );
+  const latestBand = reportV2
+    ? (recent?.map((r) => bandFor(r)).find((b): b is string => b != null) ??
+      null)
+    : null;
 
   return (
     <div className="p-6 md:p-10 lg:p-12 pt-10 md:pt-14 pb-24 md:pb-12 max-w-6xl mx-auto space-y-10 md:space-y-12">
@@ -150,22 +172,36 @@ export default async function OverviewPage() {
             {recent?.length ?? 0}
           </p>
         </Card>
-        <Card className="p-5">
-          <p className="text-xs uppercase tracking-widest text-white/40">
-            Avg. score
-          </p>
-          <p className="mt-2 text-xl font-medium tnum font-mono tabular-nums">
-            {recent && recent.length > 0
-              ? Math.round(
-                  recent.reduce((acc, r) => {
-                    const score = (r.result as { score?: number } | null)
-                      ?.score;
-                    return acc + (score ?? 0);
-                  }, 0) / recent.length,
-                )
-              : "—"}
-          </p>
-        </Card>
+        {reportV2 ? (
+          <Card className="p-5">
+            <p className="text-xs uppercase tracking-widest text-white/40">
+              Potential
+            </p>
+            <p className="mt-2 font-serif text-xl text-gold-gradient tnum leading-tight">
+              {latestBand ?? "—"}
+            </p>
+            <p className="mt-0.5 text-[10px] uppercase tracking-widest text-white/35">
+              revenue stage · potential, not revenue
+            </p>
+          </Card>
+        ) : (
+          <Card className="p-5">
+            <p className="text-xs uppercase tracking-widest text-white/40">
+              Avg. score
+            </p>
+            <p className="mt-2 text-xl font-medium tnum font-mono tabular-nums">
+              {recent && recent.length > 0
+                ? Math.round(
+                    recent.reduce((acc, r) => {
+                      const score = (r.result as { score?: number } | null)
+                        ?.score;
+                      return acc + (score ?? 0);
+                    }, 0) / recent.length,
+                  )
+                : "—"}
+            </p>
+          </Card>
+        )}
       </div>
 
       {/* Recent analyses */}
@@ -197,15 +233,25 @@ export default async function OverviewPage() {
           <div className="space-y-2">
             {recent.map((r) => {
               const score = (r.result as { score?: number } | null)?.score;
+              const band = reportV2 ? bandFor(r) : null;
               return (
                 <Link
                   key={r.id}
                   href={`/app/analyzer/${r.id}`}
                   className="flex items-center gap-4 rounded-xl border border-white/[0.06] bg-card/40 px-4 py-3.5 hover:border-white/[0.12] hover:bg-card/60 transition-all"
                 >
-                  <div className="font-mono tabular-nums text-2xl text-gold-gradient tnum w-16 text-center">
-                    {score ?? "—"}
-                  </div>
+                  {/* v2 (brief §A.6) — the $ potential band replaces the 0–100.
+                      A wider, smaller label since the band is a string, not a
+                      2-digit number. */}
+                  {reportV2 ? (
+                    <div className="w-24 shrink-0 text-center font-serif text-sm text-gold-gradient tnum leading-tight">
+                      {band ?? "—"}
+                    </div>
+                  ) : (
+                    <div className="font-mono tabular-nums text-2xl text-gold-gradient tnum w-16 text-center">
+                      {score ?? "—"}
+                    </div>
+                  )}
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium truncate">
                       {r.url ?? "Uploaded screenshot"}

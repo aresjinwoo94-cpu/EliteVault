@@ -4,7 +4,11 @@ import { AnalysisView } from "@/components/analyzer/analysis-view";
 import { PLANS } from "@/lib/stripe/plans";
 import { getMetaRunUsage } from "@/lib/quota/guard";
 import { loadNicheWinnersModule } from "@/lib/library/niche-winners";
-import { analyzerMapSpineEnabled, analyzerMetaPromoEnabled } from "@/lib/flags";
+import {
+  analyzerMapSpineEnabled,
+  analyzerMetaPromoEnabled,
+  analyzerReportV2Enabled,
+} from "@/lib/flags";
 import { toClientAnalysis } from "@/lib/analyzer/client-payload";
 
 export const dynamic = "force-dynamic";
@@ -143,6 +147,8 @@ export default async function AnalysisPage({
         mapSpine: analyzerMapSpineEnabled(),
         // WP-4 — promote the Meta Campaign Simulator (server-resolved flag).
         metaPromo: analyzerMetaPromoEnabled(),
+        // analyzer-report-redesign brief §1 — the redesigned report (flag).
+        reportV2: analyzerReportV2Enabled(),
       }}
       initialSimulation={initialSimulation}
       nicheWinners={nicheWinners}
