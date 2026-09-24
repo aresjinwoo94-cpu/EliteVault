@@ -10,7 +10,6 @@ import type { PlanTier } from "@/lib/supabase/types";
 import { ResultsBars } from "@/components/billing/results-bars";
 import { PaymentMethods } from "@/components/billing/payment-methods";
 import { CheckoutReviews } from "@/components/billing/checkout-reviews";
-import { formatCurrency } from "@/lib/utils";
 
 /**
  * The checkout page's chrome and plan summary, around a payment slot.
@@ -37,7 +36,6 @@ export function CheckoutLayout({
   payment: ReactNode;
 }) {
   const plan = PLANS[planId];
-  const price = plan.price[interval];
 
   return (
     <div className="min-h-screen bg-obsidian-950">
@@ -95,18 +93,22 @@ export function CheckoutLayout({
                   </span>
                 </div>
 
-                <div className="mt-5 flex items-baseline gap-2">
-                  <span className="font-serif text-5xl text-gold-gradient tnum">
-                    {formatCurrency(price)}
-                  </span>
-                  <span className="text-sm text-white/45">
-                    / {interval === "month" ? "month" : "year"}
-                  </span>
-                </div>
-
-                {interval === "year" && (
-                  <p className="mt-1 text-xs text-success">Save vs monthly · 20% off</p>
-                )}
+                {/* MEJORA B (brief §2) — the store's own fixed-USD price used
+                    to sit here. Stripe Embedded Checkout renders the amount in
+                    its own order summary in the payment panel, localized to the
+                    buyer's region, so printing a hardcoded USD figure too showed
+                    the price twice, in two different currencies — confusing and
+                    conversion-hurting. We drop it and point at where the real,
+                    localized total lives. `plan.price` is no longer read in this
+                    file at all; the charge uses the Stripe Price ID via
+                    getCheckoutPriceId — untouched. */}
+                <p className="mt-5 text-sm text-white/55 leading-relaxed">
+                  Your total is shown in the payment panel
+                  {interval === "year"
+                    ? " — you're saving 20% vs monthly"
+                    : ""}
+                  .
+                </p>
 
                 <p className="mt-4 text-sm text-white/65 leading-relaxed">
                   {plan.description}
@@ -180,19 +182,15 @@ export function CheckoutLayout({
                   EliteVault {plan.name}
                 </p>
               </div>
-              <p className="shrink-0 text-right">
-                <span className="font-serif text-xl text-gold-gradient tnum sm:text-2xl">
-                  {formatCurrency(price)}
-                </span>
-                <span className="text-xs text-white/45">
-                  /{interval === "month" ? "mo" : "yr"}
-                </span>
-                {/* The annual saving lives in the desktop-only pricing card,
-                    so without this a phone buyer never sees why annual. */}
-                {interval === "year" && (
-                  <span className="block text-[11px] text-success">20% off</span>
-                )}
-              </p>
+              {/* MEJORA B (brief §2) — the fixed-USD price is removed here too;
+                  Stripe's own summary in the form right below shows the amount
+                  localized to the region. Only the annual-saving note stays,
+                  since Stripe won't show the vs-monthly comparison. */}
+              {interval === "year" && (
+                <p className="shrink-0 text-right text-[11px] text-success">
+                  Save 20% vs monthly
+                </p>
+              )}
             </div>
             <p className="mb-3 hidden text-[11px] uppercase tracking-widest text-white/40 lg:block">
               Payment
