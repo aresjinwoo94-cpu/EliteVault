@@ -264,6 +264,23 @@ const CALL_CAP_MS = (() => {
 })();
 
 /**
+ * The per-call cap to use for one generation: a caller's explicit
+ * `GenerateOptions.callCapMs` wins over the module default, and `0` means "no
+ * cap — use the whole step budget". The analyzer's vision call passes 0 so a
+ * legitimately slow-but-steady tall/heavy store finishes in one full-step draw
+ * instead of being cut at 25s on every attempt and refunded (see provider.ts).
+ * Pure + exported for the call-cap tests.
+ */
+export function pickCallCap(
+  optsCap: number | undefined,
+  moduleCap: number,
+): number {
+  return optsCap !== undefined && Number.isFinite(optsCap) && optsCap >= 0
+    ? Math.round(optsCap)
+    : moduleCap;
+}
+
+/**
  * Resolve with the first promise to FULFILL; reject only if both reject.
  *
  * `Promise.race` is the wrong primitive here — it settles on the first
@@ -566,9 +583,12 @@ async function generateStructured<T>(
    * Tunable with GEMINI_CALL_CAP_MS; 0 restores the old "one call may take the
    * whole step" behaviour.
    */
+  // A caller can override the per-call cap (0 = uncapped). The analyzer's vision
+  // call does exactly that so a slow-but-steady tall page isn't cut at 25s.
+  const cap = pickCallCap(opts.callCapMs, CALL_CAP_MS);
   const callCapMs = (): number | undefined => {
-    if (CALL_CAP_MS <= 0) return undefined;
-    return dl.remaining() >= CALL_CAP_MS * 2 ? CALL_CAP_MS : undefined;
+    if (cap <= 0) return undefined;
+    return dl.remaining() >= cap * 2 ? cap : undefined;
   };
 
   const callOnce = (

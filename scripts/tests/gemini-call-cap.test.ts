@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { startDeadline, deadlineAt } from "../../lib/deadline";
+import { pickCallCap } from "../../ai/providers/gemini";
 
 /**
  * The per-call cap, and the rule that decides when it applies.
@@ -57,6 +58,30 @@ test("an expired budget still yields an already-usable signal", () => {
   const dl = deadlineAt(Date.now() - 1);
   const s = dl.signal({ capMs: 25_000 });
   assert.ok(s instanceof AbortSignal);
+});
+
+test("pickCallCap: a caller's explicit override wins over the module default", () => {
+  // The analyzer's vision call passes 0 to DISABLE the cap so a slow-but-steady
+  // tall page finishes in one full-step draw instead of being cut at 25s.
+  assert.equal(pickCallCap(0, 25_000), 0);
+  // A positive override is honoured (rounded), e.g. a future per-call tune.
+  assert.equal(pickCallCap(40_000, 25_000), 40_000);
+  assert.equal(pickCallCap(40_000.4, 25_000), 40_000);
+});
+
+test("pickCallCap: omitted or invalid falls back to the module default", () => {
+  assert.equal(pickCallCap(undefined, 25_000), 25_000);
+  assert.equal(pickCallCap(Number.NaN, 25_000), 25_000);
+  assert.equal(pickCallCap(-1, 25_000), 25_000);
+});
+
+test("callCapMs=0 makes the rule uncapped at every remaining budget", () => {
+  // The whole point of the analyzer override: no draw is ever cut short, so a
+  // legitimately slow vision call gets the full step instead of a 25s guillotine.
+  const cap = pickCallCap(0, 25_000);
+  for (const remaining of [50_000, 25_000, 9_000]) {
+    assert.equal(callCap(remaining, cap), undefined);
+  }
 });
 
 test("two capped attempts fit where one uncapped attempt did not", () => {

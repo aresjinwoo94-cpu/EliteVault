@@ -50,6 +50,17 @@ export interface GenerateOptions {
    * Omit it and providers behave exactly as before (unbounded).
    */
   deadlineAt?: number;
+  /**
+   * Per-CALL wall-clock cap (ms), overriding the provider's default
+   * (GEMINI_CALL_CAP_MS, 25s). The default caps one draw so a slow one becomes
+   * two tries inside a step — good for VARIANCE, but it starves a call that is
+   * legitimately slow-but-steady: a tall/heavy store whose vision call needs
+   * ~35s is cut at 25s on every draw and the audit refunds although it would
+   * have finished. Pass `0` to DISABLE the cap for such a call (use the whole
+   * step budget); the hedge + step retry + model fallback still bound failures.
+   * Omit to keep the provider default.
+   */
+  callCapMs?: number;
 }
 
 /**
