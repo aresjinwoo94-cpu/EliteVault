@@ -202,6 +202,12 @@ export async function runAnalyzerAgent(opts: {
     // hedge (GEMINI_HEDGE_AFTER_MS, default on), the step retry and the model
     // fallback chain. Small stores are unaffected (they finish well under 25s).
     callCapMs: 0,
+    // …and FORCE the deferred hedge on for the vision call (WP-1's 12s default),
+    // overriding a stale global GEMINI_HEDGE_AFTER_MS=0. The hedge races a second
+    // draw on another key when the first is slow and keeps whichever finishes
+    // first — the measured fix for Gemini's provider-side latency variance, which
+    // is what refunds tall/heavy stores. No-op with <2 keys (local dev).
+    hedgeAfterMs: 12_000,
     parts,
   };
 

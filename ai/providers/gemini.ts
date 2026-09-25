@@ -215,6 +215,28 @@ export function resolveHedgeAfterMs(raw: string | undefined): number {
 
 const HEDGE_AFTER_MS = resolveHedgeAfterMs(process.env.GEMINI_HEDGE_AFTER_MS);
 
+/**
+ * The hedge threshold for one call: a caller's explicit
+ * `GenerateOptions.hedgeAfterMs` wins over the global env value. A valid
+ * positive override (≥ the 2s floor) forces the hedge ON for that call even
+ * when GEMINI_HEDGE_AFTER_MS was left at 0 — the analyzer's vision call uses
+ * this so tall/heavy stores keep hedging past a stale global knob. `0` still
+ * means "off". An out-of-range/NaN override falls back to the module value
+ * rather than silently disabling. Pure + exported for tests.
+ */
+export function pickHedgeAfterMs(
+  optsVal: number | undefined,
+  moduleVal: number,
+): number {
+  if (optsVal === undefined) return moduleVal;
+  if (optsVal === 0) return 0;
+  return Number.isFinite(optsVal) &&
+    optsVal >= HEDGE_FLOOR_MS &&
+    optsVal <= MAX_TIMER_MS
+    ? Math.round(optsVal)
+    : moduleVal;
+}
+
 /** The resolved tuning, exported for tests only. */
 export const GEMINI_TUNING_FOR_TEST = {
   hedgeAfterMs: HEDGE_AFTER_MS,
@@ -586,6 +608,10 @@ async function generateStructured<T>(
   // A caller can override the per-call cap (0 = uncapped). The analyzer's vision
   // call does exactly that so a slow-but-steady tall page isn't cut at 25s.
   const cap = pickCallCap(opts.callCapMs, CALL_CAP_MS);
+  // …and can force the deferred hedge on for this call, overriding a stale
+  // global GEMINI_HEDGE_AFTER_MS=0. The hedge is the lever against the vision
+  // call's provider-side latency variance that refunds tall/heavy stores.
+  const effectiveHedgeAfterMs = pickHedgeAfterMs(opts.hedgeAfterMs, HEDGE_AFTER_MS);
   const callCapMs = (): number | undefined => {
     if (cap <= 0) return undefined;
     return dl.remaining() >= cap * 2 ? cap : undefined;
@@ -664,9 +690,9 @@ async function generateStructured<T>(
     // for the wait plus a second call to be worth starting.
     if (
       !shouldHedge({
-        hedgeAfterMs: HEDGE_AFTER_MS,
+        hedgeAfterMs: effectiveHedgeAfterMs,
         keyCount: CLIENTS.length,
-        budgetFits: dl.has(HEDGE_AFTER_MS + MIN_CALL_MS),
+        budgetFits: dl.has(effectiveHedgeAfterMs + MIN_CALL_MS),
       })
     ) {
       return callOnce(keyIdx, model, maxOutputTokens);
@@ -675,7 +701,7 @@ async function generateStructured<T>(
     // Explicit: with callbacks in the object, inference falls back to
     // `unknown` and the response type is lost for the ladder below.
     return hedgedCall<Awaited<ReturnType<typeof callOnce>>>({
-      hedgeAfterMs: HEDGE_AFTER_MS,
+      hedgeAfterMs: effectiveHedgeAfterMs,
       parent: opts.signal,
       // An empty or cut-off answer isn't a win; the ladder below retries those…
       isUsable: (r) => Boolean(extractText(r)) && !isTruncated(r),
@@ -696,7 +722,7 @@ async function generateStructured<T>(
         if (alt === null) return null;
         hedgesByModel[model] = (hedgesByModel[model] ?? 0) + 1;
         console.warn(
-          `[gemini] ${model} key #${keyIdx + 1} slow past ${HEDGE_AFTER_MS / 1000}s — hedging onto key #${alt + 1}`,
+          `[gemini] ${model} key #${keyIdx + 1} slow past ${effectiveHedgeAfterMs / 1000}s — hedging onto key #${alt + 1}`,
         );
         const call = callOnce(alt, model, maxOutputTokens, signal);
         // The ladder only ever sees the PRIMARY key's outcome, so this key's

@@ -61,6 +61,17 @@ export interface GenerateOptions {
    * Omit to keep the provider default.
    */
   callCapMs?: number;
+  /**
+   * Per-CALL deferred-hedge threshold (ms), overriding the provider's global
+   * GEMINI_HEDGE_AFTER_MS. After this long with no answer, a second draw goes
+   * out on another key and whichever finishes first wins — the one lever that
+   * attacks Gemini's provider-side latency VARIANCE (measured 6× on identical
+   * input), which is what refunds tall/heavy stores. The analyzer's vision call
+   * sets this so its paid audits keep hedging even when the global knob was
+   * left OFF (e.g. from an old quota incident). Needs ≥2 keys to do anything.
+   * Omit to keep the global env value.
+   */
+  hedgeAfterMs?: number;
 }
 
 /**
