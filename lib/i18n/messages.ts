@@ -446,8 +446,8 @@ const en: Dict = {
     v2SubGeneric: "Your prioritized fixes, ranked by leverage.",
     v2PotentialLabel: "Revenue potential",
     v2PotentialCaption: "Potential — not your revenue.",
-    v2FixesStar: "Your top fixes",
-    v2FixesRanked: "ranked by leverage",
+    v2PotentialWhy:
+      "Modeled from your niche's demand, the leaks we found and comparable stores — where your conversion readiness could take you once those leaks are fixed.",
     v2SeeAllFixes: "See all {n} fixes",
     v2NavLabel: "In this report",
     v2StepFixes: "Fixes",
@@ -1253,8 +1253,8 @@ const es: Dict = {
     v2SubGeneric: "Tus arreglos priorizados, ordenados por leverage.",
     v2PotentialLabel: "Potencial de ingresos",
     v2PotentialCaption: "Potencial — no tus ingresos.",
-    v2FixesStar: "Tus mejores arreglos",
-    v2FixesRanked: "ordenados por leverage",
+    v2PotentialWhy:
+      "Modelado a partir de la demanda de tu nicho, las fugas detectadas y tiendas comparables — hasta dónde puede llegar tu tienda cuando arregles esas fugas.",
     v2SeeAllFixes: "Ver los {n} arreglos",
     v2NavLabel: "En este reporte",
     v2StepFixes: "Arreglos",

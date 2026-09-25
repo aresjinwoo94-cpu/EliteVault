@@ -697,15 +697,31 @@ export function AnalysisView({
               !(viewer.mapSpine ?? false) && <ReportNav belowTopbar={!isAnon} />
             )}
 
-            {/* v2 hero (brief §A.4) — the ad-readiness verdict in words + the $
-                potential band + the top fixes, replacing the gamified Growth
-                Map. The score still drives the band internally (brief §A.3). */}
+            {/* v2 hero row (brief §A.4 + hero refinement) — TWO columns:
+                LEFT the ad-readiness verdict in words + the $ potential band +
+                the "why" note + the CTA down to the fixes; RIGHT the
+                CategoryRadar "where you're leaking sales", MOVED up here from the
+                audit row below (it is not duplicated — the audit screenshot goes
+                full-width there). Stacks on <lg: verdict, then radar. The score
+                still drives the band internally (brief §A.3). */}
             {v2 && (
-              <ReportHeroV2
-                result={data.result}
-                domain={domain}
-                onSeeFixes={() => jumpTo("section-fixes")}
-              />
+              <div className="grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
+                <div className="min-w-0">
+                  <ReportHeroV2
+                    result={data.result}
+                    domain={domain}
+                    onSeeFixes={() => jumpTo("section-fixes")}
+                  />
+                </div>
+                <div id="section-leaks" className={`min-w-0 ${anchorOffset}`}>
+                  <CategoryRadar
+                    scores={data.result.category_scores}
+                    overall={data.result.score}
+                    leaksFraming
+                    hideReconcile
+                  />
+                </div>
+              </div>
             )}
 
             {/*
@@ -886,28 +902,40 @@ export function AnalysisView({
                 : "report.handoffAuditToRoadmap",
             )}
 
-            <div
-              id="section-audit"
-              className={`grid lg:grid-cols-[1fr_360px] gap-6 items-start ${anchorOffset}`}
-            >
-              <div className="min-w-0">
+            {/* v2 — the radar moved up into the hero row, so the annotated
+                screenshot takes the FULL width here with more room. Non-v2 keeps
+                the original two-column audit row (screenshot + radar), byte for
+                byte. */}
+            {v2 ? (
+              <div id="section-audit" className={anchorOffset}>
                 <AnnotationsOverlay
                   imageUrl={data.screenshot_url ?? ""}
                   annotations={data.result.annotations}
                   result={data.result}
                 />
               </div>
-              <div id="section-leaks" className={`min-w-0 ${anchorOffset}`}>
-                {/* v2 — reframe as "where you're leaking sales" and hide the
-                    reconciliation line (it surfaces the overall 0–100). */}
-                <CategoryRadar
-                  scores={data.result.category_scores}
-                  overall={data.result.score}
-                  leaksFraming={v2 || (viewer.mapSpine ?? false)}
-                  hideReconcile={v2}
-                />
+            ) : (
+              <div
+                id="section-audit"
+                className={`grid lg:grid-cols-[1fr_360px] gap-6 items-start ${anchorOffset}`}
+              >
+                <div className="min-w-0">
+                  <AnnotationsOverlay
+                    imageUrl={data.screenshot_url ?? ""}
+                    annotations={data.result.annotations}
+                    result={data.result}
+                  />
+                </div>
+                <div id="section-leaks" className={`min-w-0 ${anchorOffset}`}>
+                  <CategoryRadar
+                    scores={data.result.category_scores}
+                    overall={data.result.score}
+                    leaksFraming={viewer.mapSpine ?? false}
+                    hideReconcile={false}
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             {/*
               4 — Buyer-persona reaction. Paid users see it; Free sees it blurred
