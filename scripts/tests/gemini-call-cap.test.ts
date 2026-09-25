@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { startDeadline, deadlineAt } from "../../lib/deadline";
-import { pickCallCap } from "../../ai/providers/gemini";
+import { pickCallCap, pickHedgeAfterMs } from "../../ai/providers/gemini";
 
 /**
  * The per-call cap, and the rule that decides when it applies.
@@ -82,6 +82,22 @@ test("callCapMs=0 makes the rule uncapped at every remaining budget", () => {
   for (const remaining of [50_000, 25_000, 9_000]) {
     assert.equal(callCap(remaining, cap), undefined);
   }
+});
+
+test("pickHedgeAfterMs: an explicit override forces the hedge on past a stale env=0", () => {
+  // The analyzer's vision call passes 12s so tall/heavy stores keep hedging even
+  // when GEMINI_HEDGE_AFTER_MS was left at 0 (module value 0).
+  assert.equal(pickHedgeAfterMs(12_000, 0), 12_000);
+  assert.equal(pickHedgeAfterMs(18_000, 12_000), 18_000);
+});
+
+test("pickHedgeAfterMs: 0 still means off, and omitted/invalid keep the env value", () => {
+  assert.equal(pickHedgeAfterMs(0, 12_000), 0); // explicit off wins
+  assert.equal(pickHedgeAfterMs(undefined, 12_000), 12_000); // omitted → env
+  assert.equal(pickHedgeAfterMs(undefined, 0), 0);
+  // Below the 2s floor / NaN → don't silently disable; fall back to the env value.
+  assert.equal(pickHedgeAfterMs(500, 12_000), 12_000);
+  assert.equal(pickHedgeAfterMs(Number.NaN, 12_000), 12_000);
 });
 
 test("two capped attempts fit where one uncapped attempt did not", () => {
