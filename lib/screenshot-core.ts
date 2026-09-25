@@ -55,29 +55,33 @@ const BROWSER_HEADERS: Record<string, string> = {
  */
 const DEFAULT_FULL_PAGE_MAX_H = (() => {
   const raw = Number(process.env.SCREENSHOT_FULL_PAGE_MAX_HEIGHT);
-  // 4500px at a 1440 viewport is ~5 screens: hero, social proof, product,
-  // reviews and the start of the FAQ/footer all sit inside it on a normal
-  // store. Height is what the vision call is billed and TIMED on — the image
-  // is split into tiles, so every extra 1000px is more tokens AND more
-  // wall-clock on the slowest step. On Vercel Hobby the step dies at 60s, and
-  // very tall Shopify PRODUCT pages (long description + gallery + reviews +
-  // related products) pushed the vision call past that ceiling and refunded
-  // the audit. Lowered 8000 → 6000 → 4500 for that reason; the model still
-  // reads the whole funnel, and the discovery step already supplies the text
-  // of the long tail. Raise via SCREENSHOT_FULL_PAGE_MAX_HEIGHT (e.g. on
-  // Vercel Pro with a higher maxDuration) if a niche genuinely needs it.
-  return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 4500;
+  // 2800px at a 1440 viewport is ~3 screens: hero, social proof and the start
+  // of the product/reviews block all sit inside it. Height is what the vision
+  // call is billed and TIMED on — the image is split into tiles, so every extra
+  // 1000px is more tokens AND more wall-clock on the slowest step. On Vercel
+  // Hobby a step is capped at ~50s (lib/deadline.ts, under the 60s maxDuration)
+  // and it CANNOT be raised without Vercel Pro — so a very tall/heavy store
+  // (artazest.com, shopiconicbrands.com) whose vision call ran past ~50s got the
+  // step ABORTED on every draw (even hedged), refunding the audit. The uncap
+  // (#60) and forced hedge (#62) fix the 25-50s band and the variance tail; this
+  // is the lever for the deterministic >50s case on Hobby — shrink the image so
+  // the call fits the step. The model still reads the whole visual funnel top,
+  // and the discovery step already supplies the below-fold TEXT (headings,
+  // reviews, FAQ, CTAs). Lowered 8000 → 6000 → 4500 → 2800 for this. Raise via
+  // SCREENSHOT_FULL_PAGE_MAX_HEIGHT on Vercel Pro (higher maxDuration).
+  return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 2800;
 })();
 
 /**
  * JPEG quality for captures. Lower = smaller base64 = faster upload AND a
  * faster/cheaper vision call (less to transfer and tokenize), at a visual cost
- * the audit doesn't care about. 82 is still clean for CRO reading; drop it
- * further via SCREENSHOT_IMAGE_QUALITY only if tall pages still time out.
+ * the audit doesn't care about. 72 is still clean for CRO reading — dropped from
+ * 82 alongside the height cap because tall stores were still timing out on the
+ * ~50s Hobby step (the note above). Tune via SCREENSHOT_IMAGE_QUALITY.
  */
 const IMAGE_QUALITY = (() => {
   const raw = Number(process.env.SCREENSHOT_IMAGE_QUALITY);
-  return Number.isFinite(raw) && raw >= 40 && raw <= 100 ? Math.round(raw) : 82;
+  return Number.isFinite(raw) && raw >= 40 && raw <= 100 ? Math.round(raw) : 72;
 })();
 
 /**
