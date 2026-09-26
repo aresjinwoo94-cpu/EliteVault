@@ -10,6 +10,7 @@ import {
   adReadinessWords,
   potentialBandForResult,
   potentialWhy,
+  potentialWhyLines,
   type CategoryKey,
 } from "@/lib/analyzer/report-v2";
 
@@ -77,28 +78,36 @@ export function ReportHeroV2({
   const band = potentialBandForResult(result);
   const why = potentialWhy(result);
   const fixCount = why.leakCount;
+  // The model's store-specific "Why this potential" lines, written inside the
+  // SAME analyzer call (no new AI call), already sanitized. Null ⇒ fall back to
+  // the generic code-derived bullets (older audits / blocked captures).
+  const aiWhy = potentialWhyLines(result);
 
-  // "Why this potential" — composed in code from the audit's own data. Order:
-  // niche demand → the weakest area → the lever (fixing the leaks) → honesty.
-  const whyBullets: string[] = [
-    t("report.v2WhyNiche"),
-    ...(why.weakestCategoryKey
-      ? [
-          t("report.v2WhyWeakest").replace(
-            "{cat}",
-            t(CAT_LABEL_KEY[why.weakestCategoryKey]),
-          ),
-        ]
-      : []),
-    ...(fixCount > 0
-      ? [
-          fixCount === 1
-            ? t("report.v2WhyLeverOne")
-            : t("report.v2WhyLever").replace("{n}", String(fixCount)),
-        ]
-      : []),
-    t("report.v2WhyHonest"),
-  ];
+  // "Why this potential" — prefer the store-specific AI lines; otherwise compose
+  // the generic bullets in code from the audit's own data (niche demand → the
+  // weakest area → the lever). Either way, close with the same small honesty
+  // line so no stored report ever changes for the worse.
+  const whyBullets: string[] = aiWhy
+    ? [...aiWhy, t("report.v2WhyHonest")]
+    : [
+        t("report.v2WhyNiche"),
+        ...(why.weakestCategoryKey
+          ? [
+              t("report.v2WhyWeakest").replace(
+                "{cat}",
+                t(CAT_LABEL_KEY[why.weakestCategoryKey]),
+              ),
+            ]
+          : []),
+        ...(fixCount > 0
+          ? [
+              fixCount === 1
+                ? t("report.v2WhyLeverOne")
+                : t("report.v2WhyLever").replace("{n}", String(fixCount)),
+            ]
+          : []),
+        t("report.v2WhyHonest"),
+      ];
 
   // The verdict headline + subline, in words. Falls back to a scoreless generic
   // when the audit predates the ad_readiness field. `chip` is the short verdict

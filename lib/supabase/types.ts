@@ -122,6 +122,8 @@ export interface AnalysisResult {
    * Reconcile it with discovery's pre-check via resolveCaptureBlocked().
    */
   capture_blocked?: { detected: boolean; reason?: string | null };
+  /** 2-3 store-specific reasons behind the $ potential band. Absent on older audits. */
+  potential_why?: string[];
 }
 
 export interface AdReadiness {

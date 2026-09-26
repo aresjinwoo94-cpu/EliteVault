@@ -141,3 +141,31 @@ export function potentialWhy(
   ).length;
   return { weakestCategoryKey: weakest?.key ?? null, leakCount };
 }
+
+/**
+ * The AI-written "Why this potential" lines for THIS store, sanitized — or
+ * `null` when the caller should fall back to the code-derived bullets.
+ *
+ * `potential_why` is written by the model inside the existing analyzer call
+ * (no new AI call). Returns the cleaned lines (trimmed, empties dropped, ≤160
+ * chars each, ≤3 lines) when the audit carries at least one AND the capture
+ * wasn't blocked. Returns `null` — meaning "use the generic fallback bullets" —
+ * for older audits (field absent), a blank field, or a blocked capture, so no
+ * stored report changes for the worse. Pure + exported for tests.
+ */
+export function potentialWhyLines(
+  result: AnalysisResult | null | undefined,
+): string[] | null {
+  if (!result) return null;
+  // A blocked capture means the audit didn't see the real store — the model was
+  // told to return an empty array, but guard here too so a stray line never
+  // shows over a bouncer screen.
+  if (result.capture_blocked?.detected) return null;
+  const raw = result.potential_why;
+  if (!Array.isArray(raw)) return null;
+  const lines = raw
+    .filter((s): s is string => typeof s === "string" && s.trim().length > 0)
+    .map((s) => s.trim().slice(0, 160))
+    .slice(0, 3);
+  return lines.length ? lines : null;
+}

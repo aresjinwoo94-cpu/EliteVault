@@ -6,6 +6,7 @@ import {
   potentialBandForResult,
   adReadinessWords,
   potentialWhy,
+  potentialWhyLines,
 } from "../../lib/analyzer/report-v2";
 
 /**
@@ -161,4 +162,51 @@ test("ad-readiness verdict resolves to words + a blocker count, never a score", 
 test("adReadinessWords returns null when the audit predates the field", () => {
   assert.equal(adReadinessWords(makeResult({ score: 60 })), null);
   assert.equal(adReadinessWords(null), null);
+});
+
+test("potentialWhyLines: returns the model's store-specific lines when present", () => {
+  const r = makeResult({ score: 60 });
+  r.potential_why = ["Your niche has real demand.", "But the hero hides the offer."];
+  assert.deepEqual(potentialWhyLines(r), [
+    "Your niche has real demand.",
+    "But the hero hides the offer.",
+  ]);
+});
+
+test("potentialWhyLines: null when the field is absent (old audits use the fallback)", () => {
+  assert.equal(potentialWhyLines(makeResult({ score: 60 })), null);
+  assert.equal(potentialWhyLines(null), null);
+  assert.equal(potentialWhyLines(undefined), null);
+});
+
+test("potentialWhyLines: null when the capture was blocked, even if lines exist", () => {
+  const r = makeResult({ score: 60 });
+  r.potential_why = ["This should not be shown over a bouncer screen."];
+  r.capture_blocked = { detected: true, reason: "Cloudflare challenge" };
+  assert.equal(potentialWhyLines(r), null);
+});
+
+test("potentialWhyLines: sanitizes — trims, drops empties/non-strings, caps 3 and 160 chars", () => {
+  const r = makeResult({ score: 60 });
+  (r as { potential_why?: unknown }).potential_why = [
+    "  a  ",
+    "",
+    "x".repeat(400),
+    "b",
+    "c",
+    "d",
+  ];
+  const lines = potentialWhyLines(r);
+  assert.deepEqual(lines?.slice(0, 2), ["a", "x".repeat(160)]);
+  assert.equal(lines?.length, 3, "sliced to 3");
+  assert.equal(lines?.[1].length, 160, "capped at 160 chars");
+});
+
+test("potentialWhyLines: null for a non-array or all-blank field", () => {
+  const bad = makeResult({ score: 60 });
+  (bad as { potential_why?: unknown }).potential_why = "not an array";
+  assert.equal(potentialWhyLines(bad), null);
+  const blank = makeResult({ score: 60 });
+  blank.potential_why = ["", "   "];
+  assert.equal(potentialWhyLines(blank), null);
 });

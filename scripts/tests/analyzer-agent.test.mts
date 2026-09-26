@@ -111,6 +111,37 @@ test("invalid model output gets one repair pass instead of failing the audit", a
   assert.equal(calls.length, 2, "should have retried exactly once");
 });
 
+test("a garbage potential_why on an otherwise-valid answer does NOT trigger the repair pass", async () => {
+  // potential_why is tolerant by design: a bad shape must be coerced to
+  // undefined, not rejected into a costly second AI call. One call, good result.
+  withProvider(async () => ({ ...GOOD, potential_why: "not an array" }));
+
+  const result = await runAnalyzerAgent({
+    ...INPUT,
+    deadlineAt: Date.now() + 60_000,
+  });
+  assert.equal(result.score, 61);
+  assert.equal(result.potential_why, undefined, "garbage coerces away");
+  assert.equal(calls.length, 1, "must NOT have run a repair pass");
+});
+
+test("valid AI potential_why lines survive the agent, trimmed", async () => {
+  withProvider(async () => ({
+    ...GOOD,
+    potential_why: ["  Real niche demand.  ", "The hero hides the offer.", "", 7],
+  }));
+
+  const result = await runAnalyzerAgent({
+    ...INPUT,
+    deadlineAt: Date.now() + 60_000,
+  });
+  assert.deepEqual(result.potential_why, [
+    "Real niche demand.",
+    "The hero hides the offer.",
+  ]);
+  assert.equal(calls.length, 1, "a valid answer needs no repair pass");
+});
+
 test("output that stays invalid fails loudly, naming the offending fields", async () => {
   withProvider(async () => ({ score: 999 }));
   await assert.rejects(
