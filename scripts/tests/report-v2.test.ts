@@ -5,6 +5,7 @@ import { computePlacement, RANKS } from "../../lib/growth-map/placement";
 import {
   potentialBandForResult,
   adReadinessWords,
+  potentialWhy,
 } from "../../lib/analyzer/report-v2";
 
 /**
@@ -66,6 +67,48 @@ function makeResult(over: {
       : undefined,
   } as unknown as AnalysisResult;
 }
+
+test("potentialWhy: the weakest rubric dimension is the lowest category", () => {
+  // Hero refinement — the "Why this potential" bullets derive the weakest area
+  // and the leak count IN CODE from the audit's own data (no new AI call).
+  const why = potentialWhy(makeResult({ score: 55, cro: 30, offer: 70 }));
+  assert.equal(why.weakestCategoryKey, "cro_principles");
+  assert.equal(why.leakCount, 3);
+
+  const why2 = potentialWhy(
+    makeResult({ score: 55, cro: 70, offer: 25, fixes: 5 }),
+  );
+  assert.equal(why2.weakestCategoryKey, "niche_coherence");
+  assert.equal(why2.leakCount, 5);
+});
+
+test("potentialWhy: normalizes 0..1 scores and is safe on a missing result", () => {
+  const frac = {
+    category_scores: {
+      color_integration: 0.7,
+      layout_proportion: 0.7,
+      image_quality: 0.2, // lowest
+      technical_optimization: 0.7,
+      niche_coherence: 0.7,
+      cro_principles: 0.7,
+    },
+    top_fixes: [{ title: "a", impact: "high", effort: "M" }],
+  } as unknown as AnalysisResult;
+  assert.equal(potentialWhy(frac).weakestCategoryKey, "image_quality");
+  assert.equal(potentialWhy(frac).leakCount, 1);
+
+  assert.equal(potentialWhy(null).weakestCategoryKey, null);
+  assert.equal(potentialWhy(null).leakCount, 0);
+  assert.equal(potentialWhy(undefined).leakCount, 0);
+
+  // A present-but-empty category_scores must NOT report a false weakest at 0.
+  const empty = {
+    category_scores: {},
+    top_fixes: [],
+  } as unknown as AnalysisResult;
+  assert.equal(potentialWhy(empty).weakestCategoryKey, null);
+  assert.equal(potentialWhy(empty).leakCount, 0);
+});
 
 test("$ potential band is exactly the placement's own band (no invented number)", () => {
   for (const score of [15, 45, 62, 78, 88, 97]) {

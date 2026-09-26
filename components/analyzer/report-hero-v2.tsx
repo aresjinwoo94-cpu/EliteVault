@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowDown, Megaphone, TrendingUp, Wrench } from "lucide-react";
+import { ArrowDown, Megaphone, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useT } from "@/components/i18n/locale-provider";
@@ -9,19 +9,28 @@ import type { AnalysisResult } from "@/lib/supabase/types";
 import {
   adReadinessWords,
   potentialBandForResult,
+  potentialWhy,
+  type CategoryKey,
 } from "@/lib/analyzer/report-v2";
 
 /**
- * Report hero v2 (analyzer-report-redesign brief §A.4) — replaces the gamified
- * Growth Map. It leads with what convinces a skeptical operator, in this order:
+ * Report hero v2 (analyzer-report-redesign brief §A.4 + hero refinement).
  *
- *   1. The ad-readiness verdict IN WORDS (never a 0–100, never a rank).
- *   2. The $ potential band as an estimate, with its "not your revenue" caveat —
- *      motivating, but secondary to the verdict.
- *   3. The top fixes, ranked — the real star (what the user came to see). The
- *      titles are always readable (the gate only blurs the how-to), so this
- *      teaser never leaks paid content; the full, gated list sits in
- *      section-fixes and this deep-links to it.
+ * The LEFT column of the hero row. It leads with what convinces a skeptical
+ * operator, in this order:
+ *
+ *   1. The ad-readiness verdict IN WORDS (never a 0–100, never a rank) + the
+ *      subtitle naming how many things are costing sales.
+ *   2. The $ potential band as an estimate, with its "not your revenue" caveat.
+ *   3. "Why this potential" — 3–4 short bullets DERIVED IN CODE from data the
+ *      audit already produced (weakest rubric dimension + leak count). No new AI
+ *      call, nothing on the critical path.
+ *   4. A single CTA to the full, gated fixes list below.
+ *
+ * The per-fix mini-list was REMOVED here: it duplicated the full TopFixes
+ * section, so the hero now names the count and links down instead. The
+ * CategoryRadar "where you're leaking sales" sits in the RIGHT column of the
+ * hero row (analysis-view.tsx), next to this.
  *
  * The score still exists as the internal engine of the band (brief §A.3); this
  * component simply never paints it.
@@ -42,6 +51,16 @@ const VERDICT_TONE: Record<
   },
 };
 
+/** Category key → its plain-language i18n label (never the raw rubric name). */
+const CAT_LABEL_KEY: Record<CategoryKey, string> = {
+  cro_principles: "report.v2CatCroPrinciples",
+  niche_coherence: "report.v2CatNicheCoherence",
+  technical_optimization: "report.v2CatTechnicalOptimization",
+  layout_proportion: "report.v2CatLayoutProportion",
+  image_quality: "report.v2CatImageQuality",
+  color_integration: "report.v2CatColorIntegration",
+};
+
 export function ReportHeroV2({
   result,
   domain,
@@ -56,8 +75,30 @@ export function ReportHeroV2({
 
   const words = adReadinessWords(result);
   const band = potentialBandForResult(result);
-  const fixes = (result.top_fixes ?? []).filter((f) => f?.title?.trim());
-  const topThree = fixes.slice(0, 3);
+  const why = potentialWhy(result);
+  const fixCount = why.leakCount;
+
+  // "Why this potential" — composed in code from the audit's own data. Order:
+  // niche demand → the weakest area → the lever (fixing the leaks) → honesty.
+  const whyBullets: string[] = [
+    t("report.v2WhyNiche"),
+    ...(why.weakestCategoryKey
+      ? [
+          t("report.v2WhyWeakest").replace(
+            "{cat}",
+            t(CAT_LABEL_KEY[why.weakestCategoryKey]),
+          ),
+        ]
+      : []),
+    ...(fixCount > 0
+      ? [
+          fixCount === 1
+            ? t("report.v2WhyLeverOne")
+            : t("report.v2WhyLever").replace("{n}", String(fixCount)),
+        ]
+      : []),
+    t("report.v2WhyHonest"),
+  ];
 
   // The verdict headline + subline, in words. Falls back to a scoreless generic
   // when the audit predates the ad_readiness field. `chip` is the short verdict
@@ -151,42 +192,40 @@ export function ReportHeroV2({
             </div>
           )}
 
-          {/* 3 — the top fixes, the real star. Titles only (always readable);
-              the full, gated list lives in section-fixes. */}
-          {topThree.length > 0 && (
-            <div className="mt-6 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-              <div className="mb-3 flex items-center gap-2">
-                <Wrench className="size-4 text-champagne-400" />
-                <h2 className="text-sm font-medium text-white">
-                  {t("report.v2FixesStar")}
-                </h2>
-                <span className="text-[10px] uppercase tracking-widest text-white/35">
-                  {t("report.v2FixesRanked")}
-                </span>
-              </div>
-              <ol className="space-y-2">
-                {topThree.map((f, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <span className="font-serif text-xl leading-none text-gold-gradient tnum w-6 shrink-0 text-center">
-                      {i + 1}
-                    </span>
-                    <p className="min-w-0 flex-1 text-sm leading-snug text-white/85">
-                      {f.title}
-                    </p>
+          {/* 3 — "Why this potential": short, honest bullets derived in code
+              from the audit's own data (weakest area + leak count). */}
+          {whyBullets.length > 0 && (
+            <div className="mt-6">
+              <p className="text-[10px] uppercase tracking-widest text-white/40">
+                {t("report.v2WhyHeading")}
+              </p>
+              <ul className="mt-2 space-y-1.5">
+                {whyBullets.map((b, i) => (
+                  <li
+                    key={i}
+                    className="flex items-start gap-2 text-[12.5px] leading-relaxed text-white/65"
+                  >
+                    <span
+                      aria-hidden
+                      className="mt-1.5 size-1.5 shrink-0 rounded-full bg-signal-400/60"
+                    />
+                    <span className="min-w-0">{b}</span>
                   </li>
                 ))}
-              </ol>
-              {fixes.length > 0 && (
-                <button
-                  type="button"
-                  onClick={onSeeFixes}
-                  className="group mt-3 inline-flex items-center gap-1.5 rounded-lg border border-signal-400/25 bg-signal-500/[0.06] px-3 py-1.5 text-[12px] text-signal-200 transition-colors hover:border-signal-400/45 hover:bg-signal-500/[0.12]"
-                >
-                  {t("report.v2SeeAllFixes").replace("{n}", String(fixes.length))}
-                  <ArrowDown className="size-3.5 transition-transform group-hover:translate-y-0.5" />
-                </button>
-              )}
+              </ul>
             </div>
+          )}
+
+          {/* 4 — the ONE CTA down to the full, gated fixes list. */}
+          {fixCount > 0 && (
+            <button
+              type="button"
+              onClick={onSeeFixes}
+              className="group mt-6 inline-flex items-center gap-1.5 rounded-lg border border-signal-400/30 bg-signal-500/[0.08] px-3.5 py-2 text-[13px] font-medium text-signal-200 transition-colors hover:border-signal-400/50 hover:bg-signal-500/[0.15]"
+            >
+              {t("report.v2SeeAllFixes").replace("{n}", String(fixCount))}
+              <ArrowDown className="size-4 transition-transform group-hover:translate-y-0.5" />
+            </button>
           )}
         </div>
       </Card>
