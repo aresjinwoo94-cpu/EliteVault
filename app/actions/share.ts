@@ -8,8 +8,9 @@ import { slugify } from "@/lib/utils";
 /**
  * P0.3 — Public shareable audits (organic growth engine).
  *
- * Any plan can turn a completed audit into a public, read-only link
- * ("my store scored X/100") that renders the free diagnosis + a dynamic
+ * Any plan can turn a completed audit into a public, read-only link that
+ * renders the free diagnosis — the ad-readiness verdict in words + the
+ * revenue-potential band (no score, matching the V2 report) — plus a dynamic
  * OG image and a "Audit your store free" CTA. This is intentionally
  * SEPARATE from Community publishing (Pro-gated, curates the leaderboard):
  * sharing is the top-of-funnel viral loop, available to everyone.
