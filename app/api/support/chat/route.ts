@@ -8,7 +8,27 @@ import { COMPANY } from "@/lib/company";
 
 export const runtime = "nodejs";
 
-const FALLBACK = `I don't have that documented yet. For anything I can't answer, email ${COMPANY.contactEmail} or use the contact form — a human will help.`;
+const FALLBACK = `I don't have that documented yet. For anything I can't answer, use the contact form at /support/contact (it reaches the founder's inbox) or email ${COMPANY.contactEmail} — a human will help.`;
+
+/** The Instagram handle, derived from the single source in lib/company. */
+const IG_HANDLE = "@" + COMPANY.socials.instagram.replace(/\/+$/, "").split("/").pop();
+
+// "I want to talk to a real person / the founder" — answered WITHOUT the model,
+// so the intent can never be lost to a hallucinated or declined reply. Matches
+// English + Spanish. Word-boundaried where a bare substring would over-match.
+const OWNER_INTENT =
+  /\b(owner|founder|human|person|real person|talk to|speak to|contact|ariel)\b|dueñ|fundador|human|humano|persona|hablar con|contact|contacto/i;
+
+/** Bilingual "reach the founder" reply. Spanish when the question looks Spanish. */
+function ownerHandoffAnswer(question: string): string {
+  const looksSpanish =
+    /dueñ|fundador|humano|persona|hablar|contacto|quiero|puedo|cómo|como/i.test(
+      question,
+    );
+  return looksSpanish
+    ? `Puedes escribirle directo al fundador con el formulario de contacto en /support/contact (le llega a su correo), o por Instagram ${IG_HANDLE}.`
+    : `You can reach the founder directly through the contact form at /support/contact (it lands in his inbox), or on Instagram ${IG_HANDLE}.`;
+}
 
 // ── Basic in-memory rate limit (per IP, per Lambda instance) ──────────────
 const WINDOW_MS = 60_000;
@@ -31,7 +51,8 @@ const SYSTEM =
   "limits, or features — if the facts don't cover it, you must decline. Keep " +
   "answers concise (1-3 sentences) and friendly. If (and only if) the facts " +
   "do not answer the question, set answered=false and tell the user you don't " +
-  `have that documented and to contact ${COMPANY.contactEmail}. Never promise ` +
+  `have that documented and to use the contact form at /support/contact or ` +
+  `email ${COMPANY.contactEmail}. Never promise ` +
   "refunds, guarantees, or anything not stated in the facts.";
 
 const TOOL_SCHEMA = {
@@ -71,6 +92,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid_question" }, { status: 400 });
   }
   const question = parsed.data.question;
+
+  // "Talk to a human / the founder" — answer WITHOUT the model. This intent must
+  // never depend on the AI being up or on the KB matching; it routes straight to
+  // the contact form + Instagram. Logged as answered (we did answer it).
+  if (OWNER_INTENT.test(question)) {
+    void logQuestion(question, true);
+    return NextResponse.json({ answer: ownerHandoffAnswer(question), answered: true });
+  }
 
   // Retrieve grounding facts. No match OR no AI configured → canned fallback
   // WITHOUT calling the model (saves quota and prevents made-up answers).

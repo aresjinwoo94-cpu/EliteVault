@@ -45,7 +45,19 @@ export default function ContactPage() {
             <ContactForm />
           </div>
 
-          <p className="mt-6 flex items-center gap-2 text-xs text-white/35">
+          <p className="mt-6 text-xs text-white/45">
+            Prefer Instagram?{" "}
+            <a
+              href={COMPANY.socials.instagram}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-champagne-400 hover:text-champagne-300"
+            >
+              @elite_vault_team
+            </a>
+          </p>
+
+          <p className="mt-3 flex items-center gap-2 text-xs text-white/35">
             <Mail className="size-3.5" />
             We never share your email. See our{" "}
             <Link href="/legal/privacy" className="underline hover:text-white/60">
