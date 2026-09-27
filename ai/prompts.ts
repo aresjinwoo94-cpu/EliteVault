@@ -160,7 +160,21 @@ page take cold paid traffic today?
     them by wording, so matching titles collapse into one issue instead of
     reading as two.
 
-# Voice (applies to summary, top_fixes.why, buyer_persona_response)
+# Why this potential (\`potential_why\`)
+The report shows the store an estimated monthly revenue POTENTIAL range. It is
+computed in code from your scores — you do not see the number and must NOT state,
+guess or imply any figure, $, %, ROAS or multiple.
+Write 2-3 short lines (max ~25 words each) explaining WHY this specific store has
+the potential it has:
+  • 1 line on what SUPPORTS its ceiling — this niche's demand for paid traffic,
+    the price point / offer, the product or brand strength you can actually see.
+  • 1-2 lines on what CAPS it today — name the concrete element on THIS page (tie
+    it to your #1 top fix or ad-readiness blocker, same wording), and what fixing
+    it unlocks.
+Specific to this store — never generic advice that fits any shop. Second person,
+plain language. If capture_blocked.detected is true, return an empty array.
+
+# Voice (applies to summary, top_fixes.why, buyer_persona_response, potential_why)
 Write to the owner in the second person, present tense, short sentences. Zero
 preamble — open on the finding, not "In this audit…". Specific beats intense:
 name the element and the consequence ("your hero says three things, so a cold

@@ -111,6 +111,7 @@ export default function ApiDocsPage() {
     "category_scores": { "color": 70, "layout": 55, "imagery": 64,
       "technical": 60, "niche_coherence": 58, "cro_principles": 65 },
     "top_fixes": [ { "title": "Move primary CTA above the fold", … } ],
+    "potential_why": [ "Your niche shows real paid-traffic demand…", … ],
     "annotations": [ … ],
     "buyer_persona_response": { … },
     "scenarios": { … }

@@ -95,6 +95,70 @@ test("a 'ready' verdict with no blockers is valid", () => {
   assert.equal(parsed.success, true);
 });
 
+test("potential_why: absent on an old audit validates as undefined", () => {
+  const parsed = AnalysisResultSchema.safeParse(legacy);
+  assert.equal(parsed.success, true);
+  if (parsed.success) assert.equal(parsed.data.potential_why, undefined);
+});
+
+test("potential_why: valid lines pass through, trimmed of whitespace", () => {
+  const parsed = AnalysisResultSchema.safeParse({
+    ...legacy,
+    potential_why: ["  Your niche has real demand.  ", "But the hero hides the offer."],
+  });
+  assert.equal(parsed.success, true);
+  if (parsed.success) {
+    assert.deepEqual(parsed.data.potential_why, [
+      "Your niche has real demand.",
+      "But the hero hides the offer.",
+    ]);
+  }
+});
+
+test("potential_why: long strings are TRIMMED, not rejected", () => {
+  const long = "x".repeat(400);
+  const parsed = AnalysisResultSchema.safeParse({ ...legacy, potential_why: [long] });
+  assert.equal(parsed.success, true, "an over-long line must not fail validation");
+  if (parsed.success) {
+    assert.equal(parsed.data.potential_why?.length, 1);
+    assert.equal(parsed.data.potential_why?.[0].length, 160, "capped at 160 chars");
+  }
+});
+
+test("potential_why: more than 3 items are sliced to 3, not rejected", () => {
+  const parsed = AnalysisResultSchema.safeParse({
+    ...legacy,
+    potential_why: ["a", "b", "c", "d", "e"],
+  });
+  assert.equal(parsed.success, true);
+  if (parsed.success) assert.deepEqual(parsed.data.potential_why, ["a", "b", "c"]);
+});
+
+test("potential_why: garbage shapes coerce to undefined instead of failing", () => {
+  // A validation failure would trigger the repair pass (a 2nd AI call). None of
+  // these may reject — each becomes `undefined`.
+  for (const bad of ["texto", null, [1, 2], [], [""], ["   "], {}, 42, true]) {
+    const parsed = AnalysisResultSchema.safeParse({ ...legacy, potential_why: bad });
+    assert.equal(parsed.success, true, `potential_why=${JSON.stringify(bad)} must validate`);
+    if (parsed.success) {
+      assert.equal(
+        parsed.data.potential_why,
+        undefined,
+        `potential_why=${JSON.stringify(bad)} must coerce to undefined`,
+      );
+    }
+  }
+});
+
+test("potential_why: a mixed array keeps the strings and drops the rest", () => {
+  const parsed = AnalysisResultSchema.safeParse({
+    ...legacy,
+    potential_why: ["keep me", 5, null, "and me", {}],
+  });
+  assert.equal(parsed.success, true);
+  if (parsed.success) assert.deepEqual(parsed.data.potential_why, ["keep me", "and me"]);
+});
+
 test("malformed model output is rejected so the repair pass can run", () => {
   // Missing required block.
   assert.equal(

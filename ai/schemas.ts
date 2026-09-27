@@ -171,6 +171,28 @@ export const AnalysisResultSchema = z.object({
    * repair pass. Absent is read as "not blocked".
    */
   capture_blocked: CaptureBlockedSchema.optional(),
+  /**
+   * 2-3 store-specific reasons behind the $ potential band, written by the model
+   * inside the same analyzer call (no new AI call). The band itself is computed
+   * in code — the model never sees it and must not cite figures.
+   *
+   * TOLERANT ON PURPOSE: this must NEVER fail validation. A validation failure
+   * triggers the repair pass (a 2nd AI call = latency + refund risk), so garbage
+   * is coerced to `undefined` rather than rejected. Non-array, empty strings,
+   * >3 items and >160-char strings are trimmed/dropped, never thrown. Absent,
+   * `null`, an object or numbers all become `undefined`. Optional so old audits
+   * and models that omit it keep validating.
+   */
+  potential_why: z
+    .preprocess((v) => {
+      if (!Array.isArray(v)) return undefined;
+      const out = v
+        .filter((s): s is string => typeof s === "string" && s.trim().length > 0)
+        .map((s) => s.trim().slice(0, 160))
+        .slice(0, 3);
+      return out.length ? out : undefined;
+    }, z.array(z.string()).optional())
+    .optional(),
 });
 export type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
 
@@ -281,6 +303,17 @@ export const ANALYSIS_TOOL_SCHEMA = {
       },
       required: ["verdict", "score", "summary", "blockers"],
     },
+    // Store-specific reasons behind the code-computed $ potential band. Placed
+    // AFTER ad_readiness so the model writes it with the rest of the analysis in
+    // context, and REQUIRED here so the responseSchema makes Gemini emit it
+    // (responseSchema silently drops optional keys). The Zod schema keeps it
+    // optional and tolerant, so old audits and omitting models still validate.
+    potential_why: {
+      type: "array",
+      minItems: 2,
+      maxItems: 3,
+      items: { type: "string" },
+    },
     // WP-A layer 2 — see CaptureBlockedSchema. Declared in `properties` but
     // deliberately NOT in `required`: forcing it would make every generation
     // spend tokens on it, and an older model that ignores it would fail
@@ -301,6 +334,7 @@ export const ANALYSIS_TOOL_SCHEMA = {
     "summary",
     "top_fixes",
     "ad_readiness",
+    "potential_why",
   ],
 } as const;
 

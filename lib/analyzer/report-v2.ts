@@ -77,3 +77,95 @@ export function adReadinessWords(
     verdict === "ready" ? blockers : blockers > 0 ? blockers : fixes;
   return { verdict, blockerCount };
 }
+
+/** The six audit rubric dimensions, in a stable order. */
+export type CategoryKey =
+  | "cro_principles"
+  | "niche_coherence"
+  | "technical_optimization"
+  | "layout_proportion"
+  | "image_quality"
+  | "color_integration";
+
+const CATEGORY_KEYS: CategoryKey[] = [
+  "cro_principles",
+  "niche_coherence",
+  "technical_optimization",
+  "layout_proportion",
+  "image_quality",
+  "color_integration",
+];
+
+/** Normalize a possibly-0..1 category score to 0..100. */
+function norm100(v: unknown): number {
+  const n = Number(v ?? 0);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.min(100, n > 1 ? n : n * 100));
+}
+
+export interface PotentialWhy {
+  /** The lowest-scoring rubric dimension — where cold traffic leaks. Null when
+   *  the audit carries no category_scores. */
+  weakestCategoryKey: CategoryKey | null;
+  /** How many ranked fixes ("leaks") the report lists below. */
+  leakCount: number;
+}
+
+/**
+ * The inputs for the hero's "Why this potential" bullets (hero refinement) —
+ * DERIVED IN CODE from data the audit ALREADY produced (category_scores +
+ * top_fixes). No new AI call, nothing on the critical path; the caller turns
+ * these into plain-language, localized bullets. Pure + exported for tests.
+ */
+export function potentialWhy(
+  result: AnalysisResult | null | undefined,
+): PotentialWhy {
+  const cats = result?.category_scores as
+    | Record<string, number>
+    | undefined
+    | null;
+  let weakest: { key: CategoryKey; v: number } | null = null;
+  if (cats) {
+    for (const k of CATEGORY_KEYS) {
+      // Skip a dimension the audit didn't actually score — a present-but-empty
+      // category_scores would otherwise report a false "weakest" at 0. (A real
+      // succeeded audit carries all six, so this only guards malformed data.)
+      const raw = cats[k];
+      if (raw === undefined || raw === null) continue;
+      const v = norm100(raw);
+      if (!weakest || v < weakest.v) weakest = { key: k, v };
+    }
+  }
+  const leakCount = (result?.top_fixes ?? []).filter(
+    (f) => f && typeof f.title === "string" && f.title.trim(),
+  ).length;
+  return { weakestCategoryKey: weakest?.key ?? null, leakCount };
+}
+
+/**
+ * The AI-written "Why this potential" lines for THIS store, sanitized — or
+ * `null` when the caller should fall back to the code-derived bullets.
+ *
+ * `potential_why` is written by the model inside the existing analyzer call
+ * (no new AI call). Returns the cleaned lines (trimmed, empties dropped, ≤160
+ * chars each, ≤3 lines) when the audit carries at least one AND the capture
+ * wasn't blocked. Returns `null` — meaning "use the generic fallback bullets" —
+ * for older audits (field absent), a blank field, or a blocked capture, so no
+ * stored report changes for the worse. Pure + exported for tests.
+ */
+export function potentialWhyLines(
+  result: AnalysisResult | null | undefined,
+): string[] | null {
+  if (!result) return null;
+  // A blocked capture means the audit didn't see the real store — the model was
+  // told to return an empty array, but guard here too so a stray line never
+  // shows over a bouncer screen.
+  if (result.capture_blocked?.detected) return null;
+  const raw = result.potential_why;
+  if (!Array.isArray(raw)) return null;
+  const lines = raw
+    .filter((s): s is string => typeof s === "string" && s.trim().length > 0)
+    .map((s) => s.trim().slice(0, 160))
+    .slice(0, 3);
+  return lines.length ? lines : null;
+}

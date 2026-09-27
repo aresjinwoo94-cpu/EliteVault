@@ -446,9 +446,26 @@ const en: Dict = {
     v2SubGeneric: "Your prioritized fixes, ranked by leverage.",
     v2PotentialLabel: "Revenue potential",
     v2PotentialCaption: "Potential — not your revenue.",
-    v2FixesStar: "Your top fixes",
-    v2FixesRanked: "ranked by leverage",
     v2SeeAllFixes: "See all {n} fixes",
+    // Hero refinement — "Why this potential" bullets, DERIVED in code from the
+    // audit's own data (weakest category, leak count) — no new AI call.
+    v2WhyHeading: "Why this potential",
+    v2WhyNiche:
+      "Your niche has real paid-traffic demand — that's the ceiling this range models toward.",
+    v2WhyWeakest:
+      "Your weakest area: {cat} — where cold traffic slips away before it buys.",
+    v2WhyLever:
+      "Fixing the {n} leaks below is what moves you toward the top of this range.",
+    v2WhyLeverOne:
+      "Fixing the leak below is what moves you toward the top of this range.",
+    v2WhyHonest:
+      "The range is modeled from comparable stores and niche demand — not a promise.",
+    v2CatCroPrinciples: "conversion fundamentals",
+    v2CatNicheCoherence: "how clearly you show what you sell",
+    v2CatTechnicalOptimization: "technical health",
+    v2CatLayoutProportion: "layout & visual hierarchy",
+    v2CatImageQuality: "product imagery",
+    v2CatColorIntegration: "visual cohesion",
     v2NavLabel: "In this report",
     v2StepFixes: "Fixes",
     v2StepWinners: "Winners",
@@ -1253,9 +1270,26 @@ const es: Dict = {
     v2SubGeneric: "Tus arreglos priorizados, ordenados por leverage.",
     v2PotentialLabel: "Potencial de ingresos",
     v2PotentialCaption: "Potencial — no tus ingresos.",
-    v2FixesStar: "Tus mejores arreglos",
-    v2FixesRanked: "ordenados por leverage",
     v2SeeAllFixes: "Ver los {n} arreglos",
+    // Refinamiento del hero — bullets "Por qué este potencial", DERIVADOS en
+    // código de los datos del audit (categoría más débil, nº de fugas) — sin IA.
+    v2WhyHeading: "Por qué este potencial",
+    v2WhyNiche:
+      "Tu nicho tiene demanda real de tráfico pago — ese es el techo hacia el que modela este rango.",
+    v2WhyWeakest:
+      "Tu punto más débil: {cat} — ahí es donde el tráfico frío se cae antes de comprar.",
+    v2WhyLever:
+      "Arreglar las {n} fugas de abajo es lo que te mueve hacia el techo de este rango.",
+    v2WhyLeverOne:
+      "Arreglar la fuga de abajo es lo que te mueve hacia el techo de este rango.",
+    v2WhyHonest:
+      "El rango está modelado de tiendas comparables y la demanda del nicho — no es una promesa.",
+    v2CatCroPrinciples: "fundamentos de conversión",
+    v2CatNicheCoherence: "qué tan claro muestras lo que vendes",
+    v2CatTechnicalOptimization: "salud técnica",
+    v2CatLayoutProportion: "layout y jerarquía visual",
+    v2CatImageQuality: "imágenes de producto",
+    v2CatColorIntegration: "cohesión visual",
     v2NavLabel: "En este reporte",
     v2StepFixes: "Arreglos",
     v2StepWinners: "Winners",
