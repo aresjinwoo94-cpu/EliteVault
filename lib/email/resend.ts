@@ -10,12 +10,16 @@ import "server-only";
  * on a send error, so a failed email never breaks the job that called it.
  */
 export async function sendEmail(opts: {
-  to: string;
+  /** One recipient, or several (Resend accepts an array of addresses). */
+  to: string | string[];
   subject: string;
   html: string;
   /** Plain-text alternative. Multipart (html+text) improves deliverability. */
   text?: string;
   from?: string;
+  /** Reply-To address, forwarded to Resend as `reply_to` (e.g. the sender of a
+   *  contact-form message, so the recipient can reply with one click). */
+  replyTo?: string;
   /** Extra SMTP headers, forwarded to Resend (e.g. List-Unsubscribe). */
   headers?: Record<string, string>;
 }): Promise<{ ok: boolean; id?: string; error?: string }> {
@@ -43,6 +47,7 @@ export async function sendEmail(opts: {
         subject: opts.subject,
         html: opts.html,
         ...(opts.text ? { text: opts.text } : {}),
+        ...(opts.replyTo ? { reply_to: opts.replyTo } : {}),
         ...(opts.headers ? { headers: opts.headers } : {}),
       }),
     });

@@ -114,6 +114,16 @@ const CURATED: KbEntry[] = [
     a: `EliteVault is operated by ${COMPANY.legalEntity}, based in ${COMPANY.country}. You can reach the team at ${COMPANY.contactEmail}.`,
     keywords: ["who", "company", "owner", "operate", "business", "llc", "founder", "contact", "email"],
   },
+  {
+    id: "talk-to-owner",
+    category: "company",
+    q: "How do I talk to a human / the founder?",
+    a: `You can reach the founder directly through the contact form at /support/contact (it lands in his inbox), or on Instagram at ${COMPANY.socials.instagram}.`,
+    keywords: [
+      "owner", "founder", "human", "person", "real person", "talk to", "speak to",
+      "contact", "dueño", "fundador", "humano", "persona", "hablar", "contacto",
+    ],
+  },
   // ── Account ────────────────────────────────────────────────────────────
   {
     id: "signin",
