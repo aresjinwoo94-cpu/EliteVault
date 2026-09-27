@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatCurrency } from "@/lib/utils";
 import { toast } from "sonner";
+import { useT } from "@/components/i18n/locale-provider";
 import type { Plan, Interval } from "@/lib/stripe/plans";
 
 export function PlanCard({
@@ -20,6 +21,7 @@ export function PlanCard({
   hasExistingSub: boolean;
 }) {
   const router = useRouter();
+  const { t } = useT();
   // Default to MONTHLY — the lower entry price ($19/$29) converts far better
   // than leading with the annual upfront charge. The toggle still lets users
   // switch to yearly (and see the savings) before checkout.
@@ -124,6 +126,11 @@ export function PlanCard({
               {formatCurrency(plan.price.month * 12 - plan.price.year)}/yr
             </p>
           )}
+          {/* USD is the reference price; Stripe Adaptive Pricing charges the
+              buyer in their local currency at checkout. */}
+          <p className="mt-1 text-[11px] text-white/40">
+            {t("pricing.localCurrencyNote")}
+          </p>
         </>
       ) : (
         <div className="mt-3">

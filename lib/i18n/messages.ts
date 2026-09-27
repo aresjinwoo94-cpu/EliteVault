@@ -222,6 +222,7 @@ const en: Dict = {
     ctaFree: "Get started",
     ctaStart: "Start",
     stripeNote: "Secure checkout powered by Stripe · Cancel anytime · No hidden fees",
+    localCurrencyNote: "Charged in your local currency at checkout",
   },
   compare: {
     heading: "How EliteVault compares",
@@ -1047,6 +1048,7 @@ const es: Dict = {
     ctaFree: "Empezar gratis",
     ctaStart: "Empieza con",
     stripeNote: "Pago seguro con Stripe · Cancela cuando quieras · Sin cargos ocultos",
+    localCurrencyNote: "Se cobra en tu moneda local al pagar",
   },
   compare: {
     heading: "Cómo se compara EliteVault",

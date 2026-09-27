@@ -160,6 +160,15 @@ export async function createEmbeddedCheckoutSession({
       mode: "subscription",
       customer: customerId,
       line_items: [{ price, quantity: 1 }],
+
+      // Charge the buyer in their local currency. Stripe converts the USD price
+      // at checkout based on the buyer's location and presents the local amount;
+      // nothing else about the session changes (same price ID, payment methods,
+      // metadata, branding, webhook). The webhook keys credits off plan/price
+      // ID, never the amount/currency, so a local-currency charge grants the
+      // same credits. Requires Adaptive Pricing to be enabled in the Stripe
+      // Dashboard (Settings → Payments) for the mode being used.
+      adaptive_pricing: { enabled: true },
       return_url: absoluteUrl(
         "/app/checkout/return?session_id={CHECKOUT_SESSION_ID}",
       ),
