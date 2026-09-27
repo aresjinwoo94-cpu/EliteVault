@@ -8,20 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AnnotationsOverlay } from "@/components/analyzer/annotations-overlay";
+import { CategoryRadar } from "@/components/analyzer/category-radar";
+import { ReportHeroV2 } from "@/components/analyzer/report-hero-v2";
+import { analyzerReportV2Enabled } from "@/lib/flags";
+import { buildShareResult, shareMeta, type SharedAuditRow } from "@/lib/analyzer/share-v2";
 import type { Annotation } from "@/lib/supabase/types";
 
 // Slug-addressed, public, logged-out friendly — never static.
 export const dynamic = "force-dynamic";
 
-interface SharedAudit {
-  url: string | null;
-  score: number | null;
-  summary: string | null;
-  screenshot_url: string | null;
-  category_scores: Record<string, number> | null;
-  annotations: Annotation[] | null;
-  created_at: string | null;
-}
+type SharedAudit = SharedAuditRow;
 
 async function loadSharedAudit(slug: string): Promise<SharedAudit | null> {
   const supabase = await createSupabaseServerClient();
@@ -43,6 +39,13 @@ async function loadSharedAudit(slug: string): Promise<SharedAudit | null> {
     category_scores: d.category_scores ?? null,
     annotations: (d.annotations as Annotation[]) ?? null,
     created_at: d.created_at ?? null,
+    // report-v2 parity (undefined on old audits / pre-migration RPC):
+    ad_readiness_verdict: d.ad_readiness_verdict ?? null,
+    blocker_count: d.blocker_count ?? null,
+    fix_count: d.fix_count ?? null,
+    potential_why: Array.isArray(d.potential_why) ? d.potential_why : null,
+    capture_blocked:
+      typeof d.capture_blocked === "boolean" ? d.capture_blocked : null,
   };
 }
 
@@ -71,6 +74,21 @@ export async function generateMetadata({
     return { title: "Audit not found — EliteVault" };
   }
   const domain = domainOf(audit.url);
+
+  // v2 (flag on, prod default): verdict + revenue-potential band, NO score.
+  if (analyzerReportV2Enabled()) {
+    const { title, description } = shareMeta(domain, buildShareResult(audit));
+    const desc = (audit.summary?.slice(0, 160) ?? description).slice(0, 200);
+    return {
+      title,
+      description: desc,
+      alternates: { canonical: `/s/${slug}` },
+      openGraph: { title, description: desc, type: "article" },
+      twitter: { card: "summary_large_image", title, description: desc },
+    };
+  }
+
+  // Flag off: the original score-based metadata.
   const score = normalizedScore(audit.score);
   const title = `${domain} conversion audit — scored ${score}/100 · EliteVault`;
   const description =
@@ -94,6 +112,64 @@ const CATEGORY_LABELS: Record<string, string> = {
   cro_principles: "CRO",
 };
 
+/** Shared top bar (same on both variants). */
+function ShareHeader() {
+  return (
+    <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-obsidian-950/80 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 md:px-6">
+        <Link href="/">
+          <Logo size={24} />
+        </Link>
+        <Link href={`/sign-up?next=/app/analyzer`}>
+          <Button size="sm">
+            Audit your store free
+            <ArrowRight className="size-4" />
+          </Button>
+        </Link>
+      </div>
+    </header>
+  );
+}
+
+/** Shared bottom CTA + footer (same on both variants). */
+function ShareFooter() {
+  return (
+    <>
+      <Card className="relative overflow-hidden p-8 md:p-10 text-center border-champagne-400/20 bg-gradient-to-br from-champagne-400/[0.05] to-signal-600/[0.05]">
+        <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-champagne-400/12 blur-3xl" />
+        <div className="relative">
+          <h2 className="font-serif text-2xl md:text-3xl tracking-tight">
+            Want this for your store?
+          </h2>
+          <p className="mx-auto mt-3 max-w-md text-sm text-white/60 leading-relaxed">
+            Paste your URL and get the same brutal audit — the ad-readiness
+            verdict, your revenue potential and an annotated screenshot — free.
+            No credit card.
+          </p>
+          <Link href="/sign-up?next=/app/analyzer" className="mt-6 inline-block">
+            <Button size="xl">
+              Audit your store free
+              <ArrowRight className="size-4" />
+            </Button>
+          </Link>
+          <p className="mt-3 text-[11px] text-white/35 inline-flex items-center gap-1.5">
+            <ShieldCheck className="size-3" />
+            Estimates, not guarantees · 1 free analysis · no card
+          </p>
+        </div>
+      </Card>
+
+      <p className="pb-8 text-center text-[11px] text-white/30">
+        Audited with{" "}
+        <Link href="/" className="text-white/50 hover:text-white/80">
+          EliteVault
+        </Link>
+        .
+      </p>
+    </>
+  );
+}
+
 export default async function SharedAuditPage({
   params,
 }: {
@@ -104,6 +180,83 @@ export default async function SharedAuditPage({
   if (!audit) notFound();
 
   const domain = domainOf(audit.url);
+  const v2 = analyzerReportV2Enabled();
+
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
+
+  // ── v2 (prod default): the SAME hero as the report — verdict in words, the
+  //    revenue-potential band, "Why this potential", the leak radar and the
+  //    annotated screenshot. No score anywhere. Old shared audits (no verdict /
+  //    potential_why) degrade to the generic verdict + generic bullets via the
+  //    report-v2 helpers' own fallbacks; a blocked capture hides the AI lines.
+  if (v2) {
+    const result = buildShareResult(audit);
+    const { title } = shareMeta(domain, result);
+    const jsonLd = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: title,
+      description:
+        audit.summary?.slice(0, 200) ??
+        `An annotated conversion audit of ${domain}.`,
+      url: `${baseUrl}/s/${slug}`,
+      about: { "@type": "Thing", name: domain },
+      author: { "@type": "Organization", name: "EliteVault" },
+      publisher: {
+        "@type": "Organization",
+        name: "EliteVault",
+        logo: { "@type": "ImageObject", url: `${baseUrl}/icon.svg` },
+      },
+    };
+
+    return (
+      <div className="min-h-screen bg-obsidian-950 text-white">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <ShareHeader />
+        <main className="mx-auto max-w-5xl px-4 py-8 pb-24 md:px-6 md:py-12 space-y-6">
+          <div className="flex justify-center">
+            <Badge variant="gold">
+              <Sparkles className="size-3" />
+              Public audit
+            </Badge>
+          </div>
+
+          {/* Same 2-col hero as the report: verdict + potential + why (LEFT),
+              the leak radar (RIGHT). Stacks on mobile. No score shown. */}
+          <div className="grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
+            <div className="min-w-0">
+              <ReportHeroV2 result={result} domain={domain} shareMode />
+            </div>
+            <div className="min-w-0">
+              <CategoryRadar
+                scores={result.category_scores}
+                overall={null}
+                leaksFraming
+                hideReconcile
+              />
+            </div>
+          </div>
+
+          {/* Annotated screenshot — the shareable "wow", full width. */}
+          {audit.annotations && audit.annotations.length > 0 && (
+            <AnnotationsOverlay
+              imageUrl={audit.screenshot_url ?? ""}
+              annotations={audit.annotations as Annotation[]}
+              altLabel={`Annotated conversion audit screenshot of ${domain}`}
+            />
+          )}
+
+          <ShareFooter />
+        </main>
+      </div>
+    );
+  }
+
+  // ── Flag off: the original score-based page, byte for byte. ────────────────
   const score = normalizedScore(audit.score);
   const tier =
     score >= 90
@@ -117,13 +270,9 @@ export default async function SharedAuditPage({
             : "Broken";
 
   const categories = audit.category_scores
-    ? Object.entries(audit.category_scores).filter(
-        ([k]) => k in CATEGORY_LABELS,
-      )
+    ? Object.entries(audit.category_scores).filter(([k]) => k in CATEGORY_LABELS)
     : [];
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -147,20 +296,7 @@ export default async function SharedAuditPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      {/* Top bar */}
-      <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-obsidian-950/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 md:px-6">
-          <Link href="/">
-            <Logo size={24} />
-          </Link>
-          <Link href={`/sign-up?next=/app/analyzer`}>
-            <Button size="sm">
-              Audit your store free
-              <ArrowRight className="size-4" />
-            </Button>
-          </Link>
-        </div>
-      </header>
+      <ShareHeader />
 
       <main className="mx-auto max-w-5xl px-4 py-8 pb-24 md:px-6 md:py-12 space-y-6">
         {/* Score hero */}
@@ -218,47 +354,16 @@ export default async function SharedAuditPage({
           </Card>
         )}
 
-        {/* Annotated screenshot — the shareable "wow". Mobile-friendly via
-            the overlay's own responsive image. */}
+        {/* Annotated screenshot */}
         {audit.annotations && audit.annotations.length > 0 && (
           <AnnotationsOverlay
             imageUrl={audit.screenshot_url ?? ""}
-            annotations={audit.annotations}
+            annotations={audit.annotations as Annotation[]}
             altLabel={`Annotated conversion audit screenshot of ${domain}`}
           />
         )}
 
-        {/* Conversion CTA */}
-        <Card className="relative overflow-hidden p-8 md:p-10 text-center border-champagne-400/20 bg-gradient-to-br from-champagne-400/[0.05] to-signal-600/[0.05]">
-          <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-champagne-400/12 blur-3xl" />
-          <div className="relative">
-            <h2 className="font-serif text-2xl md:text-3xl tracking-tight">
-              Want this for your store?
-            </h2>
-            <p className="mx-auto mt-3 max-w-md text-sm text-white/60 leading-relaxed">
-              Paste your URL and get the same brutal audit — overall score and
-              annotated screenshot — free. No credit card.
-            </p>
-            <Link href="/sign-up?next=/app/analyzer" className="mt-6 inline-block">
-              <Button size="xl">
-                Audit your store free
-                <ArrowRight className="size-4" />
-              </Button>
-            </Link>
-            <p className="mt-3 text-[11px] text-white/35 inline-flex items-center gap-1.5">
-              <ShieldCheck className="size-3" />
-              Estimates, not guarantees · 1 free analysis · no card
-            </p>
-          </div>
-        </Card>
-
-        <p className="pb-8 text-center text-[11px] text-white/30">
-          Audited with{" "}
-          <Link href="/" className="text-white/50 hover:text-white/80">
-            EliteVault
-          </Link>
-          .
-        </p>
+        <ShareFooter />
       </main>
     </div>
   );

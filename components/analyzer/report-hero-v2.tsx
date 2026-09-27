@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowDown, Megaphone, TrendingUp } from "lucide-react";
+import { ArrowDown, ArrowRight, Megaphone, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useT } from "@/components/i18n/locale-provider";
@@ -66,11 +67,16 @@ export function ReportHeroV2({
   result,
   domain,
   onSeeFixes,
+  shareMode = false,
 }: {
   result: AnalysisResult;
   domain: string | null;
-  /** Smooth-scroll to the full, gated fixes section (section-fixes). */
-  onSeeFixes: () => void;
+  /** Smooth-scroll to the full, gated fixes section (section-fixes). Not used
+   *  in shareMode (there is no gated fixes list on the public share page). */
+  onSeeFixes?: () => void;
+  /** Public read-only share page (/s/[slug]): the fixes list doesn't exist
+   *  here, so the CTA becomes "Audit your store free" instead of a scroll. */
+  shareMode?: boolean;
 }) {
   const { t } = useT();
 
@@ -225,16 +231,28 @@ export function ReportHeroV2({
             </div>
           )}
 
-          {/* 4 — the ONE CTA down to the full, gated fixes list. */}
-          {fixCount > 0 && (
-            <button
-              type="button"
-              onClick={onSeeFixes}
-              className="group mt-6 inline-flex items-center gap-1.5 rounded-lg border border-signal-400/30 bg-signal-500/[0.08] px-3.5 py-2 text-[13px] font-medium text-signal-200 transition-colors hover:border-signal-400/50 hover:bg-signal-500/[0.15]"
+          {/* 4 — the ONE CTA. In the report it scrolls to the gated fixes list;
+              on the public share page there is no such list, so it drives the
+              visitor to run their own audit. */}
+          {shareMode ? (
+            <Link
+              href="/sign-up?next=/app/analyzer"
+              className="group mt-6 inline-flex items-center gap-1.5 rounded-lg border border-champagne-400/40 bg-champagne-400/[0.08] px-3.5 py-2 text-[13px] font-medium text-champagne-200 transition-colors hover:border-champagne-400/60 hover:bg-champagne-400/[0.15]"
             >
-              {t("report.v2SeeAllFixes").replace("{n}", String(fixCount))}
-              <ArrowDown className="size-4 transition-transform group-hover:translate-y-0.5" />
-            </button>
+              Audit your store free
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          ) : (
+            fixCount > 0 && (
+              <button
+                type="button"
+                onClick={onSeeFixes}
+                className="group mt-6 inline-flex items-center gap-1.5 rounded-lg border border-signal-400/30 bg-signal-500/[0.08] px-3.5 py-2 text-[13px] font-medium text-signal-200 transition-colors hover:border-signal-400/50 hover:bg-signal-500/[0.15]"
+              >
+                {t("report.v2SeeAllFixes").replace("{n}", String(fixCount))}
+                <ArrowDown className="size-4 transition-transform group-hover:translate-y-0.5" />
+              </button>
+            )
           )}
         </div>
       </Card>

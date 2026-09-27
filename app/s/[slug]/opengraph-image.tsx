@@ -1,28 +1,27 @@
 import { ImageResponse } from "next/og";
+import { analyzerReportV2Enabled } from "@/lib/flags";
+import { buildShareResult, shareVerdictPhrase, type SharedAuditRow } from "@/lib/analyzer/share-v2";
+import { potentialBandForResult } from "@/lib/analyzer/report-v2";
 
 /**
- * Dynamic OG image for a shared audit (P0.3).
+ * Dynamic OG image for a shared audit (P0.3 + share-v2).
  *
- * This is the organic-growth creative: when someone shares their result,
- * the link preview shows THEIR store's real score + annotated screenshot
- * on the EliteVault brand canvas. The screenshot IS the hook — "I want
- * that number for my store" — which is exactly the TikTok/Reels loop.
+ * The organic-growth creative: when someone shares their result, the link
+ * preview shows THEIR store on the EliteVault brand canvas next to the
+ * annotated screenshot. Under ANALYZER_REPORT_V2 (prod default) it shows the
+ * ad-readiness VERDICT + revenue-potential band — matching the report, with no
+ * score. With the flag off it shows the legacy X/100.
  *
- * Edge runtime: we read the public diagnosis via the Supabase REST RPC
- * (anon key) so there's no Node dependency. Falls back to a clean
- * brand-only card if the slug can't be resolved.
+ * Edge runtime: reads the public diagnosis via the Supabase REST RPC (anon key)
+ * so there's no Node dependency. Falls back to a clean brand-only card if the
+ * slug can't be resolved.
  */
 export const runtime = "edge";
 export const alt = "EliteVault store audit";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-interface SharedAudit {
-  url: string | null;
-  score: number | null;
-  screenshot_url: string | null;
-  summary: string | null;
-}
+type SharedAudit = SharedAuditRow;
 
 async function fetchAudit(slug: string): Promise<SharedAudit | null> {
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -41,6 +40,8 @@ async function fetchAudit(slug: string): Promise<SharedAudit | null> {
     if (!res.ok) return null;
     const data = (await res.json()) as SharedAudit | null;
     return data ?? null;
+    // (The RPC returns the extended report-v2 fields when the 0033 migration is
+    //  applied; older/pre-migration rows simply omit them and degrade cleanly.)
   } catch {
     return null;
   }
@@ -63,12 +64,18 @@ export default async function Image({
   const { slug } = await Promise.resolve(params);
   const audit = await fetchAudit(slug);
   const domain = domainOf(audit?.url ?? null);
+  const shot = audit?.screenshot_url ?? null;
+
+  const v2 = analyzerReportV2Enabled();
+  // v2: verdict in words + revenue-potential band (no score). Legacy: X/100.
+  const result = audit ? buildShareResult(audit) : null;
+  const verdict = result ? shareVerdictPhrase(result) : null;
+  const band = result ? potentialBandForResult(result) : null;
   const rawScore = audit?.score ?? null;
   const score =
     rawScore == null
       ? null
       : Math.round(rawScore > 1 ? rawScore : rawScore * 100);
-  const shot = audit?.screenshot_url ?? null;
 
   return new ImageResponse(
     (
@@ -130,44 +137,99 @@ export default async function Image({
             </span>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <span
-              style={{
-                fontSize: "30px",
-                color: "rgba(255,255,255,0.6)",
-                marginBottom: "8px",
-                display: "flex",
-              }}
-            >
-              {domain} scored
-            </span>
-            <div style={{ display: "flex", alignItems: "flex-end", gap: "14px" }}>
+          {v2 ? (
+            <div style={{ display: "flex", flexDirection: "column" }}>
               <span
                 style={{
-                  fontSize: "150px",
-                  lineHeight: 1,
+                  fontSize: "30px",
+                  color: "rgba(255,255,255,0.6)",
+                  marginBottom: "10px",
+                  display: "flex",
+                }}
+              >
+                {domain}
+              </span>
+              <span
+                style={{
+                  fontSize: shot ? "56px" : "68px",
+                  lineHeight: 1.05,
                   fontWeight: 600,
-                  background:
-                    "linear-gradient(135deg, #99F6E4 0%, #2DD4BF 50%, #0D9488 100%)",
-                  backgroundClip: "text",
-                  color: "transparent",
+                  color: "white",
                   display: "flex",
+                  maxWidth: shot ? "440px" : "900px",
                 }}
               >
-                {score ?? "—"}
+                {verdict ?? "Here's what's costing you sales"}
               </span>
+              {band && (
+                <div style={{ display: "flex", flexDirection: "column", marginTop: "22px" }}>
+                  <span
+                    style={{
+                      fontSize: "20px",
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                      color: "rgba(255,255,255,0.45)",
+                      display: "flex",
+                    }}
+                  >
+                    Revenue potential
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "52px",
+                      fontWeight: 600,
+                      background:
+                        "linear-gradient(135deg, #99F6E4 0%, #2DD4BF 50%, #0D9488 100%)",
+                      backgroundClip: "text",
+                      color: "transparent",
+                      display: "flex",
+                    }}
+                  >
+                    {band}
+                  </span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column" }}>
               <span
                 style={{
-                  fontSize: "40px",
-                  color: "rgba(255,255,255,0.4)",
-                  marginBottom: "22px",
+                  fontSize: "30px",
+                  color: "rgba(255,255,255,0.6)",
+                  marginBottom: "8px",
                   display: "flex",
                 }}
               >
-                / 100
+                {domain} scored
               </span>
+              <div style={{ display: "flex", alignItems: "flex-end", gap: "14px" }}>
+                <span
+                  style={{
+                    fontSize: "150px",
+                    lineHeight: 1,
+                    fontWeight: 600,
+                    background:
+                      "linear-gradient(135deg, #99F6E4 0%, #2DD4BF 50%, #0D9488 100%)",
+                    backgroundClip: "text",
+                    color: "transparent",
+                    display: "flex",
+                  }}
+                >
+                  {score ?? "—"}
+                </span>
+                <span
+                  style={{
+                    fontSize: "40px",
+                    color: "rgba(255,255,255,0.4)",
+                    marginBottom: "22px",
+                    display: "flex",
+                  }}
+                >
+                  / 100
+                </span>
+              </div>
             </div>
-          </div>
+          )}
 
           <span
             style={{
