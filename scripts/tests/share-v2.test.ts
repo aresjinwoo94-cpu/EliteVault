@@ -99,10 +99,9 @@ test("the 0033 RPC never exposes the paid fixes or the persona", () => {
     "utf8",
   );
   // Strip -- comments so we assert on the executed SQL, not the doc header.
-  const sql = raw
-    .split("\n")
-    .map((l) => l.replace(/--.*$/, ""))
-    .join("\n");
+  // `--` to end-of-line, CRLF-safe ([^\n] eats a trailing \r that a line-split
+  // + `$` regex would leave behind, so a comment can't survive as CRLF).
+  const sql = raw.replace(/--[^\n]*/g, "");
   // top_fixes may be referenced for a COUNT, but never returned as a key.
   assert.equal(sql.includes("'top_fixes',"), false, "top_fixes must not be an output key");
   assert.equal(/'top_fixes'\s*,\s*a\.result->'top_fixes'/.test(sql), false);

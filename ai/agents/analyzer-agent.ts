@@ -48,6 +48,32 @@ const ANALYZER_MAX_TOKENS = (() => {
 /** Test-only view of the resolved ceiling — see scripts/tests/analyzer-max-tokens. */
 export const ANALYZER_MAX_TOKENS_FOR_TEST = ANALYZER_MAX_TOKENS;
 
+/**
+ * How long the vision call waits before FORCING a hedged second draw on another
+ * key (overrides a stale global GEMINI_HEDGE_AFTER_MS=0).
+ *
+ * The hedge is the one real lever against the measured failure mode on Vercel
+ * Hobby's 50s step: Gemini's vision latency varies 8.5s → past 50s on identical
+ * input (docs/analyzer-latency.md §4b — Google-side queueing, not page weight or
+ * quota). Racing a second draw and keeping whichever finishes first turns
+ * P(one draw > 50s) into P(BOTH draws > 50s), which is what collapses the
+ * step-retry rate that makes 68% of successful audits pay for a retry today.
+ *
+ * Lowered from 12s to 9s: at a ~20-30s median vision time, 9s leaves the backup
+ * draw ~40s of the step to beat a stuck primary, materially more tail coverage
+ * than 12s bought, while almost every audit was already hedging by 12s anyway
+ * (so the extra quota cost is one draw starting 3s sooner, not a new one).
+ * No-op with <2 keys (local dev). Tunable without a deploy via
+ * ANALYZER_HEDGE_AFTER_MS; 0 disables the forced hedge.
+ */
+const ANALYZER_HEDGE_AFTER_MS = (() => {
+  const raw = Number(process.env.ANALYZER_HEDGE_AFTER_MS);
+  return Number.isFinite(raw) && raw >= 0 ? Math.round(raw) : 9_000;
+})();
+
+/** Test-only view of the resolved forced-hedge delay. */
+export const ANALYZER_HEDGE_AFTER_MS_FOR_TEST = ANALYZER_HEDGE_AFTER_MS;
+
 export interface SiteInfo {
   title: string | null;
   description: string | null;
@@ -202,12 +228,12 @@ export async function runAnalyzerAgent(opts: {
     // hedge (GEMINI_HEDGE_AFTER_MS, default on), the step retry and the model
     // fallback chain. Small stores are unaffected (they finish well under 25s).
     callCapMs: 0,
-    // …and FORCE the deferred hedge on for the vision call (WP-1's 12s default),
-    // overriding a stale global GEMINI_HEDGE_AFTER_MS=0. The hedge races a second
-    // draw on another key when the first is slow and keeps whichever finishes
-    // first — the measured fix for Gemini's provider-side latency variance, which
-    // is what refunds tall/heavy stores. No-op with <2 keys (local dev).
-    hedgeAfterMs: 12_000,
+    // …and FORCE the deferred hedge on for the vision call, overriding a stale
+    // global GEMINI_HEDGE_AFTER_MS=0. The hedge races a second draw on another
+    // key when the first is slow and keeps whichever finishes first — the
+    // measured fix for Gemini's provider-side latency variance, which is what
+    // pushes a draw past the 50s step and forces a retry. See the const above.
+    hedgeAfterMs: ANALYZER_HEDGE_AFTER_MS,
     parts,
   };
 

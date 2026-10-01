@@ -239,15 +239,15 @@ export const ANALYSIS_TOOL_SCHEMA = {
       type: "object",
       properties: {
         headline: { type: "string" },
-        quotes: { type: "array", items: { type: "string" }, minItems: 2, maxItems: 6 },
+        quotes: { type: "array", items: { type: "string" }, minItems: 2, maxItems: 4 },
         would_buy: { type: "boolean" },
-        reasons: { type: "array", items: { type: "string" }, maxItems: 6 },
+        reasons: { type: "array", items: { type: "string" }, maxItems: 4 },
       },
       required: ["headline", "quotes", "would_buy", "reasons"],
     },
     annotations: {
       type: "array",
-      maxItems: 8,
+      maxItems: 6,
       items: {
         type: "object",
         properties: {
@@ -268,7 +268,7 @@ export const ANALYSIS_TOOL_SCHEMA = {
     summary: { type: "string" },
     top_fixes: {
       type: "array",
-      maxItems: 8,
+      maxItems: 6,
       items: {
         type: "object",
         properties: {
