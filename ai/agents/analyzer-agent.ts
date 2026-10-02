@@ -1,5 +1,5 @@
 import "server-only";
-import { resolveAnalyzerProviders } from "@/ai/provider";
+import { resolveAnalyzerProviders, type GenerateOptions } from "@/ai/provider";
 import {
   ANALYSIS_TOOL_SCHEMA,
   AnalysisResultSchema,
@@ -74,6 +74,36 @@ const ANALYZER_HEDGE_AFTER_MS = (() => {
 /** Test-only view of the resolved forced-hedge delay. */
 export const ANALYZER_HEDGE_AFTER_MS_FOR_TEST = ANALYZER_HEDGE_AFTER_MS;
 
+/**
+ * After this long with no answer from the primary model (primary + hedge
+ * draws), the NEXT model of the fallback chain starts in parallel and the first
+ * schema-valid answer wins (docs/analyzer-speed-fix-free-tier.md §4.2).
+ *
+ * The hedge fixes a slow DRAW; it can't fix a saturated MODEL, where all six
+ * keys queue behind the same overloaded backend (2026-10-01: gemini-3.6-flash
+ * "slow past 12s" on almost every audit). 25s leaves the switched model ~25s
+ * of a 50s step, which the benchmark's p50 for a healthy flash model fits.
+ *
+ *   ANALYZER_MODEL_SWITCH_AFTER_MS=0      off (sequential fallback only, as before)
+ *   ANALYZER_MODEL_SWITCH_AFTER_MS=20000  switch sooner (more parallel calls)
+ * Values between 1 and 5000 are raised to 5000: switching sooner just doubles
+ * every call. Garbage falls back to the default.
+ */
+export function resolveModelSwitchAfterMs(raw: string | undefined): number {
+  if (raw === undefined || raw.trim() === "") return 25_000;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 0) return 25_000;
+  if (n === 0) return 0;
+  return Math.max(5_000, Math.round(n));
+}
+
+const ANALYZER_MODEL_SWITCH_AFTER_MS = resolveModelSwitchAfterMs(
+  process.env.ANALYZER_MODEL_SWITCH_AFTER_MS,
+);
+
+/** Test-only view of the resolved model-switch delay. */
+export const ANALYZER_MODEL_SWITCH_AFTER_MS_FOR_TEST = ANALYZER_MODEL_SWITCH_AFTER_MS;
+
 export interface SiteInfo {
   title: string | null;
   description: string | null;
@@ -136,6 +166,8 @@ export async function runAnalyzerAgent(opts: {
    * ceiling and 504.
    */
   deadlineAt?: number;
+  /** How the kept answer was produced (model, latency…), for analyses.timings. */
+  onAnswer?: GenerateOptions["onAnswer"];
 }): Promise<AnalysisResult> {
   // Route by tier (free/fast vs paid) and optionally fall back to the other
   // provider on a hard failure. Defaults preserve the previous single-provider
@@ -234,6 +266,13 @@ export async function runAnalyzerAgent(opts: {
     // measured fix for Gemini's provider-side latency variance, which is what
     // pushes a draw past the 50s step and forces a retry. See the const above.
     hedgeAfterMs: ANALYZER_HEDGE_AFTER_MS,
+    // …and if the whole MODEL is saturated (the hedge can't help: every key
+    // queues alike), race the next model of the chain inside the same step.
+    // Only a schema-valid answer wins that race, so a fast-but-malformed draw
+    // can't beat a correct one; see the const above.
+    modelSwitchAfterMs: ANALYZER_MODEL_SWITCH_AFTER_MS,
+    accept: (r: unknown) => AnalysisResultSchema.safeParse(r).success,
+    onAnswer: opts.onAnswer,
     parts,
   };
 

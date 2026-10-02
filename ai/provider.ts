@@ -72,7 +72,39 @@ export interface GenerateOptions {
    * Omit to keep the global env value.
    */
   hedgeAfterMs?: number;
+  /**
+   * Per-CALL model switch (ms). If the current model's best draw (primary +
+   * hedge) hasn't answered after this long, the NEXT model in the provider's
+   * fallback chain is started IN PARALLEL and the first answer `accept` takes
+   * wins, all inside the same step deadline. Attacks the case a hedge can't: the
+   * whole model being saturated on Google's side, where every key queues alike.
+   * Omit or 0 = off (sequential fallback only, as before). The analyzer's
+   * vision call sets it from ANALYZER_MODEL_SWITCH_AFTER_MS.
+   */
+  modelSwitchAfterMs?: number;
+  /**
+   * Whether a parsed answer is good enough to WIN a model-switch race (e.g. a
+   * schema check). A rejected answer doesn't cancel the other racer; if no
+   * racer produces an accepted answer, the primary's answer is still returned
+   * so the caller's own repair path can work on it. Only consulted while a
+   * switch is racing. A throwing predicate counts as "not accepted".
+   */
+  accept?: (result: unknown) => boolean;
+  /**
+   * Called once with how the RETURNED answer was produced (which model, how
+   * long, hedged, fallback). For timings/metering only — a throwing callback is
+   * ignored. Providers that can't tell may never call it.
+   */
+  onAnswer?: (info: AnswerInfo) => void;
 }
+
+export type AnswerInfo = {
+  model: string;
+  latencyMs: number;
+  hedged: boolean;
+  fellBackFrom?: string;
+  modelSwitched?: boolean;
+};
 
 /**
  * Core method: generate a structured JSON object matching `tool.schema`.

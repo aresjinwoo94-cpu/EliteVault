@@ -2,6 +2,7 @@ import "server-only";
 import { GoogleGenAI, Type, type Schema } from "@google/genai";
 import type {
   AIProvider,
+  AnswerInfo,
   GenerateOptions,
   StructuredCall,
 } from "../provider";
@@ -69,6 +70,40 @@ export function resolveThinkingBudget(raw: string | undefined): number {
 const THINKING_BUDGET = resolveThinkingBudget(process.env.GEMINI_THINKING_BUDGET);
 
 /**
+ * Per-model override of the budget above, e.g.
+ *   GEMINI_THINKING_BUDGET_BY_MODEL=gemini-3.1-flash-lite=0,gemini-2.5-flash=512
+ *
+ * Why per model (measured 2026-10-01, scripts/benchmark-vision-models.mts, real
+ * vision call): gemini-3.1-flash-lite IGNORES a 256 budget — it reported ~1600
+ * thought tokens and 3 of 6 calls ran past the 50s step — but at 0 it answered
+ * in p50 ~6s with report quality on par with gemini-3.6-flash. Meanwhile
+ * gemini-3.5-flash-lite REJECTS 0 on every call. One global value can't serve
+ * both in the same fallback chain. Unlisted models use GEMINI_THINKING_BUDGET.
+ * Malformed entries are ignored (same parsing rules as the global value).
+ */
+export function parseThinkingBudgetByModel(raw: string | undefined): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const entry of (raw ?? "").split(",")) {
+    const i = entry.lastIndexOf("=");
+    if (i < 1) continue;
+    const model = entry.slice(0, i).trim();
+    const value = entry.slice(i + 1).trim();
+    if (!model || value === "" || !Number.isFinite(Number(value))) continue;
+    out.set(model, Math.round(Number(value)));
+  }
+  return out;
+}
+
+const THINKING_BUDGET_BY_MODEL = parseThinkingBudgetByModel(
+  process.env.GEMINI_THINKING_BUDGET_BY_MODEL,
+);
+
+/** The thinking budget sent to one model. */
+function thinkingBudgetFor(model: string): number {
+  return THINKING_BUDGET_BY_MODEL.get(model) ?? THINKING_BUDGET;
+}
+
+/**
  * The request fragment that bounds thinking. Empty for "model default" (a
  * negative budget) and once a model has refused the config.
  */
@@ -98,6 +133,24 @@ export function isThinkingConfigError(raw: string): boolean {
   return (
     /thinking|thought/i.test(raw) &&
     /invalid|unsupported|not supported|unknown|cannot be disabled/i.test(raw)
+  );
+}
+
+/**
+ * Same, including the refusal that doesn't SAY it is about thinking. Measured
+ * 2026-10-01 (scripts/benchmark-vision-models.mts): gemini-3.5-flash-lite
+ * answers thinkingBudget 0 with a bare `400 "Request contains an invalid
+ * argument." INVALID_ARGUMENT` on every call, while accepting 256. With
+ * GEMINI_THINKING_BUDGET=0 that model would have failed every audit over to
+ * the next one. A generic INVALID_ARGUMENT counts only when the budget sent was
+ * 0 — the "can't turn thinking off" case — so other bad requests still surface.
+ */
+export function isThinkingRejection(raw: string, budgetSent: number | null): boolean {
+  if (isThinkingConfigError(raw)) return true;
+  return (
+    budgetSent === 0 &&
+    /INVALID_ARGUMENT|"code"\s*:\s*400/.test(raw) &&
+    /invalid argument/i.test(raw)
   );
 }
 
@@ -493,8 +546,10 @@ function shortestCooldownKey(): { idx: number; waitMs: number } | null {
  * `type`, `properties`, `items`, `required`, `enum` and a handful of
  * format hints. We strip unsupported keys (minimum, maximum, maxItems,
  * minItems, etc.) because Gemini rejects them.
+ *
+ * Exported so scripts/benchmark-vision-models.mts sends the exact same schema.
  */
-function toGeminiSchema(node: unknown): Schema {
+export function toGeminiSchema(node: unknown): Schema {
   if (!node || typeof node !== "object") {
     return { type: Type.STRING };
   }
@@ -617,6 +672,39 @@ async function generateStructured<T>(
     return dl.remaining() >= cap * 2 ? cap : undefined;
   };
 
+  // Model chain: try each in turn, falling back on a recoverable failure
+  // (429 quota, 503 overload, …) so the audit still completes.
+  //
+  // The last rung is a STABLE, generally-available model (gemini-2.5-flash by
+  // default). The 3.x-family models this app runs on are newer and
+  // capacity-constrained, so both the premium AND fast 3.x models can be
+  // overloaded (503) at the same moment — which is exactly what refunded the
+  // owner's audits. A GA model is a different, much higher-capacity backend
+  // that rarely 503s, so it's the safety net that lets the audit finish when
+  // the new models are all busy. Same API key, no extra cost.
+  const primaryModel = opts.fast ? MODEL_FAST : MODEL;
+  const modelChain = [
+    ...new Set(
+      (primaryModel === MODEL_FAST
+        ? [primaryModel, MODEL_STABLE]
+        : [primaryModel, MODEL_FAST, MODEL_STABLE]
+      ).filter(Boolean),
+    ),
+  ];
+  const startedAt = Date.now();
+  /** Set once a model-switch race has started (see raceNextModel). */
+  let switched = false;
+  /** How each parsed answer was produced, for opts.onAnswer. */
+  const answerInfo = new WeakMap<object, Record<string, unknown>>();
+  /** A usable answer: meter it, parse it, remember where it came from. */
+  const answered = (response: unknown, model: string, text: string): T => {
+    const meta = usageMeta(model);
+    reportUsage(response, model, meta);
+    const parsed = parseJsonText<T>(text);
+    if (parsed && typeof parsed === "object") answerInfo.set(parsed as object, meta);
+    return parsed;
+  };
+
   const callOnce = (
     keyIdx: number,
     model: string,
@@ -634,7 +722,7 @@ async function generateStructured<T>(
         responseSchema: toGeminiSchema(tool.schema),
         // Bound the model's thinking time. -1 means "model default", which is
         // what this used to do implicitly and what was blowing the step budget.
-        ...thinkingConfigFor(THINKING_BUDGET, thinkingConfigRejectedBy.has(model)),
+        ...thinkingConfigFor(thinkingBudgetFor(model), thinkingConfigRejectedBy.has(model)),
         // Abort as soon as the budget is gone (or the caller cancels) so a
         // hanging generation can't run into the platform timeout — AND cap any
         // single call so it can't spend the whole step on one bad draw. See
@@ -685,6 +773,8 @@ async function generateStructured<T>(
     keyIdx: number,
     model: string,
     maxOutputTokens: number,
+    /** A model-switch racer's own signal (already merged with opts.signal). */
+    signal?: AbortSignal,
   ) => {
     // Feature off, not enough keys to hedge onto, or not enough budget left
     // for the wait plus a second call to be worth starting.
@@ -695,14 +785,14 @@ async function generateStructured<T>(
         budgetFits: dl.has(effectiveHedgeAfterMs + MIN_CALL_MS),
       })
     ) {
-      return callOnce(keyIdx, model, maxOutputTokens);
+      return callOnce(keyIdx, model, maxOutputTokens, signal);
     }
 
     // Explicit: with callbacks in the object, inference falls back to
     // `unknown` and the response type is lost for the ladder below.
     return hedgedCall<Awaited<ReturnType<typeof callOnce>>>({
       hedgeAfterMs: effectiveHedgeAfterMs,
-      parent: opts.signal,
+      parent: signal ?? opts.signal,
       // An empty or cut-off answer isn't a win; the ladder below retries those…
       isUsable: (r) => Boolean(extractText(r)) && !isTruncated(r),
       // …but a cut-off PRIMARY ends the race: the ladder recovers it with a
@@ -737,10 +827,11 @@ async function generateStructured<T>(
 
   // Google 503 ("model experiencing high demand") is server-side, not
   // key-side — rotating keys won't help because they all hit the same
-  // backend. We retry the SAME model once with a short backoff, then let the
-  // caller fall back to the DIFFERENT fast model (a separate backend that's
-  // rarely overloaded at the same moment). Keeping this short matters: a long
-  // same-model backoff just delays the fallback that's more likely to work.
+  // backend. When another model is left in the chain we jump to it AT ONCE: no
+  // back-off on the saturated model, and no trying its other keys (measured
+  // 2026-10-01: gemini-3.6-flash 503'd on every key while the 4s same-model
+  // retry burned the step). Only the LAST model in the chain, with nothing to
+  // fall back to, still gets one short same-model retry.
   const MAX_503_RETRIES = 1;
   const RETRY_503_BACKOFF_MS = 4_000;
   // Flash models occasionally return an empty candidate — transient, or a
@@ -756,7 +847,18 @@ async function generateStructured<T>(
   const TRUNCATION_TOKEN_CAP = 32_768;
 
   // Run the full key-rotation + retry pipeline against ONE model.
-  const runWithModel = async (model: string): Promise<T> => {
+  const runWithModel = async (
+    model: string,
+    {
+      signal,
+      hasNext,
+    }: {
+      /** Racer signal (model switch); falls back to opts.signal. */
+      signal?: AbortSignal;
+      /** Another model follows in the chain (or is racing alongside). */
+      hasNext: boolean;
+    },
+  ): Promise<T> => {
     // ── Try keys in rotation. On 429 cool down + try next; on 503 retry. ──
     let attemptedKeys = 0;
     let last429: unknown = null;
@@ -779,7 +881,7 @@ async function generateStructured<T>(
       // Inner loop just for 503 / empty-response retries on this same key
       while (true) {
         try {
-          const response = await callWithKey(idx, model, maxTokensForCall);
+          const response = await callWithKey(idx, model, maxTokensForCall, signal);
           const text = extractText(response);
           if (!text) {
             // Only retry if the back-off AND another full call still fit in
@@ -819,15 +921,20 @@ async function generateStructured<T>(
               `Gemini: response truncated at the ${maxTokensForCall}-token ceiling`,
             );
           }
-          reportUsage(response, Boolean(opts.fast), hedgesByModel);
-          return parseJsonText<T>(text);
+          return answered(response, model, text);
         } catch (err) {
           const raw = errMsg(err);
           // The model refused our thinkingConfig (not every model accepts a
           // budget; some can't turn thinking off). Drop it for the rest of this
           // lambda and retry the SAME key immediately — a latency knob must
           // never be the reason a paid audit fails.
-          if (!thinkingConfigRejectedBy.has(model) && isThinkingConfigError(raw)) {
+          if (
+            !thinkingConfigRejectedBy.has(model) &&
+            isThinkingRejection(
+              raw,
+              thinkingBudgetFor(model) >= 0 ? thinkingBudgetFor(model) : null,
+            )
+          ) {
             thinkingConfigRejectedBy.add(model);
             console.warn(
               `[gemini] ${model} rejected thinkingConfig (${raw.slice(0, 80)}) — retrying without it and not sending it to this model again`,
@@ -841,6 +948,13 @@ async function generateStructured<T>(
             cooldownUntil.set(idx, Date.now() + COOLDOWN_MS);
             last429 = err;
             break; // exit inner loop, try next key
+          }
+          // Saturated model and somewhere else to go: leave now (see above).
+          if (is503(raw) && hasNext) {
+            console.warn(
+              `[gemini] ${model} key #${idx + 1} got 503 (Google overload) — skipping straight to the next model, no back-off`,
+            );
+            throw err;
           }
           if (
             is503(raw) &&
@@ -906,6 +1020,7 @@ async function generateStructured<T>(
           best.idx,
           model,
           Math.min(baseMaxTokens * 2, TRUNCATION_TOKEN_CAP),
+          signal,
         );
         const text = extractText(response);
         if (!text) throw new Error("Gemini: empty response after cooldown wait");
@@ -914,8 +1029,7 @@ async function generateStructured<T>(
             "Gemini: response truncated at the token ceiling (after cooldown wait)",
           );
         }
-        reportUsage(response, Boolean(opts.fast), hedgesByModel);
-        return parseJsonText<T>(text);
+        return answered(response, model, text);
       } catch (err) {
         if (is429(errMsg(err))) {
           cooldownUntil.set(best.idx, Date.now() + COOLDOWN_MS);
@@ -927,63 +1041,189 @@ async function generateStructured<T>(
     throw last429 ?? new Error("Gemini: all keys exhausted");
   };
 
-  // Model chain: try each in turn, falling back on a recoverable failure
-  // (429 quota, 503 overload, …) so the audit still completes.
-  //
-  // The last rung is a STABLE, generally-available model (gemini-2.5-flash by
-  // default). The 3.x-family models this app runs on are newer and
-  // capacity-constrained, so both the premium AND fast 3.x models can be
-  // overloaded (503) at the same moment — which is exactly what refunded the
-  // owner's audits. A GA model is a different, much higher-capacity backend
-  // that rarely 503s, so it's the safety net that lets the audit finish when
-  // the new models are all busy. Same API key, no extra cost.
-  const primaryModel = opts.fast ? MODEL_FAST : MODEL;
-  const modelChain = [
-    ...new Set(
-      (primaryModel === MODEL_FAST
-        ? [primaryModel, MODEL_STABLE]
-        : [primaryModel, MODEL_FAST, MODEL_STABLE]
-      ).filter(Boolean),
-    ),
-  ];
+  /** Whether a failure on modelChain[mi] should move on to the next model. */
+  const fallsBack = (err: unknown, mi: number): boolean => {
+    if (mi >= modelChain.length - 1) return false;
+    // Out of budget → don't start the fallback model. It would be cut off
+    // mid-flight, turning a clean retryable failure into a 504.
+    if (!dl.has(MIN_CALL_MS)) return false;
+    const raw = errMsg(err);
+    return (
+      is429(raw) ||
+      // 503 "model is overloaded" is the single most common reason a premium
+      // audit fails on Google's side. It was NOT in this list, so an
+      // overloaded gemini-3.5-flash threw straight to the user instead of
+      // falling back to the fast model — which is a DIFFERENT backend and is
+      // rarely overloaded at the same moment. This one omission is what
+      // surfaced the raw 503 to the owner.
+      is503(raw) ||
+      /empty response|all keys exhausted|not found|not available|unsupported|billing|permission|INVALID_ARGUMENT|FAILED_PRECONDITION/i.test(
+        raw,
+      )
+    );
+  };
 
-  let lastErr: unknown = null;
-  for (let mi = 0; mi < modelChain.length; mi++) {
-    const model = modelChain[mi];
-    const isLast = mi === modelChain.length - 1;
-    try {
-      return await runWithModel(model);
-    } catch (err) {
-      lastErr = err;
-      const raw = errMsg(err);
-      // Out of budget → don't start the fallback model. It would be cut off
-      // mid-flight, turning a clean retryable failure into a 504.
-      if (!dl.has(MIN_CALL_MS)) throw err;
-      const recoverable =
-        is429(raw) ||
-        // 503 "model is overloaded" is the single most common reason a premium
-        // audit fails on Google's side. It was NOT in this list, so an
-        // overloaded gemini-3.5-flash threw straight to the user instead of
-        // falling back to the fast model — which is a DIFFERENT backend and is
-        // rarely overloaded at the same moment. This one omission is what
-        // surfaced the raw 503 to the owner.
-        is503(raw) ||
-        /empty response|all keys exhausted|not found|not available|unsupported|billing|permission|INVALID_ARGUMENT|FAILED_PRECONDITION/i.test(
-          raw,
-        );
-      if (!isLast && recoverable) {
-        console.warn(
-          `[gemini] model "${model}" unavailable (${raw.slice(0, 100)}) — falling back to "${modelChain[mi + 1]}"`,
-        );
-        // The 429 cooldowns we just set were specific to the premium model's
-        // quota; clear them so the fallback model starts with fresh keys.
-        cooldownUntil.clear();
-        continue;
+  const noteFallback = (err: unknown, mi: number) => {
+    console.warn(
+      `[gemini] model "${modelChain[mi]}" unavailable (${errMsg(err).slice(0, 100)}) — falling back to "${modelChain[mi + 1]}"`,
+    );
+    // The 429 cooldowns we just set were specific to the premium model's
+    // quota; clear them so the fallback model starts with fresh keys.
+    cooldownUntil.clear();
+  };
+
+  /** The sequential chain, starting at modelChain[start]. */
+  const runChainFrom = async (start: number, signal?: AbortSignal): Promise<T> => {
+    let lastErr: unknown = null;
+    for (let mi = start; mi < modelChain.length; mi++) {
+      try {
+        return await runWithModel(modelChain[mi], {
+          signal,
+          hasNext: mi < modelChain.length - 1,
+        });
+      } catch (err) {
+        lastErr = err;
+        if (signal?.aborted || !fallsBack(err, mi)) throw err;
+        noteFallback(err, mi);
       }
-      throw err;
+    }
+    throw lastErr ?? new Error("Gemini: all models exhausted");
+  };
+
+  const switchAfterMs = opts.modelSwitchAfterMs ?? 0;
+  const value = await (!(switchAfterMs > 0) || modelChain.length < 2
+    ? runChainFrom(0)
+    : raceNextModel(switchAfterMs));
+  // Tell the caller how THIS answer (not a raced loser's) was produced.
+  const info =
+    value && typeof value === "object" ? answerInfo.get(value as object) : undefined;
+  if (info && opts.onAnswer) {
+    try {
+      opts.onAnswer(info as unknown as AnswerInfo);
+    } catch {
+      // Timings only; never the reason an answer is lost.
     }
   }
-  throw lastErr ?? new Error("Gemini: all models exhausted");
+  return value;
+
+  /**
+   * Model switch (docs/analyzer-speed-fix-free-tier.md §4.2).
+   *
+   * The hedge races a second KEY of the same model; it can't help when the
+   * model itself is saturated on Google's side, because every key queues
+   * behind the same backend (measured 2026-10-01: gemini-3.6-flash "slow past
+   * 12s" on almost every audit, all 6 keys alike). So if modelChain[0] hasn't
+   * answered after `afterMs`, the REST of the chain starts in parallel and the
+   * first ACCEPTED answer wins; the loser is aborted.
+   *
+   *   • Before the switch fires nothing changes: a failure on modelChain[0]
+   *     falls back sequentially exactly as runChainFrom(0) would.
+   *   • The switch only starts while a full call still fits in the step.
+   *   • An unaccepted answer (opts.accept) doesn't end the race. If neither
+   *     side is accepted, an answer beats an error (the caller's repair pass
+   *     can fix an answer) and the primary's beats the switch's.
+   *   • A caller cancel aborts both.
+   */
+  function raceNextModel(afterMs: number): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      const aCtl = new AbortController();
+      const bCtl = new AbortController();
+      const link = (c: AbortController) =>
+        opts.signal && typeof AbortSignal.any === "function"
+          ? AbortSignal.any([opts.signal, c.signal])
+          : c.signal;
+      type Out = { ok: true; value: T } | { ok: false; err: unknown };
+      let aOut: Out | null = null;
+      let bOut: Out | null = null;
+      let bStarted = false;
+      let settled = false;
+      let timer: ReturnType<typeof setTimeout> | undefined;
+
+      const finish = (settle: () => void) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        aCtl.abort();
+        bCtl.abort();
+        settle();
+      };
+      const accepted = (v: T) => {
+        if (!opts.accept) return true;
+        try {
+          return opts.accept(v);
+        } catch {
+          return false;
+        }
+      };
+      const settleIfBothDone = () => {
+        if (!aOut || !bOut) return;
+        const a = aOut;
+        const b = bOut;
+        if (a.ok) return finish(() => resolve(a.value));
+        if (b.ok) return finish(() => resolve(b.value));
+        finish(() => reject(a.err));
+      };
+
+      runWithModel(modelChain[0], { signal: link(aCtl), hasNext: true }).then(
+        (v) => {
+          aOut = { ok: true, value: v };
+          if (!bStarted || accepted(v)) return finish(() => resolve(v));
+          settleIfBothDone();
+        },
+        (err) => {
+          aOut = { ok: false, err };
+          if (bStarted) return settleIfBothDone();
+          // Failed before the switch: the ordinary sequential fallback.
+          clearTimeout(timer);
+          if (settled) return;
+          if (opts.signal?.aborted || !fallsBack(err, 0)) {
+            return finish(() => reject(err));
+          }
+          noteFallback(err, 0);
+          bStarted = true;
+          runChainFrom(1, link(bCtl)).then(
+            (v) => finish(() => resolve(v)),
+            (e) => finish(() => reject(e)),
+          );
+        },
+      );
+
+      timer = setTimeout(() => {
+        if (settled || bStarted || !dl.has(MIN_CALL_MS)) return;
+        bStarted = true;
+        switched = true;
+        console.warn(
+          `[gemini] ${modelChain[0]} gave no answer in ${afterMs / 1000}s — racing "${modelChain[1]}" alongside it`,
+        );
+        runChainFrom(1, link(bCtl)).then(
+          (v) => {
+            bOut = { ok: true, value: v };
+            if (accepted(v)) return finish(() => resolve(v));
+            settleIfBothDone();
+          },
+          (err) => {
+            bOut = { ok: false, err };
+            settleIfBothDone();
+          },
+        );
+      }, afterMs);
+      (timer as unknown as { unref?: () => void }).unref?.();
+    });
+  }
+
+  /** Metering meta for one used answer (docs/analyzer-speed-fix-free-tier.md §5). */
+  function usageMeta(model: string): Record<string, unknown> {
+    const hedges = Object.values(hedgesByModel).reduce((sum, n) => sum + n, 0);
+    return {
+      latencyMs: Date.now() - startedAt,
+      model,
+      hedged: hedges > 0,
+      // Each hedge also sent this prompt to another key; see callWithKey.
+      ...(hedges > 0 ? { hedges, hedgesByModel: { ...hedgesByModel } } : {}),
+      ...(model !== primaryModel ? { fellBackFrom: primaryModel } : {}),
+      ...(switched ? { modelSwitched: true } : {}),
+    };
+  }
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -1018,10 +1258,10 @@ export function is503(raw: string): boolean {
  */
 function reportUsage(
   response: unknown,
-  fast: boolean,
-  hedgesByModel: Record<string, number> = {},
+  /** The model that actually answered (was: always the chain's first). */
+  model: string,
+  meta: Record<string, unknown>,
 ): void {
-  const hedges = Object.values(hedgesByModel).reduce((sum, n) => sum + n, 0);
   const u = (
     response as {
       usageMetadata?: {
@@ -1033,14 +1273,11 @@ function reportUsage(
   ).usageMetadata;
   recordUsage({
     provider: "gemini",
-    model: fast ? MODEL_FAST : MODEL,
+    model,
     promptTokens: u?.promptTokenCount ?? 0,
     outputTokens: u?.candidatesTokenCount ?? 0,
     totalTokens: u?.totalTokenCount ?? 0,
-    // Each hedge also sent this prompt to another key; see callWithKey.
-    ...(hedges > 0
-      ? { meta: { hedged: true, hedges, hedgesByModel: { ...hedgesByModel } } }
-      : {}),
+    meta,
   });
 }
 
