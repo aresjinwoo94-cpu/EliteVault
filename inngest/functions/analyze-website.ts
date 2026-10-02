@@ -9,6 +9,7 @@ import {
 } from "@/lib/analyzer/timings";
 import type { AnalysisResult } from "@/ai/schemas";
 import type { AnswerInfo } from "@/ai/provider";
+import { resolveAnalyzerConcurrency } from "@/lib/inngest-concurrency";
 import type { PlanTier } from "@/lib/supabase/types";
 import { captureScreenshot } from "@/lib/screenshot";
 import {
@@ -55,10 +56,10 @@ import { quickScoreEnabled, nicheWinnersEnabled } from "@/lib/flags";
  * Raise ANALYZER_CONCURRENCY as the key pool grows (the Gemini provider
  * rotates GEMINI_API_KEY_2..10, so headroom scales with keys configured).
  */
-const GLOBAL_CONCURRENCY = (() => {
-  const raw = Number(process.env.ANALYZER_CONCURRENCY);
-  return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 5;
-})();
+const GLOBAL_CONCURRENCY = resolveAnalyzerConcurrency(
+  process.env.ANALYZER_CONCURRENCY,
+  process.env.INNGEST_PLAN_CONCURRENCY_MAX,
+);
 
 /**
  * How many ADDITIONAL product-page screenshots to capture per audit.

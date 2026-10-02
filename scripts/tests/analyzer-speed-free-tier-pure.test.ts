@@ -73,6 +73,15 @@ test("the Inngest route passes serveHost through the guard, and nothing else cha
   assert.match(src, /streaming: "allow"/);
 });
 
+test("REGRESSION: analyzer concurrency never exceeds the Inngest plan (8 > 5 broke every sync)", async () => {
+  const { resolveAnalyzerConcurrency } = await import("../../lib/inngest-concurrency");
+  assert.equal(resolveAnalyzerConcurrency("8", undefined), 5, "free plan ceiling");
+  assert.equal(resolveAnalyzerConcurrency("3", undefined), 3);
+  assert.equal(resolveAnalyzerConcurrency(undefined, undefined), 5);
+  assert.equal(resolveAnalyzerConcurrency("junk", undefined), 5);
+  assert.equal(resolveAnalyzerConcurrency("8", "10"), 8, "a paid plan can raise the ceiling");
+});
+
 // ─── Paquete D: timings never break the save ────────────────────────────────
 
 test("persistAnalysisTimings: a missing column (0034 not applied) returns false, never throws", async () => {
