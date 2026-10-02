@@ -402,8 +402,16 @@ export const analyzeWebsite = inngest.createFunction(
     // AI request per audit; see flags.ts). Only invoke the step — and pay its
     // Inngest round-trip — when the flag is actually on. When off it used to be a
     // no-op step that still cost a full orchestration round-trip on the path.
-    if (quickScoreEnabled()) {
-      await step.run("quick-score", metered(async () => {
+    //
+    // NOT awaited here: it runs IN PARALLEL with run-analyzer-agent (awaited
+    // together below). Serially it cost a whole step — screenshot download +
+    // call + an Inngest round-trip — before the vision call could even start
+    // (~10-15s measured 2026-10-02). In parallel the teaser still lands within
+    // a few seconds, well before the full audit, which is all it is for. It
+    // never throws (everything is caught inside), so it can't fail the run.
+    const quickScoreStep = !quickScoreEnabled()
+      ? Promise.resolve()
+      : step.run("quick-score", metered(async () => {
         const dl = startDeadline(stepBudgetMs());
         let preview = null;
         try {
@@ -430,7 +438,6 @@ export const analyzeWebsite = inngest.createFunction(
             .eq("id", analysisId);
         }
       }));
-    }
 
     // Niche label for the (Scale-only) meta-ads step. A trivial synchronous URL
     // parse — inlined rather than run as its own `step.run`, which cost a full
@@ -501,7 +508,7 @@ export const analyzeWebsite = inngest.createFunction(
     // (The primary screenshot was already uploaded + screenshot_url set in
     // capture-screenshot, so the old separate save-screenshot step is gone.)
 
-    const analyzed = await step.run("run-analyzer-agent", metered(async () => {
+    const analyzerStep = step.run("run-analyzer-agent", metered(async () => {
       // Checked INSIDE the step, not before it: the step body re-runs on every
       // attempt, so this is what actually bounds retries. (Outside, it would
       // re-run at every step boundary — including after save-result — and could
@@ -602,6 +609,8 @@ export const analyzeWebsite = inngest.createFunction(
       // `result`, which the report, share page and /api/v1 read).
       return { audit: scored, timing };
     }));
+    // The teaser (quick-score) and the full audit run side by side.
+    const [analyzed] = await Promise.all([analyzerStep, quickScoreStep]);
     // A run in flight across the deploy replays the OLD memoized output (the
     // bare audit), so unwrap tolerates both shapes.
     const { audit: result, timing: visionTiming } =

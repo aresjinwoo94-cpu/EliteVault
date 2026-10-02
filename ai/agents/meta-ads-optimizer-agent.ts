@@ -188,6 +188,13 @@ export async function runMetaAdsOptimizerAgent(opts: {
       system: SYSTEM,
       temperature: 0.5,
       maxTokens: 4096,
+      // Text-only and on the audit's critical path (it runs BEFORE save-result
+      // because meta_ads is part of the saved row). On the premium model it
+      // measured 17.5s in production (2026-10-02, a Scale audit that took 84s
+      // with a 9s vision call); the fast tier answers the same prompt in a few
+      // seconds. The vision audit — the part that needs the stronger model —
+      // stays on it.
+      fast: true,
       signal: opts.signal,
       deadlineAt: opts.deadlineAt,
       parts: [
