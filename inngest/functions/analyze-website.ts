@@ -1,6 +1,14 @@
 import { inngest } from "../client";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
-import { enterMeter } from "@/lib/usage/context";
+import { enterMeter, runWithMeter } from "@/lib/usage/context";
+import {
+  buildAnalysisTimings,
+  persistAnalysisTimings,
+  unwrapAnalyzerStep,
+  type VisionTiming,
+} from "@/lib/analyzer/timings";
+import type { AnalysisResult } from "@/ai/schemas";
+import type { AnswerInfo } from "@/ai/provider";
 import type { PlanTier } from "@/lib/supabase/types";
 import { captureScreenshot } from "@/lib/screenshot";
 import {
@@ -154,18 +162,27 @@ export const analyzeWebsite = inngest.createFunction(
     },
   },
   { event: "analysis/requested" },
-  async ({ event, step }) => {
+  async ({ event, step, attempt }) => {
     const { analysisId, userId, url, screenshotUrl, persona, runRewrite, fast, plan } =
       event.data;
     // Attribute every Gemini call in this pipeline to the user + 'analysis'
-    // feature for the usage_events cost ledger. enterWith persists through all
-    // the step.run async continuations below.
-    enterMeter({
+    // feature for the usage_events cost ledger.
+    const meterCtx = {
       userId,
       plan: (plan as PlanTier | null | undefined) ?? null,
       eventType: "analysis",
       meta: { analysisId },
-    });
+    };
+    enterMeter(meterCtx);
+    // enterWith above does NOT reach the step bodies: Inngest runs each
+    // step.run callback from its own scheduling, outside this handler's async
+    // context, so every analyzer row landed as event_type 'other' with no
+    // analysisId (docs/analyzer-speed-fix-free-tier.md §1). Each step that
+    // calls an AI provider re-enters the context explicitly through this.
+    const metered =
+      <R,>(fn: () => Promise<R>) =>
+      () =>
+        runWithMeter(meterCtx, fn);
     const service = createSupabaseServiceClient();
 
     // WP-4 — deliberately left as its OWN step rather than folded into the
@@ -257,6 +274,8 @@ export const analyzeWebsite = inngest.createFunction(
       // Total-elapsed ceiling, evaluated per ATTEMPT. Catches both a long queue
       // wait before the run started and a capture that keeps being retried.
       assertTotalBudget("capture-screenshot");
+      // analyses.timings: how long the capture took (and whether cached).
+      const captureT0 = Date.now();
       // Every step below opens its own budget. It has to expire BEFORE the
       // route's maxDuration, otherwise Vercel kills the request mid-step and
       // Inngest only sees "your server returned HTTP 504" — an opaque failure
@@ -288,7 +307,12 @@ export const analyzeWebsite = inngest.createFunction(
         if (url) {
           await writeScreenshotCache(service, url, pub.publicUrl, mediaType);
         }
-        return { publicUrl: pub.publicUrl, mediaType };
+        return {
+          publicUrl: pub.publicUrl,
+          mediaType,
+          ms: Date.now() - captureT0,
+          cached: false,
+        };
       };
 
       if (screenshotUrl) {
@@ -315,6 +339,8 @@ export const analyzeWebsite = inngest.createFunction(
               return {
                 publicUrl: cached.screenshot_url,
                 mediaType: cached.media_type,
+                ms: Date.now() - captureT0,
+                cached: true,
               };
             }
           }
@@ -376,7 +402,7 @@ export const analyzeWebsite = inngest.createFunction(
     // Inngest round-trip — when the flag is actually on. When off it used to be a
     // no-op step that still cost a full orchestration round-trip on the path.
     if (quickScoreEnabled()) {
-      await step.run("quick-score", async () => {
+      await step.run("quick-score", metered(async () => {
         const dl = startDeadline(stepBudgetMs());
         let preview = null;
         try {
@@ -402,7 +428,7 @@ export const analyzeWebsite = inngest.createFunction(
             } as never)
             .eq("id", analysisId);
         }
-      });
+      }));
     }
 
     // Niche label for the (Scale-only) meta-ads step. A trivial synchronous URL
@@ -474,7 +500,7 @@ export const analyzeWebsite = inngest.createFunction(
     // (The primary screenshot was already uploaded + screenshot_url set in
     // capture-screenshot, so the old separate save-screenshot step is gone.)
 
-    const result = await step.run("run-analyzer-agent", async () => {
+    const analyzed = await step.run("run-analyzer-agent", metered(async () => {
       // Checked INSIDE the step, not before it: the step body re-runs on every
       // attempt, so this is what actually bounds retries. (Outside, it would
       // re-run at every step boundary — including after save-result — and could
@@ -508,6 +534,9 @@ export const analyzeWebsite = inngest.createFunction(
           );
         }
       }
+      // analyses.timings — the vision call alone, and which model answered.
+      const visionT0 = Date.now();
+      let answer: AnswerInfo | null = null;
       const audit = await runAnalyzerAgent({
         screenshotBase64: primaryBase64,
         mediaType: screenshot.mediaType,
@@ -516,6 +545,9 @@ export const analyzeWebsite = inngest.createFunction(
         // P1.1 — free audits run on the cheap/fast model tier.
         fast,
         deadlineAt: dl.at,
+        onAnswer: (info) => {
+          answer = info;
+        },
         // v2.2: multi-image input — homepage + 1-2 product pages. The model
         // now reasons across multiple views of the store at once, with the
         // homepage as the *primary* one for annotation positioning.
@@ -541,6 +573,21 @@ export const analyzeWebsite = inngest.createFunction(
             }
           : null,
       });
+      const visionMs = Date.now() - visionT0;
+      // Assigned inside a callback, so TS can't see it change: re-type it.
+      const how = answer as AnswerInfo | null;
+      const timing: VisionTiming = {
+        visionMs,
+        attempt: attempt + 1,
+        ...(how
+          ? {
+              model: how.model,
+              hedged: how.hedged,
+              ...(how.fellBackFrom ? { fellBackFrom: how.fellBackFrom } : {}),
+              ...(how.modelSwitched ? { modelSwitched: true } : {}),
+            }
+          : {}),
+      };
 
       // Brief §1/§2 — derive the two numbers the model no longer emits, right
       // here at persistence so EVERY downstream reader (meta-ads below,
@@ -550,8 +597,14 @@ export const analyzeWebsite = inngest.createFunction(
       // model's independent, false-precision numbers. Pure functions, no I/O.
       const scored = withDerivedScore(audit);
       scored.scenarios = scenarioMidpoints(scored.score, niche);
-      return scored;
-    });
+      // The audit itself is unchanged; timing rides NEXT to it (never inside
+      // `result`, which the report, share page and /api/v1 read).
+      return { audit: scored, timing };
+    }));
+    // A run in flight across the deploy replays the OLD memoized output (the
+    // bare audit), so unwrap tolerates both shapes.
+    const { audit: result, timing: visionTiming } =
+      unwrapAnalyzerStep<ReturnType<typeof withDerivedScore<AnalysisResult>>>(analyzed);
 
     // Meta Ads Optimizer (Scale only) — the legacy `runRewrite` flag routes
     // here so upstream callers don't have to change. It stays BEFORE save-result
@@ -559,7 +612,7 @@ export const analyzeWebsite = inngest.createFunction(
     // audits (runRewrite) pay its wall-clock at all. Best-effort: a failure
     // yields null and the core audit still saves.
     const metaAds = runRewrite
-      ? await step.run("run-meta-ads-agent", async () => {
+      ? await step.run("run-meta-ads-agent", metered(async () => {
           // NO total-budget guard here, deliberately. This step runs AFTER
           // run-analyzer-agent has produced and memoized a finished audit, but
           // BEFORE save-result persists it — so a throw here would discard a
@@ -596,7 +649,7 @@ export const analyzeWebsite = inngest.createFunction(
             console.warn("[analyzer] meta-ads skipped:", (err as Error).message);
             return null;
           }
-        })
+        }))
       : null;
 
     // Mark the audit succeeded AS SOON AS the core result (+ Scale's meta_ads)
@@ -611,6 +664,7 @@ export const analyzeWebsite = inngest.createFunction(
     // land in a separate column (persist-niche-match) and the report already
     // falls back to the live Library winners when that column isn't populated yet.
     await step.run("save-result", async () => {
+      const saveT0 = Date.now();
       await service
         .from("analyses")
         .update({
@@ -620,6 +674,20 @@ export const analyzeWebsite = inngest.createFunction(
           finished_at: new Date().toISOString(),
         })
         .eq("id", analysisId);
+      // analyses.timings (migration 0034) — a SEPARATE write AFTER the audit is
+      // already succeeded, so an un-migrated column or any error here can only
+      // lose a diagnostics row, never the result. persistAnalysisTimings never
+      // throws.
+      await persistAnalysisTimings(
+        service,
+        analysisId,
+        buildAnalysisTimings({
+          capture: screenshot,
+          vision: visionTiming,
+          saveMs: Date.now() - saveT0,
+          runStartedAtMs,
+        }),
+      );
     });
 
     // Real niche match (tech-fixes §2) — DECOUPLED from the critical path above.
@@ -637,7 +705,7 @@ export const analyzeWebsite = inngest.createFunction(
     // gating shape as quick-score above.
     const nicheMatch = !nicheWinnersEnabled()
       ? null
-      : await step.run("match-niche-winners", async () => {
+      : await step.run("match-niche-winners", metered(async () => {
       try {
         const base64 = await urlToBase64(screenshot.publicUrl);
         const match = await buildNicheWinnersFromScreenshot({
@@ -662,7 +730,7 @@ export const analyzeWebsite = inngest.createFunction(
         );
         return null;
       }
-        });
+        }));
 
     // Persist the real niche match (tech-fixes §2) in a SEPARATE, best-effort
     // write — deliberately AFTER the audit is already marked succeeded and

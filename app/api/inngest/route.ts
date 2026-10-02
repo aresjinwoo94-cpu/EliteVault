@@ -6,6 +6,7 @@ import { refreshTrends } from "@/inngest/functions/refresh-trends";
 import { refreshLibrary } from "@/inngest/functions/refresh-library";
 import { activationFollowup } from "@/inngest/functions/activation-followup";
 import { checkoutRecovery } from "@/inngest/functions/checkout-recovery";
+import { resolveInngestServeHost } from "@/lib/inngest-serve-host";
 
 /**
  * Each Inngest step is a SEPARATE invocation of this route, so this is the
@@ -38,4 +39,8 @@ export const { GET, POST, PUT } = serve({
     checkoutRecovery,
   ],
   streaming: "allow",
+  // Production only: register the stable domain, not this deploy's unique URL,
+  // so a failed sync can't leave Inngest running an old deploy's code. See
+  // lib/inngest-serve-host.ts. Preview/local: undefined = SDK default.
+  serveHost: resolveInngestServeHost(process.env),
 });
