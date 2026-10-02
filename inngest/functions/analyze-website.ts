@@ -80,6 +80,13 @@ const GLOBAL_CONCURRENCY = resolveAnalyzerConcurrency(
 const MAX_EXTRA_SHOTS = Number(process.env.ANALYZER_EXTRA_SHOTS ?? 0);
 
 /**
+ * Room the vision step must still have for the Scale meta-ads call to run
+ * inline (fast model, text-only, measured ~1-3s). Below it, meta-ads gets its
+ * own step as before, so it can never push the vision step past its budget.
+ */
+const META_ADS_INLINE_MIN_MS = 20_000;
+
+/**
  * Fetch an image URL and return its raw base64. Used to pull screenshot bytes
  * INSIDE the steps that need them, so the large base64 is a local variable and
  * never a persisted step output (Inngest rejects step outputs over its size
@@ -269,9 +276,9 @@ export const analyzeWebsite = inngest.createFunction(
     // base64. The screenshot is uploaded to storage here (merging the old
     // save-screenshot step); steps that need the bytes fetch them via
     // urlToBase64() so nothing large is ever a persisted step output.
-    // Started here as a promise (not awaited yet) so the site-HTML discovery
-    // below runs IN PARALLEL with this capture — see the Promise.all after.
-    const captureStep = step.run("capture-screenshot", async () => {
+    // Runs inside the capture-screenshot step, IN PARALLEL with the capture
+    // (see runDiscovery below and the step that awaits both).
+    const captureOnly = async () => {
       // Total-elapsed ceiling, evaluated per ATTEMPT. Catches both a long queue
       // wait before the run started and a capture that keeps being retried.
       assertTotalBudget("capture-screenshot");
@@ -359,16 +366,14 @@ export const analyzeWebsite = inngest.createFunction(
         budgetMs: Math.max(5_000, dl.remaining() - UPLOAD_RESERVE_MS),
       });
       return uploadAndUrl(shot.base64, shot.mediaType);
-    });
+    };
 
     // v2.2 site discovery runs IN PARALLEL with the screenshot capture above.
     // Both need only the URL and are fully independent, so awaiting them together
     // makes the wait the MAX of the two rather than the SUM — trimming the whole
     // discovery duration (~5-10s) off the critical path of every audit. Discovery
     // stays best-effort: a failure yields null and never fails the audit.
-    const [screenshot, discovery] = await Promise.all([
-      captureStep,
-      step.run("discover-site", async () => {
+    const runDiscovery = async () => {
         if (!url) return null;
         try {
           // WP-1 — reuse the parsed page content for a store audited recently
@@ -395,32 +400,44 @@ export const analyzeWebsite = inngest.createFunction(
           console.warn("[analyzer] discovery skipped:", (err as Error).message);
           return null;
         }
-      }),
-    ]);
+    };
+
+    // ONE Inngest step for capture + discovery, run in parallel in-process.
+    // They used to be two parallel Inngest STEPS, and parallel steps are the
+    // expensive kind on this setup: the SDK can't chain the next step in the
+    // same request, so each one costs extra HTTP round-trips to Vercel at
+    // ~3-5s apiece (measured in the production logs 2026-10-02: ~16 requests
+    // per audit, 20-40s of an audit spent between steps while the AI calls
+    // themselves took ~10s). Discovery is cheap and cached, so re-running it on
+    // a capture retry costs ~1s; it never throws (runDiscovery catches).
+    const captured = await step.run("capture-screenshot", async () => {
+      const [shot, found] = await Promise.all([captureOnly(), runDiscovery()]);
+      return { ...shot, discovery: found };
+    });
+    const screenshot = captured;
+    // A run in flight across the deploy replays the old capture output, which
+    // had no discovery; it then runs without it (as when discovery fails).
+    const discovery = ("discovery" in captured ? captured.discovery : null) ?? null;
 
     // P1.2 — instant teaser score. Best-effort and DISABLED by default (a second
     // AI request per audit; see flags.ts). Only invoke the step — and pay its
     // Inngest round-trip — when the flag is actually on. When off it used to be a
     // no-op step that still cost a full orchestration round-trip on the path.
     //
-    // NOT awaited here: it runs IN PARALLEL with run-analyzer-agent (awaited
-    // together below). Serially it cost a whole step — screenshot download +
-    // call + an Inngest round-trip — before the vision call could even start
-    // (~10-15s measured 2026-10-02). In parallel the teaser still lands within
-    // a few seconds, well before the full audit, which is all it is for. It
-    // never throws (everything is caught inside), so it can't fail the run.
-    const quickScoreStep = !quickScoreEnabled()
-      ? Promise.resolve()
-      : step.run("quick-score", metered(async () => {
-        const dl = startDeadline(stepBudgetMs());
+    // Runs INSIDE run-analyzer-agent, in parallel with the vision call, reusing
+    // the screenshot bytes that step already downloaded. As its own step it
+    // cost ~10-15s on the critical path (serial: download + call + Inngest
+    // round-trip), and as a parallel Inngest step it still added round-trips
+    // (measured 2026-10-02). The teaser still lands within a few seconds,
+    // well before the full audit, which is all it is for. Never throws.
+    const runQuickScoreInline = async (base64: string, deadlineAt: number) => {
         let preview = null;
         try {
-          const base64 = await urlToBase64(screenshot.publicUrl);
           preview = await runQuickScore({
             screenshotBase64: base64,
             mediaType: screenshot.mediaType,
             url,
-            deadlineAt: dl.at,
+            deadlineAt,
           });
         } catch (err) {
           console.warn(
@@ -429,15 +446,19 @@ export const analyzeWebsite = inngest.createFunction(
           );
         }
         if (preview) {
-          await service
-            .from("analyses")
-            .update({
-              preview_score: preview.score,
-              preview_summary: preview.headline,
-            } as never)
-            .eq("id", analysisId);
+          try {
+            await service
+              .from("analyses")
+              .update({
+                preview_score: preview.score,
+                preview_summary: preview.headline,
+              } as never)
+              .eq("id", analysisId);
+          } catch (err) {
+            console.warn("[analyzer] quick-score not saved:", (err as Error).message);
+          }
         }
-      }));
+    };
 
     // Niche label for the (Scale-only) meta-ads step. A trivial synchronous URL
     // parse — inlined rather than run as its own `step.run`, which cost a full
@@ -508,7 +529,41 @@ export const analyzeWebsite = inngest.createFunction(
     // (The primary screenshot was already uploaded + screenshot_url set in
     // capture-screenshot, so the old separate save-screenshot step is gone.)
 
-    const analyzerStep = step.run("run-analyzer-agent", metered(async () => {
+    /**
+     * Meta Ads Optimizer (Scale only). Best-effort in every sense: any failure
+     * (including running out of time) yields null and the audit still saves.
+     */
+    const runMetaAds = async (
+      audit: { score: number; summary: string; top_fixes: { title: string; impact: string }[] },
+      deadlineAt: number,
+    ) => {
+      try {
+        return await runMetaAdsOptimizerAgent({
+          deadlineAt,
+          url: url ?? "",
+          score: audit.score,
+          summary: audit.summary,
+          topFixes: audit.top_fixes,
+          persona: persona as BuyerPersona | null,
+          niche,
+          // Discovered product + price context — drives more realistic
+          // CPC/CPM targets and creative angle suggestions.
+          siteInfo: discovery
+            ? {
+                title: discovery.title,
+                description: discovery.description,
+                prices: discovery.prices,
+                platform: discovery.platform,
+              }
+            : null,
+        });
+      } catch (err) {
+        console.warn("[analyzer] meta-ads skipped:", (err as Error).message);
+        return null;
+      }
+    };
+
+    const analyzed = await step.run("run-analyzer-agent", metered(async () => {
       // Checked INSIDE the step, not before it: the step body re-runs on every
       // attempt, so this is what actually bounds retries. (Outside, it would
       // re-run at every step boundary — including after save-result — and could
@@ -523,6 +578,10 @@ export const analyzeWebsite = inngest.createFunction(
       // Pull the image bytes HERE as local vars — never returned/persisted —
       // so a large screenshot can't blow Inngest's step-output size limit.
       const primaryBase64 = await urlToBase64(screenshot.publicUrl);
+      // The teaser, side by side with the vision call (see runQuickScoreInline).
+      const quickScore = quickScoreEnabled()
+        ? runQuickScoreInline(primaryBase64, dl.at)
+        : Promise.resolve();
       const extraScreenshots: {
         url: string;
         base64: string;
@@ -607,22 +666,42 @@ export const analyzeWebsite = inngest.createFunction(
       scored.scenarios = scenarioMidpoints(scored.score, niche);
       // The audit itself is unchanged; timing rides NEXT to it (never inside
       // `result`, which the report, share page and /api/v1 read).
-      return { audit: scored, timing };
+      // Scale only: run the (text-only, fast-model, ~3s) meta-ads agent right
+      // here when the step still has comfortable room, saving the separate
+      // step's Inngest round-trips. Otherwise it runs in its own step below,
+      // exactly as before. Never throws (runMetaAds catches → null).
+      const metaAdsInline =
+        runRewrite && dl.has(META_ADS_INLINE_MIN_MS)
+          ? await runMetaAds(scored, dl.at)
+          : undefined;
+      // Normally long done (a ~2s call vs the vision call); never throws.
+      await quickScore;
+      return {
+        audit: scored,
+        timing,
+        ...(metaAdsInline !== undefined ? { metaAds: metaAdsInline } : {}),
+      };
     }));
-    // The teaser (quick-score) and the full audit run side by side.
-    const [analyzed] = await Promise.all([analyzerStep, quickScoreStep]);
     // A run in flight across the deploy replays the OLD memoized output (the
     // bare audit), so unwrap tolerates both shapes.
     const { audit: result, timing: visionTiming } =
       unwrapAnalyzerStep<ReturnType<typeof withDerivedScore<AnalysisResult>>>(analyzed);
+    const inlineMetaAds =
+      analyzed && typeof analyzed === "object" && "metaAds" in analyzed
+        ? (analyzed as { metaAds: Awaited<ReturnType<typeof runMetaAds>> }).metaAds
+        : undefined;
 
     // Meta Ads Optimizer (Scale only) — the legacy `runRewrite` flag routes
     // here so upstream callers don't have to change. It stays BEFORE save-result
     // because `meta_ads` is part of the saved result payload, and only Scale
     // audits (runRewrite) pay its wall-clock at all. Best-effort: a failure
-    // yields null and the core audit still saves.
-    const metaAds = runRewrite
-      ? await step.run("run-meta-ads-agent", metered(async () => {
+    // yields null and the core audit still saves. Usually already produced
+    // inside run-analyzer-agent (above); this step is the fallback.
+    const metaAds = !runRewrite
+      ? null
+      : inlineMetaAds !== undefined
+        ? inlineMetaAds
+        : await step.run("run-meta-ads-agent", metered(async () => {
           // NO total-budget guard here, deliberately. This step runs AFTER
           // run-analyzer-agent has produced and memoized a finished audit, but
           // BEFORE save-result persists it — so a throw here would discard a
@@ -635,32 +714,8 @@ export const analyzeWebsite = inngest.createFunction(
           // the ceiling is spent it gets the 5s floor, fails fast, and the
           // catch turns that into `metaAds = null`.
           const dl = startDeadline(stepBudgetMs());
-          try {
-            return await runMetaAdsOptimizerAgent({
-              deadlineAt: dl.at,
-              url: url ?? "",
-              score: result.score,
-              summary: result.summary,
-              topFixes: result.top_fixes,
-              persona: persona as BuyerPersona | null,
-              niche,
-              // Discovered product + price context — drives more realistic
-              // CPC/CPM targets and creative angle suggestions.
-              siteInfo: discovery
-                ? {
-                    title: discovery.title,
-                    description: discovery.description,
-                    prices: discovery.prices,
-                    platform: discovery.platform,
-                  }
-                : null,
-            });
-          } catch (err) {
-            console.warn("[analyzer] meta-ads skipped:", (err as Error).message);
-            return null;
-          }
-        }))
-      : null;
+          return runMetaAds(result, dl.at);
+        }));
 
     // Mark the audit succeeded AS SOON AS the core result (+ Scale's meta_ads)
     // is ready — this is the status the report page polls for, so it's the
