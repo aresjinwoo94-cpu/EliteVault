@@ -221,11 +221,27 @@ test("every analyze-website step that calls an AI provider re-enters the meter",
     resolve(import.meta.dirname, "../../inngest/functions/analyze-website.ts"),
     "utf8",
   );
-  for (const step of ["quick-score", "run-analyzer-agent", "run-meta-ads-agent", "match-niche-winners"]) {
+  for (const step of ["run-analyzer-agent", "run-meta-ads-agent", "match-niche-winners"]) {
     assert.match(
       src,
       new RegExp(`step\\.run\\("${step}", metered\\(`),
       `${step} must run inside runWithMeter (event_type 'analysis' + analysisId)`,
     );
   }
+});
+
+test("critical path: no parallel Inngest steps — discovery and quick-score run in-process", () => {
+  // Parallel Inngest steps cost extra HTTP round-trips (~3-5s each on Hobby);
+  // measured 2026-10-02 as 20-40s of an audit spent between steps.
+  const src = readFileSync(
+    resolve(import.meta.dirname, "../../inngest/functions/analyze-website.ts"),
+    "utf8",
+  );
+  assert.doesNotMatch(src, /step\.run\("discover-site"/, "discovery is inside capture-screenshot");
+  assert.doesNotMatch(src, /step\.run\("quick-score"/, "quick-score is inside run-analyzer-agent");
+  assert.match(src, /Promise\.all\(\[captureOnly\(\), runDiscovery\(\)\]\)/);
+  assert.match(src, /runQuickScoreInline\(primaryBase64, dl\.at\)/);
+  // Meta-ads inline only with room to spare; otherwise its own step as before.
+  assert.match(src, /runRewrite && dl\.has\(META_ADS_INLINE_MIN_MS\)/);
+  assert.match(src, /step\.run\("run-meta-ads-agent"/);
 });
