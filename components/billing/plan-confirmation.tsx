@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PLANS, type PlanTier } from "@/lib/stripe/plans";
+import { useT } from "@/components/i18n/locale-provider";
 
 /**
  * Belt-and-suspenders client-side confirmation polling (v3.8.4).
@@ -36,6 +37,7 @@ export function PlanConfirmation({
   initialPlan: PlanTier;
 }) {
   const router = useRouter();
+  const { t } = useT();
   const [currentPlan, setCurrentPlan] = useState<PlanTier>(initialPlan);
   const [pollAttempts, setPollAttempts] = useState(0);
   const isUpgraded = currentPlan === expectedPlan;
@@ -43,7 +45,7 @@ export function PlanConfirmation({
 
   useEffect(() => {
     if (isUpgraded || exhausted) return;
-    const t = setTimeout(async () => {
+    const timer = setTimeout(async () => {
       try {
         const res = await fetch("/api/me", { cache: "no-store" });
         if (res.ok) {
@@ -55,7 +57,7 @@ export function PlanConfirmation({
       }
       setPollAttempts((p) => p + 1);
     }, 1000);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [pollAttempts, isUpgraded, exhausted]);
 
   const planMeta = PLANS[expectedPlan];
@@ -93,43 +95,44 @@ export function PlanConfirmation({
         <div>
           <Badge variant="gold" className="mx-auto">
             <Sparkles className="size-3" />
-            Payment successful
+            {t("checkout.paymentSuccessful")}
           </Badge>
           <h1 className="mt-4 font-serif text-4xl md:text-5xl tracking-tight leading-[1.05]">
-            Welcome to{" "}
+            {t("checkout.welcomePre")}{" "}
             <span className="text-gold-gradient">{planMeta.name}</span>.
           </h1>
           <p className="mt-3 text-sm md:text-base text-white/60 leading-relaxed">
-            Your subscription is active.{" "}
-            <span className="text-white">{credits} credits</span> just landed
-            in your account. Time to put them to work.
+            {t("checkout.subscriptionActive")}{" "}
+            <span className="text-white">
+              {credits} {t("checkout.creditsLanded")}
+            </span>{" "}
+            {t("checkout.creditsLandedPost")}
           </p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
           <Link href="/app/analyzer">
             <Button size="lg" className="w-full sm:w-auto">
-              Run your first analysis
+              {t("checkout.runFirst")}
               <ArrowRight className="size-4" />
             </Button>
           </Link>
           <Link href="/app/billing">
             <Button variant="outline" size="lg" className="w-full sm:w-auto">
-              View billing
+              {t("checkout.viewBilling")}
             </Button>
           </Link>
         </div>
 
         <p className="text-[11px] text-white/35 pt-4">
-          A receipt is on its way to your email. Manage your subscription
-          anytime from{" "}
+          {t("checkout.receiptPre")}{" "}
           <Link
             href="/app/billing"
             className="text-champagne-400 hover:text-champagne-300"
           >
-            billing
+            {t("checkout.receiptLink")}
           </Link>
-          .
+          {t("checkout.receiptPost")}
         </p>
       </motion.div>
     );
@@ -144,15 +147,14 @@ export function PlanConfirmation({
         </div>
         <div>
           <h1 className="font-serif text-3xl md:text-4xl tracking-tight">
-            Activating your plan…
+            {t("checkout.activating")}
           </h1>
           <p className="mt-3 text-sm text-white/55 leading-relaxed">
-            Stripe just confirmed the payment. We&apos;re finalizing your
-            account — should be a couple of seconds.
+            {t("checkout.activatingBody")}
           </p>
         </div>
         <p className="text-[11px] text-white/30">
-          Attempt {pollAttempts + 1} / 8…
+          {t("checkout.attempt").replace("{n}", String(pollAttempts + 1))}
         </p>
       </div>
     );
@@ -166,12 +168,10 @@ export function PlanConfirmation({
       </div>
       <div>
         <h1 className="font-serif text-3xl tracking-tight">
-          Payment received — finalizing
+          {t("checkout.finalizing")}
         </h1>
         <p className="mt-3 text-sm text-white/55 leading-relaxed">
-          Your card was charged successfully. Our system is taking a moment
-          to reflect the new plan. It will update within a minute — refresh
-          billing or your dashboard to see {planMeta.name} active.
+          {t("checkout.finalizingBody").replace("{plan}", planMeta.name)}
         </p>
       </div>
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -180,11 +180,11 @@ export function PlanConfirmation({
           onClick={() => router.refresh()}
           className="w-full sm:w-auto"
         >
-          Refresh now
+          {t("checkout.refreshNow")}
         </Button>
         <Link href="/app/billing">
           <Button variant="outline" size="lg" className="w-full sm:w-auto">
-            Go to billing
+            {t("checkout.goToBilling")}
           </Button>
         </Link>
       </div>

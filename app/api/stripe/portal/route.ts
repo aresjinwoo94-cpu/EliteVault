@@ -3,6 +3,8 @@ import { stripe } from "@/lib/stripe/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { resolveStripeCustomerId } from "@/lib/stripe/customer";
 import { absoluteUrl } from "@/lib/utils";
+import { getT } from "@/lib/i18n/server";
+import { stripeLocale } from "@/lib/stripe/checkout-params";
 
 /**
  * Stripe Customer Portal session creator (v3.9.5 — bulletproof error handling).
@@ -22,6 +24,9 @@ import { absoluteUrl } from "@/lib/utils";
  *     record is stale so the UI can prompt a re-checkout
  */
 export async function POST() {
+  // Outside the try so the catch below can word its errors in the site's
+  // language too (getT only reads a cookie/headers; it does not throw).
+  const { locale, t } = await getT();
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -53,8 +58,7 @@ export async function POST() {
       return NextResponse.json(
         {
           error: "no_customer",
-          detail:
-            "No billing record found for your account. Start a checkout from the pricing page to set up your subscription.",
+          detail: t("billing.errNoCustomer"),
         },
         { status: 400 },
       );
@@ -63,7 +67,8 @@ export async function POST() {
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,
       return_url: absoluteUrl("/app/billing"),
-      locale: "auto",
+      // The site's language, never "auto" (which follows the browser).
+      locale: stripeLocale(locale),
     });
 
     return NextResponse.json({ url: session.url });
@@ -82,8 +87,7 @@ export async function POST() {
       return NextResponse.json(
         {
           error: "stale_customer",
-          detail:
-            "Your billing record needs to be refreshed. Start a fresh checkout from the pricing page — your plan will be re-attached.",
+          detail: t("billing.errStaleCustomer"),
         },
         { status: 409 },
       );
@@ -96,8 +100,7 @@ export async function POST() {
       return NextResponse.json(
         {
           error: "portal_not_configured",
-          detail:
-            "The Stripe Customer Portal isn't set up yet. Activate it in Stripe → Settings → Billing → Customer portal (in Live mode).",
+          detail: t("billing.errPortalNotConfigured"),
         },
         { status: 409 },
       );

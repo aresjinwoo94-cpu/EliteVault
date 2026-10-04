@@ -7,6 +7,7 @@ import type { PlanTier } from "@/lib/supabase/types";
 import { EmbeddedCheckoutForm } from "@/components/billing/embedded-checkout";
 import { CheckoutLayout } from "@/components/billing/checkout-layout";
 import { createEmbeddedCheckoutSession } from "@/lib/stripe/checkout-session";
+import { getLocale } from "@/lib/i18n/server";
 
 export const metadata = { title: "Checkout" };
 export const dynamic = "force-dynamic";
@@ -36,11 +37,15 @@ export default async function CheckoutPage({
     redirect("/pricing");
   }
 
-  // Auth check — checkout requires a logged-in user
+  // Auth check — checkout requires a logged-in user. The locale read runs
+  // alongside it (both are cheap request-scoped reads).
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [
+    {
+      data: { user },
+    },
+    locale,
+  ] = await Promise.all([supabase.auth.getUser(), getLocale()]);
   if (!user) {
     redirect(
       `/sign-in?next=${encodeURIComponent(`/app/checkout?plan=${planId}&interval=${interval}`)}`,
@@ -59,6 +64,8 @@ export default async function CheckoutPage({
     userEmail: user.email ?? null,
     plan: planId,
     interval,
+    // Stripe renders in the site's language, never the browser's ("auto").
+    locale,
   });
 
   return (

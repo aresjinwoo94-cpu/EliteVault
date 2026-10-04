@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useT } from "@/components/i18n/locale-provider";
 
 export function PortalButton({
   children,
@@ -12,6 +13,7 @@ export function PortalButton({
   variant?: "primary" | "outline" | "secondary";
 }) {
   const [isPending, startTransition] = useTransition();
+  const { t } = useT();
   function open() {
     startTransition(async () => {
       try {
@@ -25,7 +27,7 @@ export function PortalButton({
             error?: string;
             detail?: string;
           };
-          throw new Error(j.detail ?? j.error ?? "Portal failed");
+          throw new Error(j.detail ?? j.error ?? t("billing.portalFailed"));
         }
         const { url } = (await res.json()) as { url: string };
         window.location.href = url;
@@ -36,7 +38,7 @@ export function PortalButton({
   }
   return (
     <Button onClick={open} variant={variant} disabled={isPending}>
-      {isPending ? "Opening…" : children}
+      {isPending ? t("billing.opening") : children}
     </Button>
   );
 }

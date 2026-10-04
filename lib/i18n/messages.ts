@@ -1,4 +1,6 @@
 import type { Locale } from "./config";
+import { CLIENT_NAMESPACES } from "./client-namespaces";
+import { lookup, type Dict } from "./lookup";
 
 /**
  * Translation dictionary.
@@ -8,7 +10,6 @@ import type { Locale } from "./config";
  * itself. So a missing Spanish string degrades to English — never to a blank
  * or a crash. Add namespaces freely; only translate what you ship.
  */
-type Dict = { [key: string]: string | Dict };
 
 const en: Dict = {
   nav: {
@@ -674,6 +675,145 @@ const en: Dict = {
     resultsCaptionNoN:
       "Based on our user survey. Self-reported results — an estimate, not a guarantee.",
     reviewsHeading: "Trusted by ecommerce founders",
+    stripeSubmit: "You're upgrading to EliteVault {plan}. {includes}",
+    stripeIncludesPro: "Includes the full Analyzer + Library + Community publishing.",
+    stripeIncludesScale: "Includes Meta Campaign Scenario Modeler + Meta Ads optimizer + REST API.",
+    backToBilling: "Back to billing",
+    secureCheckout: "Secure checkout · Stripe",
+    upgradingTo: "You're upgrading to",
+    monthlyBilling: "Monthly billing",
+    annualBilling: "Annual billing",
+    totalInPanel: "Your total is shown in the payment panel",
+    totalInPanelYear: "Your total is shown in the payment panel — you're saving 20% vs monthly",
+    whatYouGet: "What you get",
+    cancelAnytime: "Cancel anytime",
+    creditsInstant: "Credits load instantly",
+    saveYearly: "Save 20% vs monthly",
+    payment: "Payment",
+    processedByStripe: "Payment is processed by Stripe. EliteVault never sees or stores your card details.",
+    preparing: "Preparing your secure checkout…",
+    backArrow: "← Back to billing",
+    errStripeBlocked: "Couldn't load Stripe's payment library (js.stripe.com). This is almost always an ad blocker, privacy extension (uBlock, Brave Shields, Ghostery), VPN, or firewall/antivirus on your device blocking Stripe. Disable it for this site, or try an incognito window or a different browser/network.",
+    errNoKey: "Stripe publishable key is missing. Set NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY in the environment and redeploy (it's baked in at build time).",
+    errModeMismatch: "Stripe mode mismatch: your publishable key is {km} mode but the checkout session is {sm} mode. Set NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY to your pk_{sm}_… key (matching STRIPE_SECRET_KEY) and redeploy.",
+    paymentSuccessful: "Payment successful",
+    welcomePre: "Welcome to",
+    subscriptionActive: "Your subscription is active.",
+    creditsLanded: "credits",
+    creditsLandedPost: "just landed in your account. Time to put them to work.",
+    runFirst: "Run your first analysis",
+    viewBilling: "View billing",
+    receiptPre: "A receipt is on its way to your email. Manage your subscription anytime from",
+    receiptLink: "billing",
+    receiptPost: ".",
+    activating: "Activating your plan…",
+    activatingBody: "Stripe just confirmed the payment. We're finalizing your account — should be a couple of seconds.",
+    attempt: "Attempt {n} / 8…",
+    finalizing: "Payment received — finalizing",
+    finalizingBody: "Your card was charged successfully. Our system is taking a moment to reflect the new plan. It will update within a minute — refresh billing or your dashboard to see {plan} active.",
+    refreshNow: "Refresh now",
+    goToBilling: "Go to billing",
+    canceledTitle: "Checkout canceled.",
+    canceledBody: "No charge was made. You can resume the upgrade any time from the pricing page.",
+    backToPricing: "Back to pricing",
+    billingBtn: "Billing",
+    processingTitle: "Processing your payment…",
+    processingBody: "Stripe is finalizing the transaction. Your plan will update within a minute.",
+  },
+  billing: {
+    eyebrow: "Billing",
+    title: "Plans & subscription",
+    welcome: "Welcome to {plan} 👑",
+    welcomeSub: "Your credits are loaded. Run your first analysis →",
+    startAnalyzing: "Start analyzing",
+    currentPlan: "Current plan",
+    planEnds: "Your plan ends on {date}.",
+    creditsLeft: "Credits left",
+    nextReset: "Next reset",
+    status: "Status",
+    manageInStripe: "Manage in Stripe",
+    upgradeHeading: "Upgrade your plan",
+    yourPlan: "Your plan",
+    switchNote: "Switching plans opens the Stripe Customer Portal — Stripe pro-rates the difference and cancels the previous tier automatically. No parallel subscriptions.",
+    footerNote: "Payments are processed securely by Stripe. You can cancel anytime from the Customer Portal.",
+    statusMap: {
+      active: "Active",
+      trialing: "Trial",
+      past_due: "Past due",
+      canceled: "Canceled",
+      unpaid: "Unpaid",
+      incomplete: "Incomplete",
+      incomplete_expired: "Expired",
+      paused: "Paused",
+    },
+    subEnds: "Subscription will end on {date}.",
+    subEndsNoDate: "Subscription set to cancel at period end.",
+    subResumed: "Subscription resumed — you're all set.",
+    resume: "Resume subscription",
+    resuming: "Resuming…",
+    keepPlan: "Keep plan",
+    confirmCancel: "Confirm cancellation",
+    cancelling: "Cancelling…",
+    cancelSub: "Cancel subscription",
+    requestFailed: "Request failed",
+    portalFailed: "Portal failed",
+    opening: "Opening…",
+    monthly: "Monthly",
+    yearly: "Yearly",
+    perMo: "mo",
+    perYr: "yr",
+    billedYearly: "{monthly}/mo billed yearly · save {save}/yr",
+    free: "Free",
+    currentBadge: "Current plan",
+    active: "Active",
+    freeForever: "Free forever",
+    loading: "Loading…",
+    switchTo: "Switch to {plan} (via Portal)",
+    start: "Start {plan}",
+    errNoCustomer: "No billing record found for your account. Start a checkout from the pricing page to set up your subscription.",
+    errStaleCustomer: "Your billing record needs to be refreshed. Start a fresh checkout from the pricing page — your plan will be re-attached.",
+    errPortalNotConfigured: "The Stripe Customer Portal isn't set up yet. Activate it in Stripe → Settings → Billing → Customer portal (in Live mode).",
+    errNoSubscription: "No active subscription found on your account.",
+    errStaleSubscription: "We couldn't find that subscription in Stripe. Try 'Manage in Stripe', or start a fresh checkout.",
+  },
+  plans: {
+    free: {
+      name: "Free",
+      desc: "Run one free audit of your own store — overall score, annotated screenshot AND your #1 priority fix, unlocked, no credit card. Browse 3 hand-picked winning stores with full metrics and read the community feed. Upgrade to Pro to unlock the rest of your ranked fixes, buyer-persona simulation and unlimited audits.",
+      f0: "1 free audit: score + annotated screenshot",
+      f1: "Your #1 highest-impact fix — unlocked & actionable",
+      f2: "3 hand-picked winning stores with full metrics",
+      f3: "Browse the Community feed",
+      f4: "The rest of your ranked fixes + buyer-persona simulation",
+      f5: "AI image & text search across 45+ stores",
+      f6: "Unlimited audits + publish to Community",
+      f7: "Meta Scenario Modeler + Ads optimizer + API",
+    },
+    pro: {
+      name: "Pro",
+      badge: "Most popular",
+      desc: "Full Library + brutal Analyzer with annotated screenshots, buyer-persona simulations, and the ability to publish your audits to the Community. Includes 1 Meta campaign projection per month.",
+      f0: "Everything in Free",
+      f1: "Unlimited Library with full metrics",
+      f2: "Image-similarity search",
+      f3: "Full Website Analyzer with annotated screenshots",
+      f4: "Buyer-persona simulations (all your ranked fixes)",
+      f5: "1 Meta campaign projection / month",
+      f6: "40 analyses / month",
+      f7: "Publish to Community + Compare Mode",
+      f8: "Unlimited Meta projections + Ads optimizer + REST API",
+    },
+    scale: {
+      name: "Scale",
+      badge: "For teams",
+      desc: "Diagnosis + cure + crystal ball. Project a 7-day Meta Ads campaign across 3 scenarios before you spend a dollar. Plus Meta Ads optimizer targets and REST API.",
+      f0: "Everything in Pro",
+      f1: "Meta Scenario Modeler: 7-day, 3-scenario AI projection",
+      f2: "Meta Ads optimizer: CPC, CPM, CTR & ROAS targets",
+      f3: "REST API access (bearer tokens)",
+      f4: "200 analyses / month",
+      f5: "Priority queue + priority support",
+    },
   },
   lang: {
     label: "Language",
@@ -1497,6 +1637,145 @@ const es: Dict = {
     resultsCaptionNoN:
       "Según nuestra encuesta a usuarios. Resultados auto-reportados — estimación, no una garantía.",
     reviewsHeading: "Con la confianza de founders de ecommerce",
+    stripeSubmit: "Estás pasando a EliteVault {plan}. {includes}",
+    stripeIncludesPro: "Incluye el Analyzer completo + la Biblioteca + publicación en la Comunidad.",
+    stripeIncludesScale: "Incluye el Modelador de escenarios de campañas de Meta + el optimizador de Meta Ads + API REST.",
+    backToBilling: "Volver a facturación",
+    secureCheckout: "Pago seguro · Stripe",
+    upgradingTo: "Estás pasando a",
+    monthlyBilling: "Facturación mensual",
+    annualBilling: "Facturación anual",
+    totalInPanel: "Tu total aparece en el panel de pago",
+    totalInPanelYear: "Tu total aparece en el panel de pago — ahorras un 20 % frente al plan mensual",
+    whatYouGet: "Qué obtienes",
+    cancelAnytime: "Cancela cuando quieras",
+    creditsInstant: "Los créditos se cargan al instante",
+    saveYearly: "Ahorra un 20 % frente al mensual",
+    payment: "Pago",
+    processedByStripe: "El pago lo procesa Stripe. EliteVault nunca ve ni guarda los datos de tu tarjeta.",
+    preparing: "Preparando tu pago seguro…",
+    backArrow: "← Volver a facturación",
+    errStripeBlocked: "No se pudo cargar la librería de pagos de Stripe (js.stripe.com). Casi siempre es un bloqueador de anuncios, una extensión de privacidad (uBlock, Brave Shields, Ghostery), una VPN o un firewall/antivirus de tu dispositivo que bloquea Stripe. Desactívalo para este sitio, o prueba en una ventana de incógnito o con otro navegador o red.",
+    errNoKey: "Falta la clave pública de Stripe. Define NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY en el entorno y vuelve a desplegar (se incluye en el momento del build).",
+    errModeMismatch: "Los modos de Stripe no coinciden: tu clave pública es de modo {km} pero la sesión de pago es de modo {sm}. Define NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY con tu clave pk_{sm}_… (la que corresponde a STRIPE_SECRET_KEY) y vuelve a desplegar.",
+    paymentSuccessful: "Pago exitoso",
+    welcomePre: "Te damos la bienvenida a",
+    subscriptionActive: "Tu suscripción está activa.",
+    creditsLanded: "créditos",
+    creditsLandedPost: "acaban de llegar a tu cuenta. Es hora de ponerlos a trabajar.",
+    runFirst: "Ejecuta tu primer análisis",
+    viewBilling: "Ver facturación",
+    receiptPre: "Te estamos enviando el recibo a tu correo. Gestiona tu suscripción cuando quieras desde",
+    receiptLink: "facturación",
+    receiptPost: ".",
+    activating: "Activando tu plan…",
+    activatingBody: "Stripe acaba de confirmar el pago. Estamos terminando de configurar tu cuenta; tardará un par de segundos.",
+    attempt: "Intento {n} / 8…",
+    finalizing: "Pago recibido — finalizando",
+    finalizingBody: "Tu tarjeta se cobró correctamente. Nuestro sistema tarda un momento en reflejar el nuevo plan. Se actualizará en menos de un minuto: recarga facturación o tu panel para ver {plan} activo.",
+    refreshNow: "Actualizar ahora",
+    goToBilling: "Ir a facturación",
+    canceledTitle: "Pago cancelado.",
+    canceledBody: "No se realizó ningún cobro. Puedes retomar la mejora cuando quieras desde la página de precios.",
+    backToPricing: "Volver a precios",
+    billingBtn: "Facturación",
+    processingTitle: "Procesando tu pago…",
+    processingBody: "Stripe está finalizando la transacción. Tu plan se actualizará en menos de un minuto.",
+  },
+  billing: {
+    eyebrow: "Facturación",
+    title: "Planes y suscripción",
+    welcome: "Te damos la bienvenida a {plan} 👑",
+    welcomeSub: "Tus créditos ya están cargados. Ejecuta tu primer análisis →",
+    startAnalyzing: "Empezar a analizar",
+    currentPlan: "Plan actual",
+    planEnds: "Tu plan termina el {date}.",
+    creditsLeft: "Créditos restantes",
+    nextReset: "Próxima renovación",
+    status: "Estado",
+    manageInStripe: "Gestionar en Stripe",
+    upgradeHeading: "Mejora tu plan",
+    yourPlan: "Tu plan",
+    switchNote: "Cambiar de plan abre el Portal de clientes de Stripe: Stripe prorratea la diferencia y cancela el nivel anterior automáticamente. Sin suscripciones paralelas.",
+    footerNote: "Los pagos los procesa Stripe de forma segura. Puedes cancelar cuando quieras desde el Portal de clientes.",
+    statusMap: {
+      active: "Activa",
+      trialing: "En prueba",
+      past_due: "Pago vencido",
+      canceled: "Cancelada",
+      unpaid: "Sin pagar",
+      incomplete: "Incompleta",
+      incomplete_expired: "Expirada",
+      paused: "En pausa",
+    },
+    subEnds: "La suscripción terminará el {date}.",
+    subEndsNoDate: "La suscripción se cancelará al final del periodo.",
+    subResumed: "Suscripción reanudada — todo listo.",
+    resume: "Reanudar suscripción",
+    resuming: "Reanudando…",
+    keepPlan: "Mantener plan",
+    confirmCancel: "Confirmar cancelación",
+    cancelling: "Cancelando…",
+    cancelSub: "Cancelar suscripción",
+    requestFailed: "La solicitud falló",
+    portalFailed: "El portal falló",
+    opening: "Abriendo…",
+    monthly: "Mensual",
+    yearly: "Anual",
+    perMo: "mes",
+    perYr: "año",
+    billedYearly: "{monthly}/mes facturado anualmente · ahorras {save}/año",
+    free: "Gratis",
+    currentBadge: "Plan actual",
+    active: "Activo",
+    freeForever: "Gratis para siempre",
+    loading: "Cargando…",
+    switchTo: "Cambiar a {plan} (vía Portal)",
+    start: "Empezar con {plan}",
+    errNoCustomer: "No encontramos un registro de facturación para tu cuenta. Inicia un pago desde la página de precios para configurar tu suscripción.",
+    errStaleCustomer: "Tu registro de facturación necesita actualizarse. Inicia un pago nuevo desde la página de precios — tu plan se volverá a asociar.",
+    errPortalNotConfigured: "El Portal de clientes de Stripe aún no está configurado. Actívalo en Stripe → Settings → Billing → Customer portal (en modo Live).",
+    errNoSubscription: "No encontramos una suscripción activa en tu cuenta.",
+    errStaleSubscription: "No encontramos esa suscripción en Stripe. Prueba con «Gestionar en Stripe» o inicia un pago nuevo.",
+  },
+  plans: {
+    free: {
+      name: "Gratis",
+      desc: "Haz una auditoría gratis de tu propia tienda: puntuación global, captura anotada Y tu corrección prioritaria nº 1, desbloqueada y sin tarjeta de crédito. Explora 3 tiendas ganadoras seleccionadas a mano con todas sus métricas y lee el feed de la comunidad. Pasa a Pro para desbloquear el resto de tus correcciones ordenadas, la simulación de buyer persona y auditorías ilimitadas.",
+      f0: "1 auditoría gratis: puntuación + captura anotada",
+      f1: "Tu corrección nº 1 de mayor impacto — desbloqueada y accionable",
+      f2: "3 tiendas ganadoras seleccionadas a mano con métricas completas",
+      f3: "Explora el feed de la Comunidad",
+      f4: "El resto de tus correcciones ordenadas + simulación de buyer persona",
+      f5: "Búsqueda por imagen y texto con IA en más de 45 tiendas",
+      f6: "Auditorías ilimitadas + publicar en la Comunidad",
+      f7: "Modelador de escenarios de Meta + optimizador de Ads + API",
+    },
+    pro: {
+      name: "Pro",
+      badge: "Más popular",
+      desc: "Biblioteca completa + un Analyzer implacable con capturas anotadas, simulaciones de buyer persona y la opción de publicar tus auditorías en la Comunidad. Incluye 1 proyección de campaña de Meta al mes.",
+      f0: "Todo lo de Gratis",
+      f1: "Biblioteca ilimitada con métricas completas",
+      f2: "Búsqueda por similitud de imagen",
+      f3: "Analyzer web completo con capturas anotadas",
+      f4: "Simulaciones de buyer persona (todas tus correcciones ordenadas)",
+      f5: "1 proyección de campaña de Meta / mes",
+      f6: "40 análisis / mes",
+      f7: "Publicar en la Comunidad + Modo Comparar",
+      f8: "Proyecciones de Meta ilimitadas + optimizador de Ads + API REST",
+    },
+    scale: {
+      name: "Scale",
+      badge: "Para equipos",
+      desc: "Diagnóstico + cura + bola de cristal. Proyecta una campaña de Meta Ads de 7 días en 3 escenarios antes de gastar un dólar. Además, objetivos del optimizador de Meta Ads y API REST.",
+      f0: "Todo lo de Pro",
+      f1: "Modelador de escenarios de Meta: proyección con IA de 7 días y 3 escenarios",
+      f2: "Optimizador de Meta Ads: objetivos de CPC, CPM, CTR y ROAS",
+      f3: "Acceso a la API REST (tokens bearer)",
+      f4: "200 análisis / mes",
+      f5: "Cola prioritaria + soporte prioritario",
+    },
   },
   lang: {
     label: "Idioma",
@@ -1665,15 +1944,43 @@ export const messages: Record<Locale, Dict> = { en, es };
 
 /** Returns a `t(path)` lookup bound to a locale, with English fallback. */
 export function translator(locale: Locale): (path: string) => string {
-  const lookup = (dict: Dict, path: string): string | undefined => {
-    let cur: string | Dict | undefined = dict;
-    for (const key of path.split(".")) {
-      if (typeof cur !== "object" || cur === null) return undefined;
-      cur = cur[key];
-      if (cur === undefined) return undefined;
-    }
-    return typeof cur === "string" ? cur : undefined;
-  };
   return (path: string): string =>
     lookup(messages[locale], path) ?? lookup(messages.en, path) ?? path;
+}
+
+function pickNamespaces(dict: Dict): Dict {
+  const out: Dict = {};
+  for (const ns of CLIENT_NAMESPACES) if (dict[ns] !== undefined) out[ns] = dict[ns];
+  return out;
+}
+
+/** `target` with `over` laid on top, recursively (a missing key keeps English). */
+function overlay(target: Dict, over: Dict): Dict {
+  const out: Dict = { ...target };
+  for (const [k, v] of Object.entries(over)) {
+    const cur = out[k];
+    out[k] =
+      typeof v === "object" && typeof cur === "object"
+        ? overlay(cur, v)
+        : v;
+  }
+  return out;
+}
+
+const clientCache = new Map<Locale, Dict>();
+
+/**
+ * What the browser gets: ONLY the active language, ONLY the namespaces client
+ * components read (client-namespaces.ts). For Spanish the English text sits
+ * underneath, so a key without a translation still falls back to English like
+ * on the server — without shipping a second language.
+ */
+export function clientMessages(locale: Locale): Dict {
+  let dict = clientCache.get(locale);
+  if (!dict) {
+    const en = pickNamespaces(messages.en);
+    dict = locale === "en" ? en : overlay(en, pickNamespaces(messages[locale]));
+    clientCache.set(locale, dict);
+  }
+  return dict;
 }

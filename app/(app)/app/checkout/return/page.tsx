@@ -9,6 +9,7 @@ import { stripe } from "@/lib/stripe/server";
 import { Button } from "@/components/ui/button";
 import { PLANS, planFromPriceId, type PlanTier } from "@/lib/stripe/plans";
 import { PlanConfirmation } from "@/components/billing/plan-confirmation";
+import { getT } from "@/lib/i18n/server";
 
 export const metadata = { title: "Welcome" };
 export const dynamic = "force-dynamic";
@@ -35,9 +36,12 @@ export default async function CheckoutReturnPage({
   if (!sp.session_id) redirect("/app/billing");
 
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [
+    {
+      data: { user },
+    },
+    { t },
+  ] = await Promise.all([supabase.auth.getUser(), getT()]);
   if (!user) redirect("/sign-in");
 
   let plan = "free" as ReturnType<typeof planFromPriceId>;
@@ -146,22 +150,21 @@ export default async function CheckoutReturnPage({
           </div>
           <div>
             <h1 className="font-serif text-3xl md:text-4xl tracking-tight">
-              Checkout canceled.
+              {t("checkout.canceledTitle")}
             </h1>
             <p className="mt-3 text-sm text-white/60 leading-relaxed">
-              No charge was made. You can resume the upgrade any time from the
-              pricing page.
+              {t("checkout.canceledBody")}
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/pricing">
               <Button size="lg" className="w-full sm:w-auto">
-                Back to pricing
+                {t("checkout.backToPricing")}
               </Button>
             </Link>
             <Link href="/app/billing">
               <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                Billing
+                {t("checkout.billingBtn")}
               </Button>
             </Link>
           </div>
@@ -179,16 +182,15 @@ export default async function CheckoutReturnPage({
         </div>
         <div>
           <h1 className="font-serif text-3xl tracking-tight">
-            Processing your payment…
+            {t("checkout.processingTitle")}
           </h1>
           <p className="mt-3 text-sm text-white/60 leading-relaxed">
-            Stripe is finalizing the transaction. Your plan will update within
-            a minute.
+            {t("checkout.processingBody")}
           </p>
         </div>
         <Link href="/app/billing">
           <Button variant="outline" size="lg">
-            Go to billing
+            {t("checkout.goToBilling")}
           </Button>
         </Link>
       </div>

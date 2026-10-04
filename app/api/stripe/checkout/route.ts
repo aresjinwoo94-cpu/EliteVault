@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createEmbeddedCheckoutSession } from "@/lib/stripe/checkout-session";
+import { getLocale } from "@/lib/i18n/server";
 
 const Body = z.object({
   plan: z.enum(["pro", "scale"]),
@@ -41,6 +42,7 @@ export async function POST(req: NextRequest) {
     userEmail: user.email ?? null,
     plan,
     interval,
+    locale: await getLocale(),
   });
 
   if (!result.ok) {

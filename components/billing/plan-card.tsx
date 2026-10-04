@@ -5,13 +5,15 @@ import { useRouter } from "next/navigation";
 import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { formatPrice } from "@/lib/i18n/format";
+import { localizePlan } from "@/lib/i18n/plan-text";
 import { toast } from "sonner";
 import { useT } from "@/components/i18n/locale-provider";
 import type { Plan, Interval } from "@/lib/stripe/plans";
 
 export function PlanCard({
-  plan,
+  plan: basePlan,
   current,
   hasExistingSub,
 }: {
@@ -21,7 +23,8 @@ export function PlanCard({
   hasExistingSub: boolean;
 }) {
   const router = useRouter();
-  const { t } = useT();
+  const { t, locale } = useT();
+  const plan = localizePlan(basePlan, t);
   // Default to MONTHLY — the lower entry price ($19/$29) converts far better
   // than leading with the annual upfront charge. The toggle still lets users
   // switch to yearly (and see the savings) before checkout.
@@ -52,7 +55,7 @@ export function PlanCard({
               error?: string;
               detail?: string;
             };
-            throw new Error(j.detail ?? j.error ?? "Portal failed");
+            throw new Error(j.detail ?? j.error ?? t("billing.portalFailed"));
           }
           const { url } = (await res.json()) as { url: string };
           window.location.href = url;
@@ -79,7 +82,7 @@ export function PlanCard({
     >
       {current && (
         <Badge variant="gold" className="absolute -top-2.5 left-6">
-          Current plan
+          {t("billing.currentBadge")}
         </Badge>
       )}
       {!current && plan.badge && (
@@ -107,23 +110,29 @@ export function PlanCard({
                     : "text-white/50 hover:text-white",
                 )}
               >
-                {i === "month" ? "Monthly" : "Yearly"}
+                {i === "month" ? t("billing.monthly") : t("billing.yearly")}
               </button>
             ))}
           </div>
           <div className="mt-3 flex items-baseline gap-1">
             <span className="font-serif text-4xl">
-              {formatCurrency(plan.price[interval])}
+              {formatPrice(plan.price[interval], locale)}
             </span>
             <span className="text-xs text-white/40">
-              / {interval === "month" ? "mo" : "yr"}
+              / {interval === "month" ? t("billing.perMo") : t("billing.perYr")}
             </span>
           </div>
           {interval === "year" && plan.price.year > 0 && (
             <p className="mt-1 text-[11px] text-success">
-              {formatCurrency(Math.round(plan.price.year / 12))}/mo billed yearly
-              {" · save "}
-              {formatCurrency(plan.price.month * 12 - plan.price.year)}/yr
+              {t("billing.billedYearly")
+                .replace(
+                  "{monthly}",
+                  formatPrice(Math.round(plan.price.year / 12), locale),
+                )
+                .replace(
+                  "{save}",
+                  formatPrice(plan.price.month * 12 - plan.price.year, locale),
+                )}
             </p>
           )}
           {/* USD is the reference price; Stripe Adaptive Pricing charges the
@@ -134,7 +143,7 @@ export function PlanCard({
         </>
       ) : (
         <div className="mt-3">
-          <span className="font-serif text-4xl">Free</span>
+          <span className="font-serif text-4xl">{t("billing.free")}</span>
         </div>
       )}
 
@@ -149,14 +158,14 @@ export function PlanCard({
         className="mt-5 w-full"
       >
         {current
-          ? "Active"
+          ? t("billing.active")
           : plan.id === "free"
-            ? "Free forever"
+            ? t("billing.freeForever")
             : isPending
-              ? "Loading…"
+              ? t("billing.loading")
               : hasExistingSub
-                ? `Switch to ${plan.name} (via Portal)`
-                : `Start ${plan.name}`}
+                ? t("billing.switchTo").replace("{plan}", plan.name)
+                : t("billing.start").replace("{plan}", plan.name)}
       </Button>
 
       <ul className="mt-5 space-y-2 text-xs">
