@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { linkIssues } from "@/lib/analyzer/link-issues";
 import type { Annotation, AnalysisResult } from "@/lib/supabase/types";
+import { useT } from "@/components/i18n/locale-provider";
+import { fill } from "@/lib/i18n/lookup";
 
 /**
  * Severity → solid pin color. high=red, medium=orange, low=green.
@@ -20,9 +22,9 @@ const COLOR: Record<Annotation["severity"], string> = {
 };
 
 const SEV_LABEL: Record<Annotation["severity"], string> = {
-  high: "High",
-  medium: "Medium",
-  low: "Low",
+  high: "annotations.high",
+  medium: "annotations.medium",
+  low: "annotations.lowSev",
 };
 
 /**
@@ -65,7 +67,7 @@ function normalizeCoords(annotations: Annotation[]): Annotation[] {
 export function AnnotationsOverlay({
   imageUrl,
   annotations: raw,
-  altLabel = "Audit screenshot",
+  altLabel,
   result,
 }: {
   imageUrl: string;
@@ -84,6 +86,7 @@ export function AnnotationsOverlay({
    */
   result?: AnalysisResult | null;
 }) {
+  const { t } = useT();
   const annotations = normalizeCoords(raw);
 
   // Brief §3(c) — map annotation index → roadmap fix number, when the linker
@@ -133,23 +136,25 @@ export function AnnotationsOverlay({
     <Card className="overflow-hidden p-0">
       <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.04]">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-medium">Annotated audit</h3>
+          <h3 className="text-sm font-medium">{t("annotations.title")}</h3>
           <span className="text-xs text-white/40">
-            {annotations.length} {annotations.length === 1 ? "issue" : "issues"} found
+            {fill(t(annotations.length === 1 ? "annotations.foundOne" : "annotations.foundMany"), {
+              n: annotations.length,
+            })}
           </span>
         </div>
         <div className="flex items-center gap-3 text-[10px] text-white/40">
           <span className="flex items-center gap-1">
             <span className="size-1.5 rounded-full bg-destructive" />
-            High
+            {t("annotations.high")}
           </span>
           <span className="flex items-center gap-1">
             <span className="size-1.5 rounded-full bg-warning" />
-            Medium
+            {t("annotations.medium")}
           </span>
           <span className="flex items-center gap-1">
             <span className="size-1.5 rounded-full bg-success" />
-            Low / good
+            {t("annotations.low")}
           </span>
           {hasImage && (
             <a
@@ -159,7 +164,7 @@ export function AnnotationsOverlay({
               className="flex items-center gap-1 rounded-full border border-white/[0.08] px-2 py-1 text-white/55 hover:text-white hover:border-white/20 transition-colors"
             >
               <Maximize2 className="size-3" />
-              Full image
+              {t("annotations.fullImage")}
             </a>
           )}
         </div>
@@ -174,10 +179,8 @@ export function AnnotationsOverlay({
           image scrolls inside a capped box, the copy also has to say so.
         */}
         <p className="text-[11px] text-white/65 leading-tight">
-          <span className="text-white">Full-page capture</span>
-          <span className="text-white/40"> · Scroll inside the image to see the
-          whole page. The audit findings below analyzed all of it — reviews,
-          trust badges, FAQ, descriptions and CTAs from the entire URL.</span>
+          <span className="text-white">{t("annotations.fullPage")}</span>
+          <span className="text-white/40"> {t("annotations.fullPageBody")}</span>
         </p>
       </div>
 
@@ -208,7 +211,7 @@ export function AnnotationsOverlay({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={imageUrl}
-            alt={altLabel}
+            alt={altLabel ?? t("annotations.defaultAlt")}
             className="block w-full h-auto"
             style={{ touchAction: "pinch-zoom" }}
             onError={() => setImgErrored(true)}
@@ -219,12 +222,10 @@ export function AnnotationsOverlay({
               <ImageOff className="size-5 text-white/40" />
             </div>
             <p className="mt-4 text-sm font-medium text-white/70">
-              Screenshot couldn&apos;t be captured
+              {t("annotations.noShot")}
             </p>
             <p className="mt-1.5 text-xs text-white/40 max-w-sm text-center leading-relaxed">
-              The site likely blocks automated capture (Cloudflare, anti-bot)
-              or renders too slowly. The audit findings below are still based
-              on what the AI saw at the time of the run.
+              {t("annotations.noShotBody")}
             </p>
           </div>
         )}
@@ -329,7 +330,7 @@ export function AnnotationsOverlay({
                   onMouseEnter={() => setHoverIdx(i)}
                   onMouseLeave={() => setHoverIdx(null)}
                   className="grid size-full place-items-center"
-                  aria-label={`Issue ${i + 1}: ${a.message}`}
+                  aria-label={fill(t("annotations.issueAria"), { n: i + 1, msg: a.message })}
                 >
                   <span
                     className="grid place-items-center rounded-full text-[11px] font-semibold text-white"
@@ -415,7 +416,7 @@ export function AnnotationsOverlay({
                                 : "success"
                           }
                         >
-                          {SEV_LABEL[a.severity]}
+                          {t(SEV_LABEL[a.severity])}
                         </Badge>
                       </div>
                       <p className="mt-2 text-[12px] font-medium text-white leading-snug">
@@ -478,7 +479,7 @@ export function AnnotationsOverlay({
                   {/* Brief §3(c) — same issue as a roadmap fix, made visible. */}
                   {fixNumberByAnnotation[i] != null && (
                     <span className="mt-0.5 shrink-0 rounded-full border border-signal-400/30 bg-signal-500/10 px-2 py-0.5 text-[10px] font-medium text-signal-200">
-                      Fix #{fixNumberByAnnotation[i]}
+                      {fill(t("annotations.fixNum"), { n: fixNumberByAnnotation[i] })}
                     </span>
                   )}
                 </div>
@@ -490,7 +491,7 @@ export function AnnotationsOverlay({
                       exit={{ opacity: 0, height: 0 }}
                       className="mt-1.5 text-xs text-white/55 leading-relaxed overflow-hidden"
                     >
-                      <span className="text-champagne-400 font-medium">Fix:</span>{" "}
+                      <span className="text-champagne-400 font-medium">{t("annotations.fix")}</span>{" "}
                       {a.fix}
                     </motion.p>
                   )}

@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/tooltip";
 import { COMPANY } from "@/lib/company";
 import { useT } from "@/components/i18n/locale-provider";
+import { fill } from "@/lib/i18n/lookup";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -74,7 +75,7 @@ export function SocialProof({ stores = [] }: { stores?: FeaturedStore[] }) {
         <>
         {/* Section heading */}
         <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
-          <DataPill items={["FROM THE LIBRARY", "REAL STORES"]} />
+          <DataPill items={[t("pills.fromLibrary"), t("pills.realStores")]} />
           <h2 className="mt-5 font-serif text-3xl md:text-5xl tracking-tight">
             {t("social.heading")}
           </h2>
@@ -99,7 +100,7 @@ export function SocialProof({ stores = [] }: { stores?: FeaturedStore[] }) {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={s.thumbnailUrl}
-                      alt={`${s.title} — winning ${s.niche} store`}
+                      alt={fill(t("common.winningStoreDash"), { title: s.title, niche: s.niche })}
                       loading="lazy"
                       className="absolute inset-0 h-full w-full object-cover object-top"
                     />

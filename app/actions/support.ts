@@ -4,6 +4,8 @@ import { z } from "zod";
 import { sendEmail } from "@/lib/email/resend";
 import { COMPANY } from "@/lib/company";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
+import { fill } from "@/lib/i18n/lookup";
 
 export type SupportResult = { ok: true } | { ok: false; error: string };
 
@@ -22,8 +24,7 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-/** Shown when we could neither store nor email the message. */
-const HARD_FAIL = `We couldn't submit your message right now. Please email us at ${COMPANY.contactEmail} or reach us on Instagram (@elite_vault_team).`;
+/** Shown when we could neither store nor email the message (actionErr.supportHardFail). */
 
 /**
  * Public contact form handler.
@@ -40,6 +41,7 @@ export async function submitSupportRequest(
   _prev: SupportResult | null,
   formData: FormData,
 ): Promise<SupportResult> {
+  const { t } = await getT();
   const parsed = ContactInput.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -49,7 +51,7 @@ export async function submitSupportRequest(
   if (!parsed.success) {
     return {
       ok: false,
-      error: "Please enter your name, a valid email, and a message (10+ characters).",
+      error: t("actionErr.supportInvalid"),
     };
   }
 
@@ -107,7 +109,10 @@ export async function submitSupportRequest(
 
   // 4) Only a total failure (neither stored nor emailed) is a real loss.
   if (!stored && !sent.ok) {
-    return { ok: false, error: HARD_FAIL };
+    return {
+      ok: false,
+      error: fill(t("actionErr.supportHardFail"), { email: COMPANY.contactEmail }),
+    };
   }
   return { ok: true };
 }

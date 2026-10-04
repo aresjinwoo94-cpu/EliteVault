@@ -12,6 +12,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/components/i18n/locale-provider";
 
 /**
  * Free→Pro "cure" gate (P0.2 — "give the diagnosis, charge for the cure").
@@ -43,6 +44,7 @@ export function FreeLockedCure({
   count?: string;
   children: React.ReactNode;
 }) {
+  const { t } = useT();
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -92,12 +94,10 @@ export function FreeLockedCure({
                   <Lock className="size-5 text-champagne-300" />
                 </div>
                 <p className="mt-4 text-base font-medium text-white">
-                  Unlock your fixes with Pro
+                  {t("lockedCure.title")}
                 </p>
                 <p className="mt-1 text-xs text-white/55 leading-relaxed">
-                  Your diagnosis is free. Pro reveals the prioritized cure for
-                  this audit — instantly, no re-analysis — plus unlimited
-                  audits.
+                  {t("lockedCure.body")}
                 </p>
                 <Link
                   href="/app/checkout?plan=pro&interval=month"
@@ -105,13 +105,13 @@ export function FreeLockedCure({
                 >
                   <Button variant="primary" size="lg">
                     <Sparkles className="size-4" />
-                    Unlock for $19 / mo
+                    {t("topFixes.unlockPrice")}
                     <ArrowRight className="size-4" />
                   </Button>
                 </Link>
                 <p className="mt-2 text-[10px] text-white/35 inline-flex items-center gap-1">
                   <Shield className="size-3" />
-                  Cancel anytime · prorated
+                  {t("scaleLocked.cancel")}
                 </p>
               </div>
             </div>

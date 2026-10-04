@@ -126,6 +126,7 @@ test("the English plan copy is exactly plans.ts (no drift between the two)", () 
     const l = localizePlan(plan, t);
     assert.equal(l.name, plan.name);
     assert.equal(l.description, plan.description);
+    assert.equal(l.tagline, plan.tagline);
     assert.equal(l.badge, plan.badge);
     assert.deepEqual(
       l.features.map((f) => f.text),
@@ -140,6 +141,7 @@ test("Spanish plan copy translates every field and keeps included/highlight", ()
   for (const plan of Object.values(PLANS)) {
     const l = localizePlan(plan, t);
     assert.notEqual(l.description, plan.description, `${plan.id} description`);
+    assert.notEqual(l.tagline, plan.tagline, `${plan.id} tagline`);
     l.features.forEach((f, i) => {
       assert.notEqual(f.text, plan.features[i].text, `${plan.id}.f${i}`);
       assert.equal(f.included, plan.features[i].included);

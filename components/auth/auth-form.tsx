@@ -442,6 +442,7 @@ function OtpVerifyForm({
   email: string;
   nextUrl: string;
 }) {
+  const { t } = useT();
   const router = useRouter();
   const [state, formAction, isPending] = useActionState<AuthState, FormData>(
     verifyEmailOtp,
@@ -460,7 +461,7 @@ function OtpVerifyForm({
       <input type="hidden" name="next" value={nextUrl} />
       <input type="hidden" name="email" value={email} />
       <Label htmlFor="otp-code" className="text-white/60">
-        Or paste the 6-digit code from the email
+        {t("authForm.pasteCode")}
       </Label>
       <div className="mt-1.5 flex gap-2">
         <Input
@@ -476,14 +477,14 @@ function OtpVerifyForm({
           className="tracking-[0.4em] text-center font-mono"
         />
         <Button type="submit" size="lg" disabled={isPending}>
-          {isPending ? "Verifying…" : "Verify"}
+          {isPending ? t("authForm.verifying") : t("authForm.verify")}
         </Button>
       </div>
       {state.status === "error" && (
         <p className="mt-2 text-xs text-destructive">{state.message}</p>
       )}
       <p className="mt-2 text-xs text-white/35">
-        Always use the most recent email — older codes and links stop working.
+        {t("authForm.useLatest")}
       </p>
     </form>
   );

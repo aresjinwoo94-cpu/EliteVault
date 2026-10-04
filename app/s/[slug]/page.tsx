@@ -1,3 +1,4 @@
+import { AppScope } from "@/components/i18n/app-scope";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -13,6 +14,9 @@ import { ReportHeroV2 } from "@/components/analyzer/report-hero-v2";
 import { analyzerReportV2Enabled } from "@/lib/flags";
 import { buildShareResult, shareMeta, type SharedAuditRow } from "@/lib/analyzer/share-v2";
 import type { Annotation } from "@/lib/supabase/types";
+import { getT } from "@/lib/i18n/server";
+import { Rich } from "@/components/i18n/rich";
+import { fill } from "@/lib/i18n/lookup";
 
 // Slug-addressed, public, logged-out friendly — never static.
 export const dynamic = "force-dynamic";
@@ -104,16 +108,17 @@ export async function generateMetadata({
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  color_integration: "Color",
-  layout_proportion: "Layout",
-  image_quality: "Imagery",
-  technical_optimization: "Technical",
-  niche_coherence: "Niche fit",
-  cro_principles: "CRO",
+  color_integration: "categories.color",
+  layout_proportion: "categories.layout",
+  image_quality: "categories.imagery",
+  technical_optimization: "categories.technical",
+  niche_coherence: "categories.niche",
+  cro_principles: "categories.cro",
 };
 
 /** Shared top bar (same on both variants). */
-function ShareHeader() {
+async function ShareHeader() {
+  const { t } = await getT();
   return (
     <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-obsidian-950/80 backdrop-blur-xl">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 md:px-6">
@@ -122,7 +127,7 @@ function ShareHeader() {
         </Link>
         <Link href={`/sign-up?next=/app/analyzer`}>
           <Button size="sm">
-            Audit your store free
+            {t("common.auditFree")}
             <ArrowRight className="size-4" />
           </Button>
         </Link>
@@ -132,35 +137,34 @@ function ShareHeader() {
 }
 
 /** Shared bottom CTA + footer (same on both variants). */
-function ShareFooter() {
+async function ShareFooter() {
+  const { t } = await getT();
   return (
     <>
       <Card className="relative overflow-hidden p-8 md:p-10 text-center border-champagne-400/20 bg-gradient-to-br from-champagne-400/[0.05] to-signal-600/[0.05]">
         <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-champagne-400/12 blur-3xl" />
         <div className="relative">
           <h2 className="font-serif text-2xl md:text-3xl tracking-tight">
-            Want this for your store?
+            {t("sharedPage.want")}
           </h2>
           <p className="mx-auto mt-3 max-w-md text-sm text-white/60 leading-relaxed">
-            Paste your URL and get the same brutal audit — the ad-readiness
-            verdict, your revenue potential and an annotated screenshot — free.
-            No credit card.
+            {t("sharedPage.wantBody")}
           </p>
           <Link href="/sign-up?next=/app/analyzer" className="mt-6 inline-block">
             <Button size="xl">
-              Audit your store free
+              {t("common.auditFree")}
               <ArrowRight className="size-4" />
             </Button>
           </Link>
           <p className="mt-3 text-[11px] text-white/35 inline-flex items-center gap-1.5">
             <ShieldCheck className="size-3" />
-            Estimates, not guarantees · 1 free analysis · no card
+            {t("sharedPage.estimates")}
           </p>
         </div>
       </Card>
 
       <p className="pb-8 text-center text-[11px] text-white/30">
-        Audited with{" "}
+        {t("sharedPage.auditedWith")}{" "}
         <Link href="/" className="text-white/50 hover:text-white/80">
           EliteVault
         </Link>
@@ -170,11 +174,12 @@ function ShareFooter() {
   );
 }
 
-export default async function SharedAuditPage({
+async function SharedAuditPageInner({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  const { t } = await getT();
   const { slug } = await params;
   const audit = await loadSharedAudit(slug);
   if (!audit) notFound();
@@ -221,7 +226,7 @@ export default async function SharedAuditPage({
           <div className="flex justify-center">
             <Badge variant="gold">
               <Sparkles className="size-3" />
-              Public audit
+              {t("sharedPage.public")}
             </Badge>
           </div>
 
@@ -246,7 +251,7 @@ export default async function SharedAuditPage({
             <AnnotationsOverlay
               imageUrl={audit.screenshot_url ?? ""}
               annotations={audit.annotations as Annotation[]}
-              altLabel={`Annotated conversion audit screenshot of ${domain}`}
+              altLabel={fill(t("sharedPage.shotAlt"), { domain })}
             />
           )}
 
@@ -260,14 +265,14 @@ export default async function SharedAuditPage({
   const score = normalizedScore(audit.score);
   const tier =
     score >= 90
-      ? "World-class"
+      ? t("sharedPage.tierWorld")
       : score >= 75
-        ? "Strong"
+        ? t("sharedPage.tierStrong")
         : score >= 55
-          ? "Average"
+          ? t("sharedPage.tierAverage")
           : score >= 35
-            ? "Below avg."
-            : "Broken";
+            ? t("sharedPage.tierBelow")
+            : t("sharedPage.tierBroken");
 
   const categories = audit.category_scores
     ? Object.entries(audit.category_scores).filter(([k]) => k in CATEGORY_LABELS)
@@ -303,10 +308,13 @@ export default async function SharedAuditPage({
         <div className="text-center">
           <Badge variant="gold" className="mx-auto">
             <Sparkles className="size-3" />
-            Public audit
+            {t("sharedPage.public")}
           </Badge>
           <h1 className="mt-4 font-serif text-3xl md:text-5xl tracking-tight break-words">
-            <span className="text-white/70">{domain}</span> scored
+            <Rich
+              text={fill(t("sharedPage.scored"), { domain })}
+              tags={{ d: (c) => <span className="text-white/70">{c}</span> }}
+            />
           </h1>
           <div className="mt-3 flex items-baseline justify-center gap-2">
             <span className="font-mono tabular-nums text-7xl md:text-8xl tnum text-gold-gradient leading-none">
@@ -328,7 +336,7 @@ export default async function SharedAuditPage({
         {categories.length > 0 && (
           <Card className="p-5 md:p-6">
             <p className="text-[11px] uppercase tracking-widest text-white/40 mb-4">
-              Category scores
+              {t("sharedPage.categoryScores")}
             </p>
             <div className="grid sm:grid-cols-2 gap-x-8 gap-y-3">
               {categories.map(([key, val]) => {
@@ -336,7 +344,7 @@ export default async function SharedAuditPage({
                 return (
                   <div key={key} className="flex items-center gap-3">
                     <span className="w-20 shrink-0 text-xs text-white/55">
-                      {CATEGORY_LABELS[key]}
+                      {t(CATEGORY_LABELS[key])}
                     </span>
                     <div className="relative h-1.5 flex-1 rounded-full bg-white/[0.06]">
                       <div
@@ -359,7 +367,7 @@ export default async function SharedAuditPage({
           <AnnotationsOverlay
             imageUrl={audit.screenshot_url ?? ""}
             annotations={audit.annotations as Annotation[]}
-            altLabel={`Annotated conversion audit screenshot of ${domain}`}
+            altLabel={fill(t("sharedPage.shotAlt"), { domain })}
           />
         )}
 
@@ -367,4 +375,12 @@ export default async function SharedAuditPage({
       </main>
     </div>
   );
+}
+
+/**
+ * The report UI reads the `app` dictionary scope (lib/i18n/client-namespaces.ts);
+ * this public route is outside app/(app)/layout.tsx, so it mounts the scope itself.
+ */
+export default async function SharedAuditPage(props: Parameters<typeof SharedAuditPageInner>[0]) {
+  return <AppScope>{await SharedAuditPageInner(props)}</AppScope>;
 }

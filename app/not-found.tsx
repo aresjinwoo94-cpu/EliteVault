@@ -1,23 +1,24 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/brand/logo";
+import { getT } from "@/lib/i18n/server";
 
-export default function NotFound() {
+export default async function NotFound() {
+  const { t } = await getT();
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
       <Logo size={32} />
       <p className="mt-10 font-mono text-xs uppercase tracking-widest text-white/40">
-        Error 404
+        {t("notFound.eyebrow")}
       </p>
       <h1 className="mt-3 font-serif text-6xl md:text-7xl tracking-tight">
-        <span className="text-gold-gradient">Misplaced</span>.
+        <span className="text-gold-gradient">{t("notFound.title")}</span>.
       </h1>
       <p className="mt-4 max-w-md text-sm text-white/55">
-        The page you're looking for has been moved, deleted, or never existed.
-        Sometimes that happens. Let's get you back home.
+        {t("notFound.body")}
       </p>
       <Link href="/" className="mt-8">
-        <Button size="lg">Take me home</Button>
+        <Button size="lg">{t("notFound.cta")}</Button>
       </Link>
     </div>
   );

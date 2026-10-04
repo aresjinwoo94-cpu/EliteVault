@@ -5,9 +5,11 @@ import { retrieve, type KbEntry } from "@/lib/support/kb";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { enterMeter } from "@/lib/usage/context";
 import { COMPANY } from "@/lib/company";
+import { getT } from "@/lib/i18n/server";
 
 export const runtime = "nodejs";
 
+// i18n-ignore: support KB answers are grounded English content (out of scope), not UI chrome
 const FALLBACK = `I don't have that documented yet. For anything I can't answer, use the contact form at /support/contact (it reaches the founder's inbox) or email ${COMPANY.contactEmail} — a human will help.`;
 
 /** The Instagram handle, derived from the single source in lib/company. */
@@ -26,7 +28,9 @@ function ownerHandoffAnswer(question: string): string {
       question,
     );
   return looksSpanish
+    // i18n-ignore: support KB answer (grounded content)
     ? `Puedes escribirle directo al fundador con el formulario de contacto en /support/contact (le llega a su correo), o por Instagram ${IG_HANDLE}.`
+    // i18n-ignore: support KB answer (grounded content)
     : `You can reach the founder directly through the contact form at /support/contact (it lands in his inbox), or on Instagram ${IG_HANDLE}.`;
 }
 
@@ -46,6 +50,7 @@ function rateLimited(ip: string): boolean {
 const Body = z.object({ question: z.string().trim().min(2).max(500) });
 
 const SYSTEM =
+  // i18n-ignore: LLM system prompt
   "You are EliteVault's support assistant. Answer the user's question ONLY " +
   "using the FACTS provided. Do NOT invent or guess prices, dates, policies, " +
   "limits, or features — if the facts don't cover it, you must decline. Keep " +
@@ -74,10 +79,11 @@ async function logQuestion(question: string, answered: boolean) {
 }
 
 export async function POST(req: NextRequest) {
+  const { t } = await getT();
   const ip = (req.headers.get("x-forwarded-for") ?? "unknown").split(",")[0].trim();
   if (rateLimited(ip)) {
     return NextResponse.json(
-      { answer: "You're sending messages too fast — give it a moment.", answered: false },
+      { answer: t("supportChat.rateLimited"), answered: false },
       { status: 429 },
     );
   }
@@ -122,6 +128,7 @@ export async function POST(req: NextRequest) {
     }>(
       {
         name: "answer_support_question",
+        // i18n-ignore: LLM prompt
         description: "Answer strictly from the provided EliteVault facts.",
         schema: TOOL_SCHEMA as unknown as Record<string, unknown>,
       },
@@ -131,6 +138,7 @@ export async function POST(req: NextRequest) {
         maxTokens: 400,
         fast: true,
         parts: [
+          // i18n-ignore: LLM prompt
           { text: `FACTS:\n${factsText}\n\nUSER QUESTION: ${question}` },
         ],
       },

@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RankBadge } from "./rank-badge";
 import { cn } from "@/lib/utils";
+import { useT } from "@/components/i18n/locale-provider";
 
 export interface PodiumItem {
   id: string;
@@ -35,6 +36,7 @@ export interface PodiumItem {
  * show a "claim this spot" prompt that links to the analyzer.
  */
 export function LeaderboardPodium({ items }: { items: PodiumItem[] }) {
+  const { t } = useT();
   // Pad to 3 so we can always render a podium layout
   const padded: (PodiumItem | null)[] = [
     items[0] ?? null,
@@ -49,15 +51,15 @@ export function LeaderboardPodium({ items }: { items: PodiumItem[] }) {
       <div className="flex items-center justify-between mb-5">
         <div>
           <p className="text-xs uppercase tracking-widest text-white/40">
-            Hall of Fame
+            {t("community.hallOfFame")}
           </p>
           <h2 className="font-serif text-2xl md:text-3xl tracking-tight mt-1">
-            The current top three.
+            {t("community.topThree")}
           </h2>
         </div>
         <Badge variant="gold" className="hidden sm:inline-flex">
           <Crown className="size-3" />
-          All-time
+          {t("community.allTime")}
         </Badge>
       </div>
 
@@ -93,6 +95,7 @@ export function LeaderboardPodium({ items }: { items: PodiumItem[] }) {
 }
 
 function PodiumCard({ item, place }: { item: PodiumItem; place: number }) {
+  const { t } = useT();
   const isFirst = place === 1;
   const isSecond = place === 2;
   const placeColor = isFirst
@@ -163,7 +166,7 @@ function PodiumCard({ item, place }: { item: PodiumItem; place: number }) {
               )}
             >
               <span className="text-[10px] uppercase tracking-widest text-white/40">
-                Rank
+                {t("community.rank")}
               </span>
               <span
                 className={cn(
@@ -187,7 +190,7 @@ function PodiumCard({ item, place }: { item: PodiumItem; place: number }) {
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-obsidian-700 to-obsidian-900 flex items-center justify-center">
                   <span className="text-[10px] text-white/30 uppercase tracking-widest">
-                    No preview
+                    {t("community.noPreview")}
                   </span>
                 </div>
               )}
@@ -205,7 +208,7 @@ function PodiumCard({ item, place }: { item: PodiumItem; place: number }) {
             <div className="mt-auto pt-4 flex items-end justify-between gap-2">
               <div>
                 <p className="text-[10px] uppercase tracking-widest text-white/40">
-                  Composite
+                  {t("community.composite")}
                 </p>
                 <p
                   className={cn(
@@ -226,14 +229,15 @@ function PodiumCard({ item, place }: { item: PodiumItem; place: number }) {
 }
 
 function EmptySlot({ place }: { place: number }) {
+  const { t } = useT();
   return (
     <Link href="/app/analyzer" className="group block h-full">
       <Card className="h-full p-5 border-dashed border-white/[0.08] bg-transparent flex flex-col items-center justify-center text-center min-h-[200px] hover:border-white/[0.15] transition-colors">
         <span className="font-serif text-4xl text-white/15 tnum">#{place}</span>
         <p className="mt-2 text-xs text-white/35 group-hover:text-white/55 transition-colors">
-          Claim this spot
+          {t("community.claimSpot")}
         </p>
-        <p className="mt-1 text-[10px] text-white/25">Run an audit →</p>
+        <p className="mt-1 text-[10px] text-white/25">{t("community.runAudit")}</p>
       </Card>
     </Link>
   );

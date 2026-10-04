@@ -8,11 +8,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataPill } from "@/components/ui/data-pill";
 import { PLANS, type Interval } from "@/lib/stripe/plans";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { formatPrice } from "@/lib/i18n/format";
+import { localizePlan } from "@/lib/i18n/plan-text";
+import { fill } from "@/lib/i18n/lookup";
 import { useT } from "@/components/i18n/locale-provider";
 
 export function Pricing() {
-  const { t } = useT();
+  const { t, locale } = useT();
+  const plans = Object.values(PLANS).map((p) => localizePlan(p, t));
   // Show monthly pricing first — it's the lower sticker number and the
   // honest default. The toggle still switches to yearly (with the 20% save).
   const [interval, setInterval] = useState<Interval>("month");
@@ -21,7 +25,7 @@ export function Pricing() {
     <section id="pricing" className="section-y border-t border-white/[0.04]">
       <div className="container max-w-6xl">
         <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
-          <DataPill items={["PRICING", "FREE DIAGNOSIS"]} />
+          <DataPill items={[t("pills.pricing"), t("pills.freeDiagnosis")]} />
           <h2 className="mt-5 font-serif text-4xl md:text-5xl tracking-tight leading-tight">
             {t("pricing.heading")}
           </h2>
@@ -31,7 +35,7 @@ export function Pricing() {
           {/* P2.5 — explicit value ladder so the jump between tiers reads at a glance. */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs text-white/45">
             <span className="rounded-full border border-white/[0.08] bg-white/[0.02] px-3 py-1">
-              Free → <span className="text-white/70">{t("pricing.ladderDiagnose")}</span>
+              {t("plans.free.name")} → <span className="text-white/70">{t("pricing.ladderDiagnose")}</span>
             </span>
             <span className="text-white/25">›</span>
             <span className="rounded-full border border-champagne-400/25 bg-champagne-400/[0.05] px-3 py-1">
@@ -70,7 +74,7 @@ export function Pricing() {
         </div>
 
         <div className="mt-12 grid md:grid-cols-3 gap-4">
-          {Object.values(PLANS).map((plan, i) => (
+          {plans.map((plan, i) => (
             <motion.div
               key={plan.id}
               initial={{ opacity: 0, y: 16 }}
@@ -102,7 +106,7 @@ export function Pricing() {
                 <span className="font-mono tabular-nums text-5xl tracking-tight text-signal-300">
                   {plan.price[interval] === 0
                     ? t("pricing.priceFree")
-                    : formatCurrency(plan.price[interval])}
+                    : formatPrice(plan.price[interval], locale)}
                 </span>
                 {plan.price[interval] > 0 && (
                   <span className="font-mono text-sm text-white/40">
@@ -112,9 +116,10 @@ export function Pricing() {
               </div>
               {interval === "year" && plan.price.year > 0 && (
                 <p className="mt-1.5 text-xs text-success">
-                  {formatCurrency(Math.round(plan.price.year / 12))}
-                  {t("pricing.billedYearly")}{" "}
-                  {formatCurrency(plan.price.month * 12 - plan.price.year)}/yr
+                  {fill(t("pricing.billedYearlyFull"), {
+                    monthly: formatPrice(Math.round(plan.price.year / 12), locale),
+                    save: formatPrice(plan.price.month * 12 - plan.price.year, locale),
+                  })}
                 </p>
               )}
 

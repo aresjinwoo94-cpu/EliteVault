@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { publishAnalysis, unpublishAnalysis } from "@/app/actions/community";
+import { useT } from "@/components/i18n/locale-provider";
+import { Rich } from "@/components/i18n/rich";
 
 export function PublishDialog({
   analysisId,
@@ -29,6 +31,7 @@ export function PublishDialog({
   isPublished: boolean;
   publishedSlug?: string | null;
 }) {
+  const { t } = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [displayName, setDisplayName] = useState(defaultDisplayName ?? "");
@@ -43,7 +46,7 @@ export function PublishDialog({
         anonymize,
       });
       if (res.ok) {
-        toast.success("Published to Community!");
+        toast.success(t("community.publishedToast"));
         setOpen(false);
         router.push(`/app/community/${res.slug}`);
       } else {
@@ -56,10 +59,10 @@ export function PublishDialog({
     startTransition(async () => {
       const res = await unpublishAnalysis(analysisId);
       if (res.ok) {
-        toast.success("Removed from Community");
+        toast.success(t("community.removedFromToast"));
         router.refresh();
       } else {
-        toast.error(res.error ?? "Could not unpublish");
+        toast.error(res.error ?? t("community.unpublishFailed"));
       }
     });
   }
@@ -73,7 +76,7 @@ export function PublishDialog({
             size="sm"
             onClick={() => router.push(`/app/community/${publishedSlug}`)}
           >
-            View public page
+            {t("community.viewPublic")}
           </Button>
         )}
         <Button
@@ -82,7 +85,7 @@ export function PublishDialog({
           onClick={unpublish}
           disabled={isPending}
         >
-          {isPending ? "Removing…" : "Unpublish"}
+          {isPending ? t("community.removing") : t("community.unpublish")}
         </Button>
       </div>
     );
@@ -93,30 +96,28 @@ export function PublishDialog({
       <DialogTrigger asChild>
         <Button variant="secondary" size="sm">
           <Share2 className="size-3.5" />
-          Publish to Community
+          {t("community.publishCta")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="size-4 text-champagne-400" />
-            Publish this audit
+            {t("community.publishDialogTitle")}
           </DialogTitle>
           <DialogDescription>
-            Anyone signed in to EliteVault will be able to view this audit
-            (score, annotations, persona response, top fixes). You can
-            unpublish anytime with one click.
+            {t("community.publishDialogBody2")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="displayName">Display name</Label>
+            <Label htmlFor="displayName">{t("community.displayName")}</Label>
             <Input
               id="displayName"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Your name or brand"
+              placeholder={t("community.namePlaceholder")}
               disabled={anonymize}
             />
           </div>
@@ -128,22 +129,23 @@ export function PublishDialog({
               className="size-4 rounded border-white/20 bg-white/[0.04]"
             />
             <span className="text-sm text-white/70">
-              Publish anonymously (shown as "Anonymous founder")
+              {t("community.anonLabel")}
             </span>
           </label>
           <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 text-xs text-white/55 leading-relaxed">
-            We publish the audit's <strong>score, annotations, persona
-            response, scenarios, and summary</strong>. We DON'T publish your
-            email, account info, or any data outside the audit itself.
+            <Rich
+                text={t("community.publishNotice")}
+                tags={{ b: (c) => <strong>{c}</strong> }}
+              />
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button onClick={publish} disabled={isPending}>
-            {isPending ? "Publishing…" : "Publish"}
+            {isPending ? t("community.publishing") : t("community.publish")}
           </Button>
         </DialogFooter>
       </DialogContent>

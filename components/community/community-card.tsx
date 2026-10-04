@@ -5,6 +5,9 @@ import { motion } from "framer-motion";
 import { Check, Eye, ExternalLink, ThumbsUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatCompact } from "@/lib/utils";
+import { useT } from "@/components/i18n/locale-provider";
+import { fill } from "@/lib/i18n/lookup";
+import { intlLocale } from "@/lib/i18n/format";
 
 interface FeedItem {
   id: string;
@@ -35,7 +38,8 @@ export function CommunityCard({
   selectable: boolean;
   onToggle: () => void;
 }) {
-  const author = item.display_name ?? "Anonymous founder";
+  const { t, locale } = useT();
+  const author = item.display_name ?? t("community.anonFounder");
   const fallbackShot =
     item.screenshot_url ??
     `https://s.wordpress.com/mshots/v1/${encodeURIComponent(item.url)}?w=800&h=560`;
@@ -71,7 +75,7 @@ export function CommunityCard({
               ? "bg-obsidian-900/80 backdrop-blur text-white/40 hover:text-white hover:bg-obsidian-900"
               : "bg-obsidian-900/40 text-white/20 cursor-not-allowed",
         )}
-        aria-label="Add to compare"
+        aria-label={t("community.addCompare")}
       >
         {selected ? (
           <Check className="size-4" />
@@ -95,13 +99,13 @@ export function CommunityCard({
           <div className="absolute bottom-3 left-3 flex items-center gap-2">
             <div className="rounded-lg bg-obsidian-900/85 backdrop-blur ring-1 ring-white/10 px-3 py-1.5">
               <p className="text-[10px] uppercase tracking-widest text-white/40 leading-none">
-                Score
+                {t("common.score")}
               </p>
               <p className="font-serif text-2xl tnum text-gold-gradient leading-none mt-0.5">
                 {item.score}
               </p>
             </div>
-            {item.is_featured && <Badge variant="gold">Featured</Badge>}
+            {item.is_featured && <Badge variant="gold">{t("community.featured")}</Badge>}
           </div>
         </div>
 
@@ -112,7 +116,7 @@ export function CommunityCard({
                 {item.domain}
               </h3>
               <p className="text-xs text-white/40">
-                by {author}
+                {fill(t("community.by"), { author })}
                 {item.niche && (
                   <span className="ml-1.5 text-white/30">
                     · {item.niche}
@@ -137,7 +141,7 @@ export function CommunityCard({
               {formatCompact(item.helpful_count)}
             </span>
             <span className="ml-auto">
-              {new Date(item.created_at).toLocaleDateString()}
+              {new Date(item.created_at).toLocaleDateString(intlLocale(locale))}
             </span>
           </div>
         </div>

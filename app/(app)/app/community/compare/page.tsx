@@ -3,23 +3,24 @@ import { ArrowLeft, Sparkles } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { getT } from "@/lib/i18n/server";
 
 export const metadata = { title: "Compare · Community" };
 
 const SCENARIO_LABELS: Record<string, string> = {
-  organic: "Organic",
-  meta_ads_bad: "Meta — bad",
-  meta_ads_regular: "Meta — regular",
-  meta_ads_good: "Meta — top",
+  organic: "compare.scOrganic",
+  meta_ads_bad: "compare.scBad",
+  meta_ads_regular: "compare.scRegular",
+  meta_ads_good: "compare.scTop",
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
-  color_integration: "Color",
-  layout_proportion: "Layout",
-  image_quality: "Imagery",
-  technical_optimization: "Tech",
-  niche_coherence: "Niche fit",
-  cro_principles: "CRO",
+  color_integration: "categories.color",
+  layout_proportion: "categories.layout",
+  image_quality: "categories.imagery",
+  technical_optimization: "categories.tech",
+  niche_coherence: "categories.niche",
+  cro_principles: "categories.cro",
 };
 
 export default async function ComparePage({
@@ -27,21 +28,22 @@ export default async function ComparePage({
 }: {
   searchParams: Promise<{ slugs?: string }>;
 }) {
+  const { t } = await getT();
   const sp = await searchParams;
   const slugs = (sp.slugs ?? "").split(",").filter(Boolean).slice(0, 3);
 
   if (slugs.length < 2) {
     return (
       <div className="p-8 max-w-2xl mx-auto text-center">
-        <h1 className="font-serif text-3xl">Pick 2-3 audits to compare</h1>
+        <h1 className="font-serif text-3xl">{t("community.pickTitle")}</h1>
         <p className="mt-2 text-white/55">
-          Go back to the Community feed and tap the + on the cards you want.
+          {t("community.pickBody")}
         </p>
         <Link
           href="/app/community"
           className="mt-6 inline-block text-champagne-400"
         >
-          ← Back to Community
+          {t("community.backToCommunity")}
         </Link>
       </div>
     );
@@ -59,12 +61,12 @@ export default async function ComparePage({
   if (!items || items.length < 2) {
     return (
       <div className="p-8 max-w-2xl mx-auto text-center">
-        <h1 className="font-serif text-3xl">Couldn't load enough audits</h1>
+        <h1 className="font-serif text-3xl">{t("community.cantLoad")}</h1>
         <Link
           href="/app/community"
           className="mt-4 inline-block text-champagne-400"
         >
-          ← Back to Community
+          {t("community.backToCommunity")}
         </Link>
       </div>
     );
@@ -86,20 +88,19 @@ export default async function ComparePage({
           className="inline-flex items-center gap-1 text-xs text-white/40 hover:text-white/80 transition-colors"
         >
           <ArrowLeft className="size-3" />
-          Community feed
+          {t("community.feedTitle")}
         </Link>
         <div className="mt-2 flex items-center gap-2">
           <h1 className="font-serif text-3xl md:text-4xl tracking-tight">
-            Side-by-side comparison
+            {t("community.sideBySide")}
           </h1>
           <Badge variant="ai">
             <Sparkles className="size-3" />
-            {ordered.length} audits
+            {ordered.length} {t("community.audits")}
           </Badge>
         </div>
         <p className="mt-2 text-sm text-white/55">
-          The same data, lined up. Look at score deltas, conversion scenarios,
-          category breakdowns and persona reactions across stores.
+          {t("community.compareBody")}
         </p>
       </header>
 
@@ -140,7 +141,7 @@ export default async function ComparePage({
 
       {/* Scenarios row */}
       <ComparisonRow
-        title="Conversion scenarios"
+        title={t("community.convScenarios")}
         columns={ordered}
         renderColumn={(it) => (
           <div className="space-y-2.5 mt-1">
@@ -149,7 +150,7 @@ export default async function ComparePage({
               return (
                 <div key={k}>
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-white/50">{SCENARIO_LABELS[k]}</span>
+                    <span className="text-white/50">{t(SCENARIO_LABELS[k])}</span>
                     <span className="tnum text-white/85">
                       {(v * 100).toFixed(2)}%
                     </span>
@@ -168,7 +169,7 @@ export default async function ComparePage({
       />
 
       <ComparisonRow
-        title="Category breakdown"
+        title={t("community.catBreakdown")}
         columns={ordered}
         renderColumn={(it) => (
           <div className="space-y-2 mt-1">
@@ -179,7 +180,7 @@ export default async function ComparePage({
                   key={k}
                   className="flex justify-between text-xs"
                 >
-                  <span className="text-white/55">{CATEGORY_LABELS[k]}</span>
+                  <span className="text-white/55">{t(CATEGORY_LABELS[k])}</span>
                   <span className="tnum text-white/85">{v}</span>
                 </div>
               );
@@ -189,7 +190,7 @@ export default async function ComparePage({
       />
 
       <ComparisonRow
-        title="Buyer persona reacts"
+        title={t("community.personaReacts")}
         columns={ordered}
         renderColumn={(it) => {
           const r = it.persona_response as
@@ -200,14 +201,14 @@ export default async function ComparePage({
               {r ? (
                 <>
                   <Badge variant={r.would_buy ? "success" : "danger"}>
-                    {r.would_buy ? "Would buy" : "Would bounce"}
+                    {r.would_buy ? t("community.wouldBuy") : t("community.wouldBounce")}
                   </Badge>
                   <p className="font-serif text-base leading-snug text-white/85">
                     "{r.headline}"
                   </p>
                 </>
               ) : (
-                <p className="text-xs text-white/40">No persona response</p>
+                <p className="text-xs text-white/40">{t("community.noPersona")}</p>
               )}
             </div>
           );
@@ -215,7 +216,7 @@ export default async function ComparePage({
       />
 
       <ComparisonRow
-        title="Top 3 fixes"
+        title={t("community.top3")}
         columns={ordered}
         renderColumn={(it) => (
           <ol className="space-y-1.5 mt-1">

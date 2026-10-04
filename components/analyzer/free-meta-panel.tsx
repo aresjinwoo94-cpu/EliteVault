@@ -6,6 +6,9 @@ import { ArrowRight, Shield, Scale, Flame, Sparkles, TrendingUp } from "lucide-r
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { roasRangeForAudit } from "@/lib/meta/roas-range";
+import { useT } from "@/components/i18n/locale-provider";
+import { Rich } from "@/components/i18n/rich";
+import { fill } from "@/lib/i18n/lookup";
 
 /**
  * Free post-audit Meta panel (Fase 2 P0-3).
@@ -42,6 +45,7 @@ export function FreeMetaPanel({
    */
   hideScore?: boolean;
 }) {
+  const { t } = useT();
   const range = roasRangeForAudit(score, niche);
   const roundedScore = Math.round(score > 1 ? score : score * 100);
 
@@ -59,83 +63,69 @@ export function FreeMetaPanel({
             <div className="flex items-center gap-2">
               <TrendingUp className="size-4 text-signal-300" />
               <span className="text-[10px] uppercase tracking-widest text-white/45">
-                What this means for your ads
+                {t("freeMeta.title")}
               </span>
             </div>
 
             {range.ready ? (
               <>
                 <h3 className="mt-3 font-serif text-2xl md:text-3xl tracking-tight text-white">
-                  Your store is modelable.
+                  {t("freeMeta.modelable")}
                 </h3>
                 {/* v2 drops the "with a score of N/100" clause. The non-v2
                     paragraph is the ORIGINAL markup verbatim (one text flow), so
                     the flag-off render stays byte-identical. */}
                 {hideScore ? (
                   <p className="mt-3 max-w-xl text-sm md:text-base text-white/70 leading-relaxed">
-                    Stores with a structural profile similar to yours model into
-                    a range of{" "}
-                    <span className="font-medium text-signal-200">
-                      ROAS {range.low.toFixed(1)}× – {range.high.toFixed(1)}×
-                    </span>{" "}
-                    on a 7-day Meta test.
+                    <Rich
+                      text={fill(t("freeMeta.okNoScore"), { range: `ROAS ${range.low.toFixed(1)}× – ${range.high.toFixed(1)}×` })}
+                      tags={{ s: (c) => <span className="font-medium text-signal-200">{c}</span> }}
+                    />
                   </p>
                 ) : (
                   <p className="mt-3 max-w-xl text-sm md:text-base text-white/70 leading-relaxed">
-                    With a score of{" "}
-                    <span className="font-medium text-white">
-                      {roundedScore}/100
-                    </span>
-                    , stores with a structural profile similar to yours model into
-                    a range of{" "}
-                    <span className="font-medium text-signal-200">
-                      ROAS {range.low.toFixed(1)}× – {range.high.toFixed(1)}×
-                    </span>{" "}
-                    on a 7-day Meta test.
+                    <Rich
+                      text={fill(t("freeMeta.okScore"), { score: roundedScore, range: `ROAS ${range.low.toFixed(1)}× – ${range.high.toFixed(1)}×` })}
+                      tags={{
+                        w: (c) => <span className="font-medium text-white">{c}</span>,
+                        s: (c) => <span className="font-medium text-signal-200">{c}</span>,
+                      }}
+                    />
                   </p>
                 )}
               </>
             ) : (
               <>
                 <h3 className="mt-3 font-serif text-2xl md:text-3xl tracking-tight text-white">
-                  Your store isn&apos;t ready to scale yet — and we know exactly
-                  why.
+                  {t("freeMeta.notReady")}
                 </h3>
                 {hideScore ? (
                   <p className="mt-3 max-w-xl text-sm md:text-base text-white/70 leading-relaxed">
-                    Stores with a similar profile model into just{" "}
-                    <span className="font-medium text-warning">
-                      ROAS {range.low.toFixed(1)}× – {range.high.toFixed(1)}×
-                    </span>{" "}
-                    in a 7-day cold test — a likely net loss. Fix conversion
-                    first; the ranked fixes above are where to start.
+                    <Rich
+                      text={fill(t("freeMeta.lowNoScore"), { range: `ROAS ${range.low.toFixed(1)}× – ${range.high.toFixed(1)}×` })}
+                      tags={{ s: (c) => <span className="font-medium text-warning">{c}</span> }}
+                    />
                   </p>
                 ) : (
                   <p className="mt-3 max-w-xl text-sm md:text-base text-white/70 leading-relaxed">
-                    At a score of{" "}
-                    <span className="font-medium text-white">
-                      {roundedScore}/100
-                    </span>
-                    , stores with a similar profile model into just{" "}
-                    <span className="font-medium text-warning">
-                      ROAS {range.low.toFixed(1)}× – {range.high.toFixed(1)}×
-                    </span>{" "}
-                    in a 7-day cold test — a likely net loss. Fix conversion
-                    first; the ranked fixes above are where to start.
+                    <Rich
+                      text={fill(t("freeMeta.lowScore"), { score: roundedScore, range: `ROAS ${range.low.toFixed(1)}× – ${range.high.toFixed(1)}×` })}
+                      tags={{
+                        w: (c) => <span className="font-medium text-white">{c}</span>,
+                        s: (c) => <span className="font-medium text-warning">{c}</span>,
+                      }}
+                    />
                   </p>
                 )}
               </>
             )}
 
             <p className="mt-4 max-w-xl text-sm text-white/55 leading-relaxed">
-              Your full projection includes: day-by-day spend, 3 scenarios
-              (conservative / balanced / aggressive), CPC, CPM and CTR targets,
-              and the main risk of each scenario.
+              {t("freeMeta.includes")}
             </p>
 
             <p className="mt-3 text-xs italic text-white/40">
-              Range modeled on stores with a similar profile — not a prediction
-              of your result.
+              {t("freeMeta.rangeNote")}
             </p>
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -143,8 +133,8 @@ export function FreeMetaPanel({
                 <Button variant="primary" size="lg">
                   <Sparkles className="size-4" />
                   {range.ready
-                    ? "Unlock my projection · Pro $19/mo"
-                    : "Unlock my fixes + projection · Pro $19/mo"}
+                    ? t("freeMeta.unlockProj")
+                    : t("freeMeta.unlockBoth")}
                   <ArrowRight className="size-4" />
                 </Button>
               </Link>
@@ -152,7 +142,7 @@ export function FreeMetaPanel({
                 href="/pricing"
                 className="text-sm text-white/55 underline-offset-4 hover:text-white/80 hover:underline"
               >
-                See what&apos;s included
+                {t("freeMeta.included")}
               </Link>
             </div>
           </div>
@@ -165,9 +155,9 @@ export function FreeMetaPanel({
           >
             <div className="grid grid-cols-3 gap-2 opacity-70 blur-[3px]">
               {[
-                { label: "Conservative", Icon: Shield, tint: "text-sky-300" },
-                { label: "Balanced", Icon: Scale, tint: "text-champagne-300" },
-                { label: "Aggressive", Icon: Flame, tint: "text-rose-300" },
+                { label: t("simulator.scCons"), Icon: Shield, tint: "text-sky-300" },
+                { label: t("simulator.scBal"), Icon: Scale, tint: "text-champagne-300" },
+                { label: t("simulator.scAggr"), Icon: Flame, tint: "text-rose-300" },
               ].map(({ label, Icon, tint }) => (
                 <div
                   key={label}
@@ -184,9 +174,9 @@ export function FreeMetaPanel({
             {/* Legible scenario titles float over the blur so the value is
                 unmistakable even though the numbers are hidden. */}
             <div className="pointer-events-none absolute inset-x-0 bottom-2 flex justify-around text-[10px] uppercase tracking-widest text-white/70">
-              <span>Conservative</span>
-              <span>Balanced</span>
-              <span>Aggressive</span>
+              <span>{t("simulator.scCons")}</span>
+              <span>{t("simulator.scBal")}</span>
+              <span>{t("simulator.scAggr")}</span>
             </div>
           </div>
         </div>

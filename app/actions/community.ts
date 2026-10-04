@@ -9,6 +9,7 @@ import {
 import { PLANS } from "@/lib/stripe/plans";
 import { slugify } from "@/lib/utils";
 import { rankFromResult } from "@/lib/ranking/tiers";
+import { getT } from "@/lib/i18n/server";
 
 const PublishInput = z.object({
   analysisId: z.string().uuid(),
@@ -31,25 +32,26 @@ export type PublishResult =
 export async function publishAnalysis(
   input: z.infer<typeof PublishInput>,
 ): Promise<PublishResult> {
+  const { t } = await getT();
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Not signed in" };
+  if (!user) return { ok: false, error: t("actionErr.notSignedIn") };
 
   const parsed = PublishInput.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "Invalid input" };
+  if (!parsed.success) return { ok: false, error: t("actionErr.invalidInput") };
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("plan, full_name")
     .eq("id", user.id)
     .single();
-  if (!profile) return { ok: false, error: "Profile not found" };
+  if (!profile) return { ok: false, error: t("actionErr.profileNotFound") };
   if (!PLANS[profile.plan].canPublish) {
     return {
       ok: false,
-      error: "Publishing to Community is a Pro feature. Upgrade to share.",
+      error: t("actionErr.publishPro"),
     };
   }
 
@@ -61,12 +63,12 @@ export async function publishAnalysis(
     .eq("id", parsed.data.analysisId)
     .eq("user_id", user.id)
     .single();
-  if (!analysis) return { ok: false, error: "Analysis not found" };
+  if (!analysis) return { ok: false, error: t("actionErr.analysisNotFound") };
   if (analysis.status !== "succeeded" || !analysis.result) {
-    return { ok: false, error: "Only succeeded analyses can be published" };
+    return { ok: false, error: t("actionErr.onlySucceeded") };
   }
   if (analysis.is_published) {
-    return { ok: false, error: "Already published" };
+    return { ok: false, error: t("actionErr.alreadyPublished") };
   }
 
   const result = analysis.result as Record<string, unknown>;
@@ -140,11 +142,12 @@ export async function publishAnalysis(
 export async function unpublishAnalysis(
   analysisId: string,
 ): Promise<{ ok: boolean; error?: string }> {
+  const { t } = await getT();
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Not signed in" };
+  if (!user) return { ok: false, error: t("actionErr.notSignedIn") };
 
   const service = createSupabaseServiceClient();
   await service
@@ -170,20 +173,21 @@ const ReportInput = z.object({
 export async function reportCommunityAnalysis(
   input: z.infer<typeof ReportInput>,
 ): Promise<{ ok: boolean; error?: string }> {
+  const { t } = await getT();
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Not signed in" };
+  if (!user) return { ok: false, error: t("actionErr.notSignedIn") };
   const parsed = ReportInput.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "Invalid input" };
+  if (!parsed.success) return { ok: false, error: t("actionErr.invalidInput") };
 
   const { data: ca } = await supabase
     .from("community_analyses")
     .select("id")
     .eq("slug", parsed.data.slug)
     .single();
-  if (!ca) return { ok: false, error: "Not found" };
+  if (!ca) return { ok: false, error: t("actionErr.notFound") };
 
   const { error } = await supabase.from("community_reports").insert({
     community_analysis_id: ca.id,

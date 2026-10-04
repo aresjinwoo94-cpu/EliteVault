@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import type { CookiesToSet } from "@/lib/supabase/types";
+import { getT } from "@/lib/i18n/server";
+import { fill } from "@/lib/i18n/lookup";
 
 // v3.9.1 — edge runtime kills cold-start latency on the auth callback.
 // Node functions on Vercel can cold-start at 500-1000ms; edge starts
@@ -30,6 +32,7 @@ export const runtime = "edge";
  * we return the response, the Set-Cookie headers go with it.
  */
 export async function GET(request: NextRequest) {
+  const { t } = await getT();
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
   // Token-hash flow (Supabase SSR recommended for email links). Unlike the
@@ -91,7 +94,7 @@ export async function GET(request: NextRequest) {
   if (!code && !(tokenHash && otpType)) {
     return NextResponse.redirect(
       `${origin}/sign-in?message=${encodeURIComponent(
-        "Missing authorization code. Try signing in again.",
+        t("authCallback.missingCode"),
       )}`,
     );
   }
@@ -152,8 +155,8 @@ export async function GET(request: NextRequest) {
     // message instead of a raw error, and keep `next` so the fresh link lands
     // back where they intended.
     const msg = /expired|invalid|not found|used|otp/i.test(error.message)
-      ? "That sign-in link has already been used or expired. Enter your email to get a fresh one — always open the most recent EliteVault email."
-      : `Sign-in failed: ${error.message}`;
+      ? t("authCallback.expired")
+      : fill(t("authCallback.failed"), { msg: error.message });
     return NextResponse.redirect(
       `${origin}/sign-in?next=${encodeURIComponent(next)}&message=${encodeURIComponent(msg)}`,
     );
@@ -165,7 +168,7 @@ export async function GET(request: NextRequest) {
     console.error("[auth/callback] exchange succeeded but 0 cookies written!");
     return NextResponse.redirect(
       `${origin}/sign-in?message=${encodeURIComponent(
-        "Session cookies failed to set. Try a different browser or disable extensions.",
+        t("authCallback.cookies"),
       )}`,
     );
   }

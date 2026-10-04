@@ -3,6 +3,7 @@ import {
   createSupabaseServerClient,
   createSupabaseServiceClient,
 } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
 
 /**
  * Polling endpoint for a Meta Campaign Scenario Modeler run.
@@ -23,6 +24,7 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const { t } = await getT();
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
   const {
@@ -52,7 +54,7 @@ export async function GET(
     if (age > STALE_THRESHOLD_MS) {
       const service = createSupabaseServiceClient();
       const message =
-        "Simulation timed out — the worker likely crashed or restarted. Re-run when ready.";
+        t("actionErr.simTimedOut");
       await service
         .from("meta_simulations")
         .update({

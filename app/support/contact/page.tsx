@@ -5,6 +5,7 @@ import { MarketingNav } from "@/components/marketing/nav";
 import { Footer } from "@/components/marketing/footer";
 import { ContactForm } from "@/components/support/contact-form";
 import { COMPANY } from "@/lib/company";
+import { getT } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
   title: "Contact support",
@@ -12,7 +13,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/support/contact" },
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const { t } = await getT();
   return (
     <div className="min-h-screen flex flex-col">
       <MarketingNav />
@@ -23,15 +25,14 @@ export default function ContactPage() {
             className="inline-flex items-center gap-1.5 text-xs text-white/45 hover:text-white"
           >
             <ArrowLeft className="size-3.5" />
-            Help center
+            {t("contactPage.helpCenter")}
           </Link>
 
           <h1 className="mt-4 font-serif text-3xl md:text-4xl tracking-tight">
-            Contact support
+            {t("contactPage.title")}
           </h1>
           <p className="mt-2 text-sm text-white/55 leading-relaxed">
-            Tell us what&apos;s going on and we&apos;ll reply by email. You can
-            also reach us directly at{" "}
+            {t("contactPage.intro")}{" "}
             <a
               href={`mailto:${COMPANY.contactEmail}`}
               className="text-champagne-400 hover:text-champagne-300"
@@ -46,7 +47,7 @@ export default function ContactPage() {
           </div>
 
           <p className="mt-6 text-xs text-white/45">
-            Prefer Instagram?{" "}
+            {t("contactPage.prefer")}{" "}
             <a
               href={COMPANY.socials.instagram}
               target="_blank"
@@ -59,9 +60,9 @@ export default function ContactPage() {
 
           <p className="mt-3 flex items-center gap-2 text-xs text-white/35">
             <Mail className="size-3.5" />
-            We never share your email. See our{" "}
+            {t("contactPage.privacyPre")}{" "}
             <Link href="/legal/privacy" className="underline hover:text-white/60">
-              Privacy Policy
+              {t("contactPage.privacy")}
             </Link>
             .
           </p>

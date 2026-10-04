@@ -1,6 +1,8 @@
 import type { Locale } from "./config";
-import { CLIENT_NAMESPACES } from "./client-namespaces";
+import { APP_NAMESPACES, CORE_NAMESPACES, type ClientScope } from "./client-namespaces";
 import { lookup, type Dict } from "./lookup";
+import uiEn from "./dict/ui-en.json";
+import uiEs from "./dict/ui-es.json";
 
 /**
  * Translation dictionary.
@@ -814,11 +816,6 @@ const en: Dict = {
       f4: "200 analyses / month",
       f5: "Priority queue + priority support",
     },
-  },
-  lang: {
-    label: "Language",
-    en: "English",
-    es: "Español",
   },
   freeAudit: {
     badge1: "FREE WEBSITE AUDIT",
@@ -1777,11 +1774,6 @@ const es: Dict = {
       f5: "Cola prioritaria + soporte prioritario",
     },
   },
-  lang: {
-    label: "Idioma",
-    en: "English",
-    es: "Español",
-  },
   freeAudit: {
     badge1: "AUDITORÍA WEB GRATIS",
     badge2: "SIN TARJETA",
@@ -1940,7 +1932,13 @@ const es: Dict = {
   },
 };
 
-export const messages: Record<Locale, Dict> = { en, es };
+// UI copy extracted from components/pages (scripts/i18n-audit.mjs drives the
+// extraction) lives in dict/ui-*.json and is laid over the hand-written
+// namespaces above.
+export const messages: Record<Locale, Dict> = {
+  en: overlay(en, uiEn as Dict),
+  es: overlay(es, uiEs as Dict),
+};
 
 /** Returns a `t(path)` lookup bound to a locale, with English fallback. */
 export function translator(locale: Locale): (path: string) => string {
@@ -1948,9 +1946,10 @@ export function translator(locale: Locale): (path: string) => string {
     lookup(messages[locale], path) ?? lookup(messages.en, path) ?? path;
 }
 
-function pickNamespaces(dict: Dict): Dict {
+function pickNamespaces(dict: Dict, scope: ClientScope): Dict {
   const out: Dict = {};
-  for (const ns of CLIENT_NAMESPACES) if (dict[ns] !== undefined) out[ns] = dict[ns];
+  const list: readonly string[] = scope === "core" ? CORE_NAMESPACES : APP_NAMESPACES;
+  for (const ns of list) if (dict[ns] !== undefined) out[ns] = dict[ns];
   return out;
 }
 
@@ -1967,20 +1966,22 @@ function overlay(target: Dict, over: Dict): Dict {
   return out;
 }
 
-const clientCache = new Map<Locale, Dict>();
+const clientCache = new Map<string, Dict>();
 
 /**
  * What the browser gets: ONLY the active language, ONLY the namespaces client
- * components read (client-namespaces.ts). For Spanish the English text sits
+ * components read (client-namespaces.ts), split into the always-sent `core`
+ * scope and the `app` scope mounted by the signed-in app and report routes. For Spanish the English text sits
  * underneath, so a key without a translation still falls back to English like
  * on the server — without shipping a second language.
  */
-export function clientMessages(locale: Locale): Dict {
-  let dict = clientCache.get(locale);
+export function clientMessages(locale: Locale, scope: ClientScope = "core"): Dict {
+  const cacheKey = `${locale}:${scope}`;
+  let dict = clientCache.get(cacheKey);
   if (!dict) {
-    const en = pickNamespaces(messages.en);
-    dict = locale === "en" ? en : overlay(en, pickNamespaces(messages[locale]));
-    clientCache.set(locale, dict);
+    const en = pickNamespaces(messages.en, scope);
+    dict = locale === "en" ? en : overlay(en, pickNamespaces(messages[locale], scope));
+    clientCache.set(cacheKey, dict);
   }
   return dict;
 }

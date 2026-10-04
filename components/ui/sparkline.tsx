@@ -3,6 +3,8 @@
 import { useId } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useT } from "@/components/i18n/locale-provider";
+import { fill } from "@/lib/i18n/lookup";
 
 /**
  * Sparkline — a tiny hand-rolled SVG trend line, following the viewBox /
@@ -29,6 +31,7 @@ export function Sparkline({
   className?: string;
   ariaLabel?: string;
 }) {
+  const { t } = useT();
   const reduced = useReducedMotion();
   const gradId = useId();
 
@@ -40,7 +43,7 @@ export function Sparkline({
         className={cn("text-signal-400", className)}
         style={{ width, height }}
         role="img"
-        aria-label={ariaLabel ?? "Not enough history yet"}
+        aria-label={ariaLabel ?? t("common.sparkNoHistory")}
       >
         <line
           x1={2}
@@ -83,7 +86,7 @@ export function Sparkline({
       className={cn("text-signal-400", className)}
       style={{ width, height }}
       role="img"
-      aria-label={ariaLabel ?? `Score trend, latest ${data[data.length - 1]}`}
+      aria-label={ariaLabel ?? fill(t("common.sparkTrendAria"), { n: data[data.length - 1] })}
     >
       {area && (
         <>

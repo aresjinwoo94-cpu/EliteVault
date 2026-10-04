@@ -17,7 +17,11 @@ export function FAQ() {
         </h2>
         <div className="mt-12 space-y-2">
           {FAQ_ITEMS.map((item, i) => (
-            <FAQItem key={i} {...item} />
+            <FAQItem
+              key={i}
+              q={t(`faqContent.q${i}`) || item.q}
+              a={t(`faqContent.a${i}`) || item.a}
+            />
           ))}
         </div>
       </div>

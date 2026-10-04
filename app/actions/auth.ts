@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
 
 /**
  * Default post-auth landing route.
@@ -36,15 +37,16 @@ export async function signUpWithPassword(
   _prev: AuthState,
   formData: FormData,
 ): Promise<AuthState> {
+  const { t } = await getT();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
   const next = String(formData.get("next") ?? DEFAULT_POST_AUTH_ROUTE);
 
   if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-    return { status: "error", message: "Please enter a valid email." };
+    return { status: "error", message: t("actionErr.validEmail") };
   }
   if (password.length < 8) {
-    return { status: "error", message: "Password must be at least 8 characters." };
+    return { status: "error", message: t("actionErr.passwordShort") };
   }
 
   const supabase = await createSupabaseServerClient();
@@ -54,19 +56,20 @@ export async function signUpWithPassword(
     return { status: "error", message: error.message };
   }
 
-  return { status: "success", message: "Account created", redirectTo: next };
+  return { status: "success", message: t("actionErr.accountCreated"), redirectTo: next };
 }
 
 export async function signInWithPassword(
   _prev: AuthState,
   formData: FormData,
 ): Promise<AuthState> {
+  const { t } = await getT();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
   const next = String(formData.get("next") ?? DEFAULT_POST_AUTH_ROUTE);
 
   if (!email || !password) {
-    return { status: "error", message: "Email and password are required." };
+    return { status: "error", message: t("actionErr.emailPasswordRequired") };
   }
 
   const supabase = await createSupabaseServerClient();
@@ -76,7 +79,7 @@ export async function signInWithPassword(
     return { status: "error", message: error.message };
   }
 
-  return { status: "success", message: "Signed in", redirectTo: next };
+  return { status: "success", message: t("actionErr.signedIn"), redirectTo: next };
 }
 
 /**
@@ -95,11 +98,12 @@ export async function sendMagicLink(
   _prev: AuthState,
   formData: FormData,
 ): Promise<AuthState> {
+  const { t } = await getT();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const next = String(formData.get("next") ?? DEFAULT_POST_AUTH_ROUTE);
 
   if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-    return { status: "error", message: "Please enter a valid email." };
+    return { status: "error", message: t("actionErr.validEmail") };
   }
 
   const supabase = await createSupabaseServerClient();
@@ -144,7 +148,7 @@ export async function sendMagicLink(
   // shows a "Check your email" message based on this state.
   return {
     status: "success",
-    message: "Check your email — we sent you a sign-in link.",
+    message: t("actionErr.checkEmail"),
   };
 }
 
@@ -164,17 +168,18 @@ export async function verifyEmailOtp(
   _prev: AuthState,
   formData: FormData,
 ): Promise<AuthState> {
+  const { t } = await getT();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const token = String(formData.get("token") ?? "").replace(/\s/g, "");
   const next = String(formData.get("next") ?? DEFAULT_POST_AUTH_ROUTE);
 
   if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-    return { status: "error", message: "Please enter a valid email." };
+    return { status: "error", message: t("actionErr.validEmail") };
   }
   if (!/^\d{6}$/.test(token)) {
     return {
       status: "error",
-      message: "Enter the 6-digit code from your most recent email.",
+      message: t("actionErr.enterCode"),
     };
   }
 
@@ -189,11 +194,11 @@ export async function verifyEmailOtp(
     return {
       status: "error",
       message:
-        "That code is invalid or expired. Use the code from your most recent email, or resend a new link.",
+        t("actionErr.badCode"),
     };
   }
 
-  return { status: "success", message: "Signed in", redirectTo: next };
+  return { status: "success", message: t("actionErr.signedIn"), redirectTo: next };
 }
 
 /** Kept for compatibility — if Google OAuth gets enabled later. */

@@ -14,17 +14,19 @@ import {
   scenarioMidpoints,
 } from "@/lib/analyzer/conversion-scenarios";
 import { sendEmail } from "@/lib/email/resend";
+import { getT } from "@/lib/i18n/server";
+import { fill } from "@/lib/i18n/lookup";
 
 // ── Public: submit a review ─────────────────────────────────────────────────
 
 const SubmitInput = z.object({
-  author_name: z.string().trim().min(2, "Please enter your name").max(60),
+  author_name: z.string().trim().min(2, "reviewErr.nameShort").max(60),
   rating: z.coerce.number().int().min(1).max(5),
   title: z.string().trim().max(80).optional().or(z.literal("")),
   body: z
     .string()
     .trim()
-    .min(10, "Tell us a little more (10+ characters)")
+    .min(10, "reviewErr.bodyShort10")
     .max(1000),
   author_email: z.string().trim().email().max(160).optional().or(z.literal("")),
   // Honeypot — real users leave this empty; bots fill every field.
@@ -49,11 +51,12 @@ function ownerNotifyEmail(): string | null {
 export async function submitReview(
   input: z.infer<typeof SubmitInput>,
 ): Promise<SubmitReviewResult> {
+  const { t } = await getT();
   const parsed = SubmitInput.safeParse(input);
   if (!parsed.success) {
     return {
       ok: false,
-      error: parsed.error.issues[0]?.message ?? "Invalid review",
+      error: t(parsed.error.issues[0]?.message ?? "reviewErr.invalid"),
     };
   }
   // Honeypot tripped → pretend success, drop silently.
@@ -65,7 +68,7 @@ export async function submitReview(
   // Respect the owner's master switch and form toggle on the server too —
   // never accept a submission for a surface the owner turned off.
   if (!settings.enabled || !settings.show_form) {
-    return { ok: false, error: "Reviews are not open right now." };
+    return { ok: false, error: t("reviewErr.closed") };
   }
 
   const status = settings.auto_approve ? "approved" : "pending";
@@ -83,9 +86,9 @@ export async function submitReview(
       approved_at: status === "approved" ? new Date().toISOString() : null,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
-    if (error) return { ok: false, error: "Could not save your review." };
+    if (error) return { ok: false, error: t("reviewErr.saveFailed") };
   } catch {
-    return { ok: false, error: "Could not save your review." };
+    return { ok: false, error: t("reviewErr.saveFailed") };
   }
 
   // Best-effort owner notification — never blocks or fails the submission.
@@ -96,10 +99,12 @@ export async function submitReview(
       const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
       await sendEmail({
         to,
+        // i18n-ignore: owner notification email — emails are out of scope
         subject: `New review (${parsed.data.rating}/5) from ${parsed.data.author_name}${status === "pending" ? " — needs approval" : ""}`,
         html: `
           <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;color:#14141B">
             <h2 style="margin:0 0 4px">New EliteVault review</h2>
+            // i18n-ignore: owner notification email — emails are out of scope
             <p style="color:#6b7280;margin:0 0 16px">${status === "pending" ? "Pending your approval." : "Auto-approved and live."}</p>
             <div style="border:1px solid #e5e7eb;border-radius:12px;padding:16px">
               <div style="font-size:18px;color:#d4a017">${stars} <span style="color:#6b7280;font-size:13px">(${parsed.data.rating}/5)</span></div>
@@ -123,18 +128,18 @@ export async function submitReview(
 // ── Signed-in users: submit / edit / delete THEIR OWN review ────────────────
 
 const UserSubmitInput = z.object({
-  rating: z.coerce.number().int().min(1, "Pick a rating").max(5),
+  rating: z.coerce.number().int().min(1, "reviewErr.pickRating").max(5),
   body: z
     .string()
     .trim()
-    .min(20, "Tell us a little more (20+ characters)")
-    .max(500, "Keep it under 500 characters"),
-  display_name: z.string().trim().min(2, "Please enter a name").max(60),
+    .min(20, "reviewErr.bodyShort20")
+    .max(500, "reviewErr.bodyLong"),
+  display_name: z.string().trim().min(2, "reviewErr.displayName").max(60),
   store_name: z.string().trim().max(80).optional().or(z.literal("")),
   store_url: z.string().trim().max(200).optional().or(z.literal("")),
   // Required to publish — the checkbox must be checked.
   consent_public: z.literal(true, {
-    errorMap: () => ({ message: "Please allow us to show your review publicly." }),
+    errorMap: () => ({ message: "reviewErr.consent" }),
   }),
 });
 
@@ -152,9 +157,13 @@ export type UserReviewResult =
 export async function submitUserReview(
   input: z.infer<typeof UserSubmitInput>,
 ): Promise<UserReviewResult> {
+  const { t } = await getT();
   const parsed = UserSubmitInput.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid review" };
+    return {
+      ok: false,
+      error: t(parsed.error.issues[0]?.message ?? "reviewErr.invalid"),
+    };
   }
 
   // Auth gate — only signed-in users may submit.
@@ -168,11 +177,11 @@ export async function submitUserReview(
   } catch {
     userId = null;
   }
-  if (!userId) return { ok: false, error: "Please sign in to leave a review." };
+  if (!userId) return { ok: false, error: t("reviewErr.signInToReview") };
 
   const settings = await getReviewSettings();
   if (!settings.enabled || !settings.show_form) {
-    return { ok: false, error: "Reviews are not open right now." };
+    return { ok: false, error: t("reviewErr.closed") };
   }
 
   const status = settings.auto_approve ? "approved" : "pending";
@@ -204,14 +213,14 @@ export async function submitUserReview(
       const { error } = await (svc.from("reviews") as any)
         .update(row)
         .eq("user_id", userId);
-      if (error) return { ok: false, error: "Could not save your review." };
+      if (error) return { ok: false, error: t("reviewErr.saveFailed") };
     } else {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await (svc.from("reviews") as any).insert(row);
-      if (error) return { ok: false, error: "Could not save your review." };
+      if (error) return { ok: false, error: t("reviewErr.saveFailed") };
     }
   } catch {
-    return { ok: false, error: "Could not save your review." };
+    return { ok: false, error: t("reviewErr.saveFailed") };
   }
 
   // Best-effort owner notification (never blocks the submission).
@@ -222,9 +231,11 @@ export async function submitUserReview(
       const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
       await sendEmail({
         to,
+        // i18n-ignore: owner notification email — emails are out of scope
         subject: `New review (${d.rating}/5) from ${d.display_name}${status === "pending" ? " — needs approval" : ""}`,
         html: `<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;color:#14141B">
           <h2 style="margin:0 0 4px">New EliteVault review</h2>
+          // i18n-ignore: owner notification email — emails are out of scope
           <p style="color:#6b7280;margin:0 0 16px">${status === "pending" ? "Pending your approval." : "Auto-approved and live."}</p>
           <div style="border:1px solid #e5e7eb;border-radius:12px;padding:16px">
             <div style="font-size:18px;color:#d4a017">${stars} <span style="color:#6b7280;font-size:13px">(${d.rating}/5)</span></div>
@@ -247,6 +258,7 @@ export async function submitUserReview(
 
 /** Delete the signed-in user's OWN review (they can remove it at any time). */
 export async function deleteMyReview(): Promise<{ ok: boolean; error?: string }> {
+  const { t } = await getT();
   let userId: string | null = null;
   try {
     const supabase = await createSupabaseServerClient();
@@ -257,16 +269,16 @@ export async function deleteMyReview(): Promise<{ ok: boolean; error?: string }>
   } catch {
     userId = null;
   }
-  if (!userId) return { ok: false, error: "Please sign in." };
+  if (!userId) return { ok: false, error: t("reviewErr.signIn") };
 
   try {
     const svc = createSupabaseServiceClient();
     // Ownership is enforced by the user_id filter — a user can only ever
     // delete their own row.
     const { error } = await svc.from("reviews").delete().eq("user_id", userId);
-    if (error) return { ok: false, error: "Could not delete your review." };
+    if (error) return { ok: false, error: t("reviewErr.deleteFailed") };
   } catch {
-    return { ok: false, error: "Could not delete your review." };
+    return { ok: false, error: t("reviewErr.deleteFailed") };
   }
   revalidatePath("/");
   revalidatePath("/app/review");
@@ -298,9 +310,10 @@ const SettingsPatch = z.object({
 export async function updateReviewSettings(
   patch: z.infer<typeof SettingsPatch>,
 ): Promise<{ ok: boolean; error?: string }> {
+  const { t } = await getT();
   await assertOwner();
   const parsed = SettingsPatch.safeParse(patch);
-  if (!parsed.success) return { ok: false, error: "Invalid settings" };
+  if (!parsed.success) return { ok: false, error: t("reviewErr.invalidSettings") };
   try {
     const svc = createSupabaseServiceClient();
     // The hand-written Database type doesn't include these tables, so the
@@ -436,6 +449,7 @@ function potentialFromSim(sim: {
   const snap: PotentialSnapshot = {
     currency: "USD",
     basis: "meta_sim",
+    // i18n-ignore: owner notification email — emails are out of scope
     periodLabel: "Proyección Meta · 7 días",
     note: "modelado, no una promesa",
     potential: { label: hi.label, revenue: hi.revenue },
@@ -491,8 +505,9 @@ export type RefreshStatsResult =
 export async function refreshReviewStats(
   reviewId: string,
 ): Promise<RefreshStatsResult> {
+  const { t } = await getT();
   await assertOwner();
-  if (!reviewId) return { ok: false, error: "Falta el id de la reseña" };
+  if (!reviewId) return { ok: false, error: t("reviewErr.missingId") };
 
   try {
     const svc = createSupabaseServiceClient();
@@ -503,7 +518,7 @@ export async function refreshReviewStats(
       .select("id, user_id, store_url")
       .eq("id", reviewId)
       .maybeSingle();
-    if (!review) return { ok: false, error: "Reseña no encontrada" };
+    if (!review) return { ok: false, error: t("reviewErr.notFound") };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rv = review as any;
     const userId: string | null = rv.user_id ?? null;
@@ -625,13 +640,16 @@ type PhotoFileErr = { ok: false; error: string };
 
 /** Validate an uploaded photo against the bucket's real constraints (png/jpeg/
  *  webp, ≤8MB). Same rejection messages spirit as uploadLibraryImage. */
-function validatePhotoFile(entry: FormDataEntryValue | null): PhotoFileOk | PhotoFileErr {
+function validatePhotoFile(
+  entry: FormDataEntryValue | null,
+  t: (path: string) => string,
+): PhotoFileOk | PhotoFileErr {
   if (!(entry instanceof File) || entry.size === 0)
-    return { ok: false, error: "Elige una imagen" };
+    return { ok: false, error: t("reviewErr.pickImage") };
   if (entry.size > PHOTO_MAX_BYTES)
-    return { ok: false, error: "La imagen es muy grande (máx. 8MB)" };
+    return { ok: false, error: t("reviewErr.imageTooBig") };
   const ext = PHOTO_EXT[entry.type.toLowerCase()];
-  if (!ext) return { ok: false, error: "Usa una imagen JPG, PNG o WebP" };
+  if (!ext) return { ok: false, error: t("reviewErr.imageType") };
   return { ok: true, file: entry, ext };
 }
 
@@ -648,10 +666,11 @@ type PhotoActionResult = { ok: boolean; error?: string };
 export async function ownerUploadReviewPhoto(
   formData: FormData,
 ): Promise<PhotoActionResult> {
+  const { t } = await getT();
   await assertOwner();
   const reviewId = String(formData.get("reviewId") || "");
-  if (!reviewId) return { ok: false, error: "Falta el id de la reseña" };
-  const v = validatePhotoFile(formData.get("file"));
+  if (!reviewId) return { ok: false, error: t("reviewErr.missingId") };
+  const v = validatePhotoFile(formData.get("file"), t);
   if (!v.ok) return v;
 
   try {
@@ -662,19 +681,19 @@ export async function ownerUploadReviewPhoto(
       .select("id, photos")
       .eq("id", reviewId)
       .maybeSingle();
-    if (!row) return { ok: false, error: "Reseña no encontrada" };
+    if (!row) return { ok: false, error: t("reviewErr.notFound") };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const current = normalizePhotos((row as any).photos);
     if (current.length >= settings.max_photos)
-      return { ok: false, error: "Ya alcanzó el máximo de fotos" };
+      return { ok: false, error: t("reviewErr.maxPhotos") };
 
     const path = `${PHOTO_PREFIX}/${reviewId}-${Date.now()}-${current.length}.${v.ext}`;
     const buf = Buffer.from(await v.file.arrayBuffer());
     const { error: upErr } = await svc.storage
       .from(PHOTO_BUCKET)
       .upload(path, buf, { contentType: v.file.type, upsert: true });
-    if (upErr) return { ok: false, error: `Error al subir: ${upErr.message}` };
+    if (upErr) return { ok: false, error: fill(t("reviewErr.uploadFailed"), { msg: upErr.message }) };
 
     const {
       data: { publicUrl },
@@ -688,7 +707,7 @@ export async function ownerUploadReviewPhoto(
     if (updErr) {
       // Don't leave an orphaned object behind if the row update failed.
       await svc.storage.from(PHOTO_BUCKET).remove([path]).catch(() => {});
-      return { ok: false, error: `No se pudo guardar: ${updErr.message}` };
+      return { ok: false, error: fill(t("reviewErr.persistFailed"), { msg: updErr.message }) };
     }
 
     revalidatePath("/");
@@ -704,8 +723,9 @@ export async function ownerRemoveReviewPhoto(
   reviewId: string,
   path: string,
 ): Promise<PhotoActionResult> {
+  const { t } = await getT();
   await assertOwner();
-  if (!reviewId || !path) return { ok: false, error: "Datos incompletos" };
+  if (!reviewId || !path) return { ok: false, error: t("reviewErr.incomplete") };
   try {
     const svc = createSupabaseServiceClient();
     const { data: row } = await svc
@@ -713,7 +733,7 @@ export async function ownerRemoveReviewPhoto(
       .select("id, photos")
       .eq("id", reviewId)
       .maybeSingle();
-    if (!row) return { ok: false, error: "Reseña no encontrada" };
+    if (!row) return { ok: false, error: t("reviewErr.notFound") };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const next = normalizePhotos((row as any).photos).filter((p) => p.path !== path);
@@ -757,14 +777,15 @@ async function currentUserId(): Promise<string | null> {
 export async function uploadMyReviewPhoto(
   formData: FormData,
 ): Promise<PhotoActionResult> {
+  const { t } = await getT();
   const userId = await currentUserId();
-  if (!userId) return { ok: false, error: "Inicia sesión para añadir fotos." };
+  if (!userId) return { ok: false, error: t("reviewErr.signInPhotos") };
 
   const settings = await getReviewSettings();
   if (!settings.enabled || !settings.allow_photos)
-    return { ok: false, error: "El propietario no habilitó las fotos por ahora." };
+    return { ok: false, error: t("reviewErr.photosOff") };
 
-  const v = validatePhotoFile(formData.get("file"));
+  const v = validatePhotoFile(formData.get("file"), t);
   if (!v.ok) return v;
 
   try {
@@ -774,20 +795,20 @@ export async function uploadMyReviewPhoto(
       .select("id, photos")
       .eq("user_id", userId)
       .maybeSingle();
-    if (!row) return { ok: false, error: "Primero escribe tu reseña." };
+    if (!row) return { ok: false, error: t("reviewErr.writeFirst") };
 
     const reviewId = String((row as { id: string }).id);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const current = normalizePhotos((row as any).photos);
     if (current.length >= settings.max_photos)
-      return { ok: false, error: "Ya alcanzaste el máximo de fotos" };
+      return { ok: false, error: t("reviewErr.maxPhotosYou") };
 
     const path = `${PHOTO_PREFIX}/${reviewId}-${Date.now()}-${current.length}.${v.ext}`;
     const buf = Buffer.from(await v.file.arrayBuffer());
     const { error: upErr } = await svc.storage
       .from(PHOTO_BUCKET)
       .upload(path, buf, { contentType: v.file.type, upsert: true });
-    if (upErr) return { ok: false, error: `Error al subir: ${upErr.message}` };
+    if (upErr) return { ok: false, error: fill(t("reviewErr.uploadFailed"), { msg: upErr.message }) };
 
     const {
       data: { publicUrl },
@@ -809,7 +830,7 @@ export async function uploadMyReviewPhoto(
       .eq("user_id", userId);
     if (updErr) {
       await svc.storage.from(PHOTO_BUCKET).remove([path]).catch(() => {});
-      return { ok: false, error: `No se pudo guardar: ${updErr.message}` };
+      return { ok: false, error: fill(t("reviewErr.persistFailed"), { msg: updErr.message }) };
     }
 
     revalidatePath("/");
@@ -829,9 +850,10 @@ export async function uploadMyReviewPhoto(
 export async function removeMyReviewPhoto(
   path: string,
 ): Promise<PhotoActionResult> {
+  const { t } = await getT();
   const userId = await currentUserId();
-  if (!userId) return { ok: false, error: "Inicia sesión." };
-  if (!path) return { ok: false, error: "Datos incompletos" };
+  if (!userId) return { ok: false, error: t("reviewErr.signIn") };
+  if (!path) return { ok: false, error: t("reviewErr.incomplete") };
 
   try {
     const svc = createSupabaseServiceClient();
@@ -840,12 +862,12 @@ export async function removeMyReviewPhoto(
       .select("id, photos")
       .eq("user_id", userId)
       .maybeSingle();
-    if (!row) return { ok: false, error: "No encontramos tu reseña." };
+    if (!row) return { ok: false, error: t("reviewErr.yourReviewNotFound") };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const current = normalizePhotos((row as any).photos);
     if (!current.some((p) => p.path === path))
-      return { ok: false, error: "Esa foto no es tuya." };
+      return { ok: false, error: t("reviewErr.notYourPhoto") };
 
     const next = current.filter((p) => p.path !== path);
     await svc.storage.from(PHOTO_BUCKET).remove([path]).catch(() => {});

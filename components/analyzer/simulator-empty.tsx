@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { triggerSimulation } from "@/app/actions/meta-simulator";
+import { useT } from "@/components/i18n/locale-provider";
 
 type Country =
   | "US" | "CA" | "UK" | "AU"
@@ -26,15 +27,15 @@ type ProductType = "physical" | "digital" | "subscription" | "service";
 type Competitiveness = "low" | "medium" | "high" | "extreme";
 
 const COUNTRY_OPTIONS: { value: Country; label: string }[] = [
-  { value: "US", label: "United States" },
-  { value: "CA", label: "Canada" },
-  { value: "UK", label: "United Kingdom" },
-  { value: "AU", label: "Australia" },
-  { value: "EU-W", label: "Western Europe (DE/FR/NL)" },
-  { value: "EU-S", label: "Southern Europe (ES/IT/PT)" },
-  { value: "LATAM", label: "Latin America" },
-  { value: "INDIA-SEA", label: "India / Southeast Asia" },
-  { value: "WW", label: "Worldwide (mixed)" },
+  { value: "US", label: "simulator.cUS" },
+  { value: "CA", label: "simulator.cCA" },
+  { value: "UK", label: "simulator.cUK" },
+  { value: "AU", label: "simulator.cAU" },
+  { value: "EU-W", label: "simulator.cEUW" },
+  { value: "EU-S", label: "simulator.cEUS" },
+  { value: "LATAM", label: "simulator.cLATAM" },
+  { value: "INDIA-SEA", label: "simulator.cINDIA" },
+  { value: "WW", label: "simulator.cWW" },
 ];
 
 /**
@@ -51,7 +52,7 @@ export function SimulatorEmpty({
   analysisId,
   onQueued,
   previousError,
-  planLabel = "Scale plan",
+  planLabel,
 }: {
   analysisId: string;
   onQueued: (simulationId: string) => void;
@@ -59,6 +60,7 @@ export function SimulatorEmpty({
   /** Plan badge shown in the form header (Pro shows its 1/mo entitlement). */
   planLabel?: string;
 }) {
+  const { t } = useT();
   const [aov, setAov] = useState("");
   const [budget, setBudget] = useState("");
   const [margin, setMargin] = useState("");
@@ -76,11 +78,11 @@ export function SimulatorEmpty({
     const marginNum = margin.trim() === "" ? null : parseFloat(margin);
 
     if (!aovNum || aovNum <= 0) {
-      toast.error("Enter a valid AOV (e.g. 45)");
+      toast.error(t("simulator.errAov"));
       return;
     }
     if (!budgetNum || budgetNum <= 0) {
-      toast.error("Enter a valid daily budget (e.g. 50)");
+      toast.error(t("simulator.errBudget"));
       return;
     }
 
@@ -99,7 +101,7 @@ export function SimulatorEmpty({
         toast.error(res.error);
         return;
       }
-      toast.success("Simulation queued — projecting 3 scenarios");
+      toast.success(t("simulator.queued"));
       onQueued(res.simulationId);
     });
   }
@@ -117,16 +119,14 @@ export function SimulatorEmpty({
         <div className="relative">
           <div className="flex items-center gap-2">
             <TrendingUp className="size-4 text-champagne-400" />
-            <h3 className="font-medium">Meta Campaign Scenario Modeler</h3>
+            <h3 className="font-medium">{t("simulator.title")}</h3>
             <Badge variant="gold">
               <Sparkles className="size-3" />
-              {planLabel}
+              {planLabel ?? t("simulator.scalePlan")}
             </Badge>
           </div>
           <p className="mt-1.5 text-sm text-white/55 leading-relaxed max-w-2xl">
-            Project a 7-day Meta Ads campaign across three scenarios — conservative,
-            balanced, aggressive — using this audit as input. Each projection is
-            an AI estimate, not a guarantee.
+            {t("simulator.intro")}
           </p>
 
           {previousError && (() => {
@@ -141,11 +141,10 @@ export function SimulatorEmpty({
                   <Clock className="size-4 text-champagne-300 shrink-0 mt-0.5" />
                   <div>
                     <p className="text-xs text-champagne-200 font-medium">
-                      Hit the AI provider's per-minute quota
+                      {t("simulator.quotaHit")}
                     </p>
                     <p className="text-xs text-white/60 leading-relaxed mt-0.5">
-                      Wait ~60 seconds and click submit again. The free-tier
-                      cap resets every minute — no charge for the failed run.
+                      {t("simulator.quotaBody")}
                     </p>
                   </div>
                 </div>
@@ -155,7 +154,7 @@ export function SimulatorEmpty({
               <div className="mt-4 flex items-start gap-2 rounded-xl border border-warning/20 bg-warning/[0.05] p-3">
                 <AlertCircle className="size-4 text-warning shrink-0 mt-0.5" />
                 <p className="text-xs text-white/70 leading-relaxed">
-                  <span className="text-warning">Previous run failed: </span>
+                  <span className="text-warning">{t("simulator.prevFailed")} </span>
                   {previousError.slice(0, 240)}
                 </p>
               </div>
@@ -165,7 +164,7 @@ export function SimulatorEmpty({
           <form onSubmit={onSubmit} className="mt-6 grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="aov" className="text-xs uppercase tracking-widest text-white/40">
-                Average Order Value (USD)
+                {t("simulator.aov")}
               </Label>
               <Input
                 id="aov"
@@ -180,13 +179,13 @@ export function SimulatorEmpty({
                 disabled={pending}
               />
               <p className="text-[11px] text-white/40">
-                Typical order size in your store.
+                {t("simulator.aovHint")}
               </p>
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="budget" className="text-xs uppercase tracking-widest text-white/40">
-                Daily ad budget (USD)
+                {t("simulator.budget")}
               </Label>
               <Input
                 id="budget"
@@ -201,13 +200,13 @@ export function SimulatorEmpty({
                 disabled={pending}
               />
               <p className="text-[11px] text-white/40">
-                What you'd realistically spend per day on Meta.
+                {t("simulator.budgetHint")}
               </p>
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="margin" className="text-xs uppercase tracking-widest text-white/40">
-                Gross margin % <span className="text-white/30 normal-case">(optional)</span>
+                {t("simulator.margin")} <span className="text-white/30 normal-case">{t("common.optional")}</span>
               </Label>
               <Input
                 id="margin"
@@ -222,7 +221,7 @@ export function SimulatorEmpty({
                 disabled={pending}
               />
               <p className="text-[11px] text-white/40">
-                Helps us tell you the breakeven ROAS.
+                {t("simulator.marginHint")}
               </p>
             </div>
 
@@ -235,14 +234,14 @@ export function SimulatorEmpty({
             <div className="md:col-span-2 pt-2">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-[10px] uppercase tracking-widest text-white/40">
-                  Realism context
+                  {t("simulator.realism")}
                 </span>
                 <span className="h-px flex-1 bg-white/[0.06]" />
               </div>
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs uppercase tracking-widest text-white/40">
-                    Country / region
+                    {t("simulator.country")}
                   </Label>
                   <Select
                     value={country}
@@ -255,19 +254,19 @@ export function SimulatorEmpty({
                     <SelectContent>
                       {COUNTRY_OPTIONS.map((o) => (
                         <SelectItem key={o.value} value={o.value}>
-                          {o.label}
+                          {t(o.label)}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                   <p className="text-[11px] text-white/40">
-                    LATAM CPM ≈ 0.25× US — changes the projection materially.
+                    {t("simulator.countryHint")}
                   </p>
                 </div>
 
                 <div className="space-y-1.5">
                   <Label className="text-xs uppercase tracking-widest text-white/40">
-                    Product type
+                    {t("simulator.productType")}
                   </Label>
                   <Select
                     value={productType}
@@ -278,20 +277,20 @@ export function SimulatorEmpty({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="physical">Physical goods</SelectItem>
-                      <SelectItem value="digital">Digital / download</SelectItem>
-                      <SelectItem value="subscription">Subscription</SelectItem>
-                      <SelectItem value="service">Service / lead-gen</SelectItem>
+                      <SelectItem value="physical">{t("simulator.ptPhysical")}</SelectItem>
+                      <SelectItem value="digital">{t("simulator.ptDigital")}</SelectItem>
+                      <SelectItem value="subscription">{t("simulator.ptSub")}</SelectItem>
+                      <SelectItem value="service">{t("simulator.ptService")}</SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-[11px] text-white/40">
-                    Subscription tolerates higher CPA (LTV-driven).
+                    {t("simulator.ptHint")}
                   </p>
                 </div>
 
                 <div className="space-y-1.5">
                   <Label className="text-xs uppercase tracking-widest text-white/40">
-                    Niche competitiveness
+                    {t("simulator.competitiveness")}
                   </Label>
                   <Select
                     value={competitiveness}
@@ -302,14 +301,14 @@ export function SimulatorEmpty({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="low">Low — new / undiscovered</SelectItem>
-                      <SelectItem value="medium">Medium — average</SelectItem>
-                      <SelectItem value="high">High — saturated</SelectItem>
-                      <SelectItem value="extreme">Extreme — Q4 / supplements</SelectItem>
+                      <SelectItem value="low">{t("simulator.compLow")}</SelectItem>
+                      <SelectItem value="medium">{t("simulator.compMed")}</SelectItem>
+                      <SelectItem value="high">{t("simulator.compHigh")}</SelectItem>
+                      <SelectItem value="extreme">{t("simulator.compExtreme")}</SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-[11px] text-white/40">
-                    You know your niche better than we can guess.
+                    {t("simulator.compHint")}
                   </p>
                 </div>
               </div>
@@ -317,11 +316,11 @@ export function SimulatorEmpty({
 
             <div className="md:col-span-2 space-y-1.5">
               <Label htmlFor="notes" className="text-xs uppercase tracking-widest text-white/40">
-                Notes <span className="text-white/30 normal-case">(optional)</span>
+                {t("simulator.notes")} <span className="text-white/30 normal-case">{t("common.optional")}</span>
               </Label>
               <Textarea
                 id="notes"
-                placeholder="e.g. iOS-heavy traffic, returning customer-friendly, seasonal product..."
+                placeholder={t("simulator.notesPlaceholder")}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={2}
@@ -329,7 +328,7 @@ export function SimulatorEmpty({
                 disabled={pending}
               />
               <p className="text-[11px] text-white/40">
-                Anything else the modeler should weigh.
+                {t("simulator.notesHint")}
               </p>
             </div>
 
@@ -340,12 +339,10 @@ export function SimulatorEmpty({
                 disabled={pending}
                 className="sm:min-w-48"
               >
-                {pending ? "Queueing..." : "Project 3 scenarios →"}
+                {pending ? t("simulator.queueing") : t("simulator.project")}
               </Button>
               <p className="text-[11px] text-white/40 leading-relaxed max-w-md">
-                Estimates — not predictions. The modeler returns plausible numbers
-                a senior media buyer would defend, but real campaigns swing on
-                creative, audience and platform variance.
+                {t("simulator.disclaimer")}
               </p>
             </div>
           </form>

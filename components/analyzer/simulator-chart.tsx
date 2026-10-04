@@ -2,6 +2,8 @@
 
 import { useMemo } from "react";
 import type { SimulationDay } from "@/lib/supabase/types";
+import { useT } from "@/components/i18n/locale-provider";
+import { fill } from "@/lib/i18n/lookup";
 
 /**
  * Hand-rolled SVG chart for the 7-day spend vs revenue projection.
@@ -17,6 +19,7 @@ import type { SimulationDay } from "@/lib/supabase/types";
  * "profitable / not profitable" gap is visually obvious.
  */
 export function SimulatorChart({ days }: { days: SimulationDay[] }) {
+  const { t } = useT();
   // SVG viewBox: 0..600 wide, 0..200 tall, with 30px padding for labels.
   const W = 600;
   const H = 200;
@@ -78,7 +81,7 @@ export function SimulatorChart({ days }: { days: SimulationDay[] }) {
         viewBox={`0 0 ${W} ${H}`}
         className="w-full h-auto"
         role="img"
-        aria-label={`7-day spend vs revenue, max approx $${maxY}`}
+        aria-label={fill(t("simulator.chartAria"), { max: maxY })}
       >
         <defs>
           <linearGradient id="revFill" x1="0" y1="0" x2="0" y2="1">
@@ -174,7 +177,7 @@ export function SimulatorChart({ days }: { days: SimulationDay[] }) {
       <div className="mt-2 flex items-center gap-4 text-[11px] text-white/55">
         <span className="inline-flex items-center gap-1.5">
           <span className="inline-block h-[2px] w-4 bg-champagne-400" />
-          Revenue
+          {t("simulator.revenue")}
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span
@@ -185,7 +188,7 @@ export function SimulatorChart({ days }: { days: SimulationDay[] }) {
               backgroundSize: "6px 1.5px",
             }}
           />
-          Spend
+          {t("simulator.spend")}
         </span>
       </div>
     </div>

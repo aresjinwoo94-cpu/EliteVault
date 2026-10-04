@@ -6,10 +6,20 @@ import {
   submitSupportRequest,
   type SupportResult,
 } from "@/app/actions/support";
+import { useT } from "@/components/i18n/locale-provider";
 
-const TOPICS = ["Billing", "Account", "Using the product", "Privacy & data", "Other"];
+// The VALUE is what support receives (English, for the inbox); only the label is translated.
+const TOPICS = [
+  ["Billing", "contactForm.topicBilling"],
+  ["Account", "contactForm.topicAccount"],
+  // i18n-ignore: topic VALUES are what the support inbox receives (English); labels are translated
+  ["Using the product", "contactForm.topicProduct"],
+  ["Privacy & data", "contactForm.topicPrivacy"],
+  ["Other", "contactForm.topicOther"],
+] as const;
 
 export function ContactForm() {
+  const { t } = useT();
   const [state, action, pending] = useActionState<SupportResult | null, FormData>(
     submitSupportRequest,
     null,
@@ -19,9 +29,9 @@ export function ContactForm() {
     return (
       <div className="rounded-2xl border border-success/25 bg-success/[0.04] p-6 text-center">
         <CheckCircle2 className="mx-auto size-7 text-success" />
-        <p className="mt-3 font-medium text-white">Message sent</p>
+        <p className="mt-3 font-medium text-white">{t("contactForm.sentTitle")}</p>
         <p className="mt-1 text-sm text-white/55">
-          Thanks — we&apos;ll get back to you by email as soon as we can.
+          {t("contactForm.sentBody")}
         </p>
       </div>
     );
@@ -35,13 +45,13 @@ export function ContactForm() {
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="name" className="block text-xs text-white/50 mb-1.5">
-            Your name
+            {t("contactForm.name")}
           </label>
           <input id="name" name="name" required maxLength={120} className={field} />
         </div>
         <div>
           <label htmlFor="email" className="block text-xs text-white/50 mb-1.5">
-            Email
+            {t("contactForm.email")}
           </label>
           <input
             id="email"
@@ -56,15 +66,15 @@ export function ContactForm() {
 
       <div>
         <label htmlFor="topic" className="block text-xs text-white/50 mb-1.5">
-          Topic
+          {t("contactForm.topic")}
         </label>
         <select id="topic" name="topic" className={field} defaultValue="">
           <option value="" disabled>
-            Choose a topic…
+            {t("contactForm.chooseTopic")}
           </option>
-          {TOPICS.map((t) => (
-            <option key={t} value={t}>
-              {t}
+          {TOPICS.map(([value, labelKey]) => (
+            <option key={value} value={value}>
+              {t(labelKey)}
             </option>
           ))}
         </select>
@@ -72,7 +82,7 @@ export function ContactForm() {
 
       <div>
         <label htmlFor="message" className="block text-xs text-white/50 mb-1.5">
-          How can we help?
+          {t("contactForm.message")}
         </label>
         <textarea
           id="message"
@@ -95,7 +105,7 @@ export function ContactForm() {
         className="inline-flex items-center gap-2 rounded-lg bg-champagne-400 px-5 py-3 text-sm font-medium text-obsidian-950 hover:bg-champagne-300 transition-colors disabled:opacity-50"
       >
         <Send className="size-4" />
-        {pending ? "Sending…" : "Send message"}
+        {pending ? t("contactForm.sending") : t("contactForm.send")}
       </button>
     </form>
   );

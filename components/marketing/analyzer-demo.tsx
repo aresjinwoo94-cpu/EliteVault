@@ -58,7 +58,7 @@ export function AnalyzerDemo({ reportV2 = false }: { reportV2?: boolean }) {
               viewport={{ once: true }}
               transition={{ duration: 0.6, ease }}
             >
-              <DataPill items={["THE ANALYZER", "LIVE DEMO"]} />
+              <DataPill items={[t("pills.theAnalyzer"), t("pills.liveDemo")]} />
               <h2 className="mt-5 font-serif text-4xl md:text-5xl tracking-tight leading-tight">
                 {t("analyzerDemo.heading")}
               </h2>

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/utils";
+import { getT } from "@/lib/i18n/server";
 
 /**
  * P0.3 — Public shareable audits (organic growth engine).
@@ -29,14 +30,15 @@ export type ShareResult =
   | { ok: false; error: string };
 
 export async function shareAnalysis(analysisId: string): Promise<ShareResult> {
+  const { t } = await getT();
   const parsed = Input.safeParse({ analysisId });
-  if (!parsed.success) return { ok: false, error: "Invalid analysis id" };
+  if (!parsed.success) return { ok: false, error: t("actionErr.invalidAnalysisId") };
 
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Not signed in" };
+  if (!user) return { ok: false, error: t("actionErr.notSignedIn") };
 
   const { data: analysis } = await supabase
     .from("analyses")
@@ -44,12 +46,12 @@ export async function shareAnalysis(analysisId: string): Promise<ShareResult> {
     .eq("id", analysisId)
     .eq("user_id", user.id)
     .single();
-  if (!analysis) return { ok: false, error: "Analysis not found" };
+  if (!analysis) return { ok: false, error: t("actionErr.analysisNotFound") };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const a = analysis as any;
   if (a.status !== "succeeded" || !a.result) {
-    return { ok: false, error: "Only completed audits can be shared" };
+    return { ok: false, error: t("actionErr.onlyCompletedShared") };
   }
   // Idempotent: already shared → return the existing slug.
   if (a.share_slug) return { ok: true, slug: a.share_slug as string };

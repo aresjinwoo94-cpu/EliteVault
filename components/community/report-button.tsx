@@ -15,25 +15,27 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { reportCommunityAnalysis } from "@/app/actions/community";
+import { useT } from "@/components/i18n/locale-provider";
 
 export function ReportButton({ slug }: { slug: string }) {
+  const { t } = useT();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [isPending, startTransition] = useTransition();
 
   function submit() {
     if (reason.trim().length < 3) {
-      toast.error("Please add a short reason");
+      toast.error(t("community.reportReason"));
       return;
     }
     startTransition(async () => {
       const res = await reportCommunityAnalysis({ slug, reason });
       if (res.ok) {
-        toast.success("Reported — our team will review");
+        toast.success(t("community.reportedToast"));
         setOpen(false);
         setReason("");
       } else {
-        toast.error(res.error ?? "Could not submit report");
+        toast.error(res.error ?? t("community.reportFailed"));
       }
     });
   }
@@ -43,21 +45,20 @@ export function ReportButton({ slug }: { slug: string }) {
       <DialogTrigger asChild>
         <button className="flex items-center gap-1 hover:text-white/80 transition-colors">
           <Flag className="size-3.5" />
-          Report
+          {t("community.report")}
         </button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Report this audit</DialogTitle>
+          <DialogTitle>{t("community.reportTitle")}</DialogTitle>
           <DialogDescription>
-            Help us moderate the feed. Reports are reviewed by humans. After 3
-            verified reports the audit is auto-hidden.
+            {t("community.reportBody")}
           </DialogDescription>
         </DialogHeader>
         <Textarea
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          placeholder="What's wrong with this audit? E.g. defamatory claims, my brand without consent, factually wrong, spam…"
+          placeholder={t("community.reportPlaceholder")}
           rows={5}
         />
         <DialogFooter>
@@ -66,14 +67,14 @@ export function ReportButton({ slug }: { slug: string }) {
             onClick={() => setOpen(false)}
             disabled={isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             variant="destructive"
             onClick={submit}
             disabled={isPending}
           >
-            {isPending ? "Submitting…" : "Submit report"}
+            {isPending ? t("community.submitting") : t("community.submitReport")}
           </Button>
         </DialogFooter>
       </DialogContent>

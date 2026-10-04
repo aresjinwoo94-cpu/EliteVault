@@ -14,6 +14,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/components/i18n/locale-provider";
 
 /**
  * Scale-only feature previews shown to Pro users (v3.9.2).
@@ -34,21 +35,22 @@ import { Button } from "@/components/ui/button";
  */
 
 export function LockedMetaAdsPreview() {
+  const { t } = useT();
   return (
     <LockWrapper
       icon={Megaphone}
-      title="Meta Ads Optimizer"
+      title={t("optimizer.title")}
       tagline="CPC, CPM, CTR & ROAS targets calibrated to YOUR audit, plus testing plan + creative angles"
     >
       {/* Targets row — same layout as the real component */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {(
           [
-            ["CPC", "$1.40", "Max bid"],
-            ["CPM", "$22.50", "Cost / 1k"],
-            ["CTR", "2.20%", "Click rate"],
-            ["CVR", "3.40%", "LP conv."],
-            ["ROAS", "2.5x", "Target return"],
+            ["CPC", "$1.40", t("optimizer.maxBid")],
+            ["CPM", "$22.50", t("optimizer.costK")],
+            ["CTR", "2.20%", t("optimizer.ctr")],
+            ["CVR", "3.40%", t("optimizer.lpConv")],
+            ["ROAS", "2.5x", t("optimizer.targetReturn")],
           ] as const
         ).map(([label, val, sub]) => (
           <div
@@ -68,20 +70,18 @@ export function LockedMetaAdsPreview() {
       <div className="mt-5 grid md:grid-cols-2 gap-3">
         <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
           <p className="text-[10px] uppercase tracking-widest text-white/40">
-            Audience seed
+            {t("optimizer.audienceSeed")}
           </p>
           <p className="mt-1.5 text-xs text-white/65 leading-relaxed">
-            30-45 US/CA · interests in your niche · lookalike of recent
-            purchasers · iOS-tolerant retargeting from day 4
+            {t("scaleLocked.seedDemo")}
           </p>
         </div>
         <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
           <p className="text-[10px] uppercase tracking-widest text-white/40">
-            Creative angles (3-5)
+            {t("scaleLocked.angles")}
           </p>
           <p className="mt-1.5 text-xs text-white/65 leading-relaxed">
-            Hook · benefit-led · UGC-style demo · social-proof carousel,
-            with first-3-seconds copy + CTA per format
+            {t("scaleLocked.anglesDemo")}
           </p>
         </div>
       </div>
@@ -90,18 +90,19 @@ export function LockedMetaAdsPreview() {
 }
 
 export function LockedSimulatorPreview() {
+  const { t } = useT();
   return (
     <LockWrapper
       icon={TrendingUp}
-      title="7-Day Meta Campaign Simulator"
+      title={t("scaleLocked.simTitle")}
       tagline="Project a Meta Ads campaign across 3 honest scenarios — conservative, balanced, aggressive — before you spend a dollar"
     >
       {/* Three scenario cards — same shape as the real ones */}
       <div className="grid md:grid-cols-3 gap-3">
         {[
-          { variant: "Conservative", roas: "1.4x", spend: "$280", net: "$112" },
-          { variant: "Balanced", roas: "2.1x", spend: "$350", net: "$385", primary: true },
-          { variant: "Aggressive", roas: "2.8x", spend: "$525", net: "$945" },
+          { variant: t("simulator.scCons"), roas: "1.4x", spend: "$280", net: "$112" },
+          { variant: t("simulator.scBal"), roas: "2.1x", spend: "$350", net: "$385", primary: true },
+          { variant: t("simulator.scAggr"), roas: "2.8x", spend: "$525", net: "$945" },
         ].map((s) => (
           <div
             key={s.variant}
@@ -121,20 +122,20 @@ export function LockedSimulatorPreview() {
             >
               {s.roas}
             </p>
-            <p className="text-[10px] text-white/40 mt-0.5">7-day ROAS</p>
+            <p className="text-[10px] text-white/40 mt-0.5">{t("simulator.roas7")}</p>
             <div className="mt-3 flex justify-between text-[10px]">
-              <span className="text-white/45">Spend</span>
+              <span className="text-white/45">{t("simulator.spend")}</span>
               <span className="font-mono tabular-nums tnum text-white/75">{s.spend}</span>
             </div>
             <div className="flex justify-between text-[10px]">
-              <span className="text-white/45">Net</span>
+              <span className="text-white/45">{t("simulator.net")}</span>
               <span className="font-mono tabular-nums tnum text-success">{s.net}</span>
             </div>
           </div>
         ))}
       </div>
       <p className="mt-3 text-[11px] text-white/40 text-center">
-        Day-by-day spend · revenue · ROAS · risks · recommendation per scenario
+        {t("scaleLocked.perScenario")}
       </p>
     </LockWrapper>
   );
@@ -153,6 +154,7 @@ function LockWrapper({
   tagline: string;
   children: React.ReactNode;
 }) {
+  const { t } = useT();
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -173,7 +175,7 @@ function LockWrapper({
                 <h3 className="font-medium text-white">{title}</h3>
                 <Badge variant="gold" className="shrink-0">
                   <Crown className="size-3" />
-                  Scale plan
+                  {t("simulator.scalePlan")}
                 </Badge>
               </div>
               <p className="mt-1.5 text-sm text-white/55 leading-relaxed max-w-2xl">
@@ -200,10 +202,10 @@ function LockWrapper({
                   <Lock className="size-5 text-champagne-300" />
                 </div>
                 <p className="mt-4 text-base font-medium text-white">
-                  Unlock with Scale
+                  {t("scaleLocked.unlock")}
                 </p>
                 <p className="mt-1 text-xs text-white/55 leading-relaxed">
-                  Scale plan opens this report on every analysis you run.
+                  {t("scaleLocked.opens")}
                 </p>
                 <Link
                   href="/app/checkout?plan=scale&interval=month"
@@ -211,13 +213,13 @@ function LockWrapper({
                 >
                   <Button variant="primary" size="lg">
                     <Sparkles className="size-4" />
-                    Unlock for $29 / mo
+                    {t("scaleLocked.unlockPrice")}
                     <ArrowRight className="size-4" />
                   </Button>
                 </Link>
                 <p className="mt-2 text-[10px] text-white/35 inline-flex items-center gap-1">
                   <Shield className="size-3" />
-                  Cancel anytime · prorated
+                  {t("scaleLocked.cancel")}
                 </p>
               </div>
             </div>

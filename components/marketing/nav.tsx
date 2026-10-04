@@ -8,7 +8,6 @@ import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { LanguageToggle } from "@/components/i18n/language-toggle";
 import { useT } from "@/components/i18n/locale-provider";
 
 // SEO: surface the blog ("Guides") in the top nav. Every page renders the
@@ -45,7 +44,7 @@ export function MarketingNav() {
       )}
     >
       <div className="container flex h-16 items-center justify-between">
-        <Link href="/" aria-label="EliteVault home">
+        <Link href="/" aria-label={t("common.homeAria")}>
           <Logo />
         </Link>
         <nav className="hidden md:flex items-center gap-1">
@@ -60,7 +59,6 @@ export function MarketingNav() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
-          <LanguageToggle className="mr-1 hidden sm:inline-flex" />
           <Link href="/sign-in" className="hidden sm:inline-flex">
             <Button variant="ghost" size="sm">
               {t("nav.signIn")}
@@ -112,7 +110,6 @@ export function MarketingNav() {
                 </nav>
 
                 <div className="mt-auto flex flex-col gap-3 pt-8">
-                  <LanguageToggle className="self-start" />
                   <Link href="/sign-in" onClick={() => setMobileOpen(false)}>
                     <Button variant="ghost" className="w-full min-h-11">
                       {t("nav.signIn")}

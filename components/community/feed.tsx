@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CommunityCard } from "./community-card";
+import { useT } from "@/components/i18n/locale-provider";
 
 interface FeedItem {
   id: string;
@@ -43,6 +44,7 @@ export function CommunityFeed({
   niches: string[];
   initialFilters: { niche: string | null; sort: Sort; q: string };
 }) {
+  const { t } = useT();
   const router = useRouter();
   const sp = useSearchParams();
   const [q, setQ] = useState(initialFilters.q);
@@ -89,7 +91,7 @@ export function CommunityFeed({
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && applyFilters({ q })}
-            placeholder="Search by domain or what's wrong with it…"
+            placeholder={t("community.searchPlaceholder")}
             className="pl-10 h-10"
           />
         </div>
@@ -100,10 +102,10 @@ export function CommunityFeed({
           }
         >
           <SelectTrigger>
-            <SelectValue placeholder="All niches" />
+            <SelectValue placeholder={t("community.allNiches")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="__all">All niches</SelectItem>
+            <SelectItem value="__all">{t("community.allNiches")}</SelectItem>
             {niches.map((n) => (
               <SelectItem key={n} value={n}>
                 {n[0]?.toUpperCase() + n.slice(1)}
@@ -116,13 +118,13 @@ export function CommunityFeed({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="recent">Most recent</SelectItem>
-            <SelectItem value="score">Highest score</SelectItem>
-            <SelectItem value="views">Most viewed</SelectItem>
+            <SelectItem value="recent">{t("community.sortRecent")}</SelectItem>
+            <SelectItem value="score">{t("community.sortScore")}</SelectItem>
+            <SelectItem value="views">{t("community.sortViewed")}</SelectItem>
           </SelectContent>
         </Select>
         <Button onClick={() => applyFilters({ q })} disabled={!q}>
-          Search
+          {t("common.search")}
         </Button>
       </div>
 
@@ -133,7 +135,7 @@ export function CommunityFeed({
       >
         {initialItems.length === 0 ? (
           <div className="col-span-full text-center py-16 text-white/40">
-            No published audits yet. Be the first.
+            {t("community.feedEmpty")}
           </div>
         ) : (
           initialItems.map((item, i) => (
@@ -162,11 +164,11 @@ export function CommunityFeed({
             <div className="flex items-center gap-3 rounded-2xl bg-obsidian-900/95 backdrop-blur-xl border border-white/10 px-4 py-2.5 shadow-2xl">
               <ArrowLeftRight className="size-4 text-champagne-400" />
               <span className="text-sm text-white">
-                {selected.length} selected
+                {selected.length} {t("community.selected")}
               </span>
               <Link href={canCompare ? compareHref : "#"}>
                 <Button size="sm" disabled={!canCompare}>
-                  Compare side-by-side
+                  {t("community.compare")}
                 </Button>
               </Link>
               <button

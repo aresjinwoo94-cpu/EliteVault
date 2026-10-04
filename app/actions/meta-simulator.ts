@@ -5,6 +5,7 @@ import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { inngest } from "@/inngest/client";
 import { assertQuota } from "@/lib/quota/guard";
+import { getT } from "@/lib/i18n/server";
 
 /**
  * Server action that kicks off a Meta Campaign Scenario Modeler run.
@@ -43,13 +44,13 @@ const COMPETITIVENESS_VALUES = [
 const TriggerSimulationInput = z.object({
   analysisId: z.string().uuid(),
   aovUsd: z
-    .number({ invalid_type_error: "AOV must be a number" })
-    .positive("AOV must be greater than 0")
-    .max(10_000, "AOV looks unrealistic — cap is $10,000"),
+    .number({ invalid_type_error: "metaSimErr.aovNumber" })
+    .positive("metaSimErr.aovPositive")
+    .max(10_000, "metaSimErr.aovMax"),
   dailyBudgetUsd: z
-    .number({ invalid_type_error: "Budget must be a number" })
-    .positive("Daily budget must be greater than 0")
-    .max(50_000, "Daily budget cap is $50,000"),
+    .number({ invalid_type_error: "metaSimErr.budgetNumber" })
+    .positive("metaSimErr.budgetPositive")
+    .max(50_000, "metaSimErr.budgetMax"),
   productMarginPct: z
     .number()
     .min(0)
@@ -71,17 +72,18 @@ export type TriggerSimulationResult =
 export async function triggerSimulation(
   input: z.infer<typeof TriggerSimulationInput>,
 ): Promise<TriggerSimulationResult> {
+  const { t } = await getT();
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Not signed in" };
+  if (!user) return { ok: false, error: t("actionErr.notSignedIn") };
 
   const parsed = TriggerSimulationInput.safeParse(input);
   if (!parsed.success) {
     return {
       ok: false,
-      error: parsed.error.issues[0]?.message ?? "Invalid input",
+      error: t(parsed.error.issues[0]?.message ?? "actionErr.invalidInput"),
     };
   }
 
@@ -99,7 +101,7 @@ export async function triggerSimulation(
     .select("plan")
     .eq("id", user.id)
     .single();
-  if (!profile) return { ok: false, error: "Profile not found" };
+  if (!profile) return { ok: false, error: t("actionErr.profileNotFound") };
 
   // Validate source analysis: must belong to user + have a result
   const { data: analysis, error: aErr } = await supabase
@@ -108,15 +110,15 @@ export async function triggerSimulation(
     .eq("id", parsed.data.analysisId)
     .single();
   if (aErr || !analysis) {
-    return { ok: false, error: "Analysis not found" };
+    return { ok: false, error: t("actionErr.analysisNotFound") };
   }
   if (analysis.user_id !== user.id) {
-    return { ok: false, error: "You don't own that analysis" };
+    return { ok: false, error: t("actionErr.notYourAnalysis") };
   }
   if (analysis.status !== "succeeded" || !analysis.result) {
     return {
       ok: false,
-      error: "Run the analysis to completion before projecting a campaign.",
+      error: t("actionErr.runFirst"),
     };
   }
 
@@ -157,7 +159,7 @@ export async function triggerSimulation(
   if (insErr || !row) {
     return {
       ok: false,
-      error: insErr?.message ?? "Could not queue simulation",
+      error: insErr?.message ?? t("actionErr.queueFailed"),
     };
   }
 

@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { useT } from "@/components/i18n/locale-provider";
+import { intlLocale } from "@/lib/i18n/format";
 import { ConversionGauges } from "./conversion-gauges";
 import { CategoryRadar } from "./category-radar";
 import { AnnotationsOverlay } from "./annotations-overlay";
@@ -186,7 +187,7 @@ export function AnalysisView({
 }) {
   const [data, setData] = useState<Analysis>(initial);
   const router = useRouter();
-  const { t } = useT();
+  const { t, locale } = useT();
 
   // Fase 2 — pick up meta_ads when a server re-render (router.refresh() after a
   // Pro Meta run) delivers it. The Ads Optimizer is computed asynchronously as
@@ -497,13 +498,13 @@ export function AnalysisView({
             className="inline-flex items-center gap-1 text-xs text-white/40 hover:text-white/80 transition-colors"
           >
             <ArrowLeft className="size-3" />
-            {isAnon ? "Back to EliteVault" : "Back to Analyzer"}
+            {isAnon ? t("analysisView.backEv") : t("analysisView.backAnalyzer")}
           </Link>
           <h1 className="mt-2 font-serif text-3xl md:text-4xl tracking-tight truncate">
-            {data.url ?? "Uploaded screenshot"}
+            {data.url ?? t("home.uploadedScreenshot")}
           </h1>
           <p className="text-xs text-white/40 mt-1">
-            {new Date(data.created_at).toLocaleString()}
+            {new Date(data.created_at).toLocaleString(intlLocale(locale))}
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -600,20 +601,20 @@ export function AnalysisView({
 
                 <h2 className="mt-5 font-serif text-2xl md:text-3xl tracking-tight">
                   {data.status === "refunded"
-                    ? "We couldn't complete this analysis"
-                    : "Something went wrong"}
+                    ? t("analysisView.cantComplete")
+                    : t("analysisView.wentWrong")}
                 </h2>
 
                 {data.status === "refunded" && (
                   <p className="mt-2 text-sm text-white/55">
-                    Your credit was refunded automatically — no charge.
+                    {t("analysisView.refunded")}
                   </p>
                 )}
 
                 {data.error && (
                   <div className="mt-6 w-full rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 text-left">
                     <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1.5">
-                      What happened
+                      {t("analysisView.whatHappened")}
                     </p>
                     <p className="text-sm text-white/80 leading-relaxed">
                       {data.error}
@@ -624,12 +625,12 @@ export function AnalysisView({
                 <div className="mt-7 flex flex-col sm:flex-row gap-3">
                   <Link href="/app/analyzer">
                     <Button variant="primary">
-                      Try again
+                      {t("errorPage.retry")}
                     </Button>
                   </Link>
                   <Link href="/app">
                     <Button variant="outline">
-                      Back to dashboard
+                      {t("analysisView.backDashboard")}
                     </Button>
                   </Link>
                 </div>
@@ -946,7 +947,7 @@ export function AnalysisView({
                 <PersonaResponse response={data.result.buyer_persona_response} />
               ) : (
                 <FreeLockedCure
-                  title="Buyer-persona simulation"
+                  title={t("analysisView.personaSim")}
                   tagline="Hear exactly how your target buyer reacts to your store — what makes them hesitate, and whether they'd buy."
                 >
                   <PersonaResponse
@@ -970,15 +971,15 @@ export function AnalysisView({
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm text-white/85">
-                    See the stores already converting in your niche
+                    {t("analysisView.seeWinners")}
                   </p>
                   <p className="text-xs text-white/45">
-                    Study what the winners do differently — then copy it.
+                    {t("analysisView.studyWinners")}
                   </p>
                 </div>
               </div>
               <span className="flex shrink-0 items-center gap-1.5 text-xs text-signal-300">
-                Open Library
+                {t("analysisView.openLibrary")}
                 <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
               </span>
             </Link>
@@ -1070,6 +1071,7 @@ function ReportColumn({ on, children }: { on: boolean; children: ReactNode }) {
  * "this'll appear on new audits" message — not an error.
  */
 function MetaAdsPending() {
+  const { t } = useT();
   return (
     <Card className="relative overflow-hidden p-6 border-champagne-400/15 bg-gradient-to-br from-champagne-400/[0.03] to-signal-600/[0.03]">
       <div className="pointer-events-none absolute -right-10 -top-10 size-40 rounded-full bg-champagne-400/10 blur-3xl" />
@@ -1078,11 +1080,9 @@ function MetaAdsPending() {
           <Sparkles className="size-4 text-champagne-300" />
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="font-medium text-white">Meta Ads Optimizer</h3>
+          <h3 className="font-medium text-white">{t("optimizer.title")}</h3>
           <p className="mt-1 text-sm text-white/55 leading-relaxed">
-            CPC, CPM, CTR & ROAS targets calibrated to this audit aren't
-            available on this older analysis. Run a new analysis to see the
-            full Scale-tier recommendations panel.
+            {t("analysisView.optimizerOld")}
           </p>
         </div>
       </div>

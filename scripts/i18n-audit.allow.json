@@ -1,0 +1,159 @@
+{
+  "_doc": "Literals that are legitimately not translated. Every entry needs a reason; prefer `// i18n-ignore: <reason>` next to the code when it is one-off.",
+  "strings": [
+    {
+      "text": "EliteVault",
+      "reason": "brand name"
+    },
+    {
+      "text": "Ctrl K",
+      "reason": "keyboard shortcut hint"
+    },
+    {
+      "text": "Gmail",
+      "reason": "third-party brand"
+    },
+    {
+      "text": "Outlook",
+      "reason": "third-party brand"
+    },
+    {
+      "text": "Yahoo Mail",
+      "reason": "third-party brand"
+    },
+    {
+      "text": "iCloud Mail",
+      "reason": "third-party brand"
+    },
+    {
+      "text": "Proton Mail",
+      "reason": "third-party brand"
+    },
+    {
+      "text": "AOL Mail",
+      "reason": "third-party brand"
+    },
+    {
+      "text": "Zoho Mail",
+      "reason": "third-party brand"
+    },
+    {
+      "text": "you@yourstore.com",
+      "reason": "email placeholder"
+    },
+    {
+      "text": "Visa",
+      "reason": "proper noun / brand / technical term"
+    },
+    {
+      "text": "Mastercard",
+      "reason": "proper noun / brand / technical term"
+    },
+    {
+      "text": "American Express",
+      "reason": "proper noun / brand / technical term"
+    },
+    {
+      "text": "Discover",
+      "reason": "proper noun / brand / technical term"
+    },
+    {
+      "text": "Cash App Pay",
+      "reason": "proper noun / brand / technical term"
+    },
+    {
+      "text": "Amazon Pay",
+      "reason": "proper noun / brand / technical term"
+    },
+    {
+      "text": "Link by Stripe",
+      "reason": "proper noun / brand / technical term"
+    },
+    {
+      "text": "ConvertMate",
+      "reason": "proper noun / brand / technical term"
+    },
+    {
+      "text": "AuditMyStore",
+      "reason": "proper noun / brand / technical term"
+    },
+    {
+      "text": "Pro →",
+      "reason": "plan name (proper noun) + arrow"
+    },
+    {
+      "text": "Scale →",
+      "reason": "plan name (proper noun) + arrow"
+    },
+    {
+      "text": "Scale",
+      "reason": "proper noun / brand / technical term"
+    },
+    {
+      "text": "Pro",
+      "reason": "proper noun / brand / technical term"
+    },
+    {
+      "text": "Authorization",
+      "reason": "proper noun / brand / technical term"
+    },
+    {
+      "text": "202 Accepted",
+      "reason": "proper noun / brand / technical term"
+    },
+    {
+      "text": "Stripe",
+      "reason": "proper noun / brand / technical term"
+    },
+    {
+      "text": "Shopify",
+      "reason": "proper noun / brand / technical term"
+    },
+    {
+      "text": "Meta",
+      "reason": "proper noun / brand / technical term"
+    },
+    {
+      "text": "↻ Refresh",
+      "reason": "owner-only internal control (INTERNAL_EMAILS)"
+    },
+    {
+      "text": "now (internal)",
+      "reason": "owner-only internal control (INTERNAL_EMAILS)"
+    },
+    {
+      "text": "this niche",
+      "reason": "owner-only internal control (INTERNAL_EMAILS)"
+    },
+    {
+      "text": "all niches",
+      "reason": "owner-only internal control (INTERNAL_EMAILS)"
+    },
+    {
+      "text": "EliteVault Growth Map™",
+      "reason": "product name"
+    },
+    {
+      "text": "EliteVault Growth Map",
+      "reason": "product name"
+    },
+    {
+      "text": "– x",
+      "reason": "numeric range unit"
+    }
+  ],
+  "files": [
+    {
+      "path": "components/marketing/audit-snapshot.tsx",
+      "reason": "previous landing mock, no longer imported anywhere (superseded by analyzer-collage)"
+    },
+    {
+      "path": "components/marketing/real-audits.tsx",
+      "reason": "not rendered anywhere; placeholder data awaiting real captures"
+    },
+    {
+      "path": "app/actions/library-images.ts",
+      "reason": "owner-only admin tool (library image uploader)"
+    }
+  ]
+}

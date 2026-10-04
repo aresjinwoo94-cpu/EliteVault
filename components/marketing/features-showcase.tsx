@@ -181,11 +181,12 @@ function ThumbSlot({
 /** Live-winners visual — a grid of real store thumbnails with the `● LIVE 4.4%`
  *  mono chip riding over one of them. */
 function WinnersVisual({ live }: { live: string }) {
+  const { t } = useT();
   return (
     <div className="relative h-full">
       <div className="grid grid-cols-3 gap-2">
         {WINNER_THUMBS.map((src, i) => (
-          <ThumbSlot key={i} src={src} alt={`Winning store thumbnail ${i + 1}`} />
+          <ThumbSlot key={i} src={src} alt={`${t("features.thumbAlt")} ${i + 1}`} />
         ))}
       </div>
       {/* Live cohort chip over one thumbnail (mono). */}
@@ -208,10 +209,11 @@ function WinnersVisual({ live }: { live: string }) {
  *  stacked ("your store" → "closest match") with the `97% MATCH` mono badge +
  *  arrow between them (matches the wide homepage crops). */
 function SimilarityVisual({ match, your, close }: { match: string; your: string; close: string }) {
+  const { t } = useT();
   return (
     <div className="flex h-full flex-col justify-center gap-1.5">
       <div className="relative">
-        <ThumbSlot src={SIMILARITY_PAIR.your} alt="Your store" sizes="260px" ratioClass="aspect-[16/5]" />
+        <ThumbSlot src={SIMILARITY_PAIR.your} alt={t("features.yourStoreAlt")} sizes="260px" ratioClass="aspect-[16/5]" />
         <span className="absolute left-1.5 top-1.5 rounded bg-obsidian-950/75 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-white/60 backdrop-blur-sm">
           {your}
         </span>
@@ -231,7 +233,7 @@ function SimilarityVisual({ match, your, close }: { match: string; your: string;
       <div className="relative">
         <ThumbSlot
           src={SIMILARITY_PAIR.match}
-          alt="Closest converting match"
+          alt={t("features.matchAlt")}
           highlight
           sizes="260px"
           ratioClass="aspect-[16/5]"

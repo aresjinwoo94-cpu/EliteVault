@@ -6,6 +6,7 @@ import { Eye, Heart, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { RankBadge } from "./rank-badge";
+import { useT } from "@/components/i18n/locale-provider";
 
 export interface LeaderboardItem {
   id: string;
@@ -55,6 +56,7 @@ export function LeaderboardRow({
   selected: boolean;
   onToggle: () => void;
 }) {
+  const { t } = useT();
   const rowContent = (
     <>
       {/* Rank or checkbox */}
@@ -95,7 +97,7 @@ export function LeaderboardRow({
           </p>
           {item.is_featured && (
             <Badge variant="gold" className="shrink-0 hidden sm:inline-flex">
-              Featured
+              {t("community.featured")}
             </Badge>
           )}
         </div>
@@ -116,7 +118,7 @@ export function LeaderboardRow({
           must stay visible on mobile (compact), not hidden below sm. */}
       <div className="shrink-0 text-right">
         <p className="hidden sm:block text-[11px] uppercase tracking-widest text-white/35">
-          Composite
+          {t("community.composite")}
         </p>
         <p className="num text-base sm:text-xl text-signal-300 leading-tight">
           {item.composite_score.toFixed(1)}

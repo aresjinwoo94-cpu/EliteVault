@@ -158,3 +158,16 @@ export function analyzerReportV2Enabled(): boolean {
 export function analyzerMetaPromoEnabled(): boolean {
   return enabled("ANALYZER_META_PROMO", true);
 }
+
+/**
+ * Automatic site language (docs/i18n-checkout-and-auto-locale.md, PR 2).
+ *
+ * DEFAULT OFF. OFF → everyone sees English, exactly as before the EN/ES button
+ * was removed. ON → the language comes from the visitor's country + browser
+ * languages (lib/i18n/detect.ts). Flip `AUTO_LOCALE=true` in Vercel once the
+ * Spanish screens have been reviewed. The QA override `?lang=en|es` works in
+ * both states so the Spanish UI can be reviewed before the flag is flipped.
+ */
+export function autoLocaleEnabled(): boolean {
+  return enabled("AUTO_LOCALE", false);
+}

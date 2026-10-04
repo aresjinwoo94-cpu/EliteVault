@@ -1,4 +1,5 @@
 import { CheckCircle2, Megaphone, Quote, Zap } from "lucide-react";
+import { useT } from "@/components/i18n/locale-provider";
 
 /**
  * Analyzer collage (landing §2) — the visual in the "A senior media buyer in a
@@ -20,27 +21,28 @@ import { CheckCircle2, Megaphone, Quote, Zap } from "lucide-react";
  */
 
 const DIMENSIONS = [
-  { label: "Color", v: 68 },
-  { label: "Layout", v: 65 },
-  { label: "Imagery", v: 75 },
-  { label: "Tech", v: 48 },
-  { label: "Niche fit", v: 32 },
-  { label: "CRO", v: 42 },
+  { label: "collage.dimColor", v: 68 },
+  { label: "collage.dimLayout", v: 65 },
+  { label: "collage.dimImagery", v: 75 },
+  { label: "collage.dimTech", v: 48 },
+  { label: "collage.dimNiche", v: 32 },
+  { label: "collage.dimCro", v: 42 },
 ] as const;
 
 const FIXES = [
-  { n: 1, text: "Typos in product titles kill trust on arrival", tone: "high" },
-  { n: 2, text: "Fake 24:00:00 timer reads as a cheap urgency trick", tone: "med" },
-  { n: 3, text: "Generic “Buy Now” hero adds friction before value", tone: "med" },
+  { n: 1, text: "collage.fix1", tone: "high" },
+  { n: 2, text: "collage.fix2", tone: "med" },
+  { n: 3, text: "collage.fix3", tone: "med" },
 ] as const;
 
 const SCENARIOS = [
-  { label: "Cons.", roas: "0.8×", tone: "loss" },
-  { label: "Bal.", roas: "1.6×", tone: "gold" },
-  { label: "Aggr.", roas: "2.3×", tone: "win" },
+  { label: "collage.scCons", roas: "0.8×", tone: "loss" },
+  { label: "collage.scBal", roas: "1.6×", tone: "gold" },
+  { label: "collage.scAggr", roas: "2.3×", tone: "win" },
 ] as const;
 
 export function AnalyzerCollage({ reportV2 = false }: { reportV2?: boolean }) {
+  const { t } = useT();
   return (
     <div className="relative">
       {/* Ambient glow — teal (signal), matches the section accent. */}
@@ -59,7 +61,7 @@ export function AnalyzerCollage({ reportV2 = false }: { reportV2?: boolean }) {
           </div>
           <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-success">
             <CheckCircle2 className="size-3" />
-            <span className="hidden sm:inline">Audit complete</span>
+            <span className="hidden sm:inline">{t("collage.complete")}</span>
           </div>
         </div>
 
@@ -71,24 +73,24 @@ export function AnalyzerCollage({ reportV2 = false }: { reportV2?: boolean }) {
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 rounded-xl border border-signal-400/25 bg-signal-600/[0.06] px-3 py-2">
               <span className="text-[10px] uppercase tracking-wide text-white/50">
-                Potential
+                {t("collage.potential")}
               </span>
               <span className="font-serif text-xl leading-none text-gold-gradient tnum">
-                ~$1k–8k
+                {t("collage.potentialValue")}
                 <span className="ml-0.5 align-top text-xs text-white/45">/mo</span>
               </span>
               <span className="rounded-full border border-signal-400/40 px-1.5 py-0.5 text-[9px] uppercase tracking-widest text-signal-300">
-                Fitness
+                {t("collage.niche")}
               </span>
             </div>
             {reportV2 ? (
               <div className="shrink-0 text-right">
                 <p className="flex items-center gap-1.5 text-[11px] text-champagne-300">
                   <Megaphone className="size-3.5" />
-                  Not ad-ready · 3 fixes
+                  {t("collage.notReady")}
                 </p>
                 <p className="mt-1 text-[10px] uppercase tracking-widest text-white/35">
-                  verdict
+                  {t("collage.verdict")}
                 </p>
               </div>
             ) : (
@@ -97,7 +99,7 @@ export function AnalyzerCollage({ reportV2 = false }: { reportV2?: boolean }) {
                   54<span className="text-sm text-white/35">/100</span>
                 </p>
                 <p className="mt-1 text-[10px] uppercase tracking-widest text-white/35">
-                  overall
+                  {t("collage.overall")}
                 </p>
               </div>
             )}
@@ -114,10 +116,10 @@ export function AnalyzerCollage({ reportV2 = false }: { reportV2?: boolean }) {
             <Quote className="mt-0.5 size-3.5 shrink-0 text-champagne-300" />
             <div className="min-w-0">
               <p className="text-[13px] leading-snug text-white/85">
-                “Cute product, but typos and a random catalog raise red flags.”
+                {t("collage.quote")}
               </p>
               <p className="mt-1 text-[10px] uppercase tracking-widest text-white/35">
-                Buyer-persona reaction · F 28–34 · US
+                {t("collage.persona")}
               </p>
             </div>
           </div>
@@ -127,7 +129,7 @@ export function AnalyzerCollage({ reportV2 = false }: { reportV2?: boolean }) {
             <div className="mb-2 flex items-center gap-1.5">
               <Zap className="size-3 text-champagne-400" />
               <p className="font-mono text-[10px] uppercase tracking-widest text-white/40">
-                Top fixes — ranked by leverage
+                {t("collage.topFixes")}
               </p>
             </div>
             <ul className="space-y-1.5">
@@ -137,7 +139,7 @@ export function AnalyzerCollage({ reportV2 = false }: { reportV2?: boolean }) {
                     {f.n}
                   </span>
                   <span className="min-w-0 flex-1 truncate text-[12px] text-white/75">
-                    {f.text}
+                    {t(f.text)}
                   </span>
                   <ImpactChip tone={f.tone} />
                 </li>
@@ -148,7 +150,7 @@ export function AnalyzerCollage({ reportV2 = false }: { reportV2?: boolean }) {
           {/* 7-day Meta projection — the last deliverable, kept to a thin strip. */}
           <div className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-obsidian-900/30 px-3 py-2">
             <p className="font-mono text-[10px] uppercase tracking-widest text-white/40">
-              7-day Meta
+              {t("collage.meta7")}
             </p>
             <div className="flex flex-1 items-center justify-end gap-1.5">
               {SCENARIOS.map((s) => (
@@ -157,7 +159,7 @@ export function AnalyzerCollage({ reportV2 = false }: { reportV2?: boolean }) {
                   className="inline-flex items-baseline gap-1 rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-1"
                 >
                   <span className="text-[9px] uppercase tracking-wide text-white/40">
-                    {s.label}
+                    {t(s.label)}
                   </span>
                   <span
                     className={`font-mono text-[12px] tabular-nums ${
@@ -246,6 +248,7 @@ function Pin({
 
 /** Six-dimension conversion radar — "where you're leaking sales". Pure SVG. */
 function Radar() {
+  const { t } = useT();
   const cx = 80;
   const cy = 74;
   const R = 46;
@@ -264,17 +267,17 @@ function Radar() {
   return (
     <div className="relative flex flex-col overflow-hidden rounded-xl border border-white/[0.05] bg-obsidian-900/40 p-3">
       <p className="text-[11px] font-medium text-white/80">
-        Where you’re leaking sales
+        {t("collage.leaking")}
       </p>
       <p className="mt-0.5 text-[10px] leading-snug text-white/40">
-        Six conversion dimensions — lowest = where cold traffic slips away.
+        {t("collage.sixDims")}
       </p>
 
       <svg
         viewBox="0 0 160 150"
         className="mt-1 w-full"
         role="img"
-        aria-label="Radar of six conversion dimensions"
+        aria-label={t("collage.radarAria")}
       >
         {gridRings.map((f, i) => (
           <polygon
@@ -318,7 +321,7 @@ function Radar() {
               textAnchor="middle"
               dominantBaseline="middle"
             >
-              {d.label}
+              {t(d.label)}
             </text>
           );
         })}
@@ -328,10 +331,11 @@ function Radar() {
 }
 
 function ImpactChip({ tone }: { tone: string }) {
+  const { t } = useT();
   const map: Record<string, { label: string; cls: string }> = {
-    high: { label: "high", cls: "border-destructive/30 bg-destructive/[0.06] text-destructive" },
-    med: { label: "med", cls: "border-warning/30 bg-warning/[0.08] text-warning" },
-    low: { label: "low", cls: "border-success/30 bg-success/[0.08] text-success" },
+    high: { label: t("common.impactHigh"), cls: "border-destructive/30 bg-destructive/[0.06] text-destructive" },
+    med: { label: t("common.impactMed"), cls: "border-warning/30 bg-warning/[0.08] text-warning" },
+    low: { label: t("common.impactLow"), cls: "border-success/30 bg-success/[0.08] text-success" },
   };
   const m = map[tone] ?? map.med;
   return (

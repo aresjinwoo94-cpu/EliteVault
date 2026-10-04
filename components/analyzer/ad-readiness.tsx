@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useT } from "@/components/i18n/locale-provider";
+import { fill } from "@/lib/i18n/lookup";
 import { linkIssues, paidTrafficBlockers } from "@/lib/analyzer/link-issues";
 import type { AdReadiness, AnalysisResult } from "@/lib/supabase/types";
 
@@ -24,21 +25,21 @@ import type { AdReadiness, AnalysisResult } from "@/lib/supabase/types";
 
 const VERDICTS = {
   ready: {
-    label: "Ready for traffic",
+    label: "adReadiness.ready",
     icon: CircleCheck,
     badge: "success" as const,
     tint: "border-success/20 from-success/[0.06]",
     accent: "text-success",
   },
   almost: {
-    label: "Almost ready",
+    label: "adReadiness.almost",
     icon: TriangleAlert,
     badge: "warning" as const,
     tint: "border-champagne-400/20 from-champagne-400/[0.06]",
     accent: "text-champagne-300",
   },
   not_ready: {
-    label: "Not ready yet",
+    label: "adReadiness.notReady",
     icon: ShieldAlert,
     badge: "danger" as const,
     tint: "border-destructive/20 from-destructive/[0.06]",
@@ -131,7 +132,7 @@ export function AdReadinessCard({
             <div className="flex items-center gap-2">
               <Megaphone className="size-4 text-signal-300" />
               <h3 className="text-sm font-medium text-white">
-                Ready for Meta traffic?
+                {t("adReadiness.title")}
               </h3>
             </div>
             {/* Brief §1 — label it explicitly as a lens on the same audit. */}
@@ -148,7 +149,7 @@ export function AdReadinessCard({
             )}
             <Badge variant={meta.badge}>
               <Icon className={cn("size-3", meta.accent)} />
-              {meta.label}
+              {t(meta.label)}
             </Badge>
           </div>
         </div>
@@ -170,7 +171,7 @@ export function AdReadinessCard({
         {(canonicalBlockers ?? rawBlockers).length > 0 && (
           <div className="mt-4 space-y-2">
             <p className="text-[10px] uppercase tracking-widest text-white/40">
-              Fix before you spend
+              {t("adReadiness.fixBefore")}
             </p>
             {canonicalBlockers
               ? canonicalBlockers.map((b, i) => (
@@ -184,7 +185,7 @@ export function AdReadinessCard({
                       </p>
                       {b.fixNumber !== null && (
                         <span className="shrink-0 rounded-full border border-signal-400/30 bg-signal-500/10 px-2 py-0.5 text-[10px] font-medium text-signal-200">
-                          Roadmap fix #{b.fixNumber}
+                          {fill(t("adReadiness.roadmapFix"), { n: b.fixNumber })}
                         </span>
                       )}
                     </div>
@@ -214,8 +215,7 @@ export function AdReadinessCard({
         )}
 
         <p className="mt-4 text-[10px] leading-snug text-white/35">
-          A judgement on this page&apos;s fitness for cold paid traffic, not a
-          prediction of results.
+          {t("adReadiness.note")}
         </p>
       </Card>
     </motion.div>

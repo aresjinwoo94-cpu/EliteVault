@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useT } from "@/components/i18n/locale-provider";
 
 /**
  * "You are here" horizontal position bar.
@@ -21,6 +22,7 @@ const NICHE_AVG = 58;
 const TOP_10_PCT = 82;
 
 export function NichePositionBar({ score }: { score: number }) {
+  const { t } = useT();
   // Normalize score to 0..100. (Some old runs return 0..1 decimal.)
   const s = score > 1 ? score : score * 100;
   const clamped = Math.max(0, Math.min(100, s));
@@ -28,14 +30,14 @@ export function NichePositionBar({ score }: { score: number }) {
   // Verdict band — used for the headline label
   const verdict =
     clamped >= TOP_10_PCT
-      ? { label: "Top 10% of stores audited", tone: "text-success" }
+      ? { label: t("position.top10"), tone: "text-success" }
       : clamped >= NICHE_AVG + 8
-        ? { label: "Above the curve", tone: "text-champagne-300" }
+        ? { label: t("position.above"), tone: "text-champagne-300" }
         : clamped >= NICHE_AVG - 8
-          ? { label: "Around average", tone: "text-white/65" }
+          ? { label: t("position.around"), tone: "text-white/65" }
           : clamped >= 40
-            ? { label: "Below average — work to do", tone: "text-warning" }
-            : { label: "Bottom quartile — fundamental issues", tone: "text-destructive" };
+            ? { label: t("position.below"), tone: "text-warning" }
+            : { label: t("position.bottom"), tone: "text-destructive" };
 
   return (
     <Card className="p-6 relative overflow-hidden">
@@ -43,7 +45,7 @@ export function NichePositionBar({ score }: { score: number }) {
       <div className="relative">
         <div className="flex items-center gap-2 mb-1">
           <TrendingUp className="size-4 text-champagne-400" />
-          <h3 className="text-sm font-medium">Where you stand</h3>
+          <h3 className="text-sm font-medium">{t("position.title")}</h3>
         </div>
         <p className={`text-xs ${verdict.tone}`}>{verdict.label}</p>
 
@@ -64,7 +66,7 @@ export function NichePositionBar({ score }: { score: number }) {
           {/* Niche average marker */}
           <Marker
             position={NICHE_AVG}
-            label={`Niche avg · ${NICHE_AVG}`}
+            label={`${t("position.nicheAvg")} ${NICHE_AVG}`}
             color="rgba(255,255,255,0.45)"
             labelClass="text-white/45"
             delay={0.2}
@@ -74,7 +76,7 @@ export function NichePositionBar({ score }: { score: number }) {
           {/* Top 10% marker */}
           <Marker
             position={TOP_10_PCT}
-            label={`Top 10% · ${TOP_10_PCT}`}
+            label={`${t("position.top10Marker")} ${TOP_10_PCT}`}
             color="rgba(245,198,116,0.6)"
             labelClass="text-champagne-300/85"
             delay={0.3}
@@ -91,15 +93,15 @@ export function NichePositionBar({ score }: { score: number }) {
             <div className="flex flex-col items-center">
               <div className="size-5 rounded-full bg-champagne-400 ring-4 ring-champagne-400/20 shadow-[0_0_20px_-2px_rgba(245,198,116,0.6)]" />
               <span className="mt-1.5 text-[10px] font-bold uppercase tracking-widest text-champagne-300">
-                You · {Math.round(clamped)}
+                {t("position.you")} {Math.round(clamped)}
               </span>
             </div>
           </motion.div>
 
           {/* Endpoint labels */}
           <div className="mt-2 flex justify-between text-[10px] text-white/30 absolute left-0 right-0 -bottom-0">
-            <span>0 · Broken</span>
-            <span>100 · World-class</span>
+            <span>{t("position.broken")}</span>
+            <span>{t("position.worldClass")}</span>
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { PLANS } from "@/lib/stripe/plans";
 import { generateApiKey } from "@/lib/api-auth";
+import { getT } from "@/lib/i18n/server";
 
 const CreateInput = z.object({ name: z.string().min(1).max(60) });
 
@@ -19,14 +20,15 @@ export type CreateApiKeyResult =
 export async function createApiKey(
   input: z.infer<typeof CreateInput>,
 ): Promise<CreateApiKeyResult> {
+  const { t } = await getT();
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Not signed in" };
+  if (!user) return { ok: false, error: t("actionErr.notSignedIn") };
 
   const parsed = CreateInput.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "Invalid input" };
+  if (!parsed.success) return { ok: false, error: t("actionErr.invalidInput") };
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -36,7 +38,7 @@ export async function createApiKey(
   if (!profile || !PLANS[profile.plan].unlocksScale) {
     return {
       ok: false,
-      error: "API access is a Scale-plan feature. Upgrade at /app/billing.",
+      error: t("actionErr.apiScale"),
     };
   }
 
@@ -58,11 +60,12 @@ export async function createApiKey(
 }
 
 export async function revokeApiKey(id: string) {
+  const { t } = await getT();
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Not signed in" };
+  if (!user) return { ok: false, error: t("actionErr.notSignedIn") };
 
   const { error } = await supabase
     .from("api_keys")

@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { signOut } from "@/app/actions/auth";
-import { LanguageToggle } from "@/components/i18n/language-toggle";
 import { useT } from "@/components/i18n/locale-provider";
 import { AppMobileNav } from "@/components/dashboard/mobile-nav";
 import type { Database } from "@/lib/supabase/types";
@@ -55,7 +54,6 @@ export function AppTopbar({ profile }: { profile: Profile }) {
       </div>
 
       <div className="flex items-center gap-3">
-        <LanguageToggle />
         <DropdownMenu>
         <DropdownMenuTrigger className="rounded-full focus:outline-none">
           <Avatar>
