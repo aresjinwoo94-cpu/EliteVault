@@ -126,7 +126,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <tr><td>SEO</td><td>Meta tags, crawlability, links, keywords</td><td>Organic visibility</td></tr>
 <tr><td>Conversion (CRO)</td><td>Offer clarity, trust, layout, what makes people buy</td><td>Turning traffic into sales</td></tr>
 </tbody></table>
-<p>Speed and SEO tools are useful and genuinely free (Google's own PageSpeed Insights and Search Console are the gold standard). But here's the trap most founders fall into: <strong>a fast, SEO-clean store can still convert at near-zero.</strong> Speed and crawlability get visitors <em>to</em> your store. Conversion is whether they buy once they arrive. If you have traffic but no sales, a speed score won't tell you why.</p>
+<p>Speed and SEO tools are useful and genuinely free (Google's own PageSpeed Insights and Search Console are the gold standard). But here's the trap most founders fall into: <strong>a fast, SEO-clean store can still convert at near-zero.</strong> Speed and crawlability get visitors <em>to</em> your store. Conversion is whether they buy once they arrive. If you have traffic but no sales, a speed score won't tell you why — see <a href="/blog/shopify-store-analyzer">what a Shopify store analyzer checks</a> beyond speed.</p>
 <blockquote>A 100/100 speed score on a store nobody buys from is a fast way to lose money.</blockquote>
 <h2>What a conversion-focused audit actually checks</h2>
 <p>This is the type that answers "why am I not selling?" — and the one generic analyzers skip. A real conversion audit grades how a buyer experiences your store:</p>
@@ -278,7 +278,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>Total it up. Most stores leave a meaningful share of potential revenue on the table across these levers, and fixing the top findings first is where the leverage is — which is exactly why the audit was worth $2k in the first place.</p>
 <blockquote>The value was never in spotting the problems. It was in spotting them <em>fast</em> and ranking them right.</blockquote>
 <h2>Why "do it yourself" still fails most founders</h2>
-<p>Here's the catch the DIY checklists never admit: <strong>you can't audit your own store objectively.</strong> You've stared at it for 300 hours. You know what every button does. You mentally fill in the gaps a first-time visitor never will. That's the actual thing you're paying a consultant for — a cold, outside set of eyes that reacts the way a stranger with a credit card would.</p>
+<p>Here's the catch the DIY checklists never admit: <strong>you can't audit your own store objectively.</strong> You've stared at it for 300 hours. You know what every button does. You mentally fill in the gaps a first-time visitor never will. That's the actual thing you're paying a consultant for — a cold, outside set of eyes that reacts the way a stranger with a credit card would. Here is <a href="/blog/shopify-store-analyzer">what a Shopify store analyzer checks</a>, in plain terms.</p>
 <p>This is the gap AI quietly closed. A vision model has never seen your store before. It reacts to your hero exactly like a cold visitor — because to it, every visit is the first.</p>
 <h2>What a 60-second AI audit actually returns</h2>
 <p>This is the part that makes the $2,000 line item hard to defend. Modern AI audits return the same three deliverables — diagnosis, evidence, prioritized fixes — plus things a consultant physically can't do at that speed:</p>
@@ -552,7 +552,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>Cold Meta/TikTok traffic converts far lower than branded traffic, especially in a campaign's first week. <strong>Diagnose:</strong> segment conversion by source. If branded is fine and cold is near zero, the store fails the first-impression test — not the whole funnel. More on <a href="/blog/good-conversion-rate-for-shopify">what's actually a good rate by source</a>.</p>
 
 <h2>3. The store is slow</h2>
-<p>Every extra second of load time sheds buyers, and mobile is least forgiving. <strong>Diagnose:</strong> run a free PageSpeed Insights test on mobile. LCP over ~2.5s? Fix images and heavy apps first.</p>
+<p>Every extra second of load time sheds buyers, and mobile is least forgiving. <strong>Diagnose:</strong> run a free PageSpeed Insights test on mobile. LCP over ~2.5s? Fix images and heavy apps first. A speed test only covers this one cause, though — here is <a href="/blog/shopify-store-analyzer">what a Shopify store analyzer checks</a> beyond speed.</p>
 
 <h2>4. No trust, or trust hidden below the fold</h2>
 <p>Unknown brand + no reviews + no guarantees = no purchase. <strong>Diagnose:</strong> can a buyer see reviews, a return policy, and secure-checkout signals <em>near the buy button</em>? If trust lives only in the footer, it doesn't exist.</p>
@@ -1110,6 +1110,102 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         q: "Is it worth updating my theme for the 2026 Shopify features?",
         a: "Only if you have a specific problem it solves. A theme update is a real risk to a converting store, and most of the 2026 releases are platform depth rather than conversion wins. Diagnose what's actually costing you sales first, then decide whether a theme change is the fix.",
+      },
+    ],
+  },
+  {
+    slug: "shopify-store-analyzer",
+    title: "Shopify Store Analyzer: What It Checks & Which to Use (2026)",
+    h1: "What is a Shopify store analyzer — and what should it actually check?",
+    description:
+      "A Shopify store analyzer scores your store and ranks what's costing you sales. What it checks, how it differs from a speed test, and how to run one free.",
+    keyword: "shopify store analyzer",
+    keywords: [
+      "shopify store analyzer",
+      "shopify store analyzer free",
+      "shopify store audit tool",
+      "analyze shopify store",
+      "shopify conversion analyzer",
+    ],
+    date: "2026-10-04",
+    updated: "2026-10-04",
+    author: "Ariel Jiménez",
+    readingMinutes: 3,
+    excerpt:
+      "What a Shopify store analyzer checks, how it differs from a speed test, and the five things worth fixing first.",
+    bodyHtml: `
+<p class="lede">A <strong>Shopify store analyzer</strong> scans your storefront and ranks what's costing you sales — trust, speed, product-page and checkout friction — instead of only scoring page speed. It matters because 70.22% of carts are abandoned (Baymard, 2025). Our own <a href="/">Shopify store analyzer</a> scores your store and ranks fixes in about a minute.</p>
+
+<h2>What does a Shopify store analyzer actually do?</h2>
+<p>It looks at your store the way a first-time visitor would, then turns what it sees into a short, ordered to-do list. The point is not a vanity score. It is knowing which single change is worth your next hour, so you stop guessing and stop redesigning pages that were never the problem.</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">How a store analyzer works</div>
+<div class="mt-4"><svg viewBox="0 0 340 320" class="w-full h-auto" style="max-width:420px;margin:0 auto;display:block" role="img" aria-label="Flow of a Shopify store analyzer in four steps: 1, store URL, you paste your homepage link; 2, capture, a screenshot of the live storefront; 3, five checks: above the fold, trust signals, product page, speed and mobile, checkout friction; 4, ranked fixes, what to change first by impact."><rect x="10" y="4" width="320" height="58" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><text x="170" y="29" text-anchor="middle" font-size="17" font-weight="600" fill="#ffffff">Store URL</text><text x="170" y="49" text-anchor="middle" font-size="14.5" fill="rgba(255,255,255,0.6)">You paste your homepage link</text><path d="M 170 64 L 170 78" stroke="#2DD4BF" stroke-width="2" /><path d="M 164 72 L 170 80 L 176 72" fill="none" stroke="#2DD4BF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><rect x="10" y="84" width="320" height="58" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><text x="170" y="109" text-anchor="middle" font-size="17" font-weight="600" fill="#ffffff">Capture</text><text x="170" y="129" text-anchor="middle" font-size="14.5" fill="rgba(255,255,255,0.6)">A screenshot of the live storefront</text><path d="M 170 144 L 170 158" stroke="#2DD4BF" stroke-width="2" /><path d="M 164 152 L 170 160 L 176 152" fill="none" stroke="#2DD4BF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><rect x="10" y="164" width="320" height="58" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><text x="170" y="189" text-anchor="middle" font-size="17" font-weight="600" fill="#ffffff">5 checks</text><text x="170" y="209" text-anchor="middle" font-size="14.5" fill="rgba(255,255,255,0.6)">Fold · trust · product · speed · checkout</text><path d="M 170 224 L 170 238" stroke="#2DD4BF" stroke-width="2" /><path d="M 164 232 L 170 240 L 176 232" fill="none" stroke="#2DD4BF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><rect x="10" y="244" width="320" height="58" rx="12" fill="rgba(45,212,191,0.12)" stroke="#2DD4BF" stroke-width="1.5" /><text x="170" y="269" text-anchor="middle" font-size="17" font-weight="600" fill="#2DD4BF">Ranked fixes</text><text x="170" y="289" text-anchor="middle" font-size="14.5" fill="rgba(255,255,255,0.6)">What to change first, by impact</text></svg></div>
+<figcaption class="mt-3 text-xs text-white/35">A generic flow; tools differ in what they capture and score.</figcaption>
+</figure>
+
+<h2>What should it check?</h2>
+<p>Five areas decide most first visits. A useful analyzer covers all of them, and tells you which one is hurting you most:</p>
+
+<figure class="my-8">
+<table>
+<thead>
+<tr><th>Check</th><th>What it looks at</th><th>Why it costs sales</th></tr>
+</thead>
+<tbody>
+<tr><td>Above the fold</td><td>Headline, offer, main button</td><td>Visitors can't tell what you sell</td></tr>
+<tr><td>Trust signals</td><td>Reviews, guarantees, policies</td><td>Doubt stops the first purchase</td></tr>
+<tr><td>Product page</td><td>Photos, copy, price, objections</td><td>Questions go unanswered</td></tr>
+<tr><td>Speed &amp; mobile</td><td>Load feel, layout on a phone</td><td>Slow or cramped pages get abandoned</td></tr>
+<tr><td>Checkout friction</td><td>Fees, steps, guest checkout</td><td>Buyers quit at the last step</td></tr>
+</tbody>
+</table>
+</figure>
+
+<h2>Is a speed test the same thing?</h2>
+<p>No. A speed test answers "is it fast?" An analyzer answers "why aren't people buying?" A fast store can still convert badly, and an SEO crawler will not notice either, because it checks whether Google can read your pages, not whether a shopper trusts them. Speed tests and crawlers are worth running. They just answer different questions.</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">What each tool category covers</div>
+<div class="mt-4"><svg viewBox="0 0 340 258" class="w-full h-auto" style="max-width:420px;margin:0 auto;display:block" role="img" aria-label="Typical coverage by tool category. Speed test: covers page speed only. SEO crawler: covers technical SEO only. Store analyzer: covers page speed, trust and UX, checkout friction, and fixes ranked by sales impact, but not technical SEO."><text x="172" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Speed</text><text x="172" y="34" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">test</text><text x="240" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">SEO</text><text x="240" y="34" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">crawler</text><text x="305" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">Store</text><text x="305" y="34" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">analyzer</text><line x1="0" y1="46" x2="340" y2="46" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="72" font-size="14.5" fill="rgba(255,255,255,0.75)">Page speed</text><circle cx="172" cy="67" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 167 67 L 170.5 71 L 177.5 63" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="235" y1="67" x2="245" y2="67" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="305" cy="67" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 300 67 L 303.5 71 L 310.5 63" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="0" y1="88" x2="340" y2="88" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="114" font-size="14.5" fill="rgba(255,255,255,0.75)">Technical SEO</text><line x1="167" y1="109" x2="177" y2="109" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="240" cy="109" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 235 109 L 238.5 113 L 245.5 105" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="300" y1="109" x2="310" y2="109" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="0" y1="130" x2="340" y2="130" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="156" font-size="14.5" fill="rgba(255,255,255,0.75)">Trust &amp; UX</text><line x1="167" y1="151" x2="177" y2="151" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="235" y1="151" x2="245" y2="151" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="305" cy="151" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 300 151 L 303.5 155 L 310.5 147" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="0" y1="172" x2="340" y2="172" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="198" font-size="14.5" fill="rgba(255,255,255,0.75)">Checkout friction</text><line x1="167" y1="193" x2="177" y2="193" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="235" y1="193" x2="245" y2="193" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="305" cy="193" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 300 193 L 303.5 197 L 310.5 189" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="0" y1="214" x2="340" y2="214" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="240" font-size="14.5" fill="rgba(255,255,255,0.75)">Ranked fixes</text><line x1="167" y1="235" x2="177" y2="235" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="235" y1="235" x2="245" y2="235" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="305" cy="235" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 300 235 L 303.5 239 L 310.5 231" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /></svg></div>
+<figcaption class="mt-3 text-xs text-white/35">Typical coverage by category, not a review of any product.</figcaption>
+</figure>
+
+<h2>Why does it matter?</h2>
+<p>Because the biggest leaks sit in the places an analyzer checks. These are the top reasons shoppers who meant to buy still left. None of them is about the product itself. They are all friction, the kind of problem a good analyzer helps you spot:</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">Why shoppers who intended to buy abandoned checkout</div>
+<div class="mt-4"><svg viewBox="0 0 340 246" class="w-full h-auto" style="max-width:420px;margin:0 auto;display:block" role="img" aria-label="Top reasons shoppers who intended to buy abandoned checkout, per Baymard Institute (updated September 2025): extra costs at checkout 40%; delivery too slow 20%; card security doubts 19%; forced account creation 18%; checkout too long 17%."><text x="0" y="19" font-size="14.5" fill="rgba(255,255,255,0.7)">Extra costs at checkout</text><rect x="0" y="26" width="260" height="15" rx="4" fill="#2DD4BF" /><text x="268" y="39" font-size="15" font-weight="600" fill="#ffffff">40%</text><text x="0" y="67" font-size="14.5" fill="rgba(255,255,255,0.7)">Delivery too slow</text><rect x="0" y="74" width="130" height="15" rx="4" fill="rgba(45,212,191,0.55)" /><text x="138" y="87" font-size="15" font-weight="600" fill="#ffffff">20%</text><text x="0" y="115" font-size="14.5" fill="rgba(255,255,255,0.7)">Card security doubts</text><rect x="0" y="122" width="123.5" height="15" rx="4" fill="rgba(45,212,191,0.55)" /><text x="131.5" y="135" font-size="15" font-weight="600" fill="#ffffff">19%</text><text x="0" y="163" font-size="14.5" fill="rgba(255,255,255,0.7)">Forced account creation</text><rect x="0" y="170" width="117" height="15" rx="4" fill="rgba(45,212,191,0.55)" /><text x="125" y="183" font-size="15" font-weight="600" fill="#ffffff">18%</text><text x="0" y="211" font-size="14.5" fill="rgba(255,255,255,0.7)">Checkout too long</text><rect x="0" y="218" width="110.5" height="15" rx="4" fill="rgba(45,212,191,0.55)" /><text x="118.5" y="231" font-size="15" font-weight="600" fill="#ffffff">17%</text></svg></div>
+<figcaption class="mt-3 text-xs text-white/35">Source: <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">Baymard Institute</a> (updated September 2025). Respondents could pick more than one reason.</figcaption>
+</figure>
+
+<h2>How do you run one in 60 seconds?</h2>
+<p>EliteVault’s free audit works from a screenshot of your live storefront, so it judges what a shopper sees, not your analytics or your checkout flow.</p>
+<ol>
+<li>Paste your store URL into the analyzer.</li>
+<li>Wait about a minute for the scan and read the ranked list.</li>
+<li>Fix the top-ranked issue first, then re-run to confirm it moved.</li>
+</ol>
+<p><a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-store-analyzer">Analyze your store free →</a> Full disclosure, EliteVault is our tool. For other options, see <a href="/blog/free-website-audit-tools">free website audit tools</a>; for the fixes themselves, <a href="/blog/why-your-shopify-store-isnt-converting">why your Shopify store isn't converting</a>.</p>
+`.trim(),
+    faqs: [
+      {
+        q: "What is a Shopify store analyzer?",
+        a: "A tool that scans your storefront and ranks what's costing you sales, covering trust, speed, product pages and checkout friction rather than a single speed score.",
+      },
+      {
+        q: "Is there a free Shopify store analyzer?",
+        a: "Yes. Free options exist, including EliteVault's: the free audit page scans your store, and the Free plan includes one full audit with your score, an annotated screenshot and your top-priority fix. The rest of the ranked fixes and unlimited audits need a paid plan.",
+      },
+      {
+        q: "How is a store analyzer different from Google PageSpeed Insights?",
+        a: "PageSpeed Insights measures how fast a page loads and renders. A store analyzer also judges what a shopper sees: offer clarity, trust signals, product pages and checkout friction, then ranks fixes by impact.",
+      },
+      {
+        q: "How often should I analyze my store?",
+        a: "After every theme or offer change, and at least once a month. That is advice rather than a measured benchmark; the point is to catch regressions before they cost you sales.",
       },
     ],
   },
