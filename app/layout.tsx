@@ -8,6 +8,7 @@ import { isInternalRequest } from "@/lib/analytics/is-internal";
 import { SupportChat } from "@/components/support/support-chat";
 import { socialUrls } from "@/lib/company";
 import { getLocale } from "@/lib/i18n/server";
+import { clientMessages } from "@/lib/i18n/messages";
 import { LocaleProvider } from "@/components/i18n/locale-provider";
 import "./globals.css";
 
@@ -141,7 +142,7 @@ export default async function RootLayout({
         {/* Analítica first-party del panel del dueño (registra visitas en page_views).
             Respeta el mismo opt-out interno que AnalyticsGate. */}
         <PageTracker isInternal={isInternal} />
-        <LocaleProvider locale={locale}>
+        <LocaleProvider locale={locale} messages={clientMessages(locale)}>
           <AnalyticsGate isInternal={isInternal}>
             <TooltipProvider delayDuration={150}>
               {children}

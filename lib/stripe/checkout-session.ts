@@ -3,9 +3,10 @@ import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe/server";
 import { getCheckoutPriceId } from "@/lib/stripe/plans";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
-import { absoluteUrl } from "@/lib/utils";
 import { inngest } from "@/inngest/client";
 import { CHECKOUT_PAYMENT_METHOD_TYPES } from "@/lib/stripe/payment-method-types";
+import { buildCheckoutSessionParams } from "@/lib/stripe/checkout-params";
+import type { Locale } from "@/lib/i18n/config";
 
 /**
  * Brief §5.4 — the embedded form renders in a Stripe-owned iframe on
@@ -68,11 +69,14 @@ export async function createEmbeddedCheckoutSession({
   userEmail,
   plan,
   interval,
+  locale,
 }: {
   userId: string;
   userEmail: string | null;
   plan: "pro" | "scale";
   interval: "month" | "year";
+  /** The site's language — Stripe's Checkout follows it, never the browser. */
+  locale: Locale;
 }): Promise<CheckoutSessionResult> {
   try {
     const price = getCheckoutPriceId(plan, interval);
@@ -137,16 +141,6 @@ export async function createEmbeddedCheckoutSession({
         .eq("id", userId);
     }
 
-    // Plan-aware label so the checkout page reflects what they're buying.
-    // Stripe shows the line-item name from the Price/Product config in the
-    // Dashboard — these custom_text strings add EliteVault-specific copy
-    // ABOVE and BELOW the standard payment fields.
-    const planLabel = plan === "pro" ? "Pro" : "Scale";
-    const trialLine =
-      plan === "scale"
-        ? "Includes Meta Campaign Scenario Modeler + Meta Ads optimizer + REST API."
-        : "Includes the full Analyzer + Library + Community publishing.";
-
     // v3.8.3 — Embedded Checkout (ui_mode: "embedded"). The session returns a
     // `client_secret` that the client-side EmbeddedCheckout component mounts
     // inside our dark-themed wrapper at /app/checkout. Stripe still owns PCI
@@ -155,28 +149,19 @@ export async function createEmbeddedCheckoutSession({
     // success_url/cancel_url are replaced by a single return_url that both
     // successful and canceled checkouts hit. We disambiguate in
     // /app/checkout/return based on the retrieved session's status.
+    //
+    // Price, Adaptive Pricing, payment methods, locale, custom text and
+    // metadata are built in lib/stripe/checkout-params.ts so the locale
+    // contract is unit-tested; only the per-session theme is applied here.
     const params: Stripe.Checkout.SessionCreateParams = {
-      ui_mode: "embedded",
-      mode: "subscription",
-      customer: customerId,
-      line_items: [{ price, quantity: 1 }],
-
-      // Charge the buyer in their local currency. Stripe converts the USD price
-      // at checkout based on the buyer's location and presents the local amount;
-      // nothing else about the session changes (same price ID, payment methods,
-      // metadata, branding, webhook). The webhook keys credits off plan/price
-      // ID, never the amount/currency, so a local-currency charge grants the
-      // same credits. Requires Adaptive Pricing to be enabled in the Stripe
-      // Dashboard (Settings → Payments) for the mode being used.
-      adaptive_pricing: { enabled: true },
-      return_url: absoluteUrl(
-        "/app/checkout/return?session_id={CHECKOUT_SESSION_ID}",
-      ),
-      allow_promotion_codes: true,
-      billing_address_collection: "auto",
-
-      ...DARK_CHECKOUT_BRANDING,
-
+      ...buildCheckoutSessionParams({
+        customerId,
+        price,
+        userId,
+        plan,
+        interval,
+        locale,
+      }),
       // Explicit payment methods — Stripe SHOULD auto-detect from the
       // dashboard config, but for Embedded Checkout sessions some accounts
       // only show a subset (Amazon Pay + Link) unless we name the methods
@@ -202,25 +187,7 @@ export async function createEmbeddedCheckoutSession({
       // fails until they don't.
       payment_method_types: [...CHECKOUT_PAYMENT_METHOD_TYPES],
 
-      // Locale follows the user's browser language.
-      locale: "auto",
-
-      custom_text: {
-        submit: {
-          message: `You're upgrading to EliteVault ${planLabel}. ${trialLine}`,
-        },
-      },
-
-      customer_update: {
-        name: "auto",
-        address: "auto",
-      },
-
-      subscription_data: {
-        metadata: { supabase_user_id: userId, plan },
-        description: `EliteVault ${planLabel} — ${interval === "year" ? "annual" : "monthly"} subscription`,
-      },
-      metadata: { supabase_user_id: userId, plan },
+      ...DARK_CHECKOUT_BRANDING,
     };
 
     // Brief §5.4 — theming is a nicety; being able to pay is not. If Stripe

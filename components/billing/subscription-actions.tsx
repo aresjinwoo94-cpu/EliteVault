@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/components/i18n/locale-provider";
 
 /**
  * In-app cancel / resume for an active paid subscription — hits
@@ -21,6 +22,7 @@ export function SubscriptionActions({
   periodEndLabel: string | null;
 }) {
   const router = useRouter();
+  const { t } = useT();
   const [isPending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
 
@@ -33,13 +35,13 @@ export function SubscriptionActions({
           body: JSON.stringify({ action }),
         });
         const j = (await res.json()) as { error?: string; detail?: string };
-        if (!res.ok) throw new Error(j.detail ?? j.error ?? "Request failed");
+        if (!res.ok) throw new Error(j.detail ?? j.error ?? t("billing.requestFailed"));
         toast.success(
           action === "cancel"
             ? periodEndLabel
-              ? `Subscription will end on ${periodEndLabel}.`
-              : "Subscription set to cancel at period end."
-            : "Subscription resumed — you're all set.",
+              ? t("billing.subEnds").replace("{date}", periodEndLabel)
+              : t("billing.subEndsNoDate")
+            : t("billing.subResumed"),
         );
         setConfirming(false);
         router.refresh();
@@ -57,7 +59,7 @@ export function SubscriptionActions({
         disabled={isPending}
         onClick={() => call("resume")}
       >
-        {isPending ? "Resuming…" : "Resume subscription"}
+        {isPending ? t("billing.resuming") : t("billing.resume")}
       </Button>
     );
   }
@@ -70,7 +72,7 @@ export function SubscriptionActions({
           disabled={isPending}
           onClick={() => setConfirming(false)}
         >
-          Keep plan
+          {t("billing.keepPlan")}
         </Button>
         <Button
           variant="outline"
@@ -78,7 +80,7 @@ export function SubscriptionActions({
           onClick={() => call("cancel")}
           className="border-destructive/40 text-destructive hover:bg-destructive/[0.06]"
         >
-          {isPending ? "Cancelling…" : "Confirm cancellation"}
+          {isPending ? t("billing.cancelling") : t("billing.confirmCancel")}
         </Button>
       </div>
     );
@@ -90,7 +92,7 @@ export function SubscriptionActions({
       className="text-white/55 hover:text-white"
       onClick={() => setConfirming(true)}
     >
-      Cancel subscription
+      {t("billing.cancelSub")}
     </Button>
   );
 }

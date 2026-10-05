@@ -12,6 +12,9 @@ import { PlanCard } from "@/components/billing/plan-card";
 import { PortalButton } from "@/components/billing/portal-button";
 import { SubscriptionActions } from "@/components/billing/subscription-actions";
 import { PLANS, planFromPriceId } from "@/lib/stripe/plans";
+import { getT } from "@/lib/i18n/server";
+import { formatDate } from "@/lib/i18n/format";
+import { localizePlan } from "@/lib/i18n/plan-text";
 
 export const metadata = { title: "Billing" };
 
@@ -116,9 +119,12 @@ export default async function BillingPage({
   searchParams: Promise<{ checkout?: string; session_id?: string }>;
 }) {
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [
+    {
+      data: { user },
+    },
+    { t, locale },
+  ] = await Promise.all([supabase.auth.getUser(), getT()]);
 
   const sp = await searchParams;
 
@@ -144,16 +150,27 @@ export default async function BillingPage({
       .maybeSingle(),
   ]);
 
-  const plan = PLANS[profile?.plan ?? "free"];
+  const plan = localizePlan(PLANS[profile?.plan ?? "free"], t);
+  const periodEnd = sub?.current_period_end
+    ? formatDate(sub.current_period_end, locale)
+    : null;
+  // Raw Stripe statuses ("active", "past_due"…) in the site's language; an
+  // unknown one falls back to the raw value rather than a missing-key path.
+  const statusKey = `billing.statusMap.${sub?.status}`;
+  const statusLabel = sub?.status
+    ? t(statusKey) === statusKey
+      ? sub.status
+      : t(statusKey)
+    : "—";
 
   return (
     <div className="p-6 md:p-10 lg:p-12 pt-10 md:pt-14 max-w-5xl mx-auto space-y-8 md:space-y-10">
       <header>
         <p className="text-xs uppercase tracking-widest text-white/40">
-          Billing
+          {t("billing.eyebrow")}
         </p>
         <h1 className="mt-2 font-serif text-4xl md:text-5xl tracking-tight leading-[1.05]">
-          Plans & subscription
+          {t("billing.title")}
         </h1>
       </header>
 
@@ -161,13 +178,17 @@ export default async function BillingPage({
         <Card className="border-success/30 bg-success/[0.04] p-4 flex flex-col sm:flex-row sm:items-start gap-3">
           <CheckCircle2 className="size-5 text-success shrink-0 mt-0.5" />
           <div>
-            <p className="font-medium text-white">Welcome to {plan.name} 👑</p>
+            <p className="font-medium text-white">
+              {t("billing.welcome").replace("{plan}", plan.name)}
+            </p>
             <p className="text-sm text-white/55 mt-0.5">
-              Your credits are loaded. Run your first analysis →
+              {t("billing.welcomeSub")}
             </p>
           </div>
           <Link href="/app/analyzer" className="sm:ml-auto">
-            <Button size="sm" className="w-full sm:w-auto">Start analyzing</Button>
+            <Button size="sm" className="w-full sm:w-auto">
+              {t("billing.startAnalyzing")}
+            </Button>
           </Link>
         </Card>
       )}
@@ -178,21 +199,20 @@ export default async function BillingPage({
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
           <div>
             <p className="text-xs uppercase tracking-widest text-white/40">
-              Current plan
+              {t("billing.currentPlan")}
             </p>
             <div className="mt-2 flex items-center gap-3">
               <h2 className="font-serif text-3xl">{plan.name}</h2>
               <Badge variant={plan.id === "free" ? "default" : "gold"}>
-                {plan.id.toUpperCase()}
+                {plan.name.toUpperCase()}
               </Badge>
             </div>
             <p className="mt-2 text-sm text-white/55 max-w-md">
               {plan.description}
             </p>
-            {sub?.cancel_at_period_end && (
+            {sub?.cancel_at_period_end && periodEnd && (
               <p className="mt-3 text-xs text-warning">
-                Your plan ends on{" "}
-                {new Date(sub.current_period_end!).toLocaleDateString()}.
+                {t("billing.planEnds").replace("{date}", periodEnd)}
               </p>
             )}
           </div>
@@ -201,16 +221,12 @@ export default async function BillingPage({
               (sub.status === "active" || sub.status === "trialing") && (
                 <SubscriptionActions
                   cancelAtPeriodEnd={!!sub.cancel_at_period_end}
-                  periodEndLabel={
-                    sub.current_period_end
-                      ? new Date(sub.current_period_end).toLocaleDateString()
-                      : null
-                  }
+                  periodEndLabel={periodEnd}
                 />
               )}
             {profile?.stripe_customer_id && (
               <PortalButton variant="outline">
-                Manage in Stripe
+                {t("billing.manageInStripe")}
                 <ExternalLink className="size-3.5" />
               </PortalButton>
             )}
@@ -220,7 +236,7 @@ export default async function BillingPage({
         <div className="mt-7 grid grid-cols-2 md:grid-cols-3 gap-4">
           <div>
             <p className="text-xs uppercase tracking-widest text-white/40">
-              Credits left
+              {t("billing.creditsLeft")}
             </p>
             <p className="mt-1 font-serif text-3xl text-gold-gradient tnum">
               {profile?.credits ?? 0}
@@ -228,21 +244,17 @@ export default async function BillingPage({
           </div>
           <div>
             <p className="text-xs uppercase tracking-widest text-white/40">
-              Next reset
+              {t("billing.nextReset")}
             </p>
             <p className="mt-1 text-sm text-white/80">
-              {sub?.current_period_end
-                ? new Date(sub.current_period_end).toLocaleDateString()
-                : "—"}
+              {periodEnd ?? "—"}
             </p>
           </div>
           <div>
             <p className="text-xs uppercase tracking-widest text-white/40">
-              Status
+              {t("billing.status")}
             </p>
-            <p className="mt-1 text-sm text-white/80 capitalize">
-              {sub?.status ?? "—"}
-            </p>
+            <p className="mt-1 text-sm text-white/80">{statusLabel}</p>
           </div>
         </div>
       </Card>
@@ -250,7 +262,9 @@ export default async function BillingPage({
       {/* Upgrade */}
       <section>
         <h2 className="text-lg font-medium tracking-tight mb-4">
-          {plan.id === "scale" ? "Your plan" : "Upgrade your plan"}
+          {plan.id === "scale"
+            ? t("billing.yourPlan")
+            : t("billing.upgradeHeading")}
         </h2>
         <div className="grid md:grid-cols-3 gap-3">
           {Object.values(PLANS).map((p) => (
@@ -264,16 +278,13 @@ export default async function BillingPage({
         </div>
         {!!sub && sub.status === "active" && plan.id !== "scale" && (
           <p className="mt-3 text-xs text-white/40">
-            Switching plans opens the Stripe Customer Portal — Stripe pro-rates
-            the difference and cancels the previous tier automatically. No
-            parallel subscriptions.
+            {t("billing.switchNote")}
           </p>
         )}
       </section>
 
       <p className="text-xs text-white/30 text-center">
-        Payments are processed securely by Stripe. You can cancel anytime from
-        the Customer Portal.
+        {t("billing.footerNote")}
       </p>
     </div>
   );

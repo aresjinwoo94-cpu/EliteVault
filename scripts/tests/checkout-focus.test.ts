@@ -33,14 +33,14 @@ test("the payment panel comes first on a phone and second on desktop", () => {
 test("the plan header and price are not repeated on a phone", () => {
   const layout = code("components/billing/checkout-layout.tsx");
   // Desktop header + pricing card: desktop only.
-  assert.match(layout, /className="hidden lg:block"[\s\S]{0,200}You&apos;re upgrading to/);
+  assert.match(layout, /className="hidden lg:block"[\s\S]{0,200}checkout.upgradingTo/);
   assert.match(layout, /hidden overflow-hidden rounded-2xl[^"]*lg:block/, "pricing card is desktop-only");
   // Phone replacement: one compact line, phone only.
-  assert.match(layout, /lg:hidden[\s\S]{0,400}You&apos;re upgrading to/);
+  assert.match(layout, /lg:hidden[\s\S]{0,400}checkout.upgradingTo/);
   // Exactly two "upgrading to" blocks total (one per breakpoint), never both.
-  assert.equal((layout.match(/You&apos;re upgrading to/g) ?? []).length, 2);
+  assert.equal((layout.match(/checkout.upgradingTo/g) ?? []).length, 2);
   // And the "Payment" label doesn't stack on top of the compact line.
-  assert.match(layout, /hidden text-\[11px\][^"]*lg:block"\s*>\s*\n\s*Payment/);
+  assert.match(layout, /hidden text-\[11px\][^"]*lg:block"\s*>\s*\{t\("checkout\.payment"\)\}/);
 });
 
 test("the app chrome is hidden on the payment route, phones only", () => {
@@ -76,7 +76,7 @@ test("the payment route always keeps a way back", () => {
 // vanish silently if a later edit dropped them.
 test("the extraction kept everything the page used to render", () => {
   const layout = code("components/billing/checkout-layout.tsx");
-  for (const piece of ["<ResultsBars", "<PaymentMethods", "<CheckoutReviews", "What you get"]) {
+  for (const piece of ["<ResultsBars", "<PaymentMethods", "<CheckoutReviews", "checkout.whatYouGet"]) {
     assert.ok(layout.includes(piece), `missing ${piece}`);
   }
   const page = code("app/(app)/app/checkout/page.tsx");

@@ -10,6 +10,8 @@ import type { PlanTier } from "@/lib/supabase/types";
 import { ResultsBars } from "@/components/billing/results-bars";
 import { PaymentMethods } from "@/components/billing/payment-methods";
 import { CheckoutReviews } from "@/components/billing/checkout-reviews";
+import { getT } from "@/lib/i18n/server";
+import { localizePlan } from "@/lib/i18n/plan-text";
 
 /**
  * The checkout page's chrome and plan summary, around a payment slot.
@@ -25,7 +27,7 @@ import { CheckoutReviews } from "@/components/billing/checkout-reviews";
  * (components/dashboard/focus-chrome.tsx). Desktop keeps the original
  * two-column layout, order and spacing.
  */
-export function CheckoutLayout({
+export async function CheckoutLayout({
   planId,
   interval,
   payment,
@@ -35,7 +37,8 @@ export function CheckoutLayout({
   /** The live Stripe panel, or a stand-in when previewing the layout. */
   payment: ReactNode;
 }) {
-  const plan = PLANS[planId];
+  const { t } = await getT();
+  const plan = localizePlan(PLANS[planId], t);
 
   return (
     <div className="min-h-screen bg-obsidian-950">
@@ -48,11 +51,11 @@ export function CheckoutLayout({
             className="inline-flex items-center gap-1.5 text-xs text-white/45 hover:text-white transition-colors"
           >
             <ArrowLeft className="size-3.5" />
-            Back to billing
+            {t("checkout.backToBilling")}
           </Link>
           <div className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-white/30">
             <Lock className="size-3" />
-            Secure checkout · Stripe
+            {t("checkout.secureCheckout")}
           </div>
         </div>
       </header>
@@ -71,7 +74,7 @@ export function CheckoutLayout({
                 in one column read as a rendering bug. */}
             <div className="hidden lg:block">
               <p className="text-xs uppercase tracking-widest text-white/40">
-                You&apos;re upgrading to
+                {t("checkout.upgradingTo")}
               </p>
               <h1 className="mt-2 font-serif text-4xl md:text-5xl tracking-tight leading-[1.05]">
                 EliteVault {plan.name}
@@ -89,7 +92,9 @@ export function CheckoutLayout({
                     {plan.name}
                   </Badge>
                   <span className="text-[11px] text-white/40 uppercase tracking-widest ml-auto">
-                    {interval === "month" ? "Monthly billing" : "Annual billing"}
+                    {interval === "month"
+                      ? t("checkout.monthlyBilling")
+                      : t("checkout.annualBilling")}
                   </span>
                 </div>
 
@@ -103,10 +108,9 @@ export function CheckoutLayout({
                     file at all; the charge uses the Stripe Price ID via
                     getCheckoutPriceId — untouched. */}
                 <p className="mt-5 text-sm text-white/55 leading-relaxed">
-                  Your total is shown in the payment panel
                   {interval === "year"
-                    ? " — you're saving 20% vs monthly"
-                    : ""}
+                    ? t("checkout.totalInPanelYear")
+                    : t("checkout.totalInPanel")}
                   .
                 </p>
 
@@ -119,7 +123,7 @@ export function CheckoutLayout({
             {/* What's included */}
             <div className="rounded-2xl border border-white/[0.06] bg-card/40 p-5">
               <p className="text-[11px] uppercase tracking-widest text-white/40 mb-3">
-                What you get
+                {t("checkout.whatYouGet")}
               </p>
               <ul className="space-y-2.5">
                 {plan.features
@@ -155,11 +159,11 @@ export function CheckoutLayout({
             <div className="flex flex-wrap items-start gap-x-6 gap-y-2 text-xs text-white/45">
               <span className="inline-flex items-start gap-2">
                 <Shield className="size-3.5 shrink-0 mt-px text-white/30" />
-                Cancel anytime
+                {t("checkout.cancelAnytime")}
               </span>
               <span className="inline-flex items-start gap-2">
                 <Zap className="size-3.5 shrink-0 mt-px text-white/30" />
-                Credits load instantly
+                {t("checkout.creditsInstant")}
               </span>
             </div>
 
@@ -176,7 +180,7 @@ export function CheckoutLayout({
             <div className="mb-4 flex items-baseline justify-between gap-3 lg:hidden">
               <div className="min-w-0">
                 <p className="text-[11px] uppercase tracking-widest text-white/40">
-                  You&apos;re upgrading to
+                  {t("checkout.upgradingTo")}
                 </p>
                 <p className="truncate font-serif text-xl leading-tight sm:text-2xl">
                   EliteVault {plan.name}
@@ -188,17 +192,16 @@ export function CheckoutLayout({
                   since Stripe won't show the vs-monthly comparison. */}
               {interval === "year" && (
                 <p className="shrink-0 text-right text-[11px] text-success">
-                  Save 20% vs monthly
+                  {t("checkout.saveYearly")}
                 </p>
               )}
             </div>
             <p className="mb-3 hidden text-[11px] uppercase tracking-widest text-white/40 lg:block">
-              Payment
+              {t("checkout.payment")}
             </p>
             {payment}
             <p className="mt-4 text-xs text-white/30 text-center leading-relaxed">
-              Payment is processed by Stripe. EliteVault never sees or stores your
-              card details.
+              {t("checkout.processedByStripe")}
             </p>
           </div>
         </div>

@@ -10,6 +10,7 @@ import {
 import { Loader2 } from "lucide-react";
 import posthog from "posthog-js";
 import type { CheckoutSessionResult } from "@/lib/stripe/checkout-session";
+import { useT } from "@/components/i18n/locale-provider";
 
 /**
  * Embedded Stripe Checkout.
@@ -80,11 +81,12 @@ export function EmbeddedCheckoutForm({
 }
 
 function CheckoutLoading() {
+  const { t } = useT();
   return (
     <div className="rounded-2xl border border-white/[0.06] bg-card/40 p-12 flex flex-col items-center justify-center min-h-[400px]">
       <Loader2 className="size-6 text-champagne-400 animate-spin" />
       <p className="mt-4 text-sm text-white/55">
-        Preparing your secure checkout…
+        {t("checkout.preparing")}
       </p>
     </div>
   );
@@ -96,6 +98,7 @@ function CheckoutFrame({
   sessionPromise: Promise<CheckoutSessionResult>;
 }) {
   const session = use(sessionPromise);
+  const { t } = useT();
   const [stripeBlocked, setStripeBlocked] = useState(false);
   const router = useRouter();
 
@@ -125,18 +128,18 @@ function CheckoutFrame({
   //     BUILD time, so this also means "set it in Vercel AND redeploy".
   let configError: string | null = null;
   if (stripeBlocked) {
-    configError =
-      "Couldn't load Stripe's payment library (js.stripe.com). This is almost always an ad blocker, privacy extension (uBlock, Brave Shields, Ghostery), VPN, or firewall/antivirus on your device blocking Stripe. Disable it for this site, or try an incognito window or a different browser/network.";
+    configError = t("checkout.errStripeBlocked");
   } else if (!PUBLISHABLE_KEY) {
-    configError =
-      "Stripe publishable key is missing. Set NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY in the environment and redeploy (it's baked in at build time).";
+    configError = t("checkout.errNoKey");
   } else if (clientSecret) {
     // (2) Mode mismatch — e.g. a pk_test_ key trying to mount a cs_live_
     //     session. Stripe.js silently refuses to render in this case.
     const km = pkMode(PUBLISHABLE_KEY);
     const sm = csMode(clientSecret);
     if (km && sm && km !== sm) {
-      configError = `Stripe mode mismatch: your publishable key is ${km} mode but the checkout session is ${sm} mode. Set NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY to your pk_${sm}_… key (matching STRIPE_SECRET_KEY) and redeploy.`;
+      configError = t("checkout.errModeMismatch")
+        .replaceAll("{km}", km)
+        .replaceAll("{sm}", sm);
     }
   }
 
@@ -149,7 +152,7 @@ function CheckoutFrame({
           onClick={() => router.push("/app/billing")}
           className="mt-4 text-xs text-white/55 hover:text-white"
         >
-          ← Back to billing
+          {t("checkout.backArrow")}
         </button>
       </div>
     );
@@ -167,7 +170,13 @@ function CheckoutFrame({
         `branding_settings` (lib/stripe/checkout-session.ts), which falls back
         to the Stripe Dashboard's branding.
       */}
-      <EmbeddedCheckoutProvider stripe={stripePromise} options={{ clientSecret }}>
+      {/* key: Stripe refuses a changed clientSecret on a mounted provider, so a
+          new session (e.g. after a language change) must remount it. */}
+      <EmbeddedCheckoutProvider
+        key={clientSecret}
+        stripe={stripePromise}
+        options={{ clientSecret }}
+      >
         <EmbeddedCheckout />
       </EmbeddedCheckoutProvider>
     </div>

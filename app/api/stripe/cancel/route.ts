@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe/server";
+import { getT } from "@/lib/i18n/server";
 import {
   createSupabaseServerClient,
   createSupabaseServiceClient,
@@ -19,6 +20,7 @@ import {
  * The critical webhook + auth flows are untouched.
  */
 export async function POST(req: NextRequest) {
+  const { t } = await getT();
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -46,7 +48,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error: "no_subscription",
-          detail: "No active subscription found on your account.",
+          detail: t("billing.errNoSubscription"),
         },
         { status: 400 },
       );
@@ -79,8 +81,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error: "stale_subscription",
-          detail:
-            "We couldn't find that subscription in Stripe. Try 'Manage in Stripe', or start a fresh checkout.",
+          detail: t("billing.errStaleSubscription"),
         },
         { status: 409 },
       );
