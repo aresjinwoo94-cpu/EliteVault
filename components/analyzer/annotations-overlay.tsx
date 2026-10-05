@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import { ImageOff, Layers, Maximize2, Wrench } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -486,9 +486,9 @@ export function AnnotationsOverlay({
                 <AnimatePresence initial={false}>
                   {isOpen && (
                     <motion.p
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
                       className="mt-1.5 text-xs text-white/55 leading-relaxed overflow-hidden"
                     >
                       <span className="text-champagne-400 font-medium">{t("annotations.fix")}</span>{" "}

@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { Brain, Eye, Scan, Target } from "lucide-react";
 import { AnalyzerCollage } from "./analyzer-collage";
 import { AnalyzerBg } from "./analyzer-bg";

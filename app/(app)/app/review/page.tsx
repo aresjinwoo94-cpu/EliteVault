@@ -1,6 +1,6 @@
 import { DataPill } from "@/components/ui/data-pill";
 import { UserReviewForm } from "@/components/reviews/user-review-form";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient , getUserResult } from "@/lib/supabase/server";
 import { getReviewSettings, getMyReview } from "@/lib/reviews/data";
 import { getT } from "@/lib/i18n/server";
 
@@ -17,7 +17,7 @@ export default async function AppReviewPage() {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getUserResult();
 
   const settings = await getReviewSettings();
   const formOpen = settings.enabled && settings.show_form;

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Sparkles, AlertTriangle } from "lucide-react";
 import {
   createSupabaseServerClient,
-  createSupabaseServiceClient,
+  createSupabaseServiceClient,  getUserResult,
 } from "@/lib/supabase/server";
 import { stripe } from "@/lib/stripe/server";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ export default async function CheckoutReturnPage({
       data: { user },
     },
     { t },
-  ] = await Promise.all([supabase.auth.getUser(), getT()]);
+  ] = await Promise.all([getUserResult(), getT()]);
   if (!user) redirect("/sign-in");
 
   let plan = "free" as ReturnType<typeof planFromPriceId>;

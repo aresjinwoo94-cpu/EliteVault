@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, type RefObject } from "react";
-import posthog from "posthog-js";
+import { phCapture } from "@/lib/analytics/posthog";
 import { ArrowDown, ArrowRight, Crown, Shield, Sparkles, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,9 +38,7 @@ interface PromoProps {
 
 function capture(event: string, props: Record<string, unknown>) {
   try {
-    if (typeof window !== "undefined" && (posthog as { __loaded?: boolean }).__loaded) {
-      posthog.capture(event, props);
-    }
+    phCapture(event, props);
   } catch {
     /* best-effort */
   }

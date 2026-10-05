@@ -631,3 +631,49 @@
     );
   }
 }
+
+/* FAQ accordion (components/marketing/faq.tsx): the answer FADES in (opacity is
+   composited, no layout). Height is deliberately NOT animated: animating
+   block-size re-lays-out the page on every frame, which is exactly the lag the
+   old framer-motion `height: "auto"` version had on phones. */
+.faq-item::details-content {
+  opacity: 0;
+  transition: opacity 0.2s ease-out, content-visibility 0.2s allow-discrete;
+}
+.faq-item[open]::details-content {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .faq-item::details-content {
+    transition: none;
+  }
+}
+
+/* ─── Phone performance: no big blurs, no backdrop-filter ──────────────────
+   Every `blur-3xl` / `blur-2xl` blob (~50 of them) forces the GPU to blur a
+   large layer on each repaint, and `backdrop-blur-*` re-blurs whatever scrolls
+   underneath sticky headers and overlays every frame. On a phone both show up
+   as scroll/tap jank (INP). Desktop keeps the exact look.
+   • blobs: the same coloured circle, edge-faded with a radial mask instead of a
+     Gaussian blur (visually the same soft glow, no filter pass);
+   • backdrop-blur: dropped — the surfaces already carry a translucent
+     obsidian background, so text stays legible. */
+@media (max-width: 767px) {
+  .blur-3xl,
+  .blur-2xl {
+    filter: none;
+    -webkit-mask-image: radial-gradient(closest-side, #000 0%, transparent 100%);
+    mask-image: radial-gradient(closest-side, #000 0%, transparent 100%);
+  }
+  [class*="backdrop-blur"] {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+@media (max-width: 767px) {
+  /* Decorative aurora drift: a perpetual animation of a huge layer — static on phones. */
+  .animate-aurora-drift,
+  .animate-aurora-drift-2 {
+    animation: none;
+  }
+}

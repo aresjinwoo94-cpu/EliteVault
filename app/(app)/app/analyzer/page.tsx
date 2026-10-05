@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowUpRight, Sparkles } from "lucide-react";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient , getUserResult } from "@/lib/supabase/server";
 import { AnalyzerLauncher } from "@/components/analyzer/analyzer-launcher";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -38,7 +38,7 @@ export default async function AnalyzerPage({
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getUserResult();
 
   // Activation-funnel continuity (§2 "regla de continuidad crítica"): if this
   // account was created right after an anonymous audit, re-parent that audit to

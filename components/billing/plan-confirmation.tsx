@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import posthog from "posthog-js";
+import { m as motion } from "framer-motion";
+import { phCapture } from "@/lib/analytics/posthog";
 import {
   CheckCircle2,
   ArrowRight,
@@ -68,10 +68,7 @@ export function PlanConfirmation({
   // signup→pro funnel on in the dashboard.
   useEffect(() => {
     if (!isUpgraded) return;
-    if (typeof window === "undefined") return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (!(posthog as any).__loaded) return;
-    posthog.capture("plan_upgraded", {
+    phCapture("plan_upgraded", {
       plan: expectedPlan,
       credits,
       from_plan: initialPlan,

@@ -1,14 +1,19 @@
-"use client";
-
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { FAQ_ITEMS } from "@/lib/content/faq";
-import { useT } from "@/components/i18n/locale-provider";
+import { getT } from "@/lib/i18n/server";
 
-export function FAQ() {
-  const { t } = useT();
+/**
+ * Landing / pricing FAQ.
+ *
+ * A Server Component built on native <details>/<summary>: no client JS, no
+ * framer-motion, no JS-driven height animation (animating `height: auto` from
+ * script forced layout on every frame — the "lag opening the arrows" on
+ * phones). Keyboard and screen-reader behaviour come from the platform; the
+ * smooth open/close is pure CSS (`.faq-item::details-content` in globals.css,
+ * progressive: browsers without it just open instantly).
+ */
+export async function FAQ() {
+  const { t } = await getT();
   return (
     <section id="faq" className="section-y border-t border-white/[0.04]">
       <div className="container max-w-3xl">
@@ -17,52 +22,23 @@ export function FAQ() {
         </h2>
         <div className="mt-12 space-y-2">
           {FAQ_ITEMS.map((item, i) => (
-            <FAQItem
+            <details
               key={i}
-              q={t(`faqContent.q${i}`) || item.q}
-              a={t(`faqContent.a${i}`) || item.a}
-            />
+              className="faq-item group glow-card rounded-xl border border-white/[0.06] bg-card/40 open:border-white/[0.12]"
+            >
+              <summary className="flex w-full cursor-pointer list-none items-center justify-between px-5 py-4 text-left [&::-webkit-details-marker]:hidden">
+                <span className="font-serif text-base">
+                  {t(`faqContent.q${i}`) || item.q}
+                </span>
+                <ChevronDown className="size-4 shrink-0 text-white/40 transition-transform group-open:rotate-180" />
+              </summary>
+              <p className="px-5 pb-5 text-sm text-white/55 leading-relaxed">
+                {t(`faqContent.a${i}`) || item.a}
+              </p>
+            </details>
           ))}
         </div>
       </div>
     </section>
-  );
-}
-
-function FAQItem({ q, a }: { q: string; a: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div
-      className={cn(
-        "glow-card rounded-xl border border-white/[0.06] bg-card/40",
-        open && "border-white/[0.12]",
-      )}
-    >
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between px-5 py-4 text-left"
-      >
-        <span className="font-serif text-base">{q}</span>
-        <ChevronDown
-          className={cn(
-            "size-4 text-white/40 transition-transform",
-            open && "rotate-180",
-          )}
-        />
-      </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden"
-          >
-            <p className="px-5 pb-5 text-sm text-white/55 leading-relaxed">{a}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
   );
 }

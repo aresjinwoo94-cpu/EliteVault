@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import posthog from "posthog-js";
+import { phCapture } from "@/lib/analytics/posthog";
 import { ArrowRight, Shield, Sparkles, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,9 +43,7 @@ const CHECKOUT_SCALE = "/app/checkout?plan=scale&interval=month";
 
 function capture(event: string, props?: Record<string, unknown>) {
   try {
-    if (typeof window !== "undefined" && (posthog as { __loaded?: boolean }).__loaded) {
-      posthog.capture(event, props);
-    }
+    phCapture(event, props);
   } catch {
     /* best-effort */
   }

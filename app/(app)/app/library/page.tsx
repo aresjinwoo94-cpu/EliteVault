@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient , getUserResult } from "@/lib/supabase/server";
 import { LibraryView } from "@/components/library/library-view";
 import { searchLibrary, getNiches, getLibraryStats } from "@/app/actions/search";
 import { getSavedSiteIds, getSavedSites } from "@/app/actions/saved-sites";
@@ -22,7 +22,7 @@ export const metadata = {
 
 export default async function LibraryPage() {
   const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await getUserResult();
 
   const [{ items }, niches, savedIds, savedSites, stats, profile] =
     await Promise.all([

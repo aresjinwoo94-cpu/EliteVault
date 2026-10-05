@@ -1,4 +1,5 @@
 import "server-only";
+import { after } from "next/server";
 import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe/server";
 import { getCheckoutPriceId } from "@/lib/stripe/plans";
@@ -103,45 +104,23 @@ export async function createEmbeddedCheckoutSession({
       full_name?: string | null;
     } | null;
 
-    let customerId = p?.stripe_customer_id ?? null;
+    const priceId: string = price; // narrowed above; the closures below lose that
+    const storedCustomerId = p?.stripe_customer_id ?? null;
 
-    // v3.9.5 — auto-heal stale customer IDs. The profile may hold a
-    // stripe_customer_id created in TEST mode that doesn't exist now that
-    // we're using LIVE keys (or vice-versa). Probe the customer first; if
-    // Stripe says resource_missing, drop the stale ID and create a fresh
-    // customer below. Without this, the upgrade flow hard-fails for every
-    // user whose customer was provisioned in the previous mode.
-    if (customerId) {
-      try {
-        const existing = await stripe.customers.retrieve(customerId);
-        // Customers can be "deleted" without being missing; treat as stale too.
-        if ((existing as { deleted?: boolean }).deleted) {
-          customerId = null;
-        }
-      } catch (err) {
-        const code = (err as { code?: string })?.code;
-        if (code === "resource_missing") {
-          customerId = null;
-        } else {
-          throw err;
-        }
-      }
-    }
-
-    if (!customerId) {
+    async function createCustomer(): Promise<string> {
       const customer = await stripe.customers.create({
         email: p?.email ?? userEmail ?? undefined,
         name: p?.full_name ?? undefined,
         metadata: { supabase_user_id: userId },
       });
-      customerId = customer.id;
       await service
         .from("profiles")
-        .update({ stripe_customer_id: customerId })
+        .update({ stripe_customer_id: customer.id })
         .eq("id", userId);
+      return customer.id;
     }
 
-    // v3.8.3 — Embedded Checkout (ui_mode: "embedded"). The session returns a
+    // Embedded Checkout (ui_mode: "embedded"). The session returns a
     // `client_secret` that the client-side EmbeddedCheckout component mounts
     // inside our dark-themed wrapper at /app/checkout. Stripe still owns PCI
     // compliance + the actual payment form; we own the surrounding chrome.
@@ -153,60 +132,86 @@ export async function createEmbeddedCheckoutSession({
     // Price, Adaptive Pricing, payment methods, locale, custom text and
     // metadata are built in lib/stripe/checkout-params.ts so the locale
     // contract is unit-tested; only the per-session theme is applied here.
-    const params: Stripe.Checkout.SessionCreateParams = {
-      ...buildCheckoutSessionParams({
-        customerId,
-        price,
-        userId,
-        plan,
-        interval,
-        locale,
-      }),
-      // Explicit payment methods — Stripe SHOULD auto-detect from the
-      // dashboard config, but for Embedded Checkout sessions some accounts
-      // only show a subset (Amazon Pay + Link) unless we name the methods
-      // explicitly. Including "card" enables BOTH the regular card form
-      // AND Google Pay / Apple Pay wallets (Stripe surfaces them as express
-      // checkout buttons IF the user's browser supports the wallet AND the
-      // domain is registered in Stripe Dashboard for the wallet).
-      //
-      // "amazon_pay" was briefly removed while its express button rendered a
-      // broken logo — the cause was Dashboard-side, not code (Amazon Pay not
-      // fully activated + the payment-method domain unregistered), and our CSS
-      // can't reach inside Stripe's cross-origin iframe to patch it. Both are
-      // now done for elitevaultapp.com, so it's back on. If the broken logo
-      // ever returns, check that activation and the domain registration are
-      // still in place before touching this array.
-      //
-      // The list lives in lib/stripe/payment-method-types.ts (same four
-      // methods) so the "we accept" badge rows in the checkout and the footer
-      // derive their brands from exactly what Stripe is asked to offer. Any
-      // other Checkout Session must import that constant too: the unmerged
-      // Liquid Blocks branches still hard-code the list (blocks-export.ts,
-      // app/api/stripe/checkout/route.ts), and scripts/tests/payment-marks.test.ts
-      // fails until they don't.
-      payment_method_types: [...CHECKOUT_PAYMENT_METHOD_TYPES],
+    async function createSession(cid: string) {
+      const params: Stripe.Checkout.SessionCreateParams = {
+        ...buildCheckoutSessionParams({
+          customerId: cid,
+          price: priceId,
+          userId,
+          plan,
+          interval,
+          locale,
+        }),
 
-      ...DARK_CHECKOUT_BRANDING,
-    };
+        // Explicit payment methods — Stripe SHOULD auto-detect from the
+        // dashboard config, but for Embedded Checkout sessions some accounts
+        // only show a subset (Amazon Pay + Link) unless we name the methods
+        // explicitly. Including "card" enables BOTH the regular card form
+        // AND Google Pay / Apple Pay wallets (Stripe surfaces them as express
+        // checkout buttons IF the user's browser supports the wallet AND the
+        // domain is registered in Stripe Dashboard for the wallet).
+        //
+        // "amazon_pay" was briefly removed while its express button rendered a
+        // broken logo — the cause was Dashboard-side, not code (Amazon Pay not
+        // fully activated + the payment-method domain unregistered), and our
+        // CSS can't reach inside Stripe's cross-origin iframe to patch it. Both
+        // are now done for elitevaultapp.com, so it's back on. If the broken
+        // logo ever returns, check that activation and the domain registration
+        // are still in place before touching this array.
+        //
+        // The list lives in lib/stripe/payment-method-types.ts (same four
+        // methods) so the "we accept" badge rows in the checkout and the footer
+        // derive their brands from exactly what Stripe is asked to offer. Any
+        // other Checkout Session must import that constant too: the unmerged
+        // Liquid Blocks branches still hard-code the list (blocks-export.ts,
+        // app/api/stripe/checkout/route.ts), and
+        // scripts/tests/payment-marks.test.ts fails until they don't.
+        payment_method_types: [...CHECKOUT_PAYMENT_METHOD_TYPES],
 
-    // Brief §5.4 — theming is a nicety; being able to pay is not. If Stripe
-    // ever rejects branding_settings (a live-account difference, a validation
-    // change, the parameter withdrawn from the pinned API version), retry
-    // once WITHOUT it rather than showing the buyer an error instead of a
-    // payment form.
+        ...DARK_CHECKOUT_BRANDING,
+      };
+
+      // Brief §5.4 — theming is a nicety; being able to pay is not. If Stripe
+      // ever rejects branding_settings (a live-account difference, a validation
+      // change, the parameter withdrawn from the pinned API version), retry
+      // once WITHOUT it rather than showing the buyer an error instead of a
+      // payment form.
+      try {
+        return await stripe.checkout.sessions.create(params);
+      } catch (err) {
+        if (!isBrandingRejection(err)) throw err;
+        console.warn(
+          "[stripe/checkout] branding_settings rejected — falling back to Dashboard branding:",
+          (err as { message?: string }).message,
+        );
+        const { ...withoutBranding } = params;
+        delete (withoutBranding as Record<string, unknown>).branding_settings;
+        return await stripe.checkout.sessions.create(withoutBranding);
+      }
+    }
+
+    // v3.9.5 — auto-heal stale customer IDs (a customer created in TEST mode
+    // that doesn't exist under LIVE keys, or vice-versa; or a deleted one).
+    // This used to PROBE the stored customer with a separate
+    // `customers.retrieve` before every checkout — one extra serial Stripe
+    // round-trip (~150-400 ms) on the path to the payment form, for a case
+    // that is rare. Now the stored id is used directly and only a Stripe
+    // "no such customer" rejection triggers the heal (new customer + one
+    // retry), so the common path is a single session.create.
     let session;
-    try {
-      session = await stripe.checkout.sessions.create(params);
-    } catch (err) {
-      if (!isBrandingRejection(err)) throw err;
-      console.warn(
-        "[stripe/checkout] branding_settings rejected — falling back to Dashboard branding:",
-        (err as { message?: string }).message,
-      );
-      const { ...withoutBranding } = params;
-      delete (withoutBranding as Record<string, unknown>).branding_settings;
-      session = await stripe.checkout.sessions.create(withoutBranding);
+    if (!storedCustomerId) {
+      session = await createSession(await createCustomer());
+    } else {
+      try {
+        session = await createSession(storedCustomerId);
+      } catch (err) {
+        const e = err as { code?: string; param?: string; message?: string };
+        const staleCustomer =
+          e?.code === "resource_missing" &&
+          (e?.param === "customer" || /customer/i.test(e?.message ?? ""));
+        if (!staleCustomer) throw err;
+        session = await createSession(await createCustomer());
+      }
     }
 
     if (!session.client_secret) {
@@ -221,40 +226,54 @@ export async function createEmbeddedCheckoutSession({
     // Abandoned-checkout recovery (Part 2). Additive and best-effort: emit a
     // `checkout/started` event so the Inngest sequence can email the user if
     // they don't complete payment. Gated by CHECKOUT_RECOVERY_ENABLED (default
-    // off). Wrapped so a failed emit NEVER breaks the checkout.
+    // off). A failed emit NEVER breaks the checkout.
+    //
+    // It runs AFTER the response (next/server `after`): the buyer's payment
+    // panel no longer waits for a Supabase read plus an Inngest round-trip
+    // (~0.3-0.5 s on the critical path of every checkout) just to schedule an
+    // email sequence.
     if (process.env.CHECKOUT_RECOVERY_ENABLED === "true") {
-      try {
-        // One sequence per user, not per session. Every render of
-        // /app/checkout creates a NEW Stripe session and checkout_recovery is
-        // keyed by session_id, so without this guard each reload started its
-        // own 3-email sequence (3 reloads → up to 9 emails). Skip the emit
-        // while a pending sequence from the last 72h (the sequence's length)
-        // already exists. The row is written by the Inngest `register` step,
-        // so a reload within a second or two of the first can still slip
-        // through; ordinary reloads are caught.
-        const since = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
-        const { data: existing } = await service
-          .from("checkout_recovery")
-          .select("session_id")
-          .eq("user_id", userId)
-          .eq("status", "pending")
-          .gte("created_at", since)
-          .limit(1);
+      const sessionId = session.id;
+      const emitRecovery = async () => {
+        try {
+          // One sequence per user, not per session. Every render of
+          // /app/checkout creates a NEW Stripe session and checkout_recovery is
+          // keyed by session_id, so without this guard each reload started its
+          // own 3-email sequence (3 reloads → up to 9 emails). Skip the emit
+          // while a pending sequence from the last 72h (the sequence's length)
+          // already exists. The row is written by the Inngest `register` step,
+          // so a reload within a second or two of the first can still slip
+          // through; ordinary reloads are caught.
+          const since = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
+          const { data: existing } = await service
+            .from("checkout_recovery")
+            .select("session_id")
+            .eq("user_id", userId)
+            .eq("status", "pending")
+            .gte("created_at", since)
+            .limit(1);
 
-        if (!existing || existing.length === 0) {
-          await inngest.send({
-            name: "checkout/started",
-            data: {
-              sessionId: session.id,
-              userId,
-              email: p?.email ?? userEmail ?? "",
-              plan,
-              interval,
-            },
-          });
-        }
-      } catch (err) {
+          if (!existing || existing.length === 0) {
+            await inngest.send({
+              name: "checkout/started",
+              data: {
+                sessionId,
+                userId,
+                email: p?.email ?? userEmail ?? "",
+                plan,
+                interval,
+              },
+            });
+          }
+        } catch (err) {
         console.error("[stripe/checkout] recovery emit failed:", err);
+        }
+      };
+      try {
+        after(emitRecovery);
+      } catch {
+        // Not inside a request scope (scripts/tests): run it inline.
+        void emitRecovery();
       }
     }
 

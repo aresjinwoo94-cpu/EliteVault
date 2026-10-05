@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { TrendingUp, Sparkles, AlertCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";

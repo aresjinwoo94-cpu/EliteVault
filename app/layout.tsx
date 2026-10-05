@@ -5,11 +5,12 @@ import { Toaster } from "@/components/ui/sonner";
 import { AnalyticsGate } from "@/components/analytics/analytics-gate";
 import { PageTracker } from "@/components/analytics/page-tracker";
 import { isInternalRequest } from "@/lib/analytics/is-internal";
-import { SupportChat } from "@/components/support/support-chat";
+import { SupportChatLazy } from "@/components/support/support-chat-lazy";
 import { socialUrls } from "@/lib/company";
 import { getLocale } from "@/lib/i18n/server";
 import { clientMessages } from "@/lib/i18n/messages";
 import { LocaleProvider } from "@/components/i18n/locale-provider";
+import { MotionProvider } from "@/components/motion/lazy-motion-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -144,15 +145,17 @@ export default async function RootLayout({
         <PageTracker isInternal={isInternal} />
         <LocaleProvider locale={locale} messages={clientMessages(locale)}>
           <AnalyticsGate isInternal={isInternal}>
-            <TooltipProvider delayDuration={150}>
-              {children}
-              <Toaster />
-            </TooltipProvider>
+            <MotionProvider>
+              <TooltipProvider delayDuration={150}>
+                {children}
+                <Toaster />
+              </TooltipProvider>
+            </MotionProvider>
           </AnalyticsGate>
           {/* Floating support chatbot — grounded strictly in lib/support/kb.ts;
               always offers "talk to a human" → /support/contact. Inside the
               provider so its UI text is translated. */}
-          <SupportChat />
+          <SupportChatLazy />
         </LocaleProvider>
       </body>
     </html>

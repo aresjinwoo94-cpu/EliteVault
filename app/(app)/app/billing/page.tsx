@@ -2,7 +2,7 @@ import Link from "next/link";
 import { CheckCircle2, ExternalLink, Sparkles } from "lucide-react";
 import {
   createSupabaseServerClient,
-  createSupabaseServiceClient,
+  createSupabaseServiceClient,  getUserResult,
 } from "@/lib/supabase/server";
 import { stripe } from "@/lib/stripe/server";
 import { Button } from "@/components/ui/button";
@@ -124,7 +124,7 @@ export default async function BillingPage({
       data: { user },
     },
     { t, locale },
-  ] = await Promise.all([supabase.auth.getUser(), getT()]);
+  ] = await Promise.all([getUserResult(), getT()]);
 
   const sp = await searchParams;
 
@@ -165,6 +165,12 @@ export default async function BillingPage({
 
   return (
     <div className="p-6 md:p-10 lg:p-12 pt-10 md:pt-14 max-w-5xl mx-auto space-y-8 md:space-y-10">
+      {/* The upgrade CTAs on this page lead to the Stripe checkout: open the
+          connections now (React hoists these to <head>). Only on checkout and
+          billing — not site-wide. */}
+      <link rel="preconnect" href="https://js.stripe.com" crossOrigin="" />
+      <link rel="dns-prefetch" href="https://api.stripe.com" />
+      <link rel="dns-prefetch" href="https://m.stripe.network" />
       <header>
         <p className="text-xs uppercase tracking-widest text-white/40">
           {t("billing.eyebrow")}

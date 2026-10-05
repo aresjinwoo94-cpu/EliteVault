@@ -22,9 +22,9 @@ const COMMANDS = [
   { labelKey: "commandMenu.settings", href: "/app/settings", icon: Settings },
 ] as const;
 
-export function CommandMenu() {
+export function CommandMenu({ defaultOpen = false }: { defaultOpen?: boolean }) {
   const { t } = useT();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const router = useRouter();
 
   useEffect(() => {

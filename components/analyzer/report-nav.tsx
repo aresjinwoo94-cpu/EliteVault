@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import {
   TrendingUp,
   Wrench,

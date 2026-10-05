@@ -1,7 +1,7 @@
 "use client";
 
 import NextImage from "next/image";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { Compass, Image as ImageIcon, Library, Store, TrendingUp } from "lucide-react";
 import { DataPill } from "@/components/ui/data-pill";
 import { useT } from "@/components/i18n/locale-provider";

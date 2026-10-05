@@ -1,13 +1,14 @@
 import "server-only";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { cache } from "react";
 import { type Database, type CookiesToSet } from "./types";
 
 /**
  * Server-side Supabase client bound to the current request's cookies.
  * Use this in Server Components, Server Actions and Route Handlers.
  */
-export async function createSupabaseServerClient() {
+async function buildSupabaseServerClient() {
   const cookieStore = await cookies();
 
   return createServerClient<Database>(
@@ -32,6 +33,27 @@ export async function createSupabaseServerClient() {
     },
   );
 }
+
+/**
+ * One server client per request (React `cache`): the root layout, the (app)
+ * layout and the page all ask for it and now share a single instance.
+ */
+export const createSupabaseServerClient = cache(buildSupabaseServerClient);
+
+/**
+ * The authenticated user, verified with Supabase Auth ONCE per request.
+ *
+ * `auth.getUser()` is a network round-trip to Supabase. The middleware
+ * refreshes the session, then app/(app)/layout.tsx AND the page each used to
+ * make their own call — 2-3 identical round-trips per navigation. Server
+ * Components that need the user call this instead: same result shape as
+ * `supabase.auth.getUser()`, same server-side verification (it is NOT a cookie
+ * decode), shared within the request.
+ */
+export const getUserResult = cache(async () => {
+  const supabase = await createSupabaseServerClient();
+  return supabase.auth.getUser();
+});
 
 /**
  * Service-role client. NEVER expose this to the browser.
