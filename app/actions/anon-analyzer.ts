@@ -9,7 +9,7 @@ import { validatePublicStoreUrl } from "@/lib/security/url-guard";
 import { isBareIpHost, BARE_IP_REASON } from "@/lib/analyzer/store-url-policy";
 import { getOrCreateAnonToken } from "@/lib/anon/session";
 import { checkAnonAuditRate } from "@/lib/anon/rate-limit";
-import { getT } from "@/lib/i18n/server";
+import { getLocale, getT } from "@/lib/i18n/server";
 
 /**
  * Anonymous audit (activation-funnel Tarea 1).
@@ -125,6 +125,7 @@ export async function createAnonAnalysis(input: {
       url: guard.url,
       plan: "free",
       fast: true,
+      locale: await getLocale(),
     },
   });
 

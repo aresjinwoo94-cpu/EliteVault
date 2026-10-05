@@ -157,6 +157,8 @@ export async function runAnalyzerAgent(opts: {
    * in cents. Paid audits leave this undefined/false → premium model.
    */
   fast?: boolean;
+  /** Language of the human-readable audit text. Default English. */
+  locale?: "en" | "es";
   signal?: AbortSignal;
   /**
    * Absolute epoch-ms instant this audit must be done by (see lib/deadline.ts).
@@ -217,6 +219,7 @@ export async function runAnalyzerAgent(opts: {
       pageKind: classifyPageKind(opts.url ?? null),
       extraScreenshotUrls: extraUrls,
       groundingBlock: grounding ? renderGroundingBlock(grounding) : null,
+      locale: opts.locale,
     }),
   } as never);
 

@@ -22,6 +22,9 @@ type Events = {
       // Plan snapshot for inference-cost metering (usage_events). Optional so
       // older queued events still validate (recorded as unattributed plan).
       plan?: string | null;
+      // Language the audit text is written in ("en" | "es"). Optional so older
+      // queued events still validate (treated as English).
+      locale?: string | null;
     };
   };
   "meta-simulation/requested": {

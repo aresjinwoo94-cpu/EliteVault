@@ -12,7 +12,7 @@ import { assertQuota } from "@/lib/quota/guard";
 import { findReusableAnalysis } from "@/lib/analysis/reuse";
 import { validatePublicStoreUrl } from "@/lib/security/url-guard";
 import { isBareIpHost, BARE_IP_REASON } from "@/lib/analyzer/store-url-policy";
-import { getT } from "@/lib/i18n/server";
+import { getLocale, getT } from "@/lib/i18n/server";
 
 const CreateAnalysisInput = z.object({
   url: z.string().min(3).optional(),
@@ -173,6 +173,7 @@ export async function createAnalysis(
       url: url ?? undefined,
       screenshotUrl: parsed.data.screenshotUrl,
       persona: parsed.data.persona ?? null,
+      locale: await getLocale(),
       runRewrite: plan.unlocksScale,
       // P1.1 — model tiering by cost. The free audit runs on the cheap/fast
       // model (Gemini Flash-Lite tier) so its marginal cost stays in cents;

@@ -235,9 +235,18 @@ export function buildAnalyzerUserMessage(opts: {
    * builder just drops it in. Absent when the grounding flag is off.
    */
   groundingBlock?: string | null;
+  /** Language for the human-readable fields. Anything but "es" stays English. */
+  locale?: "en" | "es";
 }) {
   const lines: string[] = [];
   lines.push("Audit this ecommerce store and call `submit_analysis`.");
+  if (opts.locale === "es") {
+    lines.push(
+      "LANGUAGE: write every human-readable string (summary, issues, fixes, " +
+        "annotations, quotes) in natural Spanish. Keep enum values, JSON keys, " +
+        "numbers and URLs exactly as the schema requires.",
+    );
+  }
   if (opts.url) lines.push(`URL: ${opts.url}`);
 
   // WP-B — say WHAT this page is. Without it every audit was framed as "your
