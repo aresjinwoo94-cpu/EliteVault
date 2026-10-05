@@ -9,6 +9,14 @@ export async function middleware(request: NextRequest) {
   const qa = isLocale(lang) ? lang : null;
   if (qa) request.cookies.set(QA_LOCALE_COOKIE, qa);
 
+  // The blog is English-only content: pin its chrome (nav, footer, <html lang>)
+  // to English so a Spanish-country visitor or crawler never gets a Spanish
+  // shell around English copy. Request-scoped only — no cookie is persisted.
+  const { pathname } = request.nextUrl;
+  if (pathname === "/blog" || pathname.startsWith("/blog/")) {
+    request.cookies.set(QA_LOCALE_COOKIE, "en");
+  }
+
   const response = await updateSession(request);
   if (qa) response.cookies.set(QA_LOCALE_COOKIE, qa, { path: "/", sameSite: "lax" });
   return response;
