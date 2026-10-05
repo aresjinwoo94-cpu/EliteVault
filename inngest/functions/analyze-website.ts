@@ -171,7 +171,7 @@ export const analyzeWebsite = inngest.createFunction(
   },
   { event: "analysis/requested" },
   async ({ event, step, attempt }) => {
-    const { analysisId, userId, url, screenshotUrl, persona, runRewrite, fast, plan } =
+    const { analysisId, userId, url, screenshotUrl, persona, runRewrite, fast, plan, locale } =
       event.data;
     // Attribute every Gemini call in this pipeline to the user + 'analysis'
     // feature for the usage_events cost ledger.
@@ -611,6 +611,7 @@ export const analyzeWebsite = inngest.createFunction(
         persona: persona as BuyerPersona | null,
         // P1.1 — free audits run on the cheap/fast model tier.
         fast,
+        locale: locale === "es" ? "es" : "en",
         deadlineAt: dl.at,
         onAnswer: (info) => {
           answer = info;

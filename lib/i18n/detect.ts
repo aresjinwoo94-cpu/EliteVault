@@ -28,13 +28,12 @@ export function parseAcceptLanguage(header: string | null | undefined): string[]
 const isSpanishTag = (tag: string) => tag === "es" || tag.startsWith("es-");
 
 /**
- * The site's language for a visitor.
+ * The site's language for a visitor — the COUNTRY decides.
  *
- *  • IP country is Spanish-speaking → Spanish, UNLESS the browser lists no
- *    `es*` language at all (a visitor who does not read Spanish → English).
- *  • Any other country → English, UNLESS the browser's FIRST language is `es*`
- *    (e.g. Spanish speakers in the US).
- *  • No headers (local dev, bots) → English.
+ *  • IP country known → Spanish-speaking country = Spanish, any other = English,
+ *    whatever the browser says (same country drives Stripe's local currency).
+ *  • Country unknown (local dev, some proxies) → the browser's FIRST language.
+ *  • Nothing at all → English.
  */
 export function detectLocale({
   country,
@@ -43,14 +42,8 @@ export function detectLocale({
   country?: string | null;
   acceptLanguage?: string | null;
 }): Locale {
-  const langs = parseAcceptLanguage(acceptLanguage);
   const code = country?.trim().toUpperCase() ?? "";
-
-  if (code && SPANISH_COUNTRIES.has(code)) {
-    // No Accept-Language at all → trust the country.
-    if (langs.length === 0) return "es";
-    return langs.some(isSpanishTag) ? "es" : "en";
-  }
-  if (langs.length > 0 && isSpanishTag(langs[0])) return "es";
-  return defaultLocale;
+  if (code) return SPANISH_COUNTRIES.has(code) ? "es" : "en";
+  const langs = parseAcceptLanguage(acceptLanguage);
+  return langs.length > 0 && isSpanishTag(langs[0]) ? "es" : defaultLocale;
 }

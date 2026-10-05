@@ -15,8 +15,8 @@ import { detectLocale, parseAcceptLanguage } from "../../lib/i18n/detect";
 
 const CASES: [string, { country?: string | null; acceptLanguage?: string | null }, "en" | "es"][] = [
   ["EC + es → es", { country: "EC", acceptLanguage: "es-EC,es;q=0.9,en;q=0.8" }, "es"],
-  ["EC + only en → en (a visitor who doesn't read Spanish)", { country: "EC", acceptLanguage: "en-US,en;q=0.9" }, "en"],
-  ["US + es-US first → es", { country: "US", acceptLanguage: "es-US,es;q=0.9,en;q=0.8" }, "es"],
+  ["EC + only en → es (country wins)", { country: "EC", acceptLanguage: "en-US,en;q=0.9" }, "es"],
+  ["US + es-US first → en (country wins)", { country: "US", acceptLanguage: "es-US,es;q=0.9,en;q=0.8" }, "en"],
   ["US + en first, es second → en (only the FIRST language counts)", { country: "US", acceptLanguage: "en-US,en;q=0.9,es;q=0.8" }, "en"],
   ["US + en → en", { country: "US", acceptLanguage: "en-US,en;q=0.9" }, "en"],
   ["no headers at all → en", {}, "en"],
@@ -25,13 +25,13 @@ const CASES: [string, { country?: string | null; acceptLanguage?: string | null 
   ["MX with empty accept-language → es", { country: "MX", acceptLanguage: "" }, "es"],
   ["ES + es-ES → es", { country: "ES", acceptLanguage: "es-ES,es;q=0.9" }, "es"],
   ["lowercase country code is accepted", { country: "ar", acceptLanguage: "es-AR" }, "es"],
-  ["MX + fr only → en", { country: "MX", acceptLanguage: "fr-FR,fr;q=0.9" }, "en"],
-  ["DE + es first → es", { country: "DE", acceptLanguage: "es,en;q=0.8" }, "es"],
+  ["MX + fr only → es (country wins)", { country: "MX", acceptLanguage: "fr-FR,fr;q=0.9" }, "es"],
+  ["DE + es first → en (country wins)", { country: "DE", acceptLanguage: "es,en;q=0.8" }, "en"],
   ["DE + de → en", { country: "DE", acceptLanguage: "de-DE,de;q=0.9" }, "en"],
   ["BR (not in the list) + pt → en", { country: "BR", acceptLanguage: "pt-BR,pt;q=0.9" }, "en"],
   ["q-weights decide 'first': en q=1 beats es q=0.5", { country: "US", acceptLanguage: "es;q=0.5,en;q=1" }, "en"],
   ["wildcard only → en", { country: "US", acceptLanguage: "*" }, "en"],
-  ["es;q=0 is not a language the visitor accepts", { country: "CO", acceptLanguage: "es;q=0,en" }, "en"],
+  ["CO + es;q=0 → es (country wins)", { country: "CO", acceptLanguage: "es;q=0,en" }, "es"],
 ];
 
 for (const [name, input, want] of CASES) {
@@ -158,4 +158,9 @@ test("the root layout reflects the locale in <html lang> and adds no hreflang", 
   assert.match(layout, /<html lang=\{locale\}/);
   assert.doesNotMatch(layout, /hreflang/i);
   assert.doesNotMatch(code("app/sitemap.ts"), /hreflang|alternates/i);
+});
+
+test("no country → the browser's first language decides", () => {
+  assert.equal(detectLocale({ acceptLanguage: "es-MX,es;q=0.9" }), "es");
+  assert.equal(detectLocale({ acceptLanguage: "en-US,es;q=0.5" }), "en");
 });
