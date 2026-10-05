@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { ExternalLink, Layers, Star } from "lucide-react";
 import { toast } from "sonner";
 import {

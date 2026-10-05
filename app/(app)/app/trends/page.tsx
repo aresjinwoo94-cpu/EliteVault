@@ -6,7 +6,7 @@ import {
 } from "@/lib/trends";
 import { NicheSearch } from "@/components/trends/niche-search";
 import { TrendsBoard } from "@/components/trends/trends-board";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient , getUserResult } from "@/lib/supabase/server";
 import { refreshTrendsNow } from "@/app/actions/trends";
 import { getT } from "@/lib/i18n/server";
 import { Rich } from "@/components/i18n/rich";
@@ -38,7 +38,7 @@ export default async function TrendsPage({
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getUserResult();
 
   // Personalization (T3): with no niche chosen, default to the user's likely
   // niche, inferred from existing data only (self-store / latest analysis).

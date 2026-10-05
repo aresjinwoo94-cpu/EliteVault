@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { Check, X, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { formatPrice } from "@/lib/i18n/format";
 import { localizePlan } from "@/lib/i18n/plan-text";
 import { fill } from "@/lib/i18n/lookup";
+import { preloadStripe } from "@/lib/stripe/client";
 import { useT } from "@/components/i18n/locale-provider";
 
 export function Pricing() {
@@ -134,6 +135,11 @@ export function Pricing() {
                     : `/sign-up?plan=${plan.id}&interval=${interval}`
                 }
                 className="mt-7"
+                // Paid plans lead to the checkout after sign-in: start Stripe.js
+                // on intent (no session is created).
+                onPointerEnter={plan.id === "free" ? undefined : preloadStripe}
+                onFocus={plan.id === "free" ? undefined : preloadStripe}
+                onTouchStart={plan.id === "free" ? undefined : preloadStripe}
               >
                 <Button
                   variant={plan.highlight ? "primary" : "outline"}

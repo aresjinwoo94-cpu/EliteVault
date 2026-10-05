@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { ShieldCheck, Lock } from "lucide-react";
 import { DataPill } from "@/components/ui/data-pill";
 import { AnalyzerTeaserVideo } from "./analyzer-teaser-video";

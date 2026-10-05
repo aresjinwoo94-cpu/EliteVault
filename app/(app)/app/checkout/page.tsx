@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient , getUserResult } from "@/lib/supabase/server";
 // PlanTier comes from the DB types; lib/stripe/plans imports it without
 // re-exporting, so importing it from there types PLANS lookups as `any`.
 import { PLANS, type Interval } from "@/lib/stripe/plans";
@@ -45,7 +45,7 @@ export default async function CheckoutPage({
       data: { user },
     },
     locale,
-  ] = await Promise.all([supabase.auth.getUser(), getLocale()]);
+  ] = await Promise.all([getUserResult(), getLocale()]);
   if (!user) {
     redirect(
       `/sign-in?next=${encodeURIComponent(`/app/checkout?plan=${planId}&interval=${interval}`)}`,
@@ -77,10 +77,21 @@ export default async function CheckoutPage({
         critical path so the payment form paints sooner. (React 19 hoists
         these to <head>.)
       */}
+      {/* Start downloading Stripe.js NOW, in parallel with our own JS. The embedded
+          form needs it, but loadStripe() only injects the script after our
+          checkout chunk has downloaded, parsed and run — on a phone that is
+          seconds later. Same URL @stripe/stripe-js injects (its RELEASE_TRAIN;
+          a test pins them together), no crossorigin attribute to match it. */}
+      <link rel="preload" as="script" href="https://js.stripe.com/dahlia/stripe.js" />
       <link rel="preconnect" href="https://js.stripe.com" crossOrigin="" />
       <link rel="preconnect" href="https://api.stripe.com" crossOrigin="" />
       <link rel="preconnect" href="https://checkout.stripe.com" crossOrigin="" />
       <link rel="preconnect" href="https://m.stripe.network" crossOrigin="" />
+      <link rel="preconnect" href="https://hooks.stripe.com" crossOrigin="" />
+      <link rel="dns-prefetch" href="https://js.stripe.com" />
+      <link rel="dns-prefetch" href="https://api.stripe.com" />
+      <link rel="dns-prefetch" href="https://m.stripe.network" />
+      <link rel="dns-prefetch" href="https://hooks.stripe.com" />
 
       <CheckoutLayout
         planId={planId}

@@ -2,13 +2,13 @@
 
 import { Suspense, use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { loadStripe } from "@stripe/stripe-js";
 import {
   EmbeddedCheckoutProvider,
   EmbeddedCheckout,
 } from "@stripe/react-stripe-js";
 import { Loader2 } from "lucide-react";
-import posthog from "posthog-js";
+import { phCapture } from "@/lib/analytics/posthog";
+import { getStripePromise } from "@/lib/stripe/client";
 import type { CheckoutSessionResult } from "@/lib/stripe/checkout-session";
 import { useT } from "@/components/i18n/locale-provider";
 
@@ -39,7 +39,7 @@ const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "";
 // explanation. We guard on the key below and show a real message instead.
 // Module scope, so Stripe.js starts downloading as soon as this chunk loads
 // rather than waiting on the session.
-const stripePromise = PUBLISHABLE_KEY ? loadStripe(PUBLISHABLE_KEY) : null;
+const stripePromise = getStripePromise();
 
 // Test vs live mode of a key / client_secret, or null if unrecognized.
 function pkMode(k: string): "live" | "test" | null {
@@ -67,10 +67,7 @@ export function EmbeddedCheckoutForm({
   // "plan_upgraded". Outside the Suspense boundary so it isn't waiting on
   // Stripe.
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (typeof window !== "undefined" && (posthog as any).__loaded) {
-      posthog.capture("checkout_started", { plan, interval });
-    }
+    phCapture("checkout_started", { plan, interval });
   }, [plan, interval]);
 
   return (
@@ -83,7 +80,7 @@ export function EmbeddedCheckoutForm({
 function CheckoutLoading() {
   const { t } = useT();
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-card/40 p-12 flex flex-col items-center justify-center min-h-[400px]">
+    <div className="rounded-2xl border border-white/[0.06] bg-card/40 p-12 flex flex-col items-center justify-center min-h-[760px]">
       <Loader2 className="size-6 text-champagne-400 animate-spin" />
       <p className="mt-4 text-sm text-white/55">
         {t("checkout.preparing")}
@@ -161,7 +158,9 @@ function CheckoutFrame({
   if (!clientSecret) return <CheckoutLoading />;
 
   return (
-    <div className="rounded-2xl bg-obsidian-950 ring-1 ring-white/[0.08] overflow-hidden">
+    // min-h = the loader's height ≈ the form's: the content below (the plan
+    // summary on a phone) must not jump down when the iframe arrives.
+    <div className="rounded-2xl bg-obsidian-950 ring-1 ring-white/[0.08] overflow-hidden min-h-[760px]">
       {/*
         The wrapper matches the page's obsidian background so the iframe blends
         in. Nothing in here can style what's INSIDE it: Embedded Checkout is a

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { KeyRound } from "lucide-react";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient , getUserResult } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ApiKeysManager } from "@/components/settings/api-keys-manager";
@@ -15,7 +15,7 @@ export default async function ApiKeysPage() {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getUserResult();
   const [{ data: profile }, { data: keys }] = await Promise.all([
     supabase
       .from("profiles")

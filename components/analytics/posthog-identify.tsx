@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import posthog from "posthog-js";
+import { phGroup, phIdentify } from "@/lib/analytics/posthog";
 
 /**
  * Connect the current PostHog anonymous session to the signed-in user
@@ -28,13 +28,9 @@ export function PostHogIdentify({
 }) {
   useEffect(() => {
     if (typeof window === "undefined") return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (!(posthog as any).__loaded) return;
-
-    const current = posthog.get_distinct_id?.();
-    if (current === userId) return; // already identified
-
-    posthog.identify(userId, {
+    // PostHog loads lazily (lib/analytics/posthog.ts); the facade queues these
+    // calls until it is ready and drops them if it never loads.
+    phIdentify(userId, {
       email: email ?? undefined,
       name: fullName ?? undefined,
       plan: plan ?? "free",
@@ -44,7 +40,7 @@ export function PostHogIdentify({
     // build cohort reports like "% of pro users who used the meta
     // simulator this week" in PostHog.
     if (plan) {
-      posthog.group("plan", plan);
+      phGroup("plan", plan);
     }
   }, [userId, email, plan, fullName]);
 

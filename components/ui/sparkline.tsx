@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { m as motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useT } from "@/components/i18n/locale-provider";
 import { fill } from "@/lib/i18n/lookup";

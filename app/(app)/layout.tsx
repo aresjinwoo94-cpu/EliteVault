@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient , getUserResult } from "@/lib/supabase/server";
 import { AppSidebar } from "@/components/dashboard/sidebar";
 import { AppTopbar } from "@/components/dashboard/topbar";
 import { HideChromeOnCheckout } from "@/components/dashboard/focus-chrome";
-import { CommandMenu } from "@/components/dashboard/command-menu";
+import { CommandMenuLazy } from "@/components/dashboard/command-menu-lazy";
 import { PostHogIdentify } from "@/components/analytics/posthog-identify";
 import { AppScope } from "@/components/i18n/app-scope";
 
@@ -15,7 +15,7 @@ export default async function AppLayout({
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getUserResult();
   if (!user) redirect("/sign-in");
 
   const { data: profile } = await supabase
@@ -45,7 +45,7 @@ export default async function AppLayout({
         </HideChromeOnCheckout>
         <main className="flex-1 min-w-0">{children}</main>
       </div>
-      <CommandMenu />
+      <CommandMenuLazy />
     </div>
     </AppScope>
   );

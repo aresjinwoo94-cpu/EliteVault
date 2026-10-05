@@ -23,6 +23,11 @@ const fontDisplay = localFont({
   ],
   variable: "--font-display",
   display: "swap",
+  // Metric-adjusted fallback (size-adjust / ascent / descent): the page paints in a
+  // fallback with the SAME line breaks, so when the web font arrives the text does
+  // not reflow. Without it the paragraph under the hero grew when Rubik loaded and
+  // LCP was re-recorded at font-load time (~4 s on a slow phone connection).
+  adjustFontFallback: "Arial",
   fallback: ["Rubik", "system-ui", "sans-serif"],
 });
 
@@ -30,6 +35,7 @@ const fontBody = localFont({
   src: "../public/fonts/rubik.woff2",
   variable: "--font-geist",
   display: "swap",
+  adjustFontFallback: "Arial", // see the note on the display face
   weight: "300 700",
   fallback: ["Inter", "Segoe UI Variable", "system-ui", "sans-serif"],
 });

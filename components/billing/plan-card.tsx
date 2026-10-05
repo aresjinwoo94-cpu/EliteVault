@@ -10,6 +10,7 @@ import { formatPrice } from "@/lib/i18n/format";
 import { localizePlan } from "@/lib/i18n/plan-text";
 import { toast } from "sonner";
 import { useT } from "@/components/i18n/locale-provider";
+import { preloadStripe } from "@/lib/stripe/client";
 import type { Plan, Interval } from "@/lib/stripe/plans";
 
 export function PlanCard({
@@ -41,6 +42,16 @@ export function PlanCard({
    * This avoids the "dual subscription" footgun where Checkout creates a
    * parallel sub instead of upgrading.
    */
+  /**
+   * Warm everything the checkout needs before the click: the route (RSC +
+   * chunks) and Stripe.js. No Checkout Session is created here.
+   */
+  function warmCheckout() {
+    if (plan.id === "free" || hasExistingSub) return;
+    router.prefetch(`/app/checkout?plan=${plan.id}&interval=${interval}`);
+    preloadStripe();
+  }
+
   function checkout() {
     if (plan.id === "free") return;
     if (hasExistingSub) {
@@ -153,6 +164,9 @@ export function PlanCard({
 
       <Button
         onClick={checkout}
+        onPointerEnter={warmCheckout}
+        onFocus={warmCheckout}
+        onTouchStart={warmCheckout}
         disabled={current || plan.id === "free" || isPending}
         variant={plan.highlight && !current ? "primary" : "outline"}
         className="mt-5 w-full"

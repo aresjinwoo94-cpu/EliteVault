@@ -5,7 +5,7 @@ import { useState, useSyncExternalStore, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Globe, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import posthog from "posthog-js";
+import { phCapture } from "@/lib/analytics/posthog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useT } from "@/components/i18n/locale-provider";
@@ -129,12 +129,7 @@ export function AnonAuditBox({
     startTransition(async () => {
       // Activation event — the first step of the anon funnel.
       try {
-        if (
-          typeof window !== "undefined" &&
-          (posthog as { __loaded?: boolean }).__loaded
-        ) {
-          posthog.capture("anon_audit_started", { url: value, source });
-        }
+        phCapture("anon_audit_started", { url: value, source });
       } catch {
         /* analytics best-effort */
       }

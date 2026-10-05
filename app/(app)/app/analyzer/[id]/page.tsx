@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient , getUserResult } from "@/lib/supabase/server";
 import { AnalysisView } from "@/components/analyzer/analysis-view";
 import { PLANS } from "@/lib/stripe/plans";
 import { getMetaRunUsage } from "@/lib/quota/guard";
@@ -43,7 +43,7 @@ export default async function AnalysisPage({
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getUserResult();
   if (!user) redirect("/sign-in");
 
   const [analysisRes, profileRes] = await Promise.all([

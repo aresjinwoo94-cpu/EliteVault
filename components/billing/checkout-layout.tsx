@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { ArrowLeft, Check, Lock, Sparkles, Shield, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 // PlanTier comes from the DB types — lib/stripe/plans imports it too but
@@ -208,7 +208,12 @@ export async function CheckoutLayout({
 
         {/* Social proof — renders its own separator, or nothing at all when
             the owner's switches / the 3-review floor say so. */}
-        <CheckoutReviews />
+        {/* Three Supabase reads behind this block used to hold the whole
+            response open — including the payment panel — until they finished.
+            Below the fold and optional, so it streams in on its own. */}
+        <Suspense fallback={null}>
+          <CheckoutReviews />
+        </Suspense>
       </div>
     </div>
   );

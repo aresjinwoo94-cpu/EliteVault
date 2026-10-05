@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Globe, Lock, Sparkles, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import posthog from "posthog-js";
+import { phCapture } from "@/lib/analytics/posthog";
 import { createAnalysis } from "@/app/actions/analyzer";
 import type { PlanTier } from "@/lib/supabase/types";
 import { useT } from "@/components/i18n/locale-provider";
@@ -72,14 +72,11 @@ export function AnalyzerLauncher({
       // PostHog: the activation event. Funnel = signup → analyzer_run →
       // checkout_started → plan_upgraded. The first three answer the
       // question "do users get value before being asked to pay?"
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (typeof window !== "undefined" && (posthog as any).__loaded) {
-        posthog.capture("analyzer_run", {
-          url: url.trim(),
-          persona_preset: preset.id,
-          plan,
-        });
-      }
+      phCapture("analyzer_run", {
+        url: url.trim(),
+        persona_preset: preset.id,
+        plan,
+      });
       router.push(`/app/analyzer/${res.id}`);
     });
   }
@@ -169,9 +166,9 @@ export function AnalyzerLauncher({
           <AnimatePresence>
             {isCustom && (
               <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 className="overflow-hidden"
               >
                 <Textarea

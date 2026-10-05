@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { ArrowRight, Scan, Library } from "lucide-react";
 import { DataPill } from "@/components/ui/data-pill";
 import { Button } from "@/components/ui/button";

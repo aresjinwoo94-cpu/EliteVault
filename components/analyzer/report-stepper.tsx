@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { Lock, type LucideIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useT } from "@/components/i18n/locale-provider";

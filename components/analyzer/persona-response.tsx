@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { Quote, ThumbsDown, ThumbsUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useT } from "@/components/i18n/locale-provider";

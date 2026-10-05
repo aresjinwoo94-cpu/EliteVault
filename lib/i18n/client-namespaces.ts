@@ -28,8 +28,6 @@ export const CORE_NAMESPACES = [
   "compare",
   "contactForm",
   "errorPage",
-  "faq",
-  "faqContent",
   "features",
   "footer",
   "hero",

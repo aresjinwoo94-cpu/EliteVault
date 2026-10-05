@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Library, Scan, Sparkles, Star } from "lucide-react";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient , getUserResult } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -21,7 +21,7 @@ export default async function OverviewPage() {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getUserResult();
 
   const [{ data: profile }, { data: recent }, { count: totalSites }] =
     await Promise.all([

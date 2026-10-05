@@ -13,7 +13,7 @@ import { useT } from "@/components/i18n/locale-provider";
  *     opts in, which also makes unmuted playback reliable in every
  *     browser (user-gesture requirement) and inherently respects
  *     prefers-reduced-motion.
- *   • preload="metadata" only — a few KB up front; the stream starts on
+ *   • preload="none" only — a few KB up front; the stream starts on
  *     click, so the video never competes with the page's LCP.
  *   • Native controls appear once playing (pause / seek / volume); when
  *     the teaser ends it resets back to the poster + play button.

@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { Layers, CheckCircle2, AlertTriangle, CircleDot } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import type { AnalysisResult } from "@/lib/supabase/types";

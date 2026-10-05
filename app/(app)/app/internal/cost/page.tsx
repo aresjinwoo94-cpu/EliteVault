@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import {
   createSupabaseServerClient,
-  createSupabaseServiceClient,
+  createSupabaseServiceClient,  getUserResult,
 } from "@/lib/supabase/server";
 
 export const metadata = { title: "Internal · Inference cost" };
@@ -36,7 +36,7 @@ export default async function InternalCostPage() {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getUserResult();
   if (!user) redirect("/sign-in");
 
   const allow = internalEmails();
