@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Download, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/components/i18n/locale-provider";
 
 /**
  * Export the map as a branded PNG (spec §8). Best-effort, client-only:
@@ -24,6 +25,7 @@ export function ExportButton({
   /** the current-rank diagnosis to bake into the export */
   body?: string;
 }) {
+  const { t } = useT();
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
 
@@ -51,6 +53,7 @@ export function ExportButton({
       img.crossOrigin = "anonymous";
       await new Promise<void>((resolve, reject) => {
         img.onload = () => resolve();
+        // i18n-ignore: developer-facing error, never shown to users
         img.onerror = () => reject(new Error("svg load failed"));
         img.src = svg64;
       });
@@ -92,6 +95,7 @@ export function ExportButton({
       canvas.width = cssW * scale;
       canvas.height = cssH * scale;
       const ctx = canvas.getContext("2d");
+      // i18n-ignore: developer-facing error, never shown to users
       if (!ctx) throw new Error("no 2d context");
       ctx.scale(scale, scale);
 
@@ -153,7 +157,7 @@ export function ExportButton({
   return (
     <Button variant="outline" size="sm" onClick={onExport} disabled={busy}>
       {done ? <Check className="size-3.5" /> : <Download className="size-3.5" />}
-      {done ? "Saved" : "Export (branded)"}
+      {done ? t("growthMap.saved") : t("growthMap.exportBranded")}
     </Button>
   );
 }

@@ -16,6 +16,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCompact } from "@/lib/utils";
 import type { NicheWinner } from "@/lib/library/niche-winners";
+import { useT } from "@/components/i18n/locale-provider";
+import { fill } from "@/lib/i18n/lookup";
 
 /**
  * "🔥 Winners in your niche — live" (FASE B).
@@ -46,17 +48,18 @@ function usable(n: unknown): n is number {
 // Brief §2.2 — a REAL signal (measured from the Meta Ad Library). Styled as a
 // live, factual badge (green + pulse) and labelled as such for a11y.
 function AdsBadge({ n }: { n: number }) {
+  const { t } = useT();
   return (
     <span
-      title="Real signal — live Meta Ad Library count"
-      aria-label={`${n} active ads — real signal, live Meta Ad Library count`}
+      title={t("nicheWinners.realSignal")}
+      aria-label={fill(t("nicheWinners.adsAria"), { n })}
       className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success ring-1 ring-success/20"
     >
       <span className="relative flex size-1.5">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success/60" />
         <span className="relative inline-flex size-1.5 rounded-full bg-success" />
       </span>
-      {n} active ads
+      {n} {t("nicheWinners.activeAds")}
     </span>
   );
 }
@@ -65,18 +68,23 @@ function AdsBadge({ n }: { n: number }) {
 // styled apart from the real ad badge and marked "est." so it never reads as a
 // measured figure.
 function RevenueSignal({ low, high }: { low: number; high: number }) {
+  const { t } = useT();
   return (
     <span
-      title="AI estimate — modeled from niche AOV, not a measured figure"
-      aria-label={`Estimated revenue ~$${formatCompact(low)} to $${formatCompact(high)} per month — AI estimate`}
+      title={t("nicheWinners.estSignal")}
+      aria-label={fill(t("nicheWinners.revAria"), {
+        low: formatCompact(low),
+        high: formatCompact(high),
+      })}
       className="font-mono text-[10px] tabular-nums text-signal-300"
     >
-      ~${formatCompact(low)}–{formatCompact(high)}/mo est.
+      ~${formatCompact(low)}–{formatCompact(high)}{t("nicheWinners.perMoEst")}
     </span>
   );
 }
 
 function WinnerRow({ w }: { w: NicheWinner }) {
+  const { t } = useT();
   // Rows arrive from Library data that can be partially seeded. Anything we
   // can't state honestly is hidden, never rendered as "undefined"/"NaN".
   const title = w.title?.trim() || w.domain;
@@ -128,7 +136,7 @@ function WinnerRow({ w }: { w: NicheWinner }) {
                     w.exactMatch ? "text-champagne-300/80" : "text-white/45"
                   }
                 >
-                  {w.matchPct}% match
+                  {w.matchPct}{t("nicheWinners.match")}
                 </span>
               </>
             )}
@@ -148,7 +156,7 @@ function WinnerRow({ w }: { w: NicheWinner }) {
           className="mt-2.5 flex items-center justify-center gap-1.5 rounded-lg border border-champagne-400/20 bg-champagne-400/[0.06] px-2.5 py-1.5 text-[11px] font-medium text-champagne-200 transition-colors hover:border-champagne-400/35 hover:bg-champagne-400/[0.1]"
         >
           <Megaphone className="size-3" />
-          See their active ads
+          {t("nicheWinners.seeAds")}
           <ArrowRight className="size-3" />
         </a>
       )}
@@ -180,6 +188,7 @@ function Header({
   nicheLabel: string;
   scope: "niche" | "global";
 }) {
+  const { t } = useT();
   return (
     <div className="mb-4 flex items-start justify-between gap-3">
       <div className="min-w-0">
@@ -188,7 +197,7 @@ function Header({
           {/* Never claim a niche match we don't have — when the store couldn't
               be classified these are the Library's top performers, full stop. */}
           <h3 className="font-medium text-white">
-            {scope === "niche" ? "Winners in your niche" : "Top converting stores"}
+            {scope === "niche" ? t("nicheWinners.winnersInNiche") : t("nicheWinners.topConverting")}
           </h3>
         </div>
         {/* Brief §9 — the exhibited set is curated with frozen thumbnails and
@@ -197,11 +206,11 @@ function Header({
             per-store where it's shown. */}
         <p className="mt-1 inline-flex items-center gap-1.5 text-[11px] text-white/45">
           <Radio className="size-3" />
-          Curated winners · hand-picked, refreshed periodically
+          {t("nicheWinners.curated")}
         </p>
       </div>
       <Badge variant="default" className="shrink-0">
-        {nicheLabel?.trim() || "Your niche"}
+        {nicheLabel?.trim() || t("trendsPage.yourNiche")}
       </Badge>
     </div>
   );
@@ -213,6 +222,7 @@ function Header({
  * store data reaches a Free client, so this renders from a COUNT alone.
  */
 function LockedRows({ count }: { count: number }) {
+  const { t } = useT();
   const rows = usable(count) ? Math.min(3, Math.round(count)) : 3;
   return (
     <div className="relative">
@@ -231,16 +241,15 @@ function LockedRows({ count }: { count: number }) {
             <Lock className="size-4 text-champagne-300" />
           </div>
           <p className="mt-2.5 text-sm font-medium text-white">
-            {rows === 1 ? "Unlock the winner in your niche" : `Unlock all ${rows} winners in your niche`}
+            {rows === 1 ? t("nicheWinners.unlockOne") : fill(t("nicheWinners.unlockAllN"), { n: rows })}
           </p>
           <p className="mt-1 max-w-[16rem] text-xs leading-relaxed text-white/55">
-            See every store outspending you right now — their estimated revenue
-            and the exact ads they&apos;re running.
+            {t("nicheWinners.unlockBody")}
           </p>
           <Link href="/app/checkout?plan=pro&interval=month" className="mt-3">
             <Button variant="primary" size="sm">
               <Sparkles className="size-3.5" />
-              Go Pro
+              {t("nicheWinners.goPro")}
               <ArrowRight className="size-3.5" />
             </Button>
           </Link>
@@ -251,7 +260,7 @@ function LockedRows({ count }: { count: number }) {
 }
 
 export function NicheWinners({
-  nicheLabel = "Your niche",
+  nicheLabel,
   winners = [],
   locked = false,
   lockedCount = 0,
@@ -263,6 +272,7 @@ export function NicheWinners({
   lockedCount?: number;
   scope?: "niche" | "global";
 }) {
+  const { t } = useT();
   // Drop anything unrenderable BEFORE deciding whether the card exists, so a
   // list of half-seeded rows hides the module instead of showing empty ones.
   const rows = (Array.isArray(winners) ? winners : []).filter(
@@ -302,14 +312,14 @@ export function NicheWinners({
           <div className="mt-3 flex items-center justify-between gap-2">
             <p className="text-[10px] leading-snug text-white/35">
               {locked
-                ? "Real stores, live Meta ad counts and estimated revenue — on Pro."
-                : "Estimated from public signals. Not figures reported by the brands."}
+                ? t("nicheWinners.realStores")
+                : t("nicheWinners.estimated")}
             </p>
             <Link
               href="/app/library"
               className="inline-flex shrink-0 items-center gap-1 text-[11px] font-medium text-signal-300 transition-colors hover:text-signal-200"
             >
-              Library
+              {t("libraryView.eyebrow")}
               <ArrowRight className="size-3" />
             </Link>
           </div>

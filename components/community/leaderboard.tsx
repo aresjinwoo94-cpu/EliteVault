@@ -23,6 +23,7 @@ import {
   LeaderboardRow,
   type LeaderboardItem,
 } from "./leaderboard-row";
+import { useT } from "@/components/i18n/locale-provider";
 
 /**
  * Top-level leaderboard component for /app/community.
@@ -57,6 +58,7 @@ export function Leaderboard({
     sort: Sort;
   };
 }) {
+  const { t } = useT();
   const router = useRouter();
   const sp = useSearchParams();
   const [q, setQ] = useState(initialFilters.q);
@@ -125,7 +127,7 @@ export function Leaderboard({
               value={q}
               onChange={(e) => setQ(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && applyFilters({ q })}
-              placeholder="Search domain or summary…"
+              placeholder={t("community.lbSearchPlaceholder")}
               className="pl-10 h-10"
             />
           </div>
@@ -136,10 +138,10 @@ export function Leaderboard({
             }
           >
             <SelectTrigger>
-              <SelectValue placeholder="All niches" />
+              <SelectValue placeholder={t("community.allNiches")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__all">All niches</SelectItem>
+              <SelectItem value="__all">{t("community.allNiches")}</SelectItem>
               {niches.map((n) => (
                 <SelectItem key={n} value={n}>
                   {n[0]?.toUpperCase() + n.slice(1)}
@@ -154,10 +156,10 @@ export function Leaderboard({
             }
           >
             <SelectTrigger>
-              <SelectValue placeholder="All tiers" />
+              <SelectValue placeholder={t("community.allTiers")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__all">All tiers</SelectItem>
+              <SelectItem value="__all">{t("community.allTiers")}</SelectItem>
               {[...RANK_TIERS].reverse().map((t) => (
                 <SelectItem key={t.key} value={t.key}>
                   {t.name}
@@ -173,14 +175,14 @@ export function Leaderboard({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="rank">Leaderboard rank</SelectItem>
-              <SelectItem value="score">Pure score</SelectItem>
-              <SelectItem value="views">Most viewed</SelectItem>
-              <SelectItem value="recent">Most recent</SelectItem>
+              <SelectItem value="rank">{t("community.lbSortRank")}</SelectItem>
+              <SelectItem value="score">{t("community.lbSortScore")}</SelectItem>
+              <SelectItem value="views">{t("community.sortViewed")}</SelectItem>
+              <SelectItem value="recent">{t("community.sortRecent")}</SelectItem>
             </SelectContent>
           </Select>
           <Button onClick={() => applyFilters({ q })} disabled={!q}>
-            Search
+            {t("common.search")}
           </Button>
         </div>
 
@@ -188,7 +190,7 @@ export function Leaderboard({
         {(q || niche || tier) && (
           <div className="mt-3 flex items-center gap-2 flex-wrap">
             <span className="text-[10px] uppercase tracking-widest text-white/35">
-              Filters:
+              {t("community.filters")}
             </span>
             {q && (
               <FilterChip
@@ -207,7 +209,7 @@ export function Leaderboard({
             )}
             {tier && (
               <FilterChip
-                label={`Tier: ${RANK_TIERS.find((t) => t.key === tier)?.name ?? tier}`}
+                label={`${t("community.tier")} ${RANK_TIERS.find((r) => r.key === tier)?.name ?? tier}`}
                 onClear={() => applyFilters({ tier: null })}
               />
             )}
@@ -220,21 +222,21 @@ export function Leaderboard({
         <div className="flex items-center gap-2 mb-4">
           <Trophy className="size-4 text-champagne-400" />
           <h2 className="text-sm font-medium uppercase tracking-widest text-white/60">
-            {q || niche || tier ? "Filtered results" : "Leaderboard"}
+            {q || niche || tier ? t("community.filteredResults") : t("community.leaderboard")}
           </h2>
         </div>
         {rows.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-white/[0.08] bg-card/20 p-12 text-center">
             <p className="text-white/40">
               {q || niche || tier
-                ? "No audits match these filters."
-                : "No more audits below the top 3 yet — publish yours."}
+                ? t("community.noMatch")
+                : t("community.noMoreBelow")}
             </p>
             <Link
               href="/app/analyzer"
               className="mt-4 inline-block text-sm text-champagne-400 hover:text-champagne-300 transition-colors"
             >
-              Run an analysis →
+              {t("community.runAnalysis")}
             </Link>
           </div>
         ) : (
@@ -261,7 +263,7 @@ export function Leaderboard({
             onClick={() => toggleSelect(rows[0].slug)}
             className="text-xs text-white/40 hover:text-white/70 transition-colors"
           >
-            Compare 2-3 audits side-by-side · click rows to select
+            {t("community.compareHint")}
           </button>
         </div>
       )}
@@ -279,17 +281,17 @@ export function Leaderboard({
             <div className="flex items-center gap-3 rounded-2xl bg-obsidian-900/95 backdrop-blur-xl border border-white/10 px-4 py-2.5 shadow-2xl">
               <ArrowLeftRight className="size-4 text-champagne-400" />
               <span className="text-sm text-white">
-                {selected.length} selected
+                {selected.length} {t("community.selected")}
               </span>
               <Link href={canCompare ? compareHref : "#"}>
                 <Button size="sm" disabled={!canCompare}>
-                  Compare side-by-side
+                  {t("community.compare")}
                 </Button>
               </Link>
               <button
                 onClick={() => setSelected([])}
                 className="text-white/40 hover:text-white p-1"
-                aria-label="Clear selection"
+                aria-label={t("community.clearSelection")}
               >
                 <X className="size-4" />
               </button>

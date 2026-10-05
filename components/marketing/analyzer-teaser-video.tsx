@@ -71,7 +71,7 @@ export function AnalyzerTeaserVideo() {
           </div>
           <div className="flex items-center gap-1.5 text-[11px] text-white/30 uppercase tracking-widest">
             <span className="size-1.5 rounded-full bg-success animate-pulse motion-reduce:animate-none" />
-            Live demo
+            {t("common.liveDemo")}
           </div>
         </div>
 

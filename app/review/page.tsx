@@ -43,7 +43,7 @@ export default async function ReviewPage() {
         <section className="relative py-24 md:py-28">
           <div className="container max-w-2xl">
             <div className="flex flex-col items-center text-center">
-              <DataPill items={["YOUR EXPERIENCE", "HONEST FEEDBACK"]} />
+              <DataPill items={[t("pills.yourExperience"), t("pills.honestFeedback")]} />
               <h1 className="mt-5 font-serif text-3xl md:text-4xl tracking-tight">
                 {t("reviews.writeHeading")}
               </h1>

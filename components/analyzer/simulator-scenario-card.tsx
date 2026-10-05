@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { SimulatorChart } from "./simulator-chart";
 import { cn } from "@/lib/utils";
 import type { SimulationScenario } from "@/lib/supabase/types";
+import { useT } from "@/components/i18n/locale-provider";
 
 /**
  * One scenario card (conservative | balanced | aggressive).
@@ -41,21 +42,21 @@ const VARIANT_META: Record<
   }
 > = {
   conservative: {
-    label: "Conservative",
+    label: "simulator.scCons",
     Icon: Shield,
     accent: "text-sky-300 ring-sky-400/30",
     accentBg: "from-sky-400/[0.04] to-transparent",
     accentBlur: "bg-sky-400/15",
   },
   balanced: {
-    label: "Balanced",
+    label: "simulator.scBal",
     Icon: Scale,
     accent: "text-champagne-300 ring-champagne-400/30",
     accentBg: "from-champagne-400/[0.05] to-transparent",
     accentBlur: "bg-champagne-400/15",
   },
   aggressive: {
-    label: "Aggressive",
+    label: "simulator.scAggr",
     Icon: Flame,
     accent: "text-rose-300 ring-rose-400/30",
     accentBg: "from-rose-400/[0.04] to-transparent",
@@ -74,9 +75,10 @@ export function SimulatorScenarioCard({
   scenario: SimulationScenario;
   index: number;
 }) {
+  const { t } = useT();
   const meta = VARIANT_META[scenario.variant];
   const { Icon } = meta;
-  const t = scenario.totals;
+  const totals = scenario.totals;
   const [openDays, setOpenDays] = useState(false);
 
   return (
@@ -100,7 +102,7 @@ export function SimulatorScenarioCard({
             >
               <Icon className={`size-3.5 ${meta.accent.split(" ")[0]}`} />
             </div>
-            <h4 className="font-medium text-white">{meta.label}</h4>
+            <h4 className="font-medium text-white">{t(meta.label)}</h4>
           </div>
 
           {/*
@@ -114,20 +116,20 @@ export function SimulatorScenarioCard({
           <div className="mt-4 flex items-baseline gap-2">
             <span
               className={`font-serif text-5xl tnum leading-none ${
-                t.roas >= 1.5
+                totals.roas >= 1.5
                   ? "text-gold-gradient"
-                  : t.roas >= 1.0
+                  : totals.roas >= 1.0
                     ? "text-white"
                     : "text-destructive"
               }`}
             >
-              {t.roas.toFixed(2)}x
+              {totals.roas.toFixed(2)}x
             </span>
             <span className="text-xs text-white/45 uppercase tracking-widest">
-              7-day ROAS
-              {t.roas < 1.0 && (
+              {t("simulator.roas7")}
+              {totals.roas < 1.0 && (
                 <span className="ml-2 text-destructive/80 normal-case">
-                  · projected loss
+                  {t("simulator.projectedLoss")}
                 </span>
               )}
             </span>
@@ -141,7 +143,7 @@ export function SimulatorScenarioCard({
           <div className="mt-4 flex items-start gap-2 rounded-lg border border-white/[0.05] bg-white/[0.02] px-3 py-2">
             <Target className="size-3.5 text-white/40 mt-0.5 shrink-0" />
             <p className="text-xs text-white/70 leading-relaxed">
-              <span className="text-white/40">Win condition: </span>
+              <span className="text-white/40">{t("simulator.winCondition")} </span>
               {scenario.win_condition}
             </p>
           </div>
@@ -153,21 +155,21 @@ export function SimulatorScenarioCard({
             The simulator is honest about losses now; the UI shows them.
           */}
           {(() => {
-            const net = t.revenue - t.spend;
+            const net = totals.revenue - totals.spend;
             const netLabel = net >= 0 ? `+${fmtUsd(net)}` : `−${fmtUsd(Math.abs(net))}`;
             return (
               <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                 {(
                   [
-                    ["Spend", fmtUsd(t.spend), "text-white"],
-                    ["Revenue", fmtUsd(t.revenue), "text-white"],
+                    [t("simulator.spend"), fmtUsd(totals.spend), "text-white"],
+                    [t("simulator.revenue"), fmtUsd(totals.revenue), "text-white"],
                     [
-                      "Net",
+                      t("simulator.net"),
                       netLabel,
                       net >= 0 ? "text-success" : "text-destructive",
                     ],
-                    ["Sales", `${Math.round(t.purchases)}`, "text-white"],
-                    ["CPA", fmtUsd(t.cpa, 2), "text-white"],
+                    [t("simulator.sales"), `${Math.round(totals.purchases)}`, "text-white"],
+                    ["CPA", fmtUsd(totals.cpa, 2), "text-white"],
                   ] as const
                 ).map(([label, val, color]) => (
                   <div
@@ -189,7 +191,7 @@ export function SimulatorScenarioCard({
           {/* Chart */}
           <div className="mt-5">
             <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">
-              7-day projection
+              {t("simulator.proj7")}
             </p>
             <SimulatorChart days={scenario.days} />
           </div>
@@ -206,7 +208,7 @@ export function SimulatorScenarioCard({
                 className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left"
               >
                 <span className="text-xs font-medium text-white/70">
-                  Day-by-day breakdown
+                  {t("simulator.dayByDay")}
                 </span>
                 <ChevronDown
                   className={cn(
@@ -220,10 +222,10 @@ export function SimulatorScenarioCard({
                   <table className="w-full min-w-[360px] border-collapse text-right text-[11px]">
                     <thead>
                       <tr className="text-white/40">
-                        <th className="px-2 py-1 text-left font-normal">Day</th>
-                        <th className="px-2 py-1 font-normal">Spend</th>
-                        <th className="px-2 py-1 font-normal">Revenue</th>
-                        <th className="px-2 py-1 font-normal">Sales</th>
+                        <th className="px-2 py-1 text-left font-normal">{t("simulator.day")}</th>
+                        <th className="px-2 py-1 font-normal">{t("simulator.spend")}</th>
+                        <th className="px-2 py-1 font-normal">{t("simulator.revenue")}</th>
+                        <th className="px-2 py-1 font-normal">{t("simulator.sales")}</th>
                         <th className="px-2 py-1 font-normal">ROAS</th>
                       </tr>
                     </thead>
@@ -267,7 +269,7 @@ export function SimulatorScenarioCard({
             <div className="flex items-center gap-1.5 mb-2">
               <AlertTriangle className="size-3.5 text-warning" />
               <p className="text-[10px] uppercase tracking-widest text-warning">
-                Risks
+                {t("simulator.risks")}
               </p>
             </div>
             <ul className="space-y-1">
@@ -287,7 +289,7 @@ export function SimulatorScenarioCard({
             <div className="flex items-center gap-1.5 mb-1">
               <Lightbulb className="size-3.5 text-champagne-300" />
               <Badge variant="gold" className="text-[9px]">
-                Tactical move
+                {t("simulator.tactical")}
               </Badge>
             </div>
             <p className="text-xs text-white/80 leading-relaxed">

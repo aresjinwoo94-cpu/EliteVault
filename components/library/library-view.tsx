@@ -38,6 +38,8 @@ import {
 import { SiteCard } from "./site-card";
 import { PlaybookCard } from "./playbook-card";
 import { useT } from "@/components/i18n/locale-provider";
+import { Rich } from "@/components/i18n/rich";
+import { fill } from "@/lib/i18n/lookup";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { PlanTier } from "@/lib/supabase/types";
@@ -121,11 +123,11 @@ export function LibraryView({
 
   function onFile(file: File) {
     if (!isPaid) {
-      toast.error("Image search is a Pro feature");
+      toast.error(t("libraryView.imageSearchPro"));
       return;
     }
     if (file.size > 6 * 1024 * 1024) {
-      toast.error("Max 6 MB");
+      toast.error(t("libraryView.maxSize"));
       return;
     }
     const reader = new FileReader();
@@ -160,21 +162,23 @@ export function LibraryView({
         <div>
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs uppercase tracking-widest text-white/40">
-              Library
+              {t("libraryView.eyebrow")}
             </span>
             <Badge variant="ai">
               <Sparkles className="size-3" />
-              {stats.total} stores · AI-curated
+              {stats.total} {t("libraryView.storesCurated")}
             </Badge>
           </div>
           <h1 className="mt-1 font-serif text-4xl tracking-tight">
-            Stores that are{" "}
-            <span className="text-gold-gradient">actually selling.</span>
+            <Rich
+              text={t("libraryView.headline")}
+              tags={{ g: (c) => <span className="text-gold-gradient">{c}</span> }}
+            />
           </h1>
           <p className="mt-2 text-sm text-white/55 max-w-2xl">
             {isPaid
-              ? "Drop a screenshot of your own store and our AI finds its closest converting siblings. Or search by prompt across all niches."
-              : "Browse 3 hand-picked winners with full metrics. Upgrade to unlock 40+ more + AI image search + saved collections."}
+              ? t("libraryView.subPro")
+              : t("libraryView.subFree")}
           </p>
         </div>
 
@@ -184,7 +188,7 @@ export function LibraryView({
         <Button asChild variant="ai" className="shrink-0">
           <Link href="/app/analyzer">
             <Scan className="size-4" />
-            Audit my store
+            {t("libraryView.auditMine")}
           </Link>
         </Button>
       </header>
@@ -203,7 +207,7 @@ export function LibraryView({
               : "border-white/[0.08] text-white/55 hover:text-white hover:border-white/20",
           )}
         >
-          All <span className="ml-1 text-white/40 num">{stats.total}</span>
+          {t("libraryView.all")} <span className="ml-1 text-white/40 num">{stats.total}</span>
         </button>
         {topNiches.map(([n, count]) => (
           <button
@@ -235,8 +239,8 @@ export function LibraryView({
               onKeyDown={(e) => e.key === "Enter" && runSearch({ prompt, niche })}
               placeholder={
                 isPaid
-                  ? 'Try "minimal skincare with editorial type" or "subscription wellness brands"'
-                  : "Search the 3 preview winners…"
+                  ? t("libraryView.promptPlaceholder")
+                  : t("libraryView.previewPlaceholder")
               }
               className="pl-10 h-11"
             />
@@ -246,7 +250,7 @@ export function LibraryView({
             disabled={isPending}
             className="md:w-32"
           >
-            {isPending ? "Searching…" : "Search"}
+            {isPending ? t("libraryView.searching") : t("common.search")}
           </Button>
         </div>
 
@@ -257,21 +261,21 @@ export function LibraryView({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={screenshotPreview}
-                alt="Search source"
+                alt={t("libraryView.searchSource")}
                 className="size-10 rounded-md object-cover"
               />
               <div className="text-xs">
-                <p className="text-white/85">Searching by image</p>
+                <p className="text-white/85">{t("libraryView.searchingImage")}</p>
                 {detectedNiche ? (
                   <p className="text-white/40">
-                    Detected niche:{" "}
+                    {t("libraryView.detectedNiche")}{" "}
                     <span className="text-champagne-300 capitalize">
                       {detectedNiche}
                     </span>{" "}
                     · {detectedKeywords.slice(0, 3).join(", ")}
                   </p>
                 ) : (
-                  <p className="text-white/40">Top matches first</p>
+                  <p className="text-white/40">{t("libraryView.topMatches")}</p>
                 )}
               </div>
               <button
@@ -300,10 +304,10 @@ export function LibraryView({
               ) : (
                 <Upload className="size-3" />
               )}
-              Drop a screenshot — AI finds visual matches
+              {t("libraryView.dropShot")}
               {!isPaid && (
                 <Badge variant="gold" className="ml-1">
-                  Pro
+                  {t("libraryView.pro")}
                 </Badge>
               )}
               <input
@@ -321,7 +325,7 @@ export function LibraryView({
           {aiUsed && (
             <Badge variant="ai" className="shrink-0">
               <Sparkles className="size-3" />
-              AI re-ranked
+              {t("libraryView.reranked")}
             </Badge>
           )}
         </div>
@@ -338,7 +342,7 @@ export function LibraryView({
             >
               {displayItems.length === 0 ? (
                 <div className="col-span-full text-center py-16 text-white/40">
-                  No matches. Try a different prompt.
+                  {t("libraryView.noMatches")}
                 </div>
               ) : (
                 displayItems.map((s, i) => (
@@ -358,8 +362,7 @@ export function LibraryView({
                 numbers the brands report. Say so once, plainly, under the grid. */}
             {displayItems.length > 0 && (
               <p className="mt-6 text-center text-xs text-white/35 leading-relaxed">
-                Metrics are estimated by modeling public traffic and behavior
-                signals. They are not figures reported by the brands themselves.
+                {t("libraryView.metricsNote")}
               </p>
             )}
           </>
@@ -373,7 +376,7 @@ export function LibraryView({
             onValueChange={(v) => setTab(v as "all" | "playbook")}
           >
             <TabsList>
-              <TabsTrigger value="all">All stores</TabsTrigger>
+              <TabsTrigger value="all">{t("libraryView.allStores")}</TabsTrigger>
               <TabsTrigger value="playbook">
                 <Star className="size-3 mr-1" />
                 {t("library.playbook.tab")} ({playbookTotal})
@@ -432,7 +435,7 @@ export function LibraryView({
                     <Button asChild variant="ai" className="mt-4">
                       <Link href="/app/analyzer">
                         <Scan className="size-4" />
-                        Audit my store
+                        {t("libraryView.auditMine")}
                       </Link>
                     </Button>
                   </div>
@@ -447,14 +450,13 @@ export function LibraryView({
         <div className="rounded-2xl border border-champagne-400/20 bg-gradient-to-br from-champagne-400/[0.05] to-signal-600/[0.05] p-6 text-center">
           <Lock className="mx-auto size-5 text-champagne-300" />
           <h3 className="mt-3 font-serif text-xl">
-            3 winners on Free — {stats.total - 3}+ more on Pro
+            {fill(t("libraryView.winnersOnFree"), { n: stats.total - 3 })}
           </h3>
           <p className="mt-1 text-sm text-white/55 max-w-md mx-auto">
-            Unlock metrics on every store, AI image-similarity search, and
-            saved collections for $19/mo.
+            {t("libraryView.unlockBody")}
           </p>
           <Link href="/app/billing">
-            <Button className="mt-4">Upgrade to Pro</Button>
+            <Button className="mt-4">{t("libraryView.upgradePro")}</Button>
           </Link>
         </div>
       )}

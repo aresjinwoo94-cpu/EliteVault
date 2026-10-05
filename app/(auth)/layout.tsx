@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
+import { getT } from "@/lib/i18n/server";
 
-export default function AuthLayout({
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { t } = await getT();
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Ambient orbs — softer, more spread for premium feel */}
@@ -13,14 +15,14 @@ export default function AuthLayout({
       <div className="pointer-events-none absolute -bottom-32 -right-32 size-[600px] rounded-full bg-champagne-400/10 blur-[160px]" />
 
       <header className="relative z-10 flex items-center justify-between px-6 py-6 md:px-10 md:py-7">
-        <Link href="/" aria-label="EliteVault home" className="transition-opacity hover:opacity-80">
+        <Link href="/" aria-label={t("common.homeAria")} className="transition-opacity hover:opacity-80">
           <Logo />
         </Link>
         <Link
           href="/"
           className="text-sm text-white/40 hover:text-white/80 transition-colors"
         >
-          ← Back to home
+          {t("common.backHome")}
         </Link>
       </header>
 

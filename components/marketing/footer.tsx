@@ -3,7 +3,6 @@
 import { useId } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
-import { LanguageToggle } from "@/components/i18n/language-toggle";
 import { useT } from "@/components/i18n/locale-provider";
 import { PaymentMarks } from "@/components/billing/payment-marks";
 
@@ -19,7 +18,6 @@ export function Footer() {
             <p className="mt-3 text-xs text-white/40 max-w-sm">
               {t("footer.tagline")} © {new Date().getFullYear()}
             </p>
-            <LanguageToggle className="mt-4" />
           </div>
           <nav className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm text-white/50 sm:grid-cols-3 lg:grid-cols-4">
             {/* Point at the dedicated /pricing money landing (it carries the

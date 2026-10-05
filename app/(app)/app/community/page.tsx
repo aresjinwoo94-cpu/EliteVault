@@ -9,6 +9,8 @@ import type {
 import type {
   LeaderboardItem,
 } from "@/components/community/leaderboard-row";
+import { getT } from "@/lib/i18n/server";
+import { Rich } from "@/components/i18n/rich";
 
 export const metadata = {
   title: "Leaderboard",
@@ -32,6 +34,7 @@ export default async function CommunityPage({
     q?: string;
   }>;
 }) {
+  const { t } = await getT();
   const sp = await searchParams;
   const supabase = await createSupabaseServerClient();
 
@@ -126,26 +129,30 @@ export default async function CommunityPage({
         <div className="flex items-center gap-2">
           <Trophy className="size-4 text-champagne-400" />
           <span className="text-xs uppercase tracking-widest text-white/40">
-            Community
+            {t("community.title")}
           </span>
           <Badge variant="gold">
             <Sparkles className="size-3" />
-            Leaderboard
+            {t("community.leaderboard")}
           </Badge>
         </div>
         <h1 className="mt-2 font-serif text-4xl md:text-5xl lg:text-6xl tracking-tight leading-[1.05]">
-          Where stores get{" "}
-          <span className="text-gold-gradient">ranked</span>.
+          <Rich
+            text={t("community.headline")}
+            tags={{ g: (c) => <span className="text-gold-gradient">{c}</span> }}
+          />
         </h1>
         <p className="mt-3 text-sm md:text-base text-white/55 max-w-2xl leading-relaxed">
-          Every published audit gets a composite score (design quality +
-          conversion potential) and a tier from{" "}
-          <span className="text-white/80">Apprentice</span> to{" "}
-          <span className="text-champagne-300">Sovereign</span>. Higher score =
-          higher rank. Click any row to see the full annotated audit.
+          <Rich
+            text={t("community.intro")}
+            tags={{
+              a: (c) => <span className="text-white/80">{c}</span>,
+              s: (c) => <span className="text-champagne-300">{c}</span>,
+            }}
+          />
         </p>
         <p className="mt-4 text-[10px] uppercase tracking-widest text-white/30">
-          AI estimates · Not affiliated with the analyzed brands
+          {t("community.aiEstimates")}
         </p>
       </header>
 
@@ -162,14 +169,14 @@ export default async function CommunityPage({
       />
 
       <p className="text-center text-xs text-white/35">
-        Want your store ranked?{" "}
+        {t("community.wantRanked")}{" "}
         <Link
           href="/app/analyzer"
           className="text-champagne-400 hover:text-champagne-300 transition-colors"
         >
-          Run an analysis →
+          {t("community.runAnalysis")}
         </Link>{" "}
-        Publish it from the audit page to enter the leaderboard.
+        {t("community.publishToEnter")}
       </p>
     </div>
   );

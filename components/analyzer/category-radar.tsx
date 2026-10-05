@@ -5,12 +5,12 @@ import { useT } from "@/components/i18n/locale-provider";
 import { deriveOverallScore } from "@/lib/analyzer/derive-score";
 
 const LABELS: { key: keyof CategoryScores; short: string }[] = [
-  { key: "color_integration", short: "Color" },
-  { key: "layout_proportion", short: "Layout" },
-  { key: "image_quality", short: "Imagery" },
-  { key: "technical_optimization", short: "Tech" },
-  { key: "niche_coherence", short: "Niche fit" },
-  { key: "cro_principles", short: "CRO" },
+  { key: "color_integration", short: "categories.color" },
+  { key: "layout_proportion", short: "categories.layout" },
+  { key: "image_quality", short: "categories.imagery" },
+  { key: "technical_optimization", short: "categories.tech" },
+  { key: "niche_coherence", short: "categories.niche" },
+  { key: "cro_principles", short: "categories.cro" },
 ];
 
 type CategoryScores = {
@@ -84,7 +84,7 @@ export function CategoryRadar({
       // ("Imagery" right, "Niche fit" left) don't get clipped at the SVG edge:
       // right side ends at the point, left side starts at it, top/bottom centre.
       anchor: cos > 0.3 ? "end" : cos < -0.3 ? "start" : "middle",
-      short: l.short,
+      short: t(l.short),
       score,
     } as const;
   });
@@ -94,7 +94,7 @@ export function CategoryRadar({
   return (
     <Card className="p-6">
       <h3 className="text-sm font-medium text-white">
-        {leaksFraming ? t("report.leaksHeading") : "Category breakdown"}
+        {leaksFraming ? t("report.leaksHeading") : t("community.catBreakdown")}
       </h3>
       {leaksFraming && (
         <p className="mt-1 text-[11.5px] leading-snug text-white/45">
@@ -167,7 +167,7 @@ export function CategoryRadar({
       <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1.5">
         {LABELS.map((l) => (
           <div key={l.key} className="flex justify-between text-xs">
-            <span className="text-white/50">{l.short}</span>
+            <span className="text-white/50">{t(l.short)}</span>
             <span className="tnum text-white/85">
               {Math.round(normalized[l.key])}
             </span>

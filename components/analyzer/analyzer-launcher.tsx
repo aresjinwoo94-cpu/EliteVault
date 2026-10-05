@@ -19,13 +19,14 @@ import { toast } from "sonner";
 import posthog from "posthog-js";
 import { createAnalysis } from "@/app/actions/analyzer";
 import type { PlanTier } from "@/lib/supabase/types";
+import { useT } from "@/components/i18n/locale-provider";
 
 const PRESETS = [
-  { id: "young-female", label: "Female, 22-30, US", persona: { age: "22-30", gender: "female", country: "US", interests: ["fashion", "social media"] } },
-  { id: "young-male", label: "Male, 22-30, US", persona: { age: "22-30", gender: "male", country: "US", interests: ["fitness", "tech"] } },
-  { id: "mom-30s", label: "Mom, 30-40, US/EU", persona: { age: "30-40", gender: "female", country: "US/EU", interests: ["parenting", "wellness"] } },
-  { id: "professional", label: "Pro, 28-45, urban", persona: { age: "28-45", country: "urban global", income_band: "high", interests: ["productivity", "luxury"] } },
-  { id: "custom", label: "Custom persona…", persona: null },
+  { id: "young-female", label: "launcher.pFemale", persona: { age: "22-30", gender: "female", country: "US", interests: ["fashion", "social media"] } },
+  { id: "young-male", label: "launcher.pMale", persona: { age: "22-30", gender: "male", country: "US", interests: ["fitness", "tech"] } },
+  { id: "mom-30s", label: "launcher.pMom", persona: { age: "30-40", gender: "female", country: "US/EU", interests: ["parenting", "wellness"] } },
+  { id: "professional", label: "launcher.pPro", persona: { age: "28-45", country: "urban global", income_band: "high", interests: ["productivity", "luxury"] } },
+  { id: "custom", label: "launcher.pCustom", persona: null },
 ];
 
 export function AnalyzerLauncher({
@@ -38,6 +39,7 @@ export function AnalyzerLauncher({
   // P2.1 — prefilled from the landing-page URL box (carried through sign-up).
   initialUrl?: string;
 }) {
+  const { t } = useT();
   const router = useRouter();
   const [url, setUrl] = useState(initialUrl);
   const [presetId, setPresetId] = useState("young-female");
@@ -49,7 +51,7 @@ export function AnalyzerLauncher({
 
   function submit() {
     if (!url.trim()) {
-      toast.error("Please enter a URL");
+      toast.error(t("launcher.enterUrl"));
       return;
     }
     startTransition(async () => {
@@ -65,7 +67,7 @@ export function AnalyzerLauncher({
       // the same store again within the reuse window) — say so, otherwise the
       // instant result reads like a bug. No credit was charged.
       if (res.reused) {
-        toast.success("Opening your recent audit of this store — no credit used.");
+        toast.success(t("launcher.openRecent"));
       }
       // PostHog: the activation event. Funnel = signup → analyzer_run →
       // checkout_started → plan_upgraded. The first three answer the
@@ -88,16 +90,16 @@ export function AnalyzerLauncher({
         <Lock className="mx-auto size-7 text-champagne-300" />
         <h3 className="mt-4 font-serif text-2xl">
           {plan === "free"
-            ? "You've used your free audit"
-            : "You're out of credits"}
+            ? t("launcher.usedFree")
+            : t("launcher.outOfCredits")}
         </h3>
         <p className="mt-2 text-sm text-white/55 max-w-md mx-auto">
           {plan === "free"
-            ? "Upgrade to Pro to unlock your prioritized fixes, the buyer-persona simulation and unlimited audits. The first month usually pays for itself in a single insight."
-            : "Top up by switching billing periods, or wait until next renewal."}
+            ? t("launcher.upgradeBody")
+            : t("launcher.topUp")}
         </p>
         <Button className="mt-5" onClick={() => router.push("/app/billing")}>
-          Upgrade
+          {t("launcher.upgrade")}
           <ArrowRight className="size-4" />
         </Button>
       </div>
@@ -118,16 +120,16 @@ export function AnalyzerLauncher({
           </div>
           <div>
             <h2 className="text-lg font-medium tracking-tight">
-              New analysis
+              {t("launcher.newAnalysis")}
             </h2>
             <p className="text-sm text-white/45">
-              Costs 1 credit. Refunded automatically if the analysis fails.
+              {t("launcher.cost")}
             </p>
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="url">Store URL</Label>
+          <Label htmlFor="url">{t("launcher.storeUrl")}</Label>
           <div className="relative">
             <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-white/30 pointer-events-none" />
             <Input
@@ -143,9 +145,9 @@ export function AnalyzerLauncher({
 
         <div className="space-y-2">
           <Label>
-            Buyer persona
+            {t("launcher.persona")}
             <span className="ml-2 text-white/30 normal-case tracking-normal">
-              who's reacting to your store
+              {t("launcher.personaHint")}
             </span>
           </Label>
           <div className="flex flex-wrap gap-2">
@@ -160,7 +162,7 @@ export function AnalyzerLauncher({
                 }`}
               >
                 <User className="size-3 opacity-60" />
-                {p.label}
+                {t(p.label)}
               </button>
             ))}
           </div>
@@ -175,7 +177,7 @@ export function AnalyzerLauncher({
                 <Textarea
                   value={customNotes}
                   onChange={(e) => setCustomNotes(e.target.value)}
-                  placeholder="Describe your buyer in 1-2 sentences. Eg: 'busy lawyer mom, 38, suburb of Madrid, low patience for clutter'"
+                  placeholder={t("launcher.customPlaceholder")}
                   rows={3}
                   className="mt-2"
                 />
@@ -191,7 +193,7 @@ export function AnalyzerLauncher({
             disabled={isPending}
             className="min-w-[180px]"
           >
-            {isPending ? "Queueing…" : "Analyze store"}
+            {isPending ? t("launcher.queueing") : t("launcher.analyze")}
             {!isPending && <ArrowRight className="size-4" />}
           </Button>
         </div>

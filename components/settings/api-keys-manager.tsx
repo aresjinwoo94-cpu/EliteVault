@@ -17,6 +17,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { createApiKey, revokeApiKey } from "@/app/actions/api-keys";
+import { useT } from "@/components/i18n/locale-provider";
+import { fill } from "@/lib/i18n/lookup";
+import { formatDate } from "@/lib/i18n/format";
 
 interface KeyRow {
   id: string;
@@ -29,6 +32,7 @@ interface KeyRow {
 }
 
 export function ApiKeysManager({ initialKeys }: { initialKeys: KeyRow[] }) {
+  const { t, locale } = useT();
   const [keys, setKeys] = useState(initialKeys);
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -39,7 +43,7 @@ export function ApiKeysManager({ initialKeys }: { initialKeys: KeyRow[] }) {
 
   function create() {
     if (!name.trim()) {
-      toast.error("Give the key a name");
+      toast.error(t("apiKeys.nameRequired"));
       return;
     }
     startTransition(async () => {
@@ -67,13 +71,13 @@ export function ApiKeysManager({ initialKeys }: { initialKeys: KeyRow[] }) {
   }
 
   function revoke(id: string) {
-    if (!confirm("Revoke this key? Existing requests using it will start failing immediately.")) {
+    if (!confirm(t("apiKeys.confirmRevoke"))) {
       return;
     }
     startTransition(async () => {
       const res = await revokeApiKey(id);
       if (!res.ok) {
-        toast.error(res.error ?? "Revoke failed");
+        toast.error(res.error ?? t("apiKeys.revokeFailed"));
         return;
       }
       setKeys((prev) =>
@@ -81,47 +85,46 @@ export function ApiKeysManager({ initialKeys }: { initialKeys: KeyRow[] }) {
           k.id === id ? { ...k, revoked_at: new Date().toISOString() } : k,
         ),
       );
-      toast.success("Key revoked");
+      toast.success(t("apiKeys.revoked"));
     });
   }
 
   function copy(token: string) {
     navigator.clipboard.writeText(token);
-    toast.success("Copied — store it somewhere safe");
+    toast.success(t("apiKeys.copied"));
   }
 
   return (
     <>
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-medium">Your keys</h2>
+          <h2 className="text-sm font-medium">{t("apiKeys.yourKeys")}</h2>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button size="sm">
                 <Plus className="size-3.5" />
-                New key
+                {t("apiKeys.newKey")}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Create API key</DialogTitle>
+                <DialogTitle>{t("apiKeys.createTitle")}</DialogTitle>
                 <DialogDescription>
-                  Give it a short, descriptive name. You'll see the full token
-                  exactly once — copy it somewhere safe.
+                  {t("apiKeys.createBody")}
                 </DialogDescription>
               </DialogHeader>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. shopify-app, dev-laptop"
+                placeholder={t("apiKeys.placeholder")}
                 onKeyDown={(e) => e.key === "Enter" && create()}
               />
               <DialogFooter>
                 <Button variant="outline" onClick={() => setOpen(false)}>
-                  Cancel
+                  {t("common.cancel")}
                 </Button>
                 <Button onClick={create} disabled={isPending}>
-                  {isPending ? "Generating…" : "Generate"}
+                  {isPending ? t("apiKeys.generating") : t("apiKeys.generate")}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -131,7 +134,7 @@ export function ApiKeysManager({ initialKeys }: { initialKeys: KeyRow[] }) {
         {keys.length === 0 ? (
           <div className="text-center py-12 text-white/40">
             <KeyRound className="mx-auto size-6 mb-2" />
-            <p className="text-sm">No keys yet. Create your first one.</p>
+            <p className="text-sm">{t("apiKeys.none")}</p>
           </div>
         ) : (
           <ul className="divide-y divide-white/[0.04]">
@@ -145,7 +148,7 @@ export function ApiKeysManager({ initialKeys }: { initialKeys: KeyRow[] }) {
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-medium truncate">{k.name}</p>
                     {k.revoked_at && (
-                      <Badge variant="danger">Revoked</Badge>
+                      <Badge variant="danger">{t("apiKeys.revokedBadge")}</Badge>
                     )}
                   </div>
                   <p className="text-xs text-white/40 font-mono">
@@ -153,11 +156,13 @@ export function ApiKeysManager({ initialKeys }: { initialKeys: KeyRow[] }) {
                   </p>
                 </div>
                 <div className="text-right text-[11px] text-white/40 shrink-0">
-                  <p>{k.request_count} requests</p>
+                  <p>{fill(t("apiKeys.requests"), { n: k.request_count })}</p>
                   <p>
                     {k.last_used_at
-                      ? `Used ${new Date(k.last_used_at).toLocaleDateString()}`
-                      : "Never used"}
+                      ? fill(t("apiKeys.usedOn"), {
+                          date: formatDate(k.last_used_at, locale),
+                        })
+                      : t("apiKeys.neverUsed")}
                   </p>
                 </div>
                 {!k.revoked_at && (
@@ -181,10 +186,9 @@ export function ApiKeysManager({ initialKeys }: { initialKeys: KeyRow[] }) {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Save your key now</DialogTitle>
+            <DialogTitle>{t("apiKeys.saveNow")}</DialogTitle>
             <DialogDescription>
-              This is the only time you'll see the full token. Copy it and
-              store it somewhere safe (1Password, Vercel env vars, etc.).
+              {t("apiKeys.saveNowBody")}
             </DialogDescription>
           </DialogHeader>
           {revealed && (
@@ -198,14 +202,14 @@ export function ApiKeysManager({ initialKeys }: { initialKeys: KeyRow[] }) {
                 onClick={() => copy(revealed.token)}
               >
                 <Copy className="size-3" />
-                Copy
+                {t("apiKeys.copy")}
               </Button>
             </div>
           )}
           <DialogFooter>
             <Button onClick={() => setRevealed(null)}>
               <Check className="size-4" />
-              I've saved it
+              {t("apiKeys.savedIt")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -9,10 +9,15 @@ import { formatCompact } from "@/lib/utils";
 import { analyzerReportV2Enabled } from "@/lib/flags";
 import { potentialBandForResult } from "@/lib/analyzer/report-v2";
 import type { AnalysisResult } from "@/lib/supabase/types";
+import { getT } from "@/lib/i18n/server";
+import { fill } from "@/lib/i18n/lookup";
+import { Rich } from "@/components/i18n/rich";
+import { intlLocale } from "@/lib/i18n/format";
 
 export const metadata = { title: "Overview" };
 
 export default async function OverviewPage() {
+  const { t, locale } = await getT();
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -62,11 +67,13 @@ export default async function OverviewPage() {
     <div className="p-6 md:p-10 lg:p-12 pt-10 md:pt-14 pb-24 md:pb-12 max-w-6xl mx-auto space-y-10 md:space-y-12">
       <header>
         <p className="text-xs uppercase tracking-widest text-white/40">
-          Welcome back{first ? `, ${first}` : ""}
+          {first ? fill(t("home.welcomeName"), { name: first }) : t("home.welcome")}
         </p>
         <h1 className="mt-2 font-serif text-4xl md:text-5xl lg:text-6xl tracking-tight leading-[1.05]">
-          What are we{" "}
-          <span className="text-gold-gradient">analyzing</span> today?
+          <Rich
+            text={t("home.headline")}
+            tags={{ g: (c) => <span className="text-gold-gradient">{c}</span> }}
+          />
         </h1>
       </header>
 
@@ -81,11 +88,10 @@ export default async function OverviewPage() {
               </div>
               <div>
                 <p className="font-medium text-white">
-                  Run your first audit — see your score in under 60 seconds
+                  {t("home.firstAuditTitle")}
                 </p>
                 <p className="mt-0.5 text-sm text-white/55">
-                  Paste your store URL and get a real conversion score + your #1
-                  fix. It&apos;s free.
+                  {t("home.firstAuditBody")}
                 </p>
               </div>
             </div>
@@ -105,18 +111,17 @@ export default async function OverviewPage() {
               </div>
               <Badge variant="gold">
                 <Sparkles className="size-3" />
-                Star feature
+                {t("home.starFeature")}
               </Badge>
             </div>
             <h2 className="mt-6 text-2xl font-medium tracking-tight">
-              Analyze a store
+              {t("home.analyzeStore")}
             </h2>
             <p className="mt-2 text-sm text-white/55 leading-relaxed">
-              Drop a URL or screenshot. Get a brutal CRO audit, annotated
-              screenshot, and a buyer-persona simulation in under a minute.
+              {t("home.analyzeBody")}
             </p>
             <div className="mt-6 inline-flex items-center text-sm text-champagne-400 group-hover:text-champagne-300">
-              Start analysis
+              {t("home.startAnalysis")}
               <ArrowRight className="ml-1 size-4 transition-transform group-hover:translate-x-1" />
             </div>
           </Card>
@@ -130,18 +135,17 @@ export default async function OverviewPage() {
                 <Library className="size-5 text-signal-300" />
               </div>
               <span className="text-xs text-white/40">
-                {formatCompact(totalSites ?? 0)} stores indexed
+                {fill(t("home.storesIndexed"), { n: formatCompact(totalSites ?? 0) })}
               </span>
             </div>
             <h2 className="mt-6 text-2xl font-medium tracking-tight">
-              Browse the vault
+              {t("home.browseVault")}
             </h2>
             <p className="mt-2 text-sm text-white/55 leading-relaxed">
-              The live portfolio of stores actually generating revenue right
-              now. Search by prompt or by uploading a screenshot.
+              {t("home.browseBody")}
             </p>
             <div className="mt-6 inline-flex items-center text-sm text-signal-300 group-hover:text-signal-200">
-              Explore library
+              {t("home.exploreLibrary")}
               <ArrowRight className="ml-1 size-4 transition-transform group-hover:translate-x-1" />
             </div>
           </Card>
@@ -152,13 +156,13 @@ export default async function OverviewPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-5">
           <p className="text-xs uppercase tracking-widest text-white/40">
-            Plan
+            {t("home.plan")}
           </p>
-          <p className="mt-2 text-xl font-medium">{plan.name}</p>
+          <p className="mt-2 text-xl font-medium">{t(`plans.${plan.id}.name`)}</p>
         </Card>
         <Card className="p-5">
           <p className="text-xs uppercase tracking-widest text-white/40">
-            Credits
+            {t("home.credits")}
           </p>
           <p className="mt-2 font-mono tabular-nums text-3xl tnum text-gold-gradient">
             {profile?.credits ?? 0}
@@ -166,7 +170,7 @@ export default async function OverviewPage() {
         </Card>
         <Card className="p-5">
           <p className="text-xs uppercase tracking-widest text-white/40">
-            Analyses run
+            {t("home.analysesRun")}
           </p>
           <p className="mt-2 text-xl font-medium tnum font-mono tabular-nums">
             {recent?.length ?? 0}
@@ -175,19 +179,19 @@ export default async function OverviewPage() {
         {reportV2 ? (
           <Card className="p-5">
             <p className="text-xs uppercase tracking-widest text-white/40">
-              Potential
+              {t("home.potential")}
             </p>
             <p className="mt-2 font-serif text-xl text-gold-gradient tnum leading-tight">
               {latestBand ?? "—"}
             </p>
             <p className="mt-0.5 text-[10px] uppercase tracking-widest text-white/35">
-              revenue stage · potential, not revenue
+              {t("home.revenueStage")}
             </p>
           </Card>
         ) : (
           <Card className="p-5">
             <p className="text-xs uppercase tracking-widest text-white/40">
-              Avg. score
+              {t("home.avgScore")}
             </p>
             <p className="mt-2 text-xl font-medium tnum font-mono tabular-nums">
               {recent && recent.length > 0
@@ -207,24 +211,24 @@ export default async function OverviewPage() {
       {/* Recent analyses */}
       <section>
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-medium tracking-tight">Recent audits</h2>
+          <h2 className="text-lg font-medium tracking-tight">{t("home.recentAudits")}</h2>
           {(recent?.length ?? 0) > 0 && (
             <Link
               href="/app/analyzer"
               className="text-xs text-white/40 hover:text-white transition-colors"
             >
-              See all →
+              {t("home.seeAll")}
             </Link>
           )}
         </div>
         {!recent || recent.length === 0 ? (
           <Card className="p-6 md:p-14 text-center">
             <p className="text-white/55">
-              No analyses yet. Your first audit is on us.
+              {t("home.noAnalyses")}
             </p>
             <Link href="/app/analyzer">
               <Button className="mt-6">
-                Run your first analysis
+                {t("home.runFirst")}
                 <ArrowRight className="size-4" />
               </Button>
             </Link>
@@ -254,10 +258,10 @@ export default async function OverviewPage() {
                   )}
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium truncate">
-                      {r.url ?? "Uploaded screenshot"}
+                      {r.url ?? t("home.uploadedScreenshot")}
                     </p>
                     <p className="text-xs text-white/40 mt-0.5">
-                      {new Date(r.created_at).toLocaleString()}
+                      {new Date(r.created_at).toLocaleString(intlLocale(locale))}
                     </p>
                   </div>
                   <Badge
@@ -287,10 +291,9 @@ export default async function OverviewPage() {
               <Star className="size-5 fill-signal-400 text-signal-400" />
             </div>
             <div>
-              <p className="font-medium text-white">Leave a review</p>
+              <p className="font-medium text-white">{t("home.leaveReview")}</p>
               <p className="mt-0.5 text-sm text-white/55">
-                Used EliteVault to audit your store? Tell other founders what it
-                showed you — approved reviews appear on the homepage.
+                {t("home.reviewBody")}
               </p>
             </div>
           </div>

@@ -5,6 +5,7 @@ import { AppTopbar } from "@/components/dashboard/topbar";
 import { HideChromeOnCheckout } from "@/components/dashboard/focus-chrome";
 import { CommandMenu } from "@/components/dashboard/command-menu";
 import { PostHogIdentify } from "@/components/analytics/posthog-identify";
+import { AppScope } from "@/components/i18n/app-scope";
 
 export default async function AppLayout({
   children,
@@ -24,6 +25,7 @@ export default async function AppLayout({
     .single();
 
   return (
+    <AppScope>
     <div className="min-h-screen flex">
       {/* Tag the PostHog session with this user's id + plan so the
           dashboard can segment by tier (free / pro / scale) and watch
@@ -45,5 +47,6 @@ export default async function AppLayout({
       </div>
       <CommandMenu />
     </div>
+    </AppScope>
   );
 }

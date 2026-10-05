@@ -18,6 +18,7 @@ import { classifyPageKind, type PageKind } from "@/lib/analyzer/page-kind";
 import { gateForViewer } from "@/lib/growth-map/gate";
 import type { GrowthMapData } from "@/lib/growth-map/types";
 import { useT } from "@/components/i18n/locale-provider";
+import { fill } from "@/lib/i18n/lookup";
 import { MapCanvas, NODE_POS, VIEWBOX } from "./map-canvas";
 import { NodeCard } from "./node-card";
 import { ExportButton } from "./export-button";
@@ -184,12 +185,12 @@ export function GrowthMap({
       return !Number.isFinite(n) ? 0 : Math.round(Math.max(0, Math.min(100, n > 1 ? n : n * 100)));
     };
     const CAT_LABELS: Record<string, string> = {
-      cro_principles: "Conversion fundamentals",
-      niche_coherence: "Offer clarity",
-      technical_optimization: "Technical health",
-      layout_proportion: "Layout & hierarchy",
-      image_quality: "Imagery",
-      color_integration: "Visual cohesion",
+      cro_principles: t("growthMap.catCro"),
+      niche_coherence: t("growthMap.catNiche"),
+      technical_optimization: t("growthMap.catTech"),
+      layout_proportion: t("growthMap.catLayout"),
+      image_quality: t("growthMap.catImagery"),
+      color_integration: t("growthMap.catColor"),
     };
     const cats = result.category_scores as Record<string, number> | undefined;
     const fixesCount = (result.top_fixes ?? []).filter((f) => f?.title?.trim()).length;
@@ -217,7 +218,7 @@ export function GrowthMap({
         label: t("report.lensFixes"),
         hint: t("report.lensFixesHint").replace("{n}", String(fixesCount)),
         section: "section-fixes",
-        sectionLabel: "Priority Fixes",
+        sectionLabel: t("reportNav.fixes"),
       });
     if (annCount > 0)
       out.push({
@@ -225,7 +226,7 @@ export function GrowthMap({
         label: t("report.lensAudit"),
         hint: t("report.lensAuditHint").replace("{n}", String(annCount)),
         section: "section-audit",
-        sectionLabel: "Annotated Audit",
+        sectionLabel: t("reportNav.audit"),
       });
     if (weakest)
       out.push({
@@ -233,7 +234,7 @@ export function GrowthMap({
         label: t("report.lensLeaks"),
         hint: `${weakest.label} · ${weakest.v}`,
         section: "section-leaks",
-        sectionLabel: "Leak map",
+        sectionLabel: t("growthMap.leakMap"),
       });
     return out;
   }, [result, t]);
@@ -406,7 +407,7 @@ export function GrowthMap({
           <div className="flex items-center gap-3 shrink-0">
             <span className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-white/[0.06] px-3 py-1.5 text-[10.5px] text-white/45">
               <span className="size-2 rounded-full bg-[image:var(--grad-brand)]" />
-              Growth Map™ · calibrated with your Library
+              {t("growthMap.calibrated")}
             </span>
           </div>
         </div>
@@ -469,7 +470,7 @@ export function GrowthMap({
           </div>
           </div>
           <p className="mt-1.5 text-[11px] text-white/30 md:hidden">
-            ← swipe to see the full map →
+            {t("growthMap.swipe")}
           </p>
 
           {/* Announcement — the $ ranges are POTENTIAL, not revenue. Given real
@@ -623,11 +624,11 @@ export function GrowthMap({
           {ghostRank && (
             <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-signal-400/25 bg-signal-500/[0.06] px-4 py-2.5 text-[12px]">
               <span className="font-sans font-semibold text-signal-200">
-                Potential: {rank.material} → {ghostRank.material}
+                {t("growthMap.potential")} {rank.material} → {ghostRank.material}
               </span>
               {projection && projection.liftFixes.length > 0 && (
                 <span className="text-white/60">
-                  by fixing {projection.liftFixes.join(", ")}.
+                  {fill(t("growthMap.byFixing"), { fixes: projection.liftFixes.join(", ") })}
                 </span>
               )}
               <span className="text-white/75">{t("report.rerunCta")}</span>
@@ -638,15 +639,12 @@ export function GrowthMap({
         {/* Footer — citations + branded export (spec §3/§8) */}
         <div className="mt-4 flex flex-wrap items-end justify-between gap-3 border-t border-white/[0.06] pt-3">
           <p className="text-[10.5px] leading-relaxed text-white/40 max-w-[60ch]">
-            Stages after Churchill &amp; Lewis, “The Five Stages of Small Business
-            Growth” (HBR 1983). The stall point: Olson et al., “When Growth
-            Stalls” (HBR 2008) — ~87% of companies stall. Dollar bands are
-            EliteVault’s approximate overlay, not a claim about your revenue.
+            {t("growthMap.citations")}
           </p>
           <ExportButton
             getSvg={() => svgWrapRef.current?.querySelector("svg") ?? null}
             domain={domain}
-            title={`Your store · ${rank.material} · ${rank.stage}`}
+            title={`${t("growthMap.yourStoreTitle")} · ${rank.material} · ${rank.stage}`}
             body={data.nodes[current]?.text}
           />
         </div>
@@ -654,8 +652,7 @@ export function GrowthMap({
         {/* Scroll nudge — the report continues below (fixes, persona, tools) */}
         <div className="mt-4 flex items-center justify-center gap-2.5 rounded-xl border border-signal-400/20 bg-signal-500/[0.06] px-4 py-2.5 text-center">
           <span className="text-[12px] text-white/75">
-            Your full audit continues below — prioritized fixes, buyer-persona
-            &amp; Meta tools.
+            {t("growthMap.continues")}
           </span>
           <ChevronDown
             className={`size-4 shrink-0 text-signal-300 ${reduce ? "" : "motion-safe:animate-bounce"}`}

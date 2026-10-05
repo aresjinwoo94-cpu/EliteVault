@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import type { ReviewPhoto } from "@/lib/reviews/types";
+import { useT } from "@/components/i18n/locale-provider";
+import { fill } from "@/lib/i18n/lookup";
 
 /** On-the-fly resized render URL for a stored public photo (light thumbnails). */
 function thumb(url: string, width: number): string {
@@ -23,6 +25,7 @@ export function ReviewPhotoGallery({
   photos: ReviewPhoto[];
   authorName: string;
 }) {
+  const { t } = useT();
   const [openIdx, setOpenIdx] = useState<number | null>(null);
   if (photos.length === 0) return null;
   const shown = photos.slice(0, 4);
@@ -35,7 +38,7 @@ export function ReviewPhotoGallery({
             key={p.path}
             type="button"
             onClick={() => setOpenIdx(i)}
-            aria-label="Ampliar foto"
+            aria-label={t("reviewPhotos.enlarge")}
             className="group relative size-20 overflow-hidden rounded-xl border border-white/[0.06] transition-colors hover:border-white/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-signal-400/50"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -51,7 +54,7 @@ export function ReviewPhotoGallery({
       <Dialog open={openIdx !== null} onOpenChange={(v) => !v && setOpenIdx(null)}>
         <DialogContent className="max-w-3xl border-white/10 bg-obsidian-900/95 p-2 sm:p-3">
           <DialogTitle className="sr-only">
-            Foto de la reseña de {authorName}
+            {fill(t("reviewPhotos.titleOf"), { name: authorName })}
           </DialogTitle>
           {openIdx !== null && (
             // Full-resolution object URL for the zoom view (no transform).

@@ -11,6 +11,10 @@ import type {
   Direction,
   Provenance,
 } from "@/lib/trends";
+import { useT } from "@/components/i18n/locale-provider";
+import { fill } from "@/lib/i18n/lookup";
+import { formatDate } from "@/lib/i18n/format";
+import type { Locale } from "@/lib/i18n/config";
 
 /**
  * Client board for a niche's trends. Operates entirely on the server-rendered
@@ -22,11 +26,12 @@ import type {
 type SortKey = "movers" | "score" | "newest";
 type FilterKey = "all" | "rising" | "cooling";
 
-function fmtWeek(week: string): string {
-  return new Date(`${week}T00:00:00Z`).toLocaleDateString("en-US", {
+function fmtWeek(week: string, locale: Locale): string {
+  return formatDate(`${week}T00:00:00Z`, locale, {
     month: "short",
     day: "numeric",
     year: "numeric",
+    timeZone: "UTC",
   });
 }
 
@@ -48,17 +53,18 @@ function DirPill({ direction, score }: { direction: Direction; score: number }) 
 }
 
 function StatusTag({ status }: { status: TrendStatus }) {
+  const { t } = useT();
   const map = {
-    new: { c: "text-signal-300 ring-signal-400/30 bg-signal-600/10", label: "New" },
+    new: { c: "text-signal-300 ring-signal-400/30 bg-signal-600/10", label: t("trendsBoard.statusNew") },
     accelerating: {
       c: "text-signal-300 ring-signal-400/30 bg-signal-600/10",
-      label: "Rising",
+      label: t("trendsBoard.rising"),
     },
     cooling: {
       c: "text-destructive ring-destructive/30 bg-destructive/10",
-      label: "Cooling",
+      label: t("trendsBoard.cooling"),
     },
-    sustained: { c: "text-white/45 ring-white/10 bg-white/[0.03]", label: "Steady" },
+    sustained: { c: "text-white/45 ring-white/10 bg-white/[0.03]", label: t("trendsBoard.statusSteady") },
   } as const;
   const s = map[status];
   return (
@@ -74,8 +80,9 @@ function StatusTag({ status }: { status: TrendStatus }) {
 }
 
 function WowDelta({ delta }: { delta: number | null }) {
+  const { t } = useT();
   if (delta == null) {
-    return <span className="num text-[11px] text-white/30">first week</span>;
+    return <span className="num text-[11px] text-white/30">{t("trendsBoard.firstWeek")}</span>;
   }
   if (delta === 0) {
     return <span className="num text-[11px] text-white/40">±0</span>;
@@ -98,27 +105,30 @@ function ProvenanceTag({
   source: string | null;
   week: string;
 }) {
+  const { t, locale } = useT();
   return (
     <span className="text-[10px] text-white/35">
-      {provenance === "sourced" && source ? `Source: ${source}` : "AI-estimated"}
+      {provenance === "sourced" && source
+        ? `${t("trendsBoard.source")} ${source}`
+        : t("trendsBoard.aiEstimated")}
       {" · "}
-      week of {fmtWeek(week)}
+      {t("trendsBoard.weekOf")} {fmtWeek(week, locale)}
     </span>
   );
 }
 
 /** Templated next-step hint — derived from the item's status/kind, no model call. */
-function whatToDo(item: TrendItemHistory): string {
-  const noun = item.kind === "product" ? "product" : "angle";
+function whatToDo(item: TrendItemHistory, t: (path: string) => string): string {
+  const noun = t(item.kind === "product" ? "trendsBoard.nounProduct" : "trendsBoard.nounAngle");
   switch (item.status) {
     case "cooling":
-      return "Cooling — hold spend here; validate demand before committing more.";
+      return t("trendsBoard.todoCooling");
     case "new":
-      return `New signal — worth a fast test: spin up a ${noun} and audit it.`;
+      return fill(t("trendsBoard.todoNew"), { noun });
     case "accelerating":
-      return `Heating up — double down: build a ${noun} around this and audit it.`;
+      return fill(t("trendsBoard.todoRising"), { noun });
     default:
-      return "Steady demand — a dependable bet; refresh creative and re-audit.";
+      return t("trendsBoard.todoSteady");
   }
 }
 
@@ -187,6 +197,7 @@ function ItemCard({
   item: TrendItemHistory;
   nicheSlug: string;
 }) {
+  const { t } = useT();
   const cooling = item.status === "cooling";
   return (
     <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
@@ -208,7 +219,7 @@ function ItemCard({
         />
         <WowDelta delta={item.delta} />
         <span className="text-[10px] uppercase tracking-wider text-white/30">
-          wk / wk
+          {t("trendsBoard.wkWk")}
         </span>
       </div>
 
@@ -220,7 +231,7 @@ function ItemCard({
 
       {/* Templated next step + per-row CTA */}
       <p className="mt-2 text-[11px] text-white/65 leading-relaxed">
-        {whatToDo(item)}
+        {whatToDo(item, t)}
       </p>
       <div className="mt-2 flex items-center justify-between gap-2">
         <ProvenanceTag
@@ -232,7 +243,7 @@ function ItemCard({
           href={`/app/analyzer?from=trend&niche=${nicheSlug}`}
           className="inline-flex shrink-0 items-center gap-0.5 text-[11px] font-medium text-signal-300 hover:text-signal-200"
         >
-          Audit against this
+          {t("trendsBoard.auditAgainst")}
           <ArrowUpRight className="size-3" />
         </Link>
       </div>
@@ -281,6 +292,7 @@ export function TrendsBoard({
   products: TrendItemHistory[];
   nicheSlug: string;
 }) {
+  const { t } = useT();
   const [sort, setSort] = useState<SortKey>("movers");
   const [filter, setFilter] = useState<FilterKey>("all");
 
@@ -310,7 +322,7 @@ export function TrendsBoard({
           <div className="flex items-center gap-1.5">
             <Flame className="size-3.5 text-signal-400" />
             <h3 className="font-mono text-[11px] uppercase tracking-widest text-signal-300">
-              Movers this week
+              {t("trendsBoard.movers")}
             </h3>
           </div>
           <div className="mt-3 grid gap-2.5 sm:grid-cols-3">
@@ -325,36 +337,36 @@ export function TrendsBoard({
       <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
         <div className="flex items-center gap-1">
           <span className="mr-1 text-[10px] uppercase tracking-wider text-white/30">
-            Sort
+            {t("trendsBoard.sort")}
           </span>
           <ControlButton active={sort === "movers"} onClick={() => setSort("movers")}>
-            Biggest movers
+            {t("trendsBoard.sortMovers")}
           </ControlButton>
           <ControlButton active={sort === "score"} onClick={() => setSort("score")}>
-            Highest score
+            {t("community.sortScore")}
           </ControlButton>
           <ControlButton active={sort === "newest"} onClick={() => setSort("newest")}>
-            Newest
+            {t("trendsBoard.sortNewest")}
           </ControlButton>
         </div>
         <div className="flex items-center gap-1">
           <span className="mr-1 text-[10px] uppercase tracking-wider text-white/30">
-            Filter
+            {t("trendsBoard.filter")}
           </span>
           <ControlButton active={filter === "all"} onClick={() => setFilter("all")}>
-            All
+            {t("libraryView.all")}
           </ControlButton>
           <ControlButton
             active={filter === "rising"}
             onClick={() => setFilter("rising")}
           >
-            Rising
+            {t("trendsBoard.rising")}
           </ControlButton>
           <ControlButton
             active={filter === "cooling"}
             onClick={() => setFilter("cooling")}
           >
-            Cooling
+            {t("trendsBoard.cooling")}
           </ControlButton>
         </div>
       </div>
@@ -362,11 +374,11 @@ export function TrendsBoard({
       <div className="mt-5 grid gap-6 lg:grid-cols-2">
         <section>
           <h3 className="mb-3 text-[11px] uppercase tracking-widest text-white/40">
-            Sub-niches &amp; themes
+            {t("trendsBoard.subNiches")}
           </h3>
           <div className="space-y-2.5">
             {subView.length === 0 && (
-              <p className="text-sm text-white/35">Nothing matches this filter.</p>
+              <p className="text-sm text-white/35">{t("trendsBoard.nothing")}</p>
             )}
             {subView.map((s, i) => (
               <ItemCard key={`${s.item}-${i}`} item={s} nicheSlug={nicheSlug} />
@@ -376,11 +388,11 @@ export function TrendsBoard({
 
         <section>
           <h3 className="mb-3 text-[11px] uppercase tracking-widest text-white/40">
-            Trending products
+            {t("trendsBoard.products")}
           </h3>
           <div className="space-y-2.5">
             {prodView.length === 0 && (
-              <p className="text-sm text-white/35">Nothing matches this filter.</p>
+              <p className="text-sm text-white/35">{t("trendsBoard.nothing")}</p>
             )}
             {prodView.map((p, i) => (
               <ItemCard key={`${p.item}-${i}`} item={p} nicheSlug={nicheSlug} />

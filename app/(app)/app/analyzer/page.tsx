@@ -9,6 +9,9 @@ import { ScoreBadge } from "@/components/ui/score-badge";
 import { PLANS } from "@/lib/stripe/plans";
 import { getAnonToken } from "@/lib/anon/session";
 import { claimAnonAnalyses } from "@/lib/anon/claim";
+import { getT } from "@/lib/i18n/server";
+import { Rich } from "@/components/i18n/rich";
+import { intlLocale } from "@/lib/i18n/format";
 
 // NOTE: /app/* is disallowed in robots.txt (dashboard, not indexed), so this
 // description/keywords are for the browser tab + completeness, not Google
@@ -31,6 +34,7 @@ export default async function AnalyzerPage({
 }: {
   searchParams: Promise<{ error?: string; url?: string }>;
 }) {
+  const { t, locale } = await getT();
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -78,21 +82,23 @@ export default async function AnalyzerPage({
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-xs uppercase tracking-widest text-white/40">
-              Analyzer
+              {t("analyzerPage.eyebrow")}
             </span>
             <Badge variant="ai">
               <Sparkles className="size-3" />
-              AI conversion audit
+              {t("analyzerPage.sub")}
             </Badge>
           </div>
           <h1 className="mt-2 font-serif text-4xl md:text-5xl tracking-tight leading-[1.05]">
-            What store do you want to{" "}
-            <span className="text-gold-gradient">crack open?</span>
+            <Rich
+              text={t("analyzerPage.headline")}
+              tags={{ g: (c) => <span className="text-gold-gradient">{c}</span> }}
+            />
           </h1>
         </div>
         <div className="text-left sm:text-right shrink-0">
           <p className="text-xs uppercase tracking-widest text-white/40">
-            Credits
+            {t("home.credits")}
           </p>
           <p className="mt-1 font-mono text-3xl tabular-nums text-gold-gradient leading-none">
             {profile?.credits ?? 0}
@@ -114,12 +120,12 @@ export default async function AnalyzerPage({
 
       <section>
         <h2 className="text-sm font-medium text-white/70 mb-4">
-          Your analyses
+          {t("analyzerPage.yours")}
         </h2>
         {!history || history.length === 0 ? (
           <Card className="p-6 md:p-10 text-center border-white/[0.04]">
             <p className="text-sm text-white/40">
-              No analyses yet — run your first one above.
+              {t("analyzerPage.none")}
             </p>
           </Card>
         ) : (
@@ -141,10 +147,10 @@ export default async function AnalyzerPage({
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-white/90 truncate">
-                      {h.url ?? "Uploaded screenshot"}
+                      {h.url ?? t("home.uploadedScreenshot")}
                     </p>
                     <p className="text-xs text-white/40 mt-0.5">
-                      {new Date(h.created_at).toLocaleString()}
+                      {new Date(h.created_at).toLocaleString(intlLocale(locale))}
                     </p>
                   </div>
                   <Badge

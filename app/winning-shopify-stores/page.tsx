@@ -230,11 +230,10 @@ export default async function WinningShopifyStoresPage() {
         {niches.length > 0 && (
           <section className="mt-20">
             <h2 className="font-serif text-2xl md:text-3xl tracking-tight">
-              Browse winners by niche
+              {t("winnersPage.byNiche")}
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-white/55 leading-relaxed">
-              What converts in skincare kills conversion in supplements — study
-              the winners of your own category.
+              {t("winnersPage.byNicheBody")}
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
               {niches.map((n) => (
@@ -253,14 +252,14 @@ export default async function WinningShopifyStoresPage() {
         {/* FAQ (English, tied to JSON-LD) */}
         <section className="mt-20 max-w-2xl">
           <h2 className="font-serif text-2xl md:text-3xl tracking-tight">
-            Winning Shopify stores — FAQ
+            {t("winnersPage.faqTitle")}
           </h2>
           <div className="mt-6 space-y-5">
-            {FAQS.map((f) => (
+            {FAQS.map((f, i) => (
               <div key={f.q} className="border-t border-white/[0.06] pt-4">
-                <h3 className="text-sm font-medium text-white">{f.q}</h3>
+                <h3 className="text-sm font-medium text-white">{t(`winnersFaq.q${i}`)}</h3>
                 <p className="mt-1.5 text-sm text-white/55 leading-relaxed">
-                  {f.a}
+                  {t(`winnersFaq.a${i}`)}
                 </p>
               </div>
             ))}

@@ -72,7 +72,7 @@ const ROWS: { labelKey: string; cells: [Cell, Cell, Cell, Cell] }[] = [
 function CellContent({ cell }: { cell: Cell }) {
   const { t } = useT();
   if (cell === true) {
-    return <Check className="mx-auto size-4 text-success" aria-label="Yes" />;
+    return <Check className="mx-auto size-4 text-success" aria-label={t("common.yes")} />;
   }
   if (cell === false) {
     return <span className="text-white/25">—</span>;
@@ -99,7 +99,7 @@ export function ComparisonTable() {
           transition={{ duration: 0.6, ease }}
           className="flex flex-col items-center text-center max-w-2xl mx-auto"
         >
-          <DataPill items={["THE COMPARISON", "NO CONTEST"]} />
+          <DataPill items={[t("pills.theComparison"), t("pills.noContest")]} />
           <h2 className="mt-5 font-serif text-3xl md:text-5xl tracking-tight">
             {t("compare.heading")}
           </h2>

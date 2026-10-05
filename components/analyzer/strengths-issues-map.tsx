@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { Layers, CheckCircle2, AlertTriangle, CircleDot } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import type { AnalysisResult } from "@/lib/supabase/types";
+import { useT } from "@/components/i18n/locale-provider";
+import { fill } from "@/lib/i18n/lookup";
 
 /**
  * Venn-style strengths/issues split.
@@ -19,12 +21,12 @@ import type { AnalysisResult } from "@/lib/supabase/types";
  */
 
 const CATEGORY_LABELS: Record<string, string> = {
-  color_integration: "Color & branding",
-  layout_proportion: "Layout & spacing",
-  image_quality: "Image quality",
-  technical_optimization: "Technical / speed",
-  niche_coherence: "Niche fit",
-  cro_principles: "CRO fundamentals",
+  color_integration: "strengthsMap.catColor",
+  layout_proportion: "strengthsMap.catLayout",
+  image_quality: "strengthsMap.catImage",
+  technical_optimization: "strengthsMap.catTech",
+  niche_coherence: "strengthsMap.catNiche",
+  cro_principles: "strengthsMap.catCro",
 };
 
 type Bucket = "strength" | "mixed" | "issue";
@@ -49,6 +51,7 @@ export function StrengthsIssuesMap({
 }: {
   scores: AnalysisResult["category_scores"];
 }) {
+  const { t } = useT();
   const items: Item[] = Object.entries(scores).map(([key, value]) => ({
     key,
     label: CATEGORY_LABELS[key] ?? key,
@@ -64,16 +67,23 @@ export function StrengthsIssuesMap({
   const verdict =
     issues.length >= 3
       ? {
-          text: `${issues.length} critical issues are dragging this store down. Focus on fixing those before optimizing strengths.`,
+          text: fill(t("strengthsMap.vCritical"), { n: issues.length }),
           tone: "text-destructive",
         }
       : strengths.length >= 4
         ? {
-            text: `${strengths.length} strong fundamentals. Polish ${mixed.length + issues.length} weak areas to push into elite territory.`,
+            text: fill(t("strengthsMap.vStrong"), {
+              n: strengths.length,
+              weak: mixed.length + issues.length,
+            }),
             tone: "text-success",
           }
         : {
-            text: `Mixed picture: ${strengths.length} strengths, ${issues.length} issues, ${mixed.length} in-between. Prioritize the issues first.`,
+            text: fill(t("strengthsMap.vMixed"), {
+              s: strengths.length,
+              i: issues.length,
+              m: mixed.length,
+            }),
             tone: "text-warning",
           };
 
@@ -85,14 +95,14 @@ export function StrengthsIssuesMap({
       <div className="relative">
         <div className="flex items-center gap-2 mb-4">
           <Layers className="size-4 text-champagne-400" />
-          <h3 className="text-sm font-medium">Strengths vs. issues</h3>
+          <h3 className="text-sm font-medium">{t("strengthsMap.title")}</h3>
         </div>
 
         {/* Venn-style 3-column layout */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           {/* Strengths */}
           <Bucket
-            title="Strengths"
+            title={t("strengthsMap.strengths")}
             count={strengths.length}
             icon={CheckCircle2}
             color="success"
@@ -101,7 +111,7 @@ export function StrengthsIssuesMap({
 
           {/* Mixed */}
           <Bucket
-            title="Mixed"
+            title={t("strengthsMap.mixed")}
             count={mixed.length}
             icon={CircleDot}
             color="warning"
@@ -110,7 +120,7 @@ export function StrengthsIssuesMap({
 
           {/* Issues */}
           <Bucket
-            title="Critical issues"
+            title={t("strengthsMap.critical")}
             count={issues.length}
             icon={AlertTriangle}
             color="destructive"
@@ -127,7 +137,7 @@ export function StrengthsIssuesMap({
         >
           <p className={`text-xs leading-relaxed ${verdict.tone}`}>
             <span className="uppercase tracking-widest text-[10px] text-white/40 mr-1">
-              Net:
+              {t("strengthsMap.net")}
             </span>
             {verdict.text}
           </p>
@@ -150,6 +160,7 @@ function Bucket({
   color: "success" | "warning" | "destructive";
   items: Item[];
 }) {
+  const { t } = useT();
   const tone =
     color === "success"
       ? {
@@ -189,7 +200,7 @@ function Bucket({
         <span className={`font-serif text-lg tnum ${tone.text}`}>{count}</span>
       </div>
       {items.length === 0 ? (
-        <p className="mt-3 text-[11px] text-white/30">None</p>
+        <p className="mt-3 text-[11px] text-white/30">{t("strengthsMap.none")}</p>
       ) : (
         <ul className="mt-2 space-y-1">
           {items.map((it) => {
@@ -202,7 +213,7 @@ function Bucket({
                 <span
                   className={`shrink-0 size-1 rounded-full ${tone.dot}`}
                 />
-                <span className="flex-1 truncate">{it.label}</span>
+                <span className="flex-1 truncate">{t(it.label)}</span>
                 <span className="tnum text-white/40">{Math.round(s)}</span>
               </li>
             );

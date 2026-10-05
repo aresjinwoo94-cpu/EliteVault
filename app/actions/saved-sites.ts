@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { WinningSiteCard } from "@/app/actions/search";
+import { getT } from "@/lib/i18n/server";
 
 export type PlaybookStatus = "to_apply" | "applied";
 
@@ -18,9 +19,10 @@ export interface PlaybookItem {
 export async function toggleSavedSite(
   siteId: string,
 ): Promise<{ ok: true; saved: boolean } | { ok: false; error: string }> {
+  const { t } = await getT();
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Not signed in" };
+  if (!user) return { ok: false, error: t("actionErr.notSignedIn") };
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -30,7 +32,7 @@ export async function toggleSavedSite(
   if (!profile || profile.plan === "free") {
     return {
       ok: false,
-      error: "Saving to collections is a Pro feature. Upgrade to organize your inspo.",
+      error: t("actionErr.collectionsPro"),
     };
   }
 
@@ -130,9 +132,10 @@ export async function setSavedStatus(
   siteId: string,
   status: PlaybookStatus,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { t } = await getT();
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Not signed in" };
+  if (!user) return { ok: false, error: t("actionErr.notSignedIn") };
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -142,7 +145,7 @@ export async function setSavedStatus(
   if (!profile || profile.plan === "free") {
     return {
       ok: false,
-      error: "The Playbook is a Pro feature. Upgrade to track your progress.",
+      error: t("actionErr.playbookPro"),
     };
   }
 

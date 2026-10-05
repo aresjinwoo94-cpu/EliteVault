@@ -2,6 +2,7 @@ import { test, mock } from "node:test";
 import assert from "node:assert/strict";
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
+import { translator } from "../../lib/i18n/messages";
 
 /**
  * The support chat's "talk to a human / the founder" intent (brief §3.4) is
@@ -39,6 +40,15 @@ mock.module(supaUrl, {
     createSupabaseServiceClient: () => ({
       from: () => ({ insert: async () => ({ error: null }) }),
     }),
+  },
+});
+
+// getT() reads next/headers (a request scope the test doesn't have) — answer in English.
+const i18nUrl = pathToFileURL(resolve(import.meta.dirname, "../../lib/i18n/server.ts")).href;
+mock.module(i18nUrl, {
+  exports: {
+    getLocale: async () => "en",
+    getT: async () => ({ locale: "en", t: translator("en") }),
   },
 });
 

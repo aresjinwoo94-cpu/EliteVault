@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/components/i18n/locale-provider";
+import { fill } from "@/lib/i18n/lookup";
 
 type Niche = { slug: string; name: string; description: string | null };
 
@@ -19,6 +21,7 @@ export function NicheSearch({
   niches: Niche[];
   selected: string | null;
 }) {
+  const { t } = useT();
   const [q, setQ] = useState("");
   const query = q.trim().toLowerCase();
   const filtered = query
@@ -36,7 +39,7 @@ export function NicheSearch({
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search your niche…"
+          placeholder={t("trendsBoard.searchNiche")}
           className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] pl-10 pr-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-1 focus:ring-champagne-400/40"
         />
       </div>
@@ -61,7 +64,7 @@ export function NicheSearch({
         })}
         {filtered.length === 0 && (
           <p className="text-sm text-white/40">
-            No niches match &ldquo;{q}&rdquo;.
+            {fill(t("trendsBoard.noNiches"), { q })}
           </p>
         )}
       </div>

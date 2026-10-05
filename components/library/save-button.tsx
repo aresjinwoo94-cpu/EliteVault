@@ -5,6 +5,7 @@ import { Star } from "lucide-react";
 import { toast } from "sonner";
 import { toggleSavedSite } from "@/app/actions/saved-sites";
 import { cn } from "@/lib/utils";
+import { useT } from "@/components/i18n/locale-provider";
 
 /**
  * Star/save button. Optimistic UI — state flips immediately, server
@@ -17,6 +18,7 @@ export function SaveButton({
   siteId: string;
   initialSaved: boolean;
 }) {
+  const { t } = useT();
   const [saved, setSaved] = useState(initialSaved);
   const [isPending, startTransition] = useTransition();
 
@@ -32,7 +34,7 @@ export function SaveButton({
         toast.error(res.error);
         return;
       }
-      if (res.saved && !prev) toast.success("Saved to your collection");
+      if (res.saved && !prev) toast.success(t("libraryView.saved"));
     });
   }
 
@@ -46,7 +48,7 @@ export function SaveButton({
           ? "text-champagne-400 bg-champagne-400/10 hover:bg-champagne-400/20"
           : "text-white/40 hover:text-white hover:bg-white/[0.06]",
       )}
-      aria-label={saved ? "Remove from saved" : "Save"}
+      aria-label={saved ? t("libraryView.removeSaved") : t("libraryView.save")}
     >
       <Star className={cn("size-3.5", saved && "fill-current")} />
     </button>

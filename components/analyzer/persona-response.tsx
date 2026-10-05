@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Quote, ThumbsDown, ThumbsUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useT } from "@/components/i18n/locale-provider";
 
 interface PersonaResponse {
   headline: string;
@@ -12,12 +13,13 @@ interface PersonaResponse {
 }
 
 export function PersonaResponse({ response }: { response: PersonaResponse }) {
+  const { t } = useT();
   return (
     <Card className="p-6 relative overflow-hidden">
       <div className="pointer-events-none absolute -right-12 -top-12 size-48 rounded-full bg-signal-600/10 blur-3xl" />
 
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">Buyer-persona response</h3>
+        <h3 className="text-sm font-medium">{t("personaResponse.title")}</h3>
         <span
           className={
             response.would_buy
@@ -28,12 +30,12 @@ export function PersonaResponse({ response }: { response: PersonaResponse }) {
           {response.would_buy ? (
             <>
               <ThumbsUp className="size-3" />
-              Would buy
+              {t("community.wouldBuy")}
             </>
           ) : (
             <>
               <ThumbsDown className="size-3" />
-              Would bounce
+              {t("community.wouldBounce")}
             </>
           )}
         </span>
@@ -61,7 +63,7 @@ export function PersonaResponse({ response }: { response: PersonaResponse }) {
       {response.reasons.length > 0 && (
         <div className="mt-5 pt-4 border-t border-white/[0.05]">
           <p className="text-[10px] uppercase tracking-widest text-white/40 mb-2">
-            Why
+            {t("personaResponse.why")}
           </p>
           <ul className="space-y-1.5">
             {response.reasons.map((r, i) => (

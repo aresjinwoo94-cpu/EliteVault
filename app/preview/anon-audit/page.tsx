@@ -1,3 +1,4 @@
+import { AppScope } from "@/components/i18n/app-scope";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function AnonRevealPreviewPage({
+async function AnonRevealPreviewPageInner({
   searchParams,
 }: {
   searchParams: Promise<{ id?: string }>;
@@ -99,4 +100,12 @@ export default async function AnonRevealPreviewPage({
       isAnon
     />
   );
+}
+
+/**
+ * The report UI reads the `app` dictionary scope (lib/i18n/client-namespaces.ts);
+ * this public route is outside app/(app)/layout.tsx, so it mounts the scope itself.
+ */
+export default async function AnonRevealPreviewPage(props: Parameters<typeof AnonRevealPreviewPageInner>[0]) {
+  return <AppScope>{await AnonRevealPreviewPageInner(props)}</AppScope>;
 }

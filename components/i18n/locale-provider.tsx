@@ -8,11 +8,14 @@ type LocaleContextValue = {
   locale: Locale;
   /** Translate a dotted key (e.g. "hero.ctaPrimary"); falls back to English. */
   t: (path: string) => string;
+  /** The dictionary this subtree reads (extended by <LocaleScope>). */
+  messages: Dict;
 };
 
 const LocaleContext = createContext<LocaleContextValue>({
   locale: defaultLocale,
   t: (path) => path,
+  messages: {},
 });
 
 /**
@@ -36,9 +39,40 @@ export function LocaleProvider({
   children: React.ReactNode;
 }) {
   const value = useMemo<LocaleContextValue>(
-    () => ({ locale, t: (path) => lookup(messages, path) ?? path }),
+    () => ({ locale, t: (path) => lookup(messages, path) ?? path, messages }),
     [locale, messages],
   );
+  return (
+    <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>
+  );
+}
+
+/**
+ * Adds more messages (the `app` scope) to the dictionary of everything below it.
+ * Mounted by the signed-in app layout and the public report pages so that
+ * landing/pricing/blog visits never download app-only copy.
+ */
+export function LocaleScope({
+  messages: extra,
+  children,
+}: {
+  messages: Dict;
+  children: React.ReactNode;
+}) {
+  const parent = useContext(LocaleContext);
+  const value = useMemo<LocaleContextValue>(() => {
+    const merged: Dict = { ...parent.messages };
+    for (const [k, v] of Object.entries(extra)) {
+      const cur = merged[k];
+      merged[k] =
+        typeof cur === "object" && typeof v === "object" ? { ...cur, ...v } : v;
+    }
+    return {
+      locale: parent.locale,
+      t: (path) => lookup(merged, path) ?? path,
+      messages: merged,
+    };
+  }, [parent, extra]);
   return (
     <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>
   );

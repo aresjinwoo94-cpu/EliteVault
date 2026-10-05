@@ -3,10 +3,12 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SignOutButton } from "@/components/settings/sign-out-button";
 import { ProfileForm } from "@/components/settings/profile-form";
+import { getT } from "@/lib/i18n/server";
 
 export const metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
+  const { t } = await getT();
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -22,15 +24,15 @@ export default async function SettingsPage() {
     <div className="p-6 md:p-10 lg:p-12 pt-10 md:pt-14 max-w-3xl mx-auto space-y-8">
       <header>
         <p className="text-xs uppercase tracking-widest text-white/40">
-          Settings
+          {t("settingsPage.title")}
         </p>
         <h1 className="mt-2 font-serif text-4xl md:text-5xl tracking-tight leading-[1.05]">
-          Account
+          {t("settingsPage.account")}
         </h1>
       </header>
 
       <Card className="p-6 md:p-7">
-        <h2 className="text-sm font-medium mb-5">Profile</h2>
+        <h2 className="text-sm font-medium mb-5">{t("settingsPage.profile")}</h2>
         <ProfileForm
           initialFullName={profile?.full_name ?? ""}
           email={profile?.email ?? ""}
@@ -40,14 +42,14 @@ export default async function SettingsPage() {
       <Card className="p-6 md:p-7">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
-            <h2 className="text-sm font-medium">Plan</h2>
+            <h2 className="text-sm font-medium">{t("home.plan")}</h2>
             <p className="text-xs text-white/40 mt-1">
-              Manage from{" "}
-              <span className="text-white/60">Billing</span>
+              {t("settingsPage.manageFrom")}{" "}
+              <span className="text-white/60">{t("commandMenu.billing")}</span>
             </p>
           </div>
           <Badge variant={profile?.plan === "free" ? "default" : "gold"}>
-            {(profile?.plan ?? "free").toUpperCase()}
+            {t(`plans.${profile?.plan ?? "free"}.name`).toUpperCase()}
           </Badge>
         </div>
       </Card>
@@ -55,9 +57,9 @@ export default async function SettingsPage() {
       <Card className="p-6 md:p-7 border-destructive/20">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
-            <h2 className="text-sm font-medium">Sign out</h2>
+            <h2 className="text-sm font-medium">{t("common.signOut")}</h2>
             <p className="text-xs text-white/40 mt-1">
-              End your session on this device.
+              {t("settingsPage.signOutBody")}
             </p>
           </div>
           <SignOutButton />

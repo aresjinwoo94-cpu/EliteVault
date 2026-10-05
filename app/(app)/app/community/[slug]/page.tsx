@@ -14,6 +14,9 @@ import { PersonaResponse } from "@/components/analyzer/persona-response";
 import { TopFixes } from "@/components/analyzer/top-fixes";
 import { ReportButton } from "@/components/community/report-button";
 import { HelpfulButton } from "@/components/community/helpful-button";
+import { getT } from "@/lib/i18n/server";
+import { fill } from "@/lib/i18n/lookup";
+import { intlLocale } from "@/lib/i18n/format";
 
 export async function generateMetadata({
   params,
@@ -29,6 +32,7 @@ export default async function CommunityAnalysisPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  const { t, locale } = await getT();
   const { slug } = await params;
   const supabase = await createSupabaseServerClient();
 
@@ -54,14 +58,17 @@ export default async function CommunityAnalysisPage({
             className="inline-flex items-center gap-1 text-xs text-white/40 hover:text-white/80 transition-colors"
           >
             <ArrowLeft className="size-3" />
-            Community feed
+            {t("community.feedTitle")}
           </Link>
           <h1 className="mt-2 font-serif text-3xl md:text-4xl tracking-tight truncate">
             {data.url}
           </h1>
           <p className="text-xs text-white/40 mt-1">
-            by {data.display_name ?? "Anonymous founder"} ·{" "}
-            {new Date(data.created_at).toLocaleDateString()}
+            {fill(t("community.by"), {
+              author: data.display_name ?? t("community.anonFounder"),
+            })}{" "}
+            ·{" "}
+            {new Date(data.created_at).toLocaleDateString(intlLocale(locale))}
           </p>
         </div>
         <div className="flex items-center gap-3 text-xs text-white/40 shrink-0">
@@ -78,7 +85,7 @@ export default async function CommunityAnalysisPage({
         <Card className="relative overflow-hidden p-6 md:p-8">
           <div className="pointer-events-none absolute -right-12 -top-12 size-48 rounded-full bg-champagne-400/15 blur-3xl" />
           <p className="text-xs uppercase tracking-widest text-white/40">
-            Overall score
+            {t("community.overallScore")}
           </p>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="font-serif text-7xl tnum text-gold-gradient leading-none">
@@ -120,8 +127,7 @@ export default async function CommunityAnalysisPage({
       </div>
 
       <p className="text-center text-[10px] uppercase tracking-widest text-white/30">
-        AI-generated audit. Estimates, not facts. Not affiliated with the
-        analyzed brand.
+        {t("community.aiDisclaimer")}
       </p>
     </div>
   );

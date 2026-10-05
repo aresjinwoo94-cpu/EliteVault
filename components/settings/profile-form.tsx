@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateProfile } from "@/app/actions/profile";
 import { toast } from "sonner";
+import { useT } from "@/components/i18n/locale-provider";
 
 export function ProfileForm({
   initialFullName,
@@ -14,6 +15,7 @@ export function ProfileForm({
   initialFullName: string;
   email: string;
 }) {
+  const { t } = useT();
   const [fullName, setFullName] = useState(initialFullName);
   const [isPending, startTransition] = useTransition();
 
@@ -24,23 +26,23 @@ export function ProfileForm({
         toast.error(res.error);
         return;
       }
-      toast.success("Profile updated");
+      toast.success(t("settingsPage.profileUpdated"));
     });
   }
 
   return (
     <div className="grid sm:grid-cols-2 gap-4">
       <div className="space-y-1.5">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{t("contactForm.email")}</Label>
         <Input id="email" value={email} disabled />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="fullName">Full name</Label>
+        <Label htmlFor="fullName">{t("settingsPage.fullName")}</Label>
         <Input
           id="fullName"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
-          placeholder="Jane Doe"
+          placeholder={t("settingsPage.namePlaceholder")}
         />
       </div>
       <div className="sm:col-span-2">
@@ -48,7 +50,7 @@ export function ProfileForm({
           onClick={save}
           disabled={isPending || fullName === initialFullName}
         >
-          {isPending ? "Saving…" : "Save changes"}
+          {isPending ? t("settingsPage.saving") : t("settingsPage.save")}
         </Button>
       </div>
     </div>

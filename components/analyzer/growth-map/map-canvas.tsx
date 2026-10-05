@@ -1,6 +1,7 @@
 "use client";
 
 import { RANKS, type RankKey } from "@/lib/growth-map/ranks";
+import { useT } from "@/components/i18n/locale-provider";
 
 /**
  * The Growth Map canvas (v3). Pure SVG, visual-only — interaction (the per-node
@@ -190,6 +191,7 @@ export function MapCanvas({
   /** brief §1.1 — projected "potential" rank; draws a ghost medallion. */
   ghostIndex?: number | null;
 }) {
+  const { t } = useT();
   const pathPoints = XY.map((p) => `${p.x},${p.y}`).join(" ");
   const lockedPoints = XY.slice(currentIndex)
     .map((p) => `${p.x},${p.y}`)
@@ -204,7 +206,7 @@ export function MapCanvas({
       viewBox={`0 0 ${VIEWBOX.w} ${VIEWBOX.h}`}
       xmlns="http://www.w3.org/2000/svg"
       role="img"
-      aria-label="Growth rank map, Copper to Ruby"
+      aria-label={t("growthMap.mapAria")}
       className="block h-full w-full"
       preserveAspectRatio="xMidYMid meet"
     >
@@ -282,10 +284,10 @@ export function MapCanvas({
 
         {/* pointer + label */}
         <text x={wallX} y={wallY + 74} textAnchor="middle" className="font-display" fontSize={9.5} fontWeight={600} fill="#F6C9C9">
-          WHERE STORES STALL · growth flattens here
+          {t("growthMap.whereStall")}
         </text>
         <text x={wallX} y={wallY + 85} textAnchor="middle" className="font-mono" fontSize={7.5} fill="#EF4444" letterSpacing="0.03em">
-          87% stall here · HBR &rsquo;08
+          {t("growthMap.stall87")}
         </text>
       </g>
 
@@ -405,7 +407,7 @@ export function MapCanvas({
               <g transform="translate(0,-46)">
                 <rect x={-33} y={-9.5} width={66} height={19} rx={9.5} fill="#0A0A0F" stroke="url(#gm-brand)" strokeWidth={1.4} />
                 <text y={3.5} textAnchor="middle" className="font-sans" fontSize={8} fontWeight={700} fill="#5EEAD4" letterSpacing="0.06em">
-                  YOUR STORE
+                  {t("growthMap.yourStore")}
                 </text>
               </g>
             )}

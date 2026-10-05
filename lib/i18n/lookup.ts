@@ -14,3 +14,11 @@ export function lookup(dict: Dict, path: string): string | undefined {
   }
   return typeof cur === "string" ? cur : undefined;
 }
+
+/** Fills `{name}` placeholders: fill("Hi {who}", { who: "Ana" }) → "Hi Ana". */
+export function fill(
+  template: string,
+  vars: Record<string, string | number>,
+): string {
+  return template.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m));
+}

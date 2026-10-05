@@ -12,6 +12,7 @@ import { assertQuota } from "@/lib/quota/guard";
 import { findReusableAnalysis } from "@/lib/analysis/reuse";
 import { validatePublicStoreUrl } from "@/lib/security/url-guard";
 import { isBareIpHost, BARE_IP_REASON } from "@/lib/analyzer/store-url-policy";
+import { getT } from "@/lib/i18n/server";
 
 const CreateAnalysisInput = z.object({
   url: z.string().min(3).optional(),
@@ -37,18 +38,19 @@ export type CreateAnalysisResult =
 export async function createAnalysis(
   input: z.infer<typeof CreateAnalysisInput>,
 ): Promise<CreateAnalysisResult> {
+  const { t } = await getT();
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Not signed in" };
+  if (!user) return { ok: false, error: t("actionErr.notSignedIn") };
 
   const parsed = CreateAnalysisInput.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: "Invalid input" };
+    return { ok: false, error: t("actionErr.invalidInput") };
   }
   if (!parsed.data.url && !parsed.data.screenshotUrl) {
-    return { ok: false, error: "Provide a URL or upload a screenshot" };
+    return { ok: false, error: t("actionErr.urlOrScreenshot") };
   }
 
   // Validate BEFORE spending a credit or queueing a job. The anonymous action
@@ -86,7 +88,7 @@ export async function createAnalysis(
     .select("plan, credits")
     .eq("id", user.id)
     .single();
-  if (!profile) return { ok: false, error: "Profile not found" };
+  if (!profile) return { ok: false, error: t("actionErr.profileNotFound") };
 
   const plan = PLANS[profile.plan];
   // Derive from the typed Plan (plan.id is PlanTier) rather than re-reading
@@ -102,7 +104,7 @@ export async function createAnalysis(
     return {
       ok: false,
       error:
-        "The Analyzer isn't available on your plan. Upgrade to start auditing your store.",
+        t("actionErr.analyzerPlan"),
     };
   }
 
@@ -120,7 +122,7 @@ export async function createAnalysis(
     return {
       ok: false,
       error:
-        "Verify your email to claim your free audit. Check your inbox for the confirmation link, then try again.",
+        t("actionErr.verifyEmail"),
     };
   }
 
@@ -158,7 +160,7 @@ export async function createAnalysis(
       .from("profiles")
       .update({ credits: profile.credits })
       .eq("id", user.id);
-    return { ok: false, error: insErr?.message ?? "Could not create analysis" };
+    return { ok: false, error: insErr?.message ?? t("actionErr.createFailed") };
   }
 
   // Kick the Inngest pipeline

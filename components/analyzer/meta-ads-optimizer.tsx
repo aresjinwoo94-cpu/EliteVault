@@ -6,16 +6,19 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { nicheBenchmarks } from "@/lib/meta/niche-benchmarks";
 import type { MetaAdsRecommendation } from "@/lib/supabase/types";
+import { useT } from "@/components/i18n/locale-provider";
+import { fill } from "@/lib/i18n/lookup";
 
 const FORMAT_LABEL: Record<string, string> = {
-  "single-image": "Single image",
-  carousel: "Carousel",
-  "ugc-video": "UGC video",
-  "demo-video": "Demo video",
+  "single-image": "optimizer.fmtImage",
+  carousel: "optimizer.fmtCarousel",
+  "ugc-video": "optimizer.fmtUgc",
+  "demo-video": "optimizer.fmtDemo",
 };
 
 export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
-  const t = meta.targets;
+  const { t } = useT();
+  const tg = meta.targets;
   // Niche reference bands so each target reads against its category median.
   const bands = nicheBenchmarks(meta.niche);
   return (
@@ -26,15 +29,14 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
         <div>
           <div className="flex items-center gap-2">
             <Megaphone className="size-4 text-champagne-400" />
-            <h3 className="font-medium">Meta Ads Optimizer</h3>
+            <h3 className="font-medium">{t("optimizer.title")}</h3>
             <Badge variant="gold">
               <Sparkles className="size-3" />
-              Scale plan
+              {t("simulator.scalePlan")}
             </Badge>
           </div>
           <p className="mt-1 text-sm text-white/55">
-            Targets + creative angles + a sequential testing plan, calibrated
-            to your audit score and niche.
+            {t("optimizer.intro")}
           </p>
         </div>
         <Badge variant="default">
@@ -48,11 +50,11 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
       <div className="mt-6 grid grid-cols-2 md:grid-cols-5 gap-3">
         {(
           [
-            ["CPC", `$${t.cpc.toFixed(2)}`, "Max bid", bands && `$${bands.cpc[0].toFixed(2)}–$${bands.cpc[1].toFixed(2)}`],
-            ["CPM", `$${t.cpm.toFixed(2)}`, "Cost / 1k", bands && `$${bands.cpm[0].toFixed(0)}–$${bands.cpm[1].toFixed(0)}`],
-            ["CTR", `${(t.ctr * 100).toFixed(2)}%`, "Click rate", bands && `${(bands.ctr[0] * 100).toFixed(1)}–${(bands.ctr[1] * 100).toFixed(1)}%`],
-            ["CVR", `${(t.cvr * 100).toFixed(2)}%`, "LP conv.", bands && `${(bands.cvr[0] * 100).toFixed(1)}–${(bands.cvr[1] * 100).toFixed(1)}%`],
-            ["ROAS", `${t.roas.toFixed(1)}x`, "Target return", bands && `${bands.roas[0].toFixed(1)}–${bands.roas[1].toFixed(1)}x`],
+            ["CPC", `$${tg.cpc.toFixed(2)}`, t("optimizer.maxBid"), bands && `$${bands.cpc[0].toFixed(2)}–$${bands.cpc[1].toFixed(2)}`],
+            ["CPM", `$${tg.cpm.toFixed(2)}`, t("optimizer.costK"), bands && `$${bands.cpm[0].toFixed(0)}–$${bands.cpm[1].toFixed(0)}`],
+            ["CTR", `${(tg.ctr * 100).toFixed(2)}%`, t("optimizer.ctr"), bands && `${(bands.ctr[0] * 100).toFixed(1)}–${(bands.ctr[1] * 100).toFixed(1)}%`],
+            ["CVR", `${(tg.cvr * 100).toFixed(2)}%`, t("optimizer.lpConv"), bands && `${(bands.cvr[0] * 100).toFixed(1)}–${(bands.cvr[1] * 100).toFixed(1)}%`],
+            ["ROAS", `${tg.roas.toFixed(1)}x`, t("optimizer.targetReturn"), bands && `${bands.roas[0].toFixed(1)}–${bands.roas[1].toFixed(1)}x`],
           ] as const
         )
           .filter(([, , , band]) => band) // drop metrics with no niche band
@@ -70,7 +72,7 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
               <p className="mt-1 font-mono tabular-nums text-xl tnum text-white">{val}</p>
               <p className="mt-0.5 text-[10px] text-white/40">{sub}</p>
               <p className="mt-1.5 border-t border-white/[0.06] pt-1.5 text-[11px] leading-tight text-white/45">
-                niche median
+                {t("optimizer.nicheMedian")}
                 <br />
                 <span className="text-white/60">{band}</span>
               </p>
@@ -84,7 +86,7 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
           <div className="flex items-center gap-2 mb-2">
             <Users className="size-3.5 text-signal-300" />
             <p className="text-[10px] uppercase tracking-widest text-white/40">
-              Audience seed
+              {t("optimizer.audienceSeed")}
             </p>
           </div>
           <p className="text-sm text-white/80 leading-relaxed">
@@ -95,24 +97,24 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
           <div className="flex items-center gap-2 mb-2">
             <Target className="size-3.5 text-signal-300" />
             <p className="text-[10px] uppercase tracking-widest text-white/40">
-              Targeting suggestions
+              {t("optimizer.targeting")}
             </p>
           </div>
           <div className="space-y-1.5">
             <p className="text-xs">
-              <span className="text-white/40">Interests:</span>{" "}
+              <span className="text-white/40">{t("optimizer.interests")}</span>{" "}
               <span className="text-white/80">
                 {meta.targeting.interests.slice(0, 6).join(", ") || "—"}
               </span>
             </p>
             <p className="text-xs">
-              <span className="text-white/40">Custom audiences:</span>{" "}
+              <span className="text-white/40">{t("optimizer.custom")}</span>{" "}
               <span className="text-white/80">
                 {meta.targeting.custom_audiences.slice(0, 4).join(", ") || "—"}
               </span>
             </p>
             <p className="text-xs">
-              <span className="text-white/40">Exclude:</span>{" "}
+              <span className="text-white/40">{t("optimizer.exclude")}</span>{" "}
               <span className="text-white/80">
                 {meta.targeting.exclusions.slice(0, 4).join(", ") || "—"}
               </span>
@@ -125,7 +127,7 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
       <div className="mt-6">
         <div className="flex items-center gap-2 mb-3">
           <TrendingUp className="size-4 text-champagne-300" />
-          <p className="text-sm font-medium">Creative angles</p>
+          <p className="text-sm font-medium">{t("optimizer.angles")}</p>
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
           {meta.creatives.map((c, i) => (
@@ -141,13 +143,13 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
                 <p className="text-sm font-medium text-white leading-tight">
                   {c.angle}
                 </p>
-                <Badge variant="default">{FORMAT_LABEL[c.format] ?? c.format}</Badge>
+                <Badge variant="default">{FORMAT_LABEL[c.format] ? t(FORMAT_LABEL[c.format]) : c.format}</Badge>
               </div>
               <p className="mt-2 text-xs text-white/65 leading-relaxed">
                 "{c.hook}"
               </p>
               <p className="mt-2 text-[11px] text-champagne-300">
-                CTA: {c.cta}
+                {t("optimizer.cta")} {c.cta}
               </p>
             </motion.div>
           ))}
@@ -156,7 +158,7 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
 
       {/* Testing plan */}
       <div className="mt-6">
-        <p className="text-sm font-medium mb-3">Testing plan</p>
+        <p className="text-sm font-medium mb-3">{t("optimizer.testPlan")}</p>
         <ol className="space-y-2">
           {meta.testing_plan.map((step, i) => (
             <li
@@ -169,7 +171,7 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
               <div className="min-w-0 flex-1">
                 <p className="text-sm text-white">{step.step}</p>
                 <p className="text-xs text-white/40 mt-0.5">
-                  ${step.budget}/day · {step.days} days
+                  {fill(t("optimizer.stepLine"), { budget: step.budget, days: step.days })}
                 </p>
               </div>
             </li>
@@ -180,7 +182,7 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
       {/* Caveats */}
       <div className="mt-6 rounded-xl border border-warning/20 bg-warning/[0.04] p-4">
         <p className="text-[10px] uppercase tracking-widest text-warning mb-1.5">
-          Honest caveats
+          {t("optimizer.caveats")}
         </p>
         <ul className="space-y-1">
           {meta.caveats.map((c, i) => (

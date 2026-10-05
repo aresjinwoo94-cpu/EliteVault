@@ -12,6 +12,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useT } from "@/components/i18n/locale-provider";
 
 /**
  * Report index (jump nav) — a compact overview of what the finished audit
@@ -47,18 +48,18 @@ export interface ReportSection {
 
 /** The canonical five, in report order. Exported so the parent stays in sync. */
 export const REPORT_SECTIONS: ReportSection[] = [
-  { id: "section-growth-map", label: "Growth Map", Icon: TrendingUp },
-  { id: "section-fixes", label: "Priority Fixes", Icon: Wrench },
-  { id: "section-audit", label: "Annotated Audit", Icon: ScanSearch },
+  { id: "section-growth-map", label: "reportNav.growthMap", Icon: TrendingUp },
+  { id: "section-fixes", label: "reportNav.fixes", Icon: Wrench },
+  { id: "section-audit", label: "reportNav.audit", Icon: ScanSearch },
   {
     id: "section-persona",
-    label: "Buyer Persona",
+    label: "reportNav.persona",
     Icon: MessageSquare,
     accent: true,
   },
   {
     id: "section-meta",
-    label: "Meta Readiness",
+    label: "reportNav.meta",
     Icon: Megaphone,
     accent: true,
   },
@@ -82,6 +83,7 @@ export function ReportNav({
    */
   belowTopbar?: boolean;
 }) {
+  const { t } = useT();
   const jump = useCallback((id: string) => {
     if (typeof document === "undefined") return;
     const el = document.getElementById(id);
@@ -115,7 +117,7 @@ export function ReportNav({
       <Card className="px-4 py-3">
         <div className="flex items-center gap-x-3">
           <span className="shrink-0 text-[10px] font-medium uppercase tracking-widest text-white/35">
-            In this report
+            {t("reportNav.title")}
           </span>
           {/*
             One row that scrolls sideways instead of wrapping: a wrapped bar
@@ -168,7 +170,7 @@ export function ReportNav({
                       : "text-white/40 group-hover:text-signal-300"
                   }`}
                 />
-                {s.label}
+                {t(s.label)}
                 {/*
                   The "don't miss this" marker. A 10px star sits under the 16px
                   numeral badge that already sets the chip's height, so it adds

@@ -5,21 +5,24 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Layers, ShieldCheck, Star, Store, Tag } from "lucide-react";
 import type { DiscoverySignals } from "@/lib/analyzer/discovery-signals";
+import { useT } from "@/components/i18n/locale-provider";
+import { Rich } from "@/components/i18n/rich";
+import { fill } from "@/lib/i18n/lookup";
 
 // v3.9.3 — phase list reflects the FULL audit pipeline so the user
 // understands the analyzer doesn't just look at the screenshot, it also
 // scrapes the full page text (reviews, trust badges, FAQ, body content,
 // pricing). This matches what the analyzer agent actually receives.
 const PHASES = [
-  "Capturing first-impression screenshot…",
-  "Scraping full page content (reviews, trust badges, FAQ)…",
-  "Reading visual hierarchy & color system…",
-  "Cross-checking above-the-fold against below-the-fold…",
-  "Scoring against the CRO rubric (6 categories)…",
-  "Simulating buyer-persona response…",
-  "Placing annotations on the screenshot…",
-  "Drafting top-impact fixes ranked by leverage…",
-];
+  "analyzing.ph0",
+  "analyzing.ph1",
+  "analyzing.ph2",
+  "analyzing.ph3",
+  "analyzing.ph4",
+  "analyzing.ph5",
+  "analyzing.ph6",
+  "analyzing.ph7",
+] as const;
 
 /**
  * When a run stops being "normal" and the waiting copy should say so.
@@ -63,6 +66,7 @@ export function AnalyzingState({
   screenshotUrl?: string | null;
   signals?: DiscoverySignals | null;
 }) {
+  const { t } = useT();
   const [phaseIdx, setPhaseIdx] = useState(0);
   const [secs, setSecs] = useState(0);
 
@@ -99,7 +103,7 @@ export function AnalyzingState({
         </div>
 
         <h2 className="mt-8 font-serif text-3xl md:text-4xl tracking-tight">
-          {status === "queued" ? "Queued…" : "Analyzing"}
+          {status === "queued" ? t("analyzing.queued") : t("analyzing.analyzing")}
         </h2>
 
         <motion.p
@@ -109,12 +113,12 @@ export function AnalyzingState({
           exit={{ opacity: 0, y: -6 }}
           className="mt-3 text-sm text-white/55 min-h-[1.5rem]"
         >
-          {PHASES[phaseIdx]}
+          {t(PHASES[phaseIdx])}
         </motion.p>
 
         {startedAt && (
           <p className="mt-2 text-xs font-mono tabular-nums text-white/30 tnum">
-            {secs}s elapsed
+            {fill(t("analyzing.elapsed"), { n: secs })}
           </p>
         )}
 
@@ -141,7 +145,7 @@ export function AnalyzingState({
             className="mt-7 mx-auto max-w-sm rounded-2xl border border-champagne-400/20 bg-champagne-400/[0.04] px-5 py-4"
           >
             <p className="text-[10px] uppercase tracking-widest text-champagne-300/80">
-              Preliminary score
+              {t("analyzing.prelim")}
             </p>
             <div className="mt-1 flex items-baseline justify-center gap-1.5">
               <span className="font-mono tabular-nums text-5xl tnum text-gold-gradient leading-none">
@@ -155,7 +159,7 @@ export function AnalyzingState({
               </p>
             )}
             <p className="mt-2 text-[10px] text-white/30">
-              Refining the full audit — annotations, persona &amp; fixes…
+              {t("analyzing.refining")}
             </p>
           </motion.div>
         )}
@@ -176,8 +180,8 @@ export function AnalyzingState({
         */}
         <p className="mt-8 text-xs text-white/30 max-w-md mx-auto">
           {secs >= SLOW_RUN_SECONDS
-            ? "Still going — the AI provider is busy right now, which is the usual reason a run takes longer. If it can't finish, your credit is refunded automatically."
-            : "Typical analyses complete in 30-90 seconds. If anything fails, your credit is refunded automatically."}
+            ? t("analyzing.stillGoing")
+            : t("analyzing.typical")}
         </p>
 
         {/*
@@ -189,8 +193,10 @@ export function AnalyzingState({
         <div className="mt-6 mx-auto inline-flex items-center gap-2 rounded-full border border-champagne-400/20 bg-champagne-400/[0.04] px-3 py-1.5">
           <Layers className="size-3 text-champagne-300" />
           <span className="text-[11px] text-white/65">
-            Analyzing the <span className="text-white">entire page</span>, not
-            just the screenshot
+            <Rich
+              text={t("analyzing.entirePage")}
+              tags={{ b: (c) => <span className="text-white">{c}</span> }}
+            />
           </span>
         </div>
       </div>
@@ -210,6 +216,7 @@ export function AnalyzingState({
  * the phase text and the elapsed timer off screen.
  */
 function CapturedShot({ url }: { url: string }) {
+  const { t } = useT();
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -221,7 +228,7 @@ function CapturedShot({ url }: { url: string }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={url}
-          alt="Screenshot captured from your store, being analyzed"
+          alt={t("analyzing.shotAlt")}
           className="block w-full h-auto opacity-60"
         />
         {/* Fade the bottom edge — a tall capture is cropped, and a hard cut
@@ -235,7 +242,7 @@ function CapturedShot({ url }: { url: string }) {
         />
       </div>
       <p className="mt-2 text-[11px] text-white/35">
-        Captured — reading the page now
+        {t("analyzing.captured")}
       </p>
     </motion.div>
   );
@@ -251,6 +258,7 @@ function CapturedShot({ url }: { url: string }) {
  * the screenshot — the same reassurance the "entire page" pill makes in words.
  */
 function SignalChips({ signals }: { signals: DiscoverySignals }) {
+  const { t } = useT();
   const chips: { icon: ReactNode; label: string }[] = [];
 
   if (signals.rating) {
@@ -280,7 +288,7 @@ function SignalChips({ signals }: { signals: DiscoverySignals }) {
   if (signals.pages > 1) {
     chips.push({
       icon: <Layers className="size-3 text-champagne-300" />,
-      label: `${signals.pages} pages read`,
+      label: fill(t("analyzing.pagesRead"), { n: signals.pages }),
     });
   }
 
@@ -294,7 +302,7 @@ function SignalChips({ signals }: { signals: DiscoverySignals }) {
       className="mt-5"
     >
       <p className="text-[10px] uppercase tracking-widest text-white/30">
-        Detected so far
+        {t("analyzing.detected")}
       </p>
       <div className="mt-2.5 flex flex-wrap items-center justify-center gap-2">
         {chips.map((chip) => (

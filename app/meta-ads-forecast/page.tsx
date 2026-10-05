@@ -241,14 +241,14 @@ export default async function MetaAdsForecastPage() {
         {/* FAQ */}
         <section className="mt-20 max-w-2xl">
           <h2 className="font-serif text-2xl md:text-3xl tracking-tight">
-            Meta Ads forecast — FAQ
+            {t("metaAdsPage.faqTitle")}
           </h2>
           <div className="mt-6 space-y-5">
-            {FAQS.map((f) => (
+            {FAQS.map((f, i) => (
               <div key={f.q} className="border-t border-white/[0.06] pt-4">
-                <h3 className="text-sm font-medium text-white">{f.q}</h3>
+                <h3 className="text-sm font-medium text-white">{t(`metaAdsFaq.q${i}`)}</h3>
                 <p className="mt-1.5 text-sm text-white/55 leading-relaxed">
-                  {f.a}
+                  {t(`metaAdsFaq.a${i}`)}
                 </p>
               </div>
             ))}

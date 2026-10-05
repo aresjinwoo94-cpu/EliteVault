@@ -10,7 +10,8 @@ import type { Plan, PlanFeature } from "@/lib/stripe/plans";
  */
 export type PlanTranslate = (path: string) => string;
 
-export type LocalizedPlan = Omit<Plan, "features" | "badge" | "description"> & {
+export type LocalizedPlan = Omit<Plan, "features" | "badge" | "description" | "tagline"> & {
+  tagline: string;
   description: string;
   badge?: string;
   features: PlanFeature[];
@@ -27,6 +28,7 @@ export function localizePlan(plan: Plan, t: PlanTranslate): LocalizedPlan {
   return {
     ...plan,
     name: pick(t, `${ns}.name`, plan.name),
+    tagline: pick(t, `${ns}.tagline`, plan.tagline),
     description: pick(t, `${ns}.desc`, plan.description),
     badge: plan.badge ? pick(t, `${ns}.badge`, plan.badge) : undefined,
     features: plan.features.map((f, i) => ({

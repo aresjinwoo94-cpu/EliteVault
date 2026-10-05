@@ -239,7 +239,7 @@ export function ReportHeroV2({
               href="/sign-up?next=/app/analyzer"
               className="group mt-6 inline-flex items-center gap-1.5 rounded-lg border border-champagne-400/40 bg-champagne-400/[0.08] px-3.5 py-2 text-[13px] font-medium text-champagne-200 transition-colors hover:border-champagne-400/60 hover:bg-champagne-400/[0.15]"
             >
-              Audit your store free
+              {t("common.auditFree")}
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           ) : (

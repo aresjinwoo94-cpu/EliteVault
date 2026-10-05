@@ -19,6 +19,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { publishAnalysis, unpublishAnalysis } from "@/app/actions/community";
+import { useT } from "@/components/i18n/locale-provider";
+import { Rich } from "@/components/i18n/rich";
 
 /**
  * Prominent callout that lives ABOVE the analysis. Two states:
@@ -41,6 +43,7 @@ export function PublishCallout({
   isPublished: boolean;
   publishedSlug?: string | null;
 }) {
+  const { t } = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [displayName, setDisplayName] = useState(defaultDisplayName ?? "");
@@ -55,7 +58,7 @@ export function PublishCallout({
         anonymize,
       });
       if (res.ok) {
-        toast.success("Live in the Community");
+        toast.success(t("community.liveToast"));
         setOpen(false);
         router.push(`/app/community/${res.slug}`);
       } else {
@@ -65,14 +68,14 @@ export function PublishCallout({
   }
 
   function unpublish() {
-    if (!confirm("Remove this audit from the Community feed?")) return;
+    if (!confirm(t("community.confirmRemove"))) return;
     startTransition(async () => {
       const res = await unpublishAnalysis(analysisId);
       if (res.ok) {
-        toast.success("Removed");
+        toast.success(t("community.removedToast"));
         router.refresh();
       } else {
-        toast.error(res.error ?? "Could not unpublish");
+        toast.error(res.error ?? t("community.unpublishFailed"));
       }
     });
   }
@@ -91,11 +94,10 @@ export function PublishCallout({
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-white">
-            This audit is live in the Community
+            {t("community.liveTitle")}
           </p>
           <p className="text-xs text-white/55 mt-0.5">
-            Other founders can read it, vote helpful and compare it side-by-side
-            with theirs.
+            {t("community.liveBody")}
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -103,7 +105,7 @@ export function PublishCallout({
             <Link href={`/app/community/${publishedSlug}`}>
               <Button variant="primary" size="sm">
                 <Globe className="size-3.5" />
-                View public page
+                {t("community.viewPublic")}
                 <ArrowRight className="size-3.5" />
               </Button>
             </Link>
@@ -113,7 +115,7 @@ export function PublishCallout({
             disabled={isPending}
             className="text-xs text-white/40 hover:text-white/80 px-2 py-1 transition-colors"
           >
-            Unpublish
+            {t("community.unpublish")}
           </button>
         </div>
       </motion.div>
@@ -140,16 +142,15 @@ export function PublishCallout({
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-medium text-white tracking-tight">
-                Publish this audit to the Community
+                {t("community.publishThisTitle")}
               </h3>
               <Badge variant="ai">
                 <Sparkles className="size-3" />
-                Pro+
+                {t("community.proPlus")}
               </Badge>
             </div>
             <p className="mt-1 text-sm text-white/60 leading-relaxed">
-              Share your audit with other founders. Build credibility, get
-              compared, and watch what people say. <span className="text-white/40">Unpublish anytime in one click.</span>
+              {t("community.publishBody")} <span className="text-white/40">{t("community.unpublishAnytime")}</span>
             </p>
           </div>
 
@@ -159,7 +160,7 @@ export function PublishCallout({
             className="shrink-0 shadow-gold"
           >
             <Share2 className="size-4" />
-            Publish to Community
+            {t("community.publishCta")}
             <ArrowRight className="size-4" />
           </Button>
         </div>
@@ -171,23 +172,21 @@ export function PublishCallout({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="size-4 text-champagne-400" />
-              Publish this audit
+              {t("community.publishDialogTitle")}
             </DialogTitle>
             <DialogDescription>
-              Anyone signed in to EliteVault will be able to view the score,
-              annotations, persona response, scenarios and top fixes. You can
-              unpublish anytime with one click.
+              {t("community.publishDialogBody")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="displayName">Display name</Label>
+              <Label htmlFor="displayName">{t("community.displayName")}</Label>
               <Input
                 id="displayName"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Your name or brand"
+                placeholder={t("community.namePlaceholder")}
                 disabled={anonymize}
               />
             </div>
@@ -199,22 +198,23 @@ export function PublishCallout({
                 className="size-4 rounded border-white/20 bg-white/[0.04]"
               />
               <span className="text-sm text-white/70">
-                Publish anonymously (shown as "Anonymous founder")
+                {t("community.anonLabel")}
               </span>
             </label>
             <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 text-xs text-white/55 leading-relaxed">
-              We publish the audit's <strong>score, annotations, persona
-              response, scenarios, and summary</strong>. We DON'T publish your
-              email, account info, or any data outside the audit itself.
+              <Rich
+                text={t("community.publishNotice")}
+                tags={{ b: (c) => <strong>{c}</strong> }}
+              />
             </div>
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button onClick={publish} disabled={isPending}>
-              {isPending ? "Publishing…" : "Publish"}
+              {isPending ? t("community.publishing") : t("community.publish")}
             </Button>
           </DialogFooter>
         </DialogContent>

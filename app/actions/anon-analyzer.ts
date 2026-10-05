@@ -9,6 +9,7 @@ import { validatePublicStoreUrl } from "@/lib/security/url-guard";
 import { isBareIpHost, BARE_IP_REASON } from "@/lib/analyzer/store-url-policy";
 import { getOrCreateAnonToken } from "@/lib/anon/session";
 import { checkAnonAuditRate } from "@/lib/anon/rate-limit";
+import { getT } from "@/lib/i18n/server";
 
 /**
  * Anonymous audit (activation-funnel Tarea 1).
@@ -37,6 +38,7 @@ export type CreateAnonAnalysisResult =
 export async function createAnonAnalysis(input: {
   url: string;
 }): Promise<CreateAnonAnalysisResult> {
+  const { t } = await getT();
   // 0) Signed-in visitors must never land in the anonymous flow. Before the
   //    SEO landings used this box they linked to /sign-up, and the middleware
   //    bounced an authenticated user straight to /app/analyzer. Without this
@@ -53,7 +55,7 @@ export async function createAnonAnalysis(input: {
     return {
       ok: false,
       signedIn: true,
-      error: "You're already signed in — running this in your account.",
+      error: t("actionErr.alreadySignedIn"),
     };
   }
 
@@ -77,7 +79,7 @@ export async function createAnonAnalysis(input: {
       ok: false,
       limited: true,
       error:
-        "You've used your free audit for today. Create a free account to run more — no card needed.",
+        t("actionErr.anonLimit"),
     };
   }
 
@@ -104,7 +106,7 @@ export async function createAnonAnalysis(input: {
   if (insErr || !row) {
     return {
       ok: false,
-      error: insErr?.message ?? "Could not start your audit. Please try again.",
+      error: insErr?.message ?? t("actionErr.anonStart"),
     };
   }
 

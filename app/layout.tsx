@@ -149,10 +149,11 @@ export default async function RootLayout({
               <Toaster />
             </TooltipProvider>
           </AnalyticsGate>
+          {/* Floating support chatbot — grounded strictly in lib/support/kb.ts;
+              always offers "talk to a human" → /support/contact. Inside the
+              provider so its UI text is translated. */}
+          <SupportChat />
         </LocaleProvider>
-        {/* Floating support chatbot — grounded strictly in lib/support/kb.ts;
-            always offers "talk to a human" → /support/contact. */}
-        <SupportChat />
       </body>
     </html>
   );

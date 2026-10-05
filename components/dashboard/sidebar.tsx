@@ -22,7 +22,7 @@ export function AppSidebar({ profile }: { profile: Profile }) {
   return (
     <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-white/[0.04] bg-obsidian-950/40 backdrop-blur-xl">
       <div className="p-5">
-        <Link href="/app" aria-label="EliteVault home">
+        <Link href="/app" aria-label={t("common.homeAria")}>
           <Logo />
         </Link>
       </div>
@@ -71,7 +71,7 @@ export function AppSidebar({ profile }: { profile: Profile }) {
             {t("sidebar.planLabel")}
           </span>
           <Badge variant={profile?.plan === "free" ? "default" : "gold"}>
-            {(profile?.plan ?? "free").toUpperCase()}
+            {t(`plans.${profile?.plan ?? "free"}.name`).toUpperCase()}
           </Badge>
         </div>
         <div className="mt-3 flex items-baseline gap-1.5">

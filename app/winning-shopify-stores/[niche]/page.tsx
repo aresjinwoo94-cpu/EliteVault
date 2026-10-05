@@ -6,6 +6,9 @@ import { AnonAuditBox } from "@/components/marketing/anon-audit-box";
 import { MarketingNav } from "@/components/marketing/nav";
 import { Footer } from "@/components/marketing/footer";
 import { DataPill } from "@/components/ui/data-pill";
+import { getT } from "@/lib/i18n/server";
+import { fill } from "@/lib/i18n/lookup";
+import { Rich } from "@/components/i18n/rich";
 import {
   getNichePage,
   getQualifyingNiches,
@@ -64,6 +67,7 @@ export default async function NichePage(props: {
   params: Promise<{ niche: string }>;
 }) {
   const { niche } = await props.params;
+  const { t } = await getT();
   const page = await getNichePage(niche);
   if (!page) notFound();
 
@@ -86,6 +90,14 @@ export default async function NichePage(props: {
       a: "Yes — run a free EliteVault audit on your own URL. You get a conversion score, an annotated screenshot and ranked fixes, plus where you stand against your niche's average. No credit card, nothing to install.",
     },
   ];
+
+  // Placeholders for the visible (translated) FAQ; the JSON-LD above stays English.
+  const faqVars = {
+    label: page.label.toLowerCase(),
+    plural: page.plural,
+    n: page.stores.length,
+    avg: page.avgConv != null ? fill(t("nichePage.faqAvg"), { pct: page.avgConv }) : "",
+  };
 
   const jsonLd = [
     {
@@ -139,22 +151,30 @@ export default async function NichePage(props: {
       <main className="container max-w-5xl pt-28 pb-24 md:pt-36">
         {/* Hero — direct answer first */}
         <div className="max-w-3xl">
-          <DataPill items={["FROM THE LIBRARY", `${page.stores.length} ${page.label.toUpperCase()} WINNERS`]} />
+          <DataPill
+            items={[
+              t("nichePage.fromLibrary"),
+              fill(t("nichePage.winnersPill"), {
+                n: page.stores.length,
+                label: page.label.toUpperCase(),
+              }),
+            ]}
+          />
           <h1 className="mt-5 font-serif text-4xl md:text-6xl tracking-tight leading-[1.05]">
-            Winning {page.label} Shopify stores, validated by revenue.
+            {fill(t("nichePage.h1"), { label: page.label })}
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-white/55 leading-relaxed">
-            These {page.stores.length} {page.plural} are converting right now —
-            surfaced by revenue signals, not picked for looks
+            {fill(t("nichePage.intro"), { n: page.stores.length, plural: page.plural })}
             {page.avgConv != null && (
               <>
                 {" "}
-                (they average a{" "}
-                <span className="text-white/85">{page.avgConv}% conversion rate</span>)
+                <Rich
+                  text={fill(t("nichePage.avg"), { pct: page.avgConv })}
+                  tags={{ b: (c) => <span className="text-white/85">{c}</span> }}
+                />
               </>
             )}
-            . Study how they structure their hero, trust and offer — then run
-            the same audit on your own store, free.
+            {t("nichePage.introEnd")}
           </p>
           {/*
             The copy above ends on "run the same audit on your own store,
@@ -164,12 +184,12 @@ export default async function NichePage(props: {
           <AnonAuditBox
             className="mt-8"
             source="winning-shopify-stores-niche-hero"
-            ctaLabel="Audit my store free"
-            caption="60 seconds · no card"
+            ctaLabel={t("nichePage.cta")}
+            caption={t("nichePage.caption")}
             captionClassName="font-mono uppercase tracking-wider text-white/40"
             secondary={{
               href: "/sign-up?next=/app/analyzer",
-              label: "or create a free account",
+              label: t("hero.signUpFallback"),
             }}
           />
         </div>
@@ -186,7 +206,10 @@ export default async function NichePage(props: {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={s.thumbnailUrl}
-                    alt={`${s.title} — winning ${page.label.toLowerCase()} Shopify store`}
+                    alt={fill(t("nichePage.thumbAlt"), {
+                      title: s.title,
+                      label: page.label.toLowerCase(),
+                    })}
                     loading="lazy"
                     className="absolute inset-0 h-full w-full object-cover object-top"
                   />
@@ -210,7 +233,7 @@ export default async function NichePage(props: {
                       {s.convRate}%
                     </p>
                     <p className="mt-0.5 text-[11px] uppercase tracking-wider text-white/40">
-                      est. conv. rate
+                      {t("nichePage.estConv")}
                     </p>
                   </div>
                 ) : (
@@ -219,7 +242,7 @@ export default async function NichePage(props: {
                     className="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2 min-h-11 text-xs text-white/45 transition-colors hover:text-white/70"
                   >
                     <Lock className="size-3" />
-                    Metrics
+                    {t("nichePage.metrics")}
                   </Link>
                 )}
               </div>
@@ -230,23 +253,21 @@ export default async function NichePage(props: {
         {/* Estimate disclaimer — conversion figures are modeled from public
             signals, never brand-reported. Keep it adjacent to the numbers. */}
         <p className="mt-4 text-center text-xs text-white/35 leading-relaxed">
-          Conversion figures are estimated by modeling public traffic and
-          behavior signals. They are not numbers reported by the brands.
+          {t("nichePage.estimateNote")}
         </p>
 
         {/* CTA into the Library */}
         <section className="mt-12 rounded-3xl border border-signal-500/20 bg-signal-600/[0.04] p-8 text-center">
           <TrendingUp className="mx-auto size-6 text-signal-300" />
           <h2 className="mt-3 font-serif text-2xl md:text-3xl tracking-tight text-white">
-            Full metrics, image search, and every niche.
+            {t("nichePage.fullMetrics")}
           </h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-white/55 leading-relaxed">
-            The Library tracks all winners with conversion rate, CTR and
-            traffic — filterable by niche, searchable by image similarity.
+            {t("nichePage.libraryBody")}
           </p>
           <Link href="/sign-in?next=/app/library">
             <span className="mt-5 inline-flex items-center gap-2 rounded-lg border border-signal-500/30 bg-signal-600/10 px-6 py-3 text-base font-medium text-signal-200 transition-colors hover:bg-signal-600/20">
-              Log in to browse the full Library
+              {t("nichePage.login")}
               <ArrowRight className="size-4" />
             </span>
           </Link>
@@ -255,14 +276,16 @@ export default async function NichePage(props: {
         {/* FAQ */}
         <section className="mt-20 max-w-2xl">
           <h2 className="font-serif text-2xl md:text-3xl tracking-tight">
-            Winning {page.label.toLowerCase()} stores — FAQ
+            {fill(t("nichePage.faqTitle"), { label: page.label.toLowerCase() })}
           </h2>
           <div className="mt-6 space-y-5">
-            {faqs.map((f) => (
+            {faqs.map((f, i) => (
               <div key={f.q} className="border-t border-white/[0.06] pt-4">
-                <h3 className="text-sm font-medium text-white">{f.q}</h3>
+                <h3 className="text-sm font-medium text-white">
+                  {fill(t(`nichePage.faqQ${i}`), faqVars)}
+                </h3>
                 <p className="mt-1.5 text-sm text-white/55 leading-relaxed">
-                  {f.a}
+                  {fill(t(`nichePage.faqA${i}`), faqVars)}
                 </p>
               </div>
             ))}
@@ -273,7 +296,7 @@ export default async function NichePage(props: {
         {others.length > 0 && (
           <section className="mt-16">
             <h2 className="font-serif text-xl tracking-tight text-white/85">
-              Winners in other niches
+              {t("nichePage.others")}
             </h2>
             <div className="mt-4 flex flex-wrap gap-2">
               {others.map((n) => (
@@ -289,7 +312,7 @@ export default async function NichePage(props: {
                 href="/winning-shopify-stores"
                 className="inline-flex items-center rounded-full border border-signal-500/25 bg-signal-600/[0.05] px-4 py-2 min-h-11 text-sm text-signal-200 transition-colors hover:bg-signal-600/10"
               >
-                All winning stores →
+                {t("nichePage.allWinners")}
               </Link>
             </div>
           </section>

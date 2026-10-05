@@ -9,6 +9,7 @@ import { SaveButton } from "./save-button";
 import { TeardownDialog } from "./teardown-dialog";
 import { cn, formatCompact } from "@/lib/utils";
 import type { WinningSiteCard } from "@/app/actions/search";
+import { useT } from "@/components/i18n/locale-provider";
 
 /**
  * Resolve what a card should actually load, if anything.
@@ -46,6 +47,7 @@ export function SiteCard({
   canSave?: boolean;
   initialSaved?: boolean;
 }) {
+  const { t } = useT();
   // `metrics` is null on locked rows — the server strips it rather than
   // shipping numbers for CSS to blur. Falling back to {} makes every figure
   // below render as an em dash, which is exactly what a locked card should say.
@@ -143,7 +145,7 @@ export function SiteCard({
               variant="gold"
               className="border-champagne-400/40 bg-obsidian-950/70 shadow-card"
             >
-              Featured
+              {t("community.featured")}
             </Badge>
           )}
           {ad?.estimated && ad.activity_score !== undefined && (
@@ -157,10 +159,9 @@ export function SiteCard({
                 </div>
               </TooltipTrigger>
               <TooltipContent className="max-w-[260px]">
-                <p className="font-medium">Ad Activity Score</p>
+                <p className="font-medium">{t("siteCard.adActivity")}</p>
                 <p className="mt-1 text-white/60">
-                  Estimated from public Meta Ad Library signals (active ads,
-                  longevity, region count). Higher = currently spending hard.
+                  {t("siteCard.adActivityNote")}
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -211,8 +212,8 @@ export function SiteCard({
               // Conversion is the number an operator will challenge first —
               // flag it explicitly as an estimate with an accessible tooltip
               // explaining the source. We don't have anyone's Shopify data.
-              ["Est. conv.", locked || !m.conv_rate ? "—" : `${m.conv_rate.toFixed(1)}%`, true],
-              ["Traffic", locked || !m.traffic_est ? "—" : formatCompact(m.traffic_est), false],
+              [t("siteCard.estConv"), locked || !m.conv_rate ? "—" : `${m.conv_rate.toFixed(1)}%`, true],
+              [t("siteCard.traffic"), locked || !m.traffic_est ? "—" : formatCompact(m.traffic_est), false],
             ] as const
           ).map(([label, val, withTip]) => (
             <div
@@ -225,7 +226,7 @@ export function SiteCard({
               {withTip && !locked ? (
                 <Tooltip>
                   <TooltipTrigger
-                    aria-label="Estimated conversion rate — modeled from public signals, not brand-reported."
+                    aria-label={t("siteCard.convAria")}
                     className="mx-auto flex items-center justify-center gap-0.5 rounded text-white/40 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
                   >
                     <span className="font-mono text-[10px] uppercase tracking-widest">
@@ -234,8 +235,7 @@ export function SiteCard({
                     <Info className="size-2.5" aria-hidden="true" />
                   </TooltipTrigger>
                   <TooltipContent className="max-w-[220px] text-left">
-                    Estimated from public traffic &amp; behavior signals — not an
-                    official figure reported by the brand.
+                    {t("siteCard.metricsNote")}
                   </TooltipContent>
                 </Tooltip>
               ) : (
@@ -265,7 +265,7 @@ export function SiteCard({
         <div className="absolute inset-0 grid place-items-center bg-obsidian-950/30 backdrop-blur-[2px] opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
           <div className="flex items-center gap-2 rounded-lg bg-obsidian-900/95 px-4 py-2 ring-1 ring-champagne-400/30 shadow-gold">
             <Lock className="size-3.5 text-champagne-400" />
-            <span className="text-xs text-white">Unlock metrics with Pro</span>
+            <span className="text-xs text-white">{t("siteCard.unlockPro")}</span>
           </div>
         </div>
       )}

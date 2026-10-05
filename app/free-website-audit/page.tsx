@@ -265,27 +265,24 @@ export default async function FreeWebsiteAuditPage() {
         {/* Dropshipping store audit */}
         <section className="mt-20 max-w-2xl">
           <h2 className="font-serif text-2xl md:text-3xl tracking-tight">
-            Dropshipping store audit
+            {t("freeAuditPage.dropTitle")}
           </h2>
           <p className="mt-3 text-sm text-white/55 leading-relaxed">
-            Running a dropshipping store? EliteVault audits your store the way a
-            cold buyer from a Meta ad sees it — offer clarity, trust, imagery and
-            speed — and tells you what to fix before you spend on ads. Paste your
-            URL for a free dropshipping store audit.
+            {t("freeAuditPage.dropBody")}
           </p>
         </section>
 
         {/* FAQ */}
         <section className="mt-20 max-w-2xl">
           <h2 className="font-serif text-2xl md:text-3xl tracking-tight">
-            Free website audit — FAQ
+            {t("freeAuditPage.faqTitle")}
           </h2>
           <div className="mt-6 space-y-5">
-            {FAQS.map((f) => (
+            {FAQS.map((f, i) => (
               <div key={f.q} className="border-t border-white/[0.06] pt-4">
-                <h3 className="text-sm font-medium text-white">{f.q}</h3>
+                <h3 className="text-sm font-medium text-white">{t(`freeAuditFaq.q${i}`)}</h3>
                 <p className="mt-1.5 text-sm text-white/55 leading-relaxed">
-                  {f.a}
+                  {t(`freeAuditFaq.a${i}`)}
                 </p>
               </div>
             ))}

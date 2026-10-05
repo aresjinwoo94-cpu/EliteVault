@@ -5,6 +5,7 @@ import { Sparkles, ArrowRight, Lock } from "lucide-react";
 import type { NodeFeedback } from "@/lib/growth-map/types";
 import { rankByKey } from "@/lib/growth-map/ranks";
 import { RankGlyph } from "./map-canvas";
+import { useT } from "@/components/i18n/locale-provider";
 
 /**
  * Horizontal content for the detail band below the map (spec §7, v3). Revealed
@@ -15,6 +16,7 @@ import { RankGlyph } from "./map-canvas";
  * one rank's copy), not tied to the rank.
  */
 export function NodeCard({ node }: { node: NodeFeedback }) {
+  const { t } = useT();
   const rank = rankByKey(node.rankKey);
 
   if (node.locked) {
@@ -24,23 +26,22 @@ export function NodeCard({ node }: { node: NodeFeedback }) {
           <Lock className="size-4 text-signal-300" />
         </span>
         <p className="min-w-0 flex-1 text-[12.5px] leading-snug text-white/80">
-          Want to scale your store?{" "}
-          <span className="text-white">Pro or Scale</span> shows you exactly what
-          to do next.
+          {t("growthMap.wantScale")}{" "}
+          <span className="text-white">{t("growthMap.proOrScale")}</span> {t("growthMap.showsNext")}
         </p>
         <Link
           href="/app/checkout?plan=pro&interval=month"
           className="shrink-0 inline-flex items-center gap-1 rounded-md bg-signal-400 px-3 py-1.5 text-[11.5px] font-semibold text-[#06060a]"
         >
           <Sparkles className="size-3.5" />
-          Unlock
+          {t("growthMap.unlock")}
           <ArrowRight className="size-3.5" />
         </Link>
       </div>
     );
   }
 
-  const roleLabel = node.role === "current" ? "YOUR STORE" : "Cleared";
+  const roleLabel = node.role === "current" ? t("growthMap.yourStore") : t("growthMap.cleared");
   return (
     <div className="flex items-start gap-3">
       <span

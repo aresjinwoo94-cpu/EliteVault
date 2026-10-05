@@ -6,6 +6,7 @@ import {
   conversionScenarioBands,
   type ScenarioKey,
 } from "@/lib/analyzer/conversion-scenarios";
+import { useT } from "@/components/i18n/locale-provider";
 
 /**
  * Estimated conversion-rate scenarios (brief §2).
@@ -20,10 +21,10 @@ const META: Record<
   ScenarioKey,
   { label: string; tone: "champagne" | "destructive" | "warning" | "success" }
 > = {
-  organic: { label: "Organic", tone: "champagne" },
-  meta_ads_bad: { label: "Meta — bad creative", tone: "destructive" },
-  meta_ads_regular: { label: "Meta — regular", tone: "warning" },
-  meta_ads_good: { label: "Meta — top buyer", tone: "success" },
+  organic: { label: "gauges.organic", tone: "champagne" },
+  meta_ads_bad: { label: "gauges.metaBad", tone: "destructive" },
+  meta_ads_regular: { label: "gauges.metaRegular", tone: "warning" },
+  meta_ads_good: { label: "gauges.metaGood", tone: "success" },
 };
 
 const ORDER: ScenarioKey[] = [
@@ -46,6 +47,7 @@ export function ConversionGauges({
   score: number;
   niche: string;
 }) {
+  const { t } = useT();
   const bands = conversionScenarioBands(score, niche);
   const byKey = new Map(bands.map((b) => [b.key, b]));
   // Scale the bars to the widest high end so the relative story reads at a glance.
@@ -55,10 +57,10 @@ export function ConversionGauges({
     <Card className="p-6">
       <div className="flex items-baseline justify-between">
         <h3 className="text-sm font-medium text-white">
-          Estimated conversion rate
+          {t("gauges.title")}
         </h3>
         <span className="text-[10px] uppercase tracking-widest text-white/30">
-          AI estimate · ranges
+          {t("gauges.aiRanges")}
         </span>
       </div>
 
@@ -70,7 +72,7 @@ export function ConversionGauges({
           return (
             <div key={key}>
               <div className="flex items-baseline justify-between text-xs">
-                <span className="text-white/55">{meta.label}</span>
+                <span className="text-white/55">{t(meta.label)}</span>
                 <span className="font-mono tnum text-white/85">
                   {pct(b.low)}–{pct(b.high)}%
                 </span>
@@ -99,8 +101,7 @@ export function ConversionGauges({
       {/* Brief §2/§3 — bands, not single numbers; one short footnote (the
           canonical disclaimer sits once near the score above). */}
       <p className="mt-6 text-[11px] leading-relaxed text-white/30">
-        Ranges modeled from your niche and audit score — an estimate, not a
-        guarantee.
+        {t("gauges.note")}
       </p>
     </Card>
   );

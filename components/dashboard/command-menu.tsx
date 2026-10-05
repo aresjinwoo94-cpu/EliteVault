@@ -12,31 +12,18 @@ import {
   Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/components/i18n/locale-provider";
 
 const COMMANDS = [
-  { label: "Overview", href: "/app", icon: Compass, group: "Navigate" },
-  {
-    label: "New analysis",
-    href: "/app/analyzer",
-    icon: Scan,
-    group: "Navigate",
-  },
-  { label: "Library", href: "/app/library", icon: Library, group: "Navigate" },
-  {
-    label: "Billing",
-    href: "/app/billing",
-    icon: CreditCard,
-    group: "Navigate",
-  },
-  {
-    label: "Settings",
-    href: "/app/settings",
-    icon: Settings,
-    group: "Navigate",
-  },
-];
+  { labelKey: "commandMenu.overview", href: "/app", icon: Compass },
+  { labelKey: "commandMenu.newAnalysis", href: "/app/analyzer", icon: Scan },
+  { labelKey: "commandMenu.library", href: "/app/library", icon: Library },
+  { labelKey: "commandMenu.billing", href: "/app/billing", icon: CreditCard },
+  { labelKey: "commandMenu.settings", href: "/app/settings", icon: Settings },
+] as const;
 
 export function CommandMenu() {
+  const { t } = useT();
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
@@ -71,7 +58,7 @@ export function CommandMenu() {
           <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.06]">
             <Sparkles className="size-4 text-champagne-400" />
             <Command.Input
-              placeholder="Type a command or search…"
+              placeholder={t("commandMenu.placeholder")}
               className="flex-1 bg-transparent text-sm text-white placeholder:text-white/30 outline-none"
             />
             <kbd className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] font-mono text-white/40">
@@ -80,13 +67,13 @@ export function CommandMenu() {
           </div>
           <Command.List className="max-h-80 overflow-y-auto p-2">
             <Command.Empty className="py-8 text-center text-sm text-white/40">
-              No results.
+              {t("commandMenu.empty")}
             </Command.Empty>
-            <Command.Group heading="Navigate">
+            <Command.Group heading={t("commandMenu.navigate")}>
               {COMMANDS.map((c) => (
                 <Command.Item
                   key={c.href}
-                  value={c.label}
+                  value={t(c.labelKey)}
                   onSelect={() => {
                     router.push(c.href);
                     setOpen(false);
@@ -97,7 +84,7 @@ export function CommandMenu() {
                   )}
                 >
                   <c.icon className="size-4 text-white/40" />
-                  {c.label}
+                  {t(c.labelKey)}
                 </Command.Item>
               ))}
             </Command.Group>

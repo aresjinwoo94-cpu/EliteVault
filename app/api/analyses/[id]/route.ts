@@ -6,6 +6,7 @@ import {
 import { gateMetaAds } from "@/lib/analyzer/client-payload";
 import { PLANS } from "@/lib/stripe/plans";
 import type { PlanTier } from "@/lib/supabase/types";
+import { getT } from "@/lib/i18n/server";
 
 /**
  * Polling endpoint for an analysis. Returns the current state.
@@ -70,6 +71,7 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const { t } = await getT();
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
   const {
@@ -140,7 +142,7 @@ export async function GET(
         .update({
           status: "refunded",
           error:
-            "Analysis timed out — the worker likely crashed or restarted. Your credit was refunded.",
+            t("actionErr.analysisTimedOut"),
           finished_at: new Date().toISOString(),
         })
         .eq("id", id);
@@ -163,7 +165,7 @@ export async function GET(
           ...payload,
           status: "refunded",
           error:
-            "Analysis timed out — the worker likely crashed or restarted. Your credit was refunded.",
+            t("actionErr.analysisTimedOut"),
           finished_at: new Date().toISOString(),
         },
         { headers: { "Cache-Control": "no-store" } },

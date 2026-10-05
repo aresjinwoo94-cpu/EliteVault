@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { getAnonToken } from "@/lib/anon/session";
+import { getT } from "@/lib/i18n/server";
 
 /**
  * Polling endpoint for an ANONYMOUS (pre-login) audit.
@@ -49,6 +50,7 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const { t } = await getT();
   const { id } = await params;
   const anonToken = await getAnonToken();
   if (!anonToken) {
@@ -107,7 +109,7 @@ export async function GET(
     if (age > STALE_THRESHOLD_MS) {
       status = "refunded";
       errMsg =
-        "Your audit timed out — the worker likely restarted. Try again in a minute.";
+        t("actionErr.anonTimedOut");
       await service
         .from("analyses")
         .update({ status: "refunded", error: errMsg, finished_at: new Date().toISOString() })
