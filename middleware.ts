@@ -3,7 +3,7 @@ import { updateSession } from "@/lib/supabase/middleware";
 import { QA_LOCALE_COOKIE, isLocale } from "@/lib/i18n/config";
 
 export async function middleware(request: NextRequest) {
-  // QA override (no UI): ?lang=en|es → session cookie that beats the automatic
+  // QA override (no UI): ?lang=en|es → 1-year cookie that beats the automatic
   // language (lib/i18n/server.ts). Set on the request too so THIS render sees it.
   const lang = request.nextUrl.searchParams.get("lang");
   const qa = isLocale(lang) ? lang : null;
@@ -18,7 +18,7 @@ export async function middleware(request: NextRequest) {
   }
 
   const response = await updateSession(request);
-  if (qa) response.cookies.set(QA_LOCALE_COOKIE, qa, { path: "/", sameSite: "lax" });
+  if (qa) response.cookies.set(QA_LOCALE_COOKIE, qa, { path: "/", sameSite: "lax", maxAge: 60 * 60 * 24 * 365 });
   return response;
 }
 
