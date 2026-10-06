@@ -1188,7 +1188,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <li>Wait about a minute for the scan and read the ranked list.</li>
 <li>Fix the top-ranked issue first, then re-run to confirm it moved.</li>
 </ol>
-<p><a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-store-analyzer">Analyze your store free →</a> Full disclosure, EliteVault is our tool. For other options, see <a href="/blog/free-website-audit-tools">free website audit tools</a>; for the fixes themselves, <a href="/blog/why-your-shopify-store-isnt-converting">why your Shopify store isn't converting</a>.</p>
+<p><a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-store-analyzer">Analyze your store free →</a> Full disclosure, EliteVault is our tool. For other options, see <a href="/blog/free-website-audit-tools">free website audit tools</a>; for the fixes themselves, <a href="/blog/why-your-shopify-store-isnt-converting">why your Shopify store isn't converting</a>. And if Shopify already tracks your data, <a href="/blog/store-analyzer-vs-shopify-analytics">why owners still pay for someone to read it</a>.</p>
 `.trim(),
     faqs: [
       {
@@ -1206,6 +1206,106 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         q: "How often should I analyze my store?",
         a: "After every theme or offer change, and at least once a month. That is advice rather than a measured benchmark; the point is to catch regressions before they cost you sales.",
+      },
+    ],
+  },
+  {
+    slug: "store-analyzer-vs-shopify-analytics",
+    title: "Store Analyzer vs Shopify Analytics: Why Data Isn't Enough",
+    h1: "Shopify tracks everything — so why do store owners still pay someone to read the data?",
+    description:
+      "Shopify tracks your store's data, yet owners still pay someone to read it. Why a store analyzer and interpretation beat raw numbers, and what each one does.",
+    keyword: "store analyzer",
+    keywords: [
+      "store analyzer",
+      "shopify analytics interpretation",
+      "why is my shopify store not converting",
+      "ecommerce store analyzer",
+      "shopify data analysis",
+    ],
+    date: "2026-10-05",
+    updated: "2026-10-05",
+    author: "Ariel Jiménez",
+    readingMinutes: 3,
+    excerpt:
+      "Shopify counts what happened. Why owners still pay for someone to explain it, and where a store analyzer fits.",
+    bodyHtml: `
+<p class="lede">A <strong>store analyzer</strong> explains why a store isn't converting — the part Shopify's own reports leave to you. Shopify counts what happened; reading it is a separate job. That's why owners still pay for interpretation: 70.22% of carts are abandoned (Baymard, 2025), and a dashboard shows that as one number. Our own <a href="/">store analyzer</a> is built for that gap.</p>
+
+<h2>Doesn't Shopify already track everything?</h2>
+<p>It tracks a lot, and keeps adding more: the <a href="https://www.shopify.com/editions/winter2026" rel="nofollow">Winter '26 Edition</a> brought heatmaps and bot filtering to its analytics. That is better measurement. Measurement still isn't diagnosis. A report can say conversion fell. It can't say your price vanished above the fold on a phone.</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">From data to decision</div>
+<div class="mt-4"><svg viewBox="0 0 340 320" class="w-full h-auto" style="max-width:420px;margin:0 auto;display:block" role="img" aria-label="From data to decision in four steps: 1, what the dashboard shows: traffic, sales and conversion rate; 2, the gap: why did it move and which fix comes first; 3, interpretation: the cause, the priority and one test to run; 4, a decision: one change, then measure."><rect x="10" y="4" width="320" height="58" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><text x="170" y="29" text-anchor="middle" font-size="17" font-weight="600" fill="#ffffff">What the dashboard shows</text><text x="170" y="49" text-anchor="middle" font-size="14.5" fill="rgba(255,255,255,0.6)">Traffic, sales, conversion rate</text><path d="M 170 64 L 170 78" stroke="#2DD4BF" stroke-width="2" /><path d="M 164 72 L 170 80 L 176 72" fill="none" stroke="#2DD4BF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><rect x="10" y="84" width="320" height="58" rx="12" fill="rgba(255,255,255,0.03)" stroke="#2DD4BF" stroke-width="1.5" stroke-dasharray="5 4" /><text x="170" y="109" text-anchor="middle" font-size="17" font-weight="600" fill="#ffffff">The gap</text><text x="170" y="129" text-anchor="middle" font-size="14.5" fill="rgba(255,255,255,0.6)">Why did it move? Which fix first?</text><path d="M 170 144 L 170 158" stroke="#2DD4BF" stroke-width="2" /><path d="M 164 152 L 170 160 L 176 152" fill="none" stroke="#2DD4BF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><rect x="10" y="164" width="320" height="58" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><text x="170" y="189" text-anchor="middle" font-size="17" font-weight="600" fill="#ffffff">Interpretation</text><text x="170" y="209" text-anchor="middle" font-size="14.5" fill="rgba(255,255,255,0.6)">Cause, priority, one test to run</text><path d="M 170 224 L 170 238" stroke="#2DD4BF" stroke-width="2" /><path d="M 164 232 L 170 240 L 176 232" fill="none" stroke="#2DD4BF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><rect x="10" y="244" width="320" height="58" rx="12" fill="rgba(45,212,191,0.12)" stroke="#2DD4BF" stroke-width="1.5" /><text x="170" y="269" text-anchor="middle" font-size="17" font-weight="600" fill="#2DD4BF">A decision</text><text x="170" y="289" text-anchor="middle" font-size="14.5" fill="rgba(255,255,255,0.6)">One change, then measure</text></svg></div>
+<figcaption class="mt-3 text-xs text-white/35">The dashed box is the part people pay to have filled in.</figcaption>
+</figure>
+
+<h2>What can't a dashboard tell you?</h2>
+<p>It shows what happened, never why. Each number below has several possible causes:</p>
+
+<figure class="my-8">
+<table>
+<thead>
+<tr><th>The number you see</th><th>What it can't tell you</th></tr>
+</thead>
+<tbody>
+<tr><td>Conversion rate</td><td>Whether the offer, trust or checkout is to blame</td></tr>
+<tr><td>Traffic by source</td><td>Whether the store or the targeting is failing</td></tr>
+<tr><td>Checkout drop-off</td><td>Which of several reasons caused it</td></tr>
+<tr><td>Best sellers</td><td>Why they sell, and what to copy elsewhere</td></tr>
+<tr><td>Returning customers</td><td>What brought them back, or kept others away</td></tr>
+</tbody>
+</table>
+</figure>
+
+<h2>So what are people actually paying for?</h2>
+<p>Not the data. They already have it. In our view, four things:</p>
+<ol>
+<li><strong>An outside view.</strong> You know where everything is, so you can't see what a stranger misses.</li>
+<li><strong>A priority.</strong> Twenty possible fixes, one worth doing first.</li>
+<li><strong>Time.</strong> Reading reports properly takes hours most owners don't have.</li>
+<li><strong>Someone to do it.</strong> Advice is cheap; implementation is the expensive part.</li>
+</ol>
+
+<h2>Where does a store analyzer fit?</h2>
+<p>Between the two. It covers the first two jobs quickly, and it can't replace someone who knows your business or makes the changes.</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">Who covers what</div>
+<div class="mt-4"><svg viewBox="0 0 340 258" class="w-full h-auto" style="max-width:420px;margin:0 auto;display:block" role="img" aria-label="Typical coverage by category. Store dashboard: counts sales only. Store analyzer: explains likely causes and ranks fixes. Consultant: explains causes, ranks fixes, knows your business context and does the work."><text x="185" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Store</text><text x="185" y="34" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">dashboard</text><text x="252" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">Store</text><text x="252" y="34" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">analyzer</text><text x="314" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Consultant</text><line x1="0" y1="46" x2="340" y2="46" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="72" font-size="14.5" fill="rgba(255,255,255,0.75)">Counts sales</text><circle cx="185" cy="67" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 180 67 L 183.5 71 L 190.5 63" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="247" y1="67" x2="257" y2="67" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="309" y1="67" x2="319" y2="67" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="0" y1="88" x2="340" y2="88" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="114" font-size="14.5" fill="rgba(255,255,255,0.75)">Explains causes</text><line x1="180" y1="109" x2="190" y2="109" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="252" cy="109" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 247 109 L 250.5 113 L 257.5 105" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><circle cx="314" cy="109" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 309 109 L 312.5 113 L 319.5 105" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="0" y1="130" x2="340" y2="130" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="156" font-size="14.5" fill="rgba(255,255,255,0.75)">Ranks fixes</text><line x1="180" y1="151" x2="190" y2="151" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="252" cy="151" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 247 151 L 250.5 155 L 257.5 147" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><circle cx="314" cy="151" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 309 151 L 312.5 155 L 319.5 147" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="0" y1="172" x2="340" y2="172" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="198" font-size="14.5" fill="rgba(255,255,255,0.75)">Knows context</text><line x1="180" y1="193" x2="190" y2="193" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="247" y1="193" x2="257" y2="193" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="314" cy="193" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 309 193 L 312.5 197 L 319.5 189" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="0" y1="214" x2="340" y2="214" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="240" font-size="14.5" fill="rgba(255,255,255,0.75)">Does the work</text><line x1="180" y1="235" x2="190" y2="235" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="247" y1="235" x2="257" y2="235" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="314" cy="235" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 309 235 L 312.5 239 L 319.5 231" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /></svg></div>
+<figcaption class="mt-3 text-xs text-white/35">Typical coverage by category; individual tools and consultants vary.</figcaption>
+</figure>
+
+<h2>Why does one number hide so many causes?</h2>
+<p>Because "abandoned" is a label, not a reason. Among shoppers who meant to buy, the causes differ, and so does the fix:</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">Inside one abandonment number</div>
+<div class="mt-4"><svg viewBox="0 0 340 246" class="w-full h-auto" style="max-width:420px;margin:0 auto;display:block" role="img" aria-label="Reasons shoppers who intended to buy abandoned checkout, per Baymard Institute (updated September 2025): extra costs at checkout 40%; delivery too slow 20%; card security doubts 19%; forced account creation 18%; checkout too long 17%. A dashboard reports all of these as one abandonment number."><text x="0" y="19" font-size="14.5" fill="rgba(255,255,255,0.7)">Extra costs at checkout</text><rect x="0" y="26" width="260" height="15" rx="4" fill="#2DD4BF" /><text x="268" y="39" font-size="15" font-weight="600" fill="#ffffff">40%</text><text x="0" y="67" font-size="14.5" fill="rgba(255,255,255,0.7)">Delivery too slow</text><rect x="0" y="74" width="130" height="15" rx="4" fill="rgba(45,212,191,0.55)" /><text x="138" y="87" font-size="15" font-weight="600" fill="#ffffff">20%</text><text x="0" y="115" font-size="14.5" fill="rgba(255,255,255,0.7)">Card security doubts</text><rect x="0" y="122" width="123.5" height="15" rx="4" fill="rgba(45,212,191,0.55)" /><text x="131.5" y="135" font-size="15" font-weight="600" fill="#ffffff">19%</text><text x="0" y="163" font-size="14.5" fill="rgba(255,255,255,0.7)">Forced account creation</text><rect x="0" y="170" width="117" height="15" rx="4" fill="rgba(45,212,191,0.55)" /><text x="125" y="183" font-size="15" font-weight="600" fill="#ffffff">18%</text><text x="0" y="211" font-size="14.5" fill="rgba(255,255,255,0.7)">Checkout too long</text><rect x="0" y="218" width="110.5" height="15" rx="4" fill="rgba(45,212,191,0.55)" /><text x="118.5" y="231" font-size="15" font-weight="600" fill="#ffffff">17%</text></svg></div>
+<figcaption class="mt-3 text-xs text-white/35">Source: <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">Baymard Institute</a> (updated September 2025). Respondents could pick more than one reason.</figcaption>
+</figure>
+
+<h2>How do you start?</h2>
+<p>Keep your dashboard for counting. Add an outside read for the why. EliteVault's free audit works from a screenshot of your live storefront, so it judges what a shopper sees, not your analytics. Full disclosure, EliteVault is our tool.</p>
+<p><a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=store-analyzer">Analyze your store free →</a> To see what a good analyzer covers, read <a href="/blog/shopify-store-analyzer">what a Shopify store analyzer checks</a>; for the human option, <a href="/blog/ecommerce-store-audit-vs-consultant">audit vs consultant</a>.</p>
+`.trim(),
+    faqs: [
+      {
+        q: "What is a store analyzer?",
+        a: "A tool that reviews your storefront the way a first-time visitor would and ranks what is likely costing you sales, instead of only reporting traffic and conversion numbers.",
+      },
+      {
+        q: "Doesn't Shopify analytics already do this?",
+        a: "Shopify's analytics show what happened: traffic, sales and conversion. Working out why it happened, and which change to make first, is interpretation, and that is the part owners still pay for.",
+      },
+      {
+        q: "Is a store analyzer a replacement for a consultant?",
+        a: "No. An analyzer is fast and cheap for diagnosis and prioritisation. A consultant adds knowledge of your business and can implement the changes. Many owners start with an analyzer and bring in help for the fixes.",
+      },
+      {
+        q: "Is there a free store analyzer?",
+        a: "Yes. EliteVault's free audit page scans your store, and the Free plan includes one full audit with your score, an annotated screenshot and your top-priority fix. The rest of the ranked fixes and unlimited audits need a paid plan.",
       },
     ],
   },
