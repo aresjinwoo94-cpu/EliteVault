@@ -25,7 +25,8 @@ async function isOwnerSession(store: Awaited<ReturnType<typeof cookies>>): Promi
   if (!store.getAll().some((c) => AUTH_COOKIE.test(c.name))) return false;
   try {
     const { getUserResult } = await import("@/lib/supabase/server");
-    const { user } = await getUserResult();
+    const { data } = await getUserResult();
+    const user = data?.user;
     const email = user?.email?.toLowerCase();
     return !!email && list.includes(email);
   } catch {

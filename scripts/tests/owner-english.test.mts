@@ -31,3 +31,9 @@ test("audit language: both actions send the viewer's locale through the event to
   assert.match(code("inngest/functions/analyze-website.ts"), /locale: locale === "es" \? "es" : "en"/);
   assert.match(code("ai/agents/analyzer-agent.ts"), /locale: opts\.locale/);
 });
+
+test("getLocale reads the user from getUserResult().data.user (it returns { data: { user } })", () => {
+  const s = code("lib/i18n/server.ts");
+  assert.match(s, /const \{ data \} = await getUserResult\(\)/);
+  assert.match(s, /data\?\.user/);
+});
