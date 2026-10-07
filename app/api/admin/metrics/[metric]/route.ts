@@ -13,6 +13,8 @@ import * as M from "@/lib/admin/metrics";
  *   GET /api/admin/metrics/recent-subscriptions
  *   GET /api/admin/metrics/live-visitors
  *   GET /api/admin/metrics/demographics?range=7d
+ *   GET /api/admin/metrics/{channels,channel-revenue,campaigns,landing-pages,
+ *       visitor-countries,analyzer-health,cancellations}?range=7d
  */
 export const dynamic = "force-dynamic";
 
@@ -39,6 +41,13 @@ export async function GET(req: Request, ctx: { params: Promise<{ metric: string 
       case "recent-subscriptions": data = await M.getRecentSubscriptions(); break;
       case "live-visitors": data = await M.getLiveVisitors(); break;
       case "demographics": data = await M.getDemographics(range); break;
+      case "channels": data = await M.getChannels(range); break;
+      case "channel-revenue": data = await M.getChannelRevenue(range); break;
+      case "campaigns": data = await M.getCampaigns(range); break;
+      case "landing-pages": data = await M.getLandingPages(range); break;
+      case "visitor-countries": data = await M.getVisitorCountries(range); break;
+      case "analyzer-health": data = await M.getAnalyzerHealth(range); break;
+      case "cancellations": data = await M.getCancellations(range); break;
       default: return NextResponse.json({ error: "unknown metric" }, { status: 404 });
     }
     return NextResponse.json(data, { headers: { "Cache-Control": "no-store" } });

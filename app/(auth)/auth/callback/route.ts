@@ -4,6 +4,8 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import type { CookiesToSet } from "@/lib/supabase/types";
 import { getT } from "@/lib/i18n/server";
 import { fill } from "@/lib/i18n/lookup";
+import { attributeSignup } from "@/lib/analytics/attribution";
+import { serviceAttributionStore } from "@/lib/analytics/attribution-store";
 
 // v3.9.1 — edge runtime kills cold-start latency on the auth callback.
 // Node functions on Vercel can cold-start at 500-1000ms; edge starts
@@ -171,6 +173,19 @@ export async function GET(request: NextRequest) {
         t("authCallback.cookies"),
       )}`,
     );
+  }
+
+  // Owner-monitor attribution (docs/owner-monitor-v2.md §3.3): best-effort,
+  // capped at 1.5s, never throws — a login must not depend on analytics.
+  const newUserId = data?.user?.id;
+  if (newUserId) {
+    await Promise.race([
+      attributeSignup(serviceAttributionStore(), {
+        anonId: request.cookies.get("ev_anon")?.value,
+        userId: newUserId,
+      }).catch(() => "error"),
+      new Promise((resolve) => setTimeout(resolve, 1500)),
+    ]);
   }
 
   // Success — return the response we built earlier (with session cookies

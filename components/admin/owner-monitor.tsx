@@ -2,6 +2,39 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useEffect } from "react";
+import { resetOwnerMetrics } from "@/app/actions/owner-reset";
+import { toggleCheckoutFollowup } from "@/app/actions/owner-followup";
+
+/** Fixed colour + glyph per channel (donut, tables). Unknown → neutral + domain. */
+const CHANNEL_META: Record<string, { color: string; icon: string }> = {
+  Google: { color: "#4285f4", icon: "G" },
+  Instagram: { color: "#e1306c", icon: "◎" },
+  Facebook: { color: "#1877f2", icon: "f" },
+  TikTok: { color: "#25f4ee", icon: "♪" },
+  Pinterest: { color: "#e60023", icon: "P" },
+  Reddit: { color: "#ff4500", icon: "◉" },
+  X: { color: "#9ca3af", icon: "𝕏" },
+  YouTube: { color: "#ff0000", icon: "▶" },
+  LinkedIn: { color: "#0a66c2", icon: "in" },
+  WhatsApp: { color: "#25d366", icon: "✆" },
+  Telegram: { color: "#27a7e7", icon: "✈" },
+  Discord: { color: "#5865f2", icon: "◈" },
+  Snapchat: { color: "#fffc00", icon: "👻" },
+  ChatGPT: { color: "#10a37f", icon: "✦" },
+  Perplexity: { color: "#20808d", icon: "✦" },
+  Gemini: { color: "#8e75ff", icon: "✦" },
+  Claude: { color: "#d97757", icon: "✦" },
+  Copilot: { color: "#0f6cbd", icon: "✦" },
+  Bing: { color: "#008373", icon: "b" },
+  DuckDuckGo: { color: "#de5833", icon: "🦆" },
+  Yahoo: { color: "#6001d2", icon: "Y" },
+  Email: { color: "#f59e0b", icon: "✉" },
+  "Shopify Community": { color: "#95bf47", icon: "S" },
+  Directo: { color: "#64748b", icon: "→" },
+  "Sin atribuir": { color: "#475569", icon: "?" },
+};
+const channelColor = (name: string) => CHANNEL_META[name]?.color || "#6b7280";
+const channelIcon = (name: string) => CHANNEL_META[name]?.icon || "🔗";
 
 /**
  * Panel del dueño (isla vanilla dentro de React).
@@ -18,6 +51,7 @@ export function OwnerMonitor() {
     let tick = 0;
     let currentRange: "today" | "7d" | "30d" | "90d" = "7d";
     let disposed = false;
+    const cleanups: Array<() => void> = [];
 
     const $ = (id: string) => document.getElementById(id);
     const fmtMoney = (n: number) => new Intl.NumberFormat("es-MX", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n || 0);
@@ -65,7 +99,8 @@ export function OwnerMonitor() {
     function stamp() { const el = $("evm-refresh"); if (el) el.textContent = new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" }); }
     function setTag(id: string, source?: string) {
       const el = $(id); if (!el) return;
-      el.textContent = source === "posthog" ? "PostHog" : "real";
+      el.textContent = "real";
+      void source;
       el.className = "tag";
     }
 
@@ -93,7 +128,8 @@ export function OwnerMonitor() {
       const p = b.planCounts || { free: 0, pro: 0, scale: 0 };
       ($("evm-plansplit") as HTMLElement).textContent = `Free ${p.free} · Pro ${p.pro} · Scale ${p.scale}`;
       const rEl = $("evm-resetat");
-      if (rEl && b.resetAt) rEl.textContent = new Date(b.resetAt).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" });
+      if (rEl && b.resetAt) rEl.textContent = new Date(b.resetAt).toLocaleString("es-MX", { timeZone: "America/Guayaquil", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) + " (Guayaquil)";
+      const ar = $("evm-arpu"); if (ar) ar.textContent = fmtMoney2(b.arpu);
     }
 
     async function renderKpis() {
@@ -101,14 +137,14 @@ export function OwnerMonitor() {
       const k = await api("kpis", { range: currentRange });
       ($("evm-rev") as HTMLElement).textContent = fmtMoney(k.revenue);
       ($("evm-ord") as HTMLElement).textContent = fmtNum(k.orders);
-      ($("evm-aov") as HTMLElement).textContent = fmtMoney2(k.aov);
+      ($("evm-aov") as HTMLElement).textContent = fmtMoney2(k.revenuePerSub);
       ($("evm-conv") as HTMLElement).textContent = (Number(k.conversionRate) || 0).toFixed(2) + "%";
-      setDelta("evm-rev-d", k.deltas.revenue); setDelta("evm-ord-d", k.deltas.orders); setDelta("evm-aov-d", k.deltas.aov); setDelta("evm-conv-d", k.deltas.conversionRate);
+      setDelta("evm-rev-d", k.deltas.revenue); setDelta("evm-ord-d", k.deltas.orders); setDelta("evm-aov-d", k.deltas.revenuePerSub); setDelta("evm-conv-d", k.deltas.conversionRate);
       const s = await api("revenue-series", { range: currentRange });
       drawSpark("evm-spark-rev", s.map((p: any) => p.revenue), t.accent);
       drawSpark("evm-spark-ord", s.map((p: any) => p.orders), t.accent2);
       drawSpark("evm-spark-aov", s.map((p: any) => (p.orders ? p.revenue / p.orders : 0)), t.green);
-      drawSpark("evm-spark-conv", s.map((p: any) => p.orders), t.amber);
+      drawSpark("evm-spark-conv", s.map((p: any) => p.conversion || 0), t.amber);
     }
 
     async function renderRevenueChart() {
@@ -169,13 +205,17 @@ export function OwnerMonitor() {
       }).join("") + `<div class="funnel-note">Cada etapa proviene de una fuente independiente (Stripe + Supabase); no es un embudo estrictamente secuencial, así que una etapa posterior puede superar a otra.</div>`;
     }
 
-    const followed = new Set<string>();
     async function renderAlmost() {
       const body = $("evm-almost"); if (!body) return;
       const rows = await api("almost-buyers", { range: currentRange });
-      if (!rows.length) { body.innerHTML = `<tr><td colspan="6"><div class="empty">Sin checkouts abandonados en este rango 🎉</div></td></tr>`; return; }
-      body.innerHTML = rows.map((r: any) => `<tr><td>${r.email ? esc(r.email) : '<span class="muted">Anónimo</span>'}</td><td><span class="pill">${esc(r.plan)} · $${esc(r.value)}/mes</span></td><td class="money">${fmtMoney2(r.value)}</td><td><span class="pill stage">${esc(r.stage)}</span></td><td class="muted mono">${timeAgo(r.lastSeen)}</td><td>${followed.has(r.id) ? `<button class="btn-follow done">✓ Seguimiento</button>` : `<button class="btn-follow" data-id="${esc(r.id)}">Marcar</button>`}</td></tr>`).join("");
-      body.querySelectorAll(".btn-follow:not(.done)").forEach((b) => ((b as HTMLElement).onclick = () => { followed.add((b as HTMLElement).dataset.id!); b.classList.add("done"); b.textContent = "✓ Seguimiento"; }));
+      if (!rows.length) { body.innerHTML = `<tr><td colspan="7"><div class="empty">Sin checkouts abandonados en este rango 🎉</div></td></tr>`; return; }
+      body.innerHTML = rows.map((r: any) => `<tr><td>${r.email ? esc(r.email) : '<span class="muted">Anónimo</span>'}${r.channel ? ` <span class="chip" style="--c:${channelColor(r.channel)}">${esc(r.channel)}</span>` : ""}</td><td><span class="pill">${esc(r.plan)} · ${r.interval === "year" ? "anual" : "mensual"}</span></td><td class="money">${fmtMoney2(r.valueUsd)}</td><td><span class="pill stage ${r.status === "Abierto" ? "open" : ""}">${esc(r.status)}</span></td><td class="muted mono">${timeAgo(r.lastSeen)}</td><td><button class="btn-follow ${r.followed ? "done" : ""}" data-id="${esc(r.id)}" data-on="${r.followed ? 1 : 0}">${r.followed ? "✓ Seguimiento" : "Marcar"}</button></td></tr>`).join("");
+      body.querySelectorAll(".btn-follow").forEach((b) => ((b as HTMLElement).onclick = async () => {
+        const el = b as HTMLElement; const next = el.dataset.on !== "1";
+        el.dataset.on = next ? "1" : "0"; el.classList.toggle("done", next); el.textContent = next ? "✓ Seguimiento" : "Marcar";
+        const r = await toggleCheckoutFollowup(el.dataset.id!, next).catch(() => ({ ok: false }));
+        if (!r.ok) { el.dataset.on = next ? "0" : "1"; el.classList.toggle("done", !next); el.textContent = !next ? "✓ Seguimiento" : "Marcar"; }
+      }));
     }
 
     async function renderOrders() {
@@ -191,7 +231,7 @@ export function OwnerMonitor() {
       ($("evm-live-top") as HTMLElement).textContent = fmtNum(live.count);
       setTag("evm-tag-live", live.source);
       const sb = $("evm-sessions");
-      if (sb) sb.innerHTML = (live.sessions || []).map((s: any) => `<tr><td>${esc(s.country)}${s.internal ? ' <span class="tag amber">tú</span>' : ""}</td><td class="muted">${esc(s.city)}</td><td class="muted">${esc(s.device)}</td><td class="muted mono">${esc(s.page)}</td><td class="mono">${durStr(s.durationSec)}</td></tr>`).join("") || `<tr><td colspan="5"><div class="empty">Sin sesiones activas ahora mismo.</div></td></tr>`;
+      if (sb) sb.innerHTML = (live.sessions || []).map((s: any) => `<tr><td>${esc(s.country)}${s.internal ? ' <span class="tag amber">tú</span>' : ""}</td><td class="muted">${esc(s.city)}</td><td class="muted">${esc(s.device)}</td><td class="muted mono">${esc(s.page)}</td><td><span class="chip" style="--c:${channelColor(s.channel)}">${channelIcon(s.channel)} ${esc(s.channel)}</span></td><td class="mono">${durStr(s.durationSec)}</td></tr>`).join("") || `<tr><td colspan="6"><div class="empty">Sin sesiones activas ahora mismo.</div></td></tr>`;
       const byC: Record<string, number> = {}; (live.sessions || []).forEach((s: any) => (byC[s.country] = (byC[s.country] || 0) + 1));
       const arr = Object.entries(byC).map(([k, v]) => ({ name: k, value: v })).sort((a, b) => b.value - a.value);
       const max = Math.max(1, ...arr.map((a) => a.value));
@@ -223,21 +263,74 @@ export function OwnerMonitor() {
         if (e) (e as HTMLElement).style.display = has ? "none" : "flex";
       };
       const sum = (arr: any[]) => arr.reduce((a, x) => a + (x.value || 0), 0);
-      const devHas = sum(d.devices) > 0, srcHas = sum(d.sources) > 0, nrHas = sum(d.newVsReturning) > 0;
+      const devHas = sum(d.devices) > 0, nrHas = sum(d.newVsReturning) > 0;
       toggleChart("evm-devices", "evm-devices-empty", devHas);
-      toggleChart("evm-sources", "evm-sources-empty", srcHas);
       toggleChart("evm-newret", "evm-newret-empty", nrHas);
       if (devHas) donut("evm-devices", d.devices, [t.accent, t.accent2, t.amber], (v) => fmtNum(v));
-      if (srcHas) donut("evm-sources", d.sources, [t.accent, t.accent2, t.green, t.amber, t.purple, t.red], (v) => fmtNum(v));
       if (nrHas) donut("evm-newret", d.newVsReturning, [t.accent2, t.text], (v) => fmtNum(v));
-      setTag("evm-tag-dev", d.source); setTag("evm-tag-src", d.source); setTag("evm-tag-nr", d.source);
+      setTag("evm-tag-dev", d.source); setTag("evm-tag-nr", d.source);
+    }
+
+    const chip = (name: string) => `<span class="chip" style="--c:${channelColor(name)}">${channelIcon(name)} ${esc(name)}</span>`;
+    const emptyRow = (cols: number, txt: string) => `<tr><td colspan="${cols}"><div class="empty">${txt}</div></td></tr>`;
+
+    async function renderChannels() {
+      const d = await api("channels", { range: currentRange });
+      const has = d.total > 0;
+      const c = $("evm-channels"), e = $("evm-channels-empty");
+      if (c) (c as HTMLElement).style.display = has ? "block" : "none";
+      if (e) (e as HTMLElement).style.display = has ? "none" : "flex";
+      if (has && Chart()) {
+        const ctx = $("evm-channels") as HTMLCanvasElement;
+        if (charts.channels) charts.channels.destroy();
+        charts.channels = new (Chart())(ctx, { type: "doughnut",
+          data: { labels: d.channels.map((x: any) => x.name), datasets: [{ data: d.channels.map((x: any) => x.value), backgroundColor: d.channels.map((x: any) => channelColor(x.name)), borderColor: cssVar("--bg-card"), borderWidth: 2 }] },
+          options: { responsive: true, maintainAspectRatio: false, cutout: "62%", plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c: any) => "  " + c.label + ": " + fmtNum(c.parsed) + " visitantes" } } } } });
+      }
+      const list = $("evm-channels-list");
+      if (list) list.innerHTML = d.channels.map((x: any) => `<div class="ch-row">${chip(x.name)}<span class="mono muted">${fmtNum(x.value)} · ${x.pct.toFixed(1)}%</span></div>`).join("") || '<div class="empty">Sin tráfico en este rango.</div>';
+    }
+    async function renderChannelRevenue() {
+      const body = $("evm-chrev"); if (!body) return;
+      const rows = await api("channel-revenue", { range: currentRange });
+      body.innerHTML = rows.map((r: any) => `<tr><td>${chip(r.channel)}</td><td class="mono">${fmtNum(r.visitors)}</td><td class="mono">${fmtNum(r.signups)}</td><td class="mono">${r.conversion.toFixed(1)}%</td><td class="mono">${fmtNum(r.payments)}</td><td class="money">${fmtMoney2(r.revenue)}</td></tr>`).join("") || emptyRow(6, "Sin datos de canales en este rango.");
+    }
+    async function renderCampaigns() {
+      const body = $("evm-campaigns"); if (!body) return;
+      const rows = await api("campaigns", { range: currentRange });
+      body.innerHTML = rows.map((r: any) => `<tr><td>${esc(r.campaign)}</td><td>${chip(r.channel)}</td><td class="mono">${fmtNum(r.visitors)}</td><td class="mono">${fmtNum(r.signups)}</td></tr>`).join("") || emptyRow(4, "Sin campañas UTM en este rango. Usa ?utm_campaign=… en tus links.");
+    }
+    async function renderLanding() {
+      const body = $("evm-landing"); if (!body) return;
+      const rows = await api("landing-pages", { range: currentRange });
+      body.innerHTML = rows.map((r: any) => `<tr><td class="mono">${esc(r.path)}</td><td class="mono">${fmtNum(r.visitors)}</td><td>${chip(r.channel)}</td></tr>`).join("") || emptyRow(3, "Sin páginas de entrada en este rango.");
+    }
+    async function renderVisitorCountries() {
+      const box = $("evm-vcountry"); if (!box) return;
+      const rows = await api("visitor-countries", { range: currentRange });
+      const max = Math.max(1, ...rows.map((c: any) => c.value));
+      box.innerHTML = rows.map((c: any) => `<div class="country-row"><span>${esc(c.name.split(" ")[0])}</span><div style="display:flex;flex-direction:column;gap:3px"><div style="display:flex;justify-content:space-between;font-size:12px"><span class="muted">${esc(c.name.split(" ").slice(1).join(" "))}</span><span class="mono">${fmtNum(c.value)}</span></div><div class="country-bar-track"><div class="country-bar" style="width:${(c.value / max) * 100}%"></div></div></div><span></span></div>`).join("") || '<div class="empty">Sin visitantes en este rango.</div>';
+    }
+    async function renderAnalyzer() {
+      const h = await api("analyzer-health", { range: currentRange });
+      const set = (id: string, v: string) => { const el = $(id); if (el) el.textContent = v; };
+      set("evm-an-total", fmtNum(h.total)); set("evm-an-split", `${fmtNum(h.withSession)} con sesión · ${fmtNum(h.anonymous)} anónimas`);
+      set("evm-an-rate", h.total ? h.successRate.toFixed(1) + "%" : "—");
+      set("evm-an-p50", h.samples ? h.p50Sec.toFixed(1) + " s" : "—"); set("evm-an-p95", h.samples ? h.p95Sec.toFixed(1) + " s" : "—");
+      const body = $("evm-an-days");
+      if (body) body.innerHTML = h.days.map((d: any) => `<tr><td class="mono">${esc(d.day)}</td><td class="mono">${fmtNum(d.withSession)}</td><td class="mono">${fmtNum(d.anonymous)}</td><td class="mono">${fmtNum(d.succeeded)}</td><td class="mono">${fmtNum(d.failed)}</td></tr>`).join("") || emptyRow(5, "Sin auditorías en este rango.");
+    }
+    async function renderCancellations() {
+      const c = await api("cancellations", { range: currentRange });
+      const set = (id: string, v: string) => { const el = $(id); if (el) el.textContent = v; };
+      set("evm-cancel-n", fmtNum(c.canceled)); set("evm-cancel-churn", (Number(c.churnPct) || 0).toFixed(1) + "%");
     }
 
     function runRenders(fns: Array<() => Promise<void>>) {
       const ps = fns.map((fn) => Promise.resolve().then(fn).catch((err) => { console.error("[owner-monitor]", err.message); return { __err: err }; }));
       Promise.all(ps).then((rs) => { const err = rs.find((r: any) => r && r.__err); setDataState(err ? "err" : "ok", err ? "Error al cargar" : "Datos reales"); });
     }
-    function renderAll() { runRenders([renderBusiness, renderKpis, renderRevenueChart, renderFunnel, renderAlmost, renderOrders, renderLive, renderDemographics]); stamp(); }
+    function renderAll() { runRenders([renderBusiness, renderKpis, renderRevenueChart, renderFunnel, renderAlmost, renderOrders, renderLive, renderDemographics, renderChannels, renderChannelRevenue, renderCampaigns, renderLanding, renderVisitorCountries, renderAnalyzer, renderCancellations]); stamp(); }
     function renderLiveTick() { tick++; runRenders([renderLive, renderOrders]); stamp(); }
 
     (async () => {
@@ -250,11 +343,27 @@ export function OwnerMonitor() {
         document.querySelectorAll(".evm .range-group button").forEach((b) => b.classList.remove("active"));
         btn.classList.add("active"); currentRange = (btn as HTMLElement).dataset.range as any; renderAll();
       }));
+      const modal = $("evm-modal"), msg = $("evm-modal-msg");
+      const openModal = () => { if (modal) modal.classList.add("open"); if (msg) msg.textContent = ""; };
+      const closeModal = () => { if (modal) modal.classList.remove("open"); };
+      const rb = $("evm-reset-btn"); if (rb) rb.onclick = openModal;
+      const cb = $("evm-modal-cancel"); if (cb) cb.onclick = closeModal;
+      if (modal) modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+      const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") closeModal(); };
+      document.addEventListener("keydown", onKey); cleanups.push(() => document.removeEventListener("keydown", onKey));
+      const ok = $("evm-modal-ok");
+      if (ok) ok.onclick = async () => {
+        const btn = ok as HTMLButtonElement; btn.disabled = true; if (msg) msg.textContent = "Reiniciando…";
+        const purge = ($("evm-purge") as HTMLInputElement | null)?.checked ?? false;
+        const r = await resetOwnerMetrics({ purgeTraffic: purge }).catch(() => ({ ok: false as const, error: "error de red" }));
+        btn.disabled = false;
+        if (r.ok) { closeModal(); renderAll(); } else if (msg) msg.textContent = "No se pudo reiniciar: " + r.error;
+      };
       renderAll();
       interval = setInterval(renderLiveTick, 10000);
     })();
 
-    return () => { disposed = true; if (interval) clearInterval(interval); Object.values(charts).forEach((c: any) => { try { c.destroy(); } catch {} }); };
+    return () => { disposed = true; cleanups.forEach((f) => f()); if (interval) clearInterval(interval); Object.values(charts).forEach((c: any) => { try { c.destroy(); } catch {} }); };
   }, []);
 
   return (
@@ -273,30 +382,45 @@ export function OwnerMonitor() {
         <div className="badge"><span className="live-dot" /> EN VIVO · <span id="evm-live-top">0</span><span id="evm-live-src" className="muted" style={{ fontSize: 11 }} /></div>
         <div className="badge"><span className="sdot ok" id="evm-dot" /> <span id="evm-state">Cargando…</span></div>
         <div className="muted refr">Refresh: <span id="evm-refresh">—</span></div>
+        <button type="button" className="btn-reset" id="evm-reset-btn">Reiniciar a 0</button>
       </div>
 
-      <div className="notice">ℹ️ <b>Todos los datos son reales.</b> Dinero y usuarios → Stripe + Supabase. Tráfico (en vivo, dispositivos, fuentes) → tu analítica propia (<code>page_views</code>). Si una sección sale vacía o en 0, es que aún no hay datos en ese rango — nunca se muestran cifras simuladas. <b>Contando desde:</b> <span id="evm-resetat">—</span> (reset).</div>
+      <div className="evm-modal" id="evm-modal" role="dialog" aria-modal="true" aria-labelledby="evm-modal-title">
+        <div className="evm-modal-box">
+          <div className="evm-modal-title" id="evm-modal-title">¿Reiniciar el panel a 0?</div>
+          <p className="muted">Desde ahora el panel solo contará datos nuevos (Stripe, usuarios, suscripciones, visitas, embudo). <b>No se borra nada</b> de Stripe ni ninguna cuenta; solo se mueve la fecha de inicio. «En vivo» no cambia.</p>
+          <label className="evm-check"><input type="checkbox" id="evm-purge" /> Borrar también el tráfico anterior (page_views / sessions). Útil: ese histórico está inflado por heartbeats y bots.</label>
+          <div className="evm-modal-msg" id="evm-modal-msg" />
+          <div className="evm-modal-actions">
+            <button type="button" className="btn-ghost" id="evm-modal-cancel">Cancelar</button>
+            <button type="button" className="btn-danger" id="evm-modal-ok">Reiniciar a 0</button>
+          </div>
+        </div>
+      </div>
+
+      <div className="notice">ℹ️ <b>Todos los datos son reales.</b> Dinero en USD (balance de Stripe) · usuarios y suscripciones → Supabase · tráfico → tu analítica propia, atribuido al <b>primer contacto</b> (UTM, click-ids, referrer). Una sección vacía o en 0 significa que aún no hay datos en el rango — nunca se muestran cifras simuladas. «Hoy» empieza a las 00:00 de Guayaquil. <b>Contando desde:</b> <span id="evm-resetat">—</span></div>
 
       <div className="sec-title">Estado del negocio (ahora)</div>
       <div className="kpi-row" style={{ marginBottom: 22 }}>
         <div className="card kpi"><span className="label">MRR (ingreso recurrente / mes)</span><span className="value" id="evm-mrr">—</span></div>
         <div className="card kpi"><span className="label">Suscriptores activos</span><span className="value" id="evm-activesubs">—</span></div>
+        <div className="card kpi"><span className="label">ARPU (MRR / suscriptores)</span><span className="value" id="evm-arpu">—</span></div>
         <div className="card kpi"><span className="label">Usuarios totales</span><span className="value" id="evm-totalusers">—</span></div>
         <div className="card kpi"><span className="label">Distribución de planes</span><span className="value" id="evm-plansplit" style={{ fontSize: 15, fontWeight: 700 }}>—</span></div>
       </div>
 
-      {/* §8 — "En vivo" first: it's what the owner wants to watch. */}
+      {/* "En vivo" first: it's what the owner wants to watch. */}
       <div className="sec-title">En vivo · quién está en el sitio ahora</div>
       <div className="row-2b" style={{ marginTop: 0 }}>
-        <div className="card"><div className="sec-title">Visitantes en tiempo real <span className="tag" id="evm-tag-live">real</span></div><div className="live-counter"><span className="big" id="evm-live-big">0</span><span className="muted">sesiones activas<br />ahora mismo</span></div><div className="country-list" id="evm-live-country" /></div>
-        <div className="card"><div className="sec-title">Sesiones activas <span className="muted" style={{ fontSize: 11, textTransform: "none", letterSpacing: 0 }}>· la duración incrementa en vivo</span></div><div className="table-scroll"><table><thead><tr><th>País</th><th>Ciudad</th><th>Dispositivo</th><th>Página</th><th>Duración</th></tr></thead><tbody id="evm-sessions" /></table></div></div>
+        <div className="card"><div className="sec-title">Visitantes en tiempo real <span className="tag" id="evm-tag-live">real</span></div><div className="live-counter"><span className="big" id="evm-live-big">0</span><span className="muted">sesiones activas<br />ahora mismo (sin contarte)</span></div><div className="country-list" id="evm-live-country" /></div>
+        <div className="card"><div className="sec-title">Sesiones activas <span className="muted" style={{ fontSize: 11, textTransform: "none", letterSpacing: 0 }}>· la duración incrementa en vivo</span></div><div className="table-scroll"><table><thead><tr><th>País</th><th>Ciudad</th><th>Dispositivo</th><th>Página</th><th>Viene de</th><th>Duración</th></tr></thead><tbody id="evm-sessions" /></table></div></div>
       </div>
 
       <div className="sec-title">Resumen del periodo</div>
       <div className="kpi-row">
-        <div className="card kpi"><span className="label">Ingresos (Stripe)</span><span className="value" id="evm-rev">—</span><span className="delta" id="evm-rev-d" /><canvas className="spark" id="evm-spark-rev" width={100} height={42} /></div>
+        <div className="card kpi"><span className="label">Ingresos (USD, Stripe)</span><span className="value" id="evm-rev">—</span><span className="delta" id="evm-rev-d" /><canvas className="spark" id="evm-spark-rev" width={100} height={42} /></div>
         <div className="card kpi"><span className="label">Nuevas suscripciones</span><span className="value" id="evm-ord">—</span><span className="delta" id="evm-ord-d" /><canvas className="spark" id="evm-spark-ord" width={100} height={42} /></div>
-        <div className="card kpi"><span className="label">ARPU</span><span className="value" id="evm-aov">—</span><span className="delta" id="evm-aov-d" /><canvas className="spark" id="evm-spark-aov" width={100} height={42} /></div>
+        <div className="card kpi"><span className="label">Ingreso por nueva suscripción</span><span className="value" id="evm-aov">—</span><span className="delta" id="evm-aov-d" /><canvas className="spark" id="evm-spark-aov" width={100} height={42} /></div>
         <div className="card kpi"><span className="label">Conversión registro → pago</span><span className="value" id="evm-conv">—</span><span className="delta" id="evm-conv-d" /><canvas className="spark" id="evm-spark-conv" width={100} height={42} /></div>
       </div>
 
@@ -305,21 +429,56 @@ export function OwnerMonitor() {
         <div className="card"><div className="sec-title">Embudo de conversión <span className="tag">PRIORITARIO</span></div><div className="funnel" id="evm-funnel" /></div>
       </div>
 
-      <div className="card">
-        <div className="sec-title">&quot;Casi pagan&quot; — checkouts abandonados <span className="tag">PRIORITARIO</span></div>
-        <div className="table-scroll"><table><thead><tr><th>Usuario</th><th>Plan</th><th>Valor/mes</th><th>Etapa</th><th>Visto hace</th><th /></tr></thead><tbody id="evm-almost" /></table></div>
+      <div className="sec-title">Canales · de dónde viene la gente y el dinero</div>
+      <div className="row-2">
+        <div className="card"><div className="sec-title">Fuentes de tráfico <span className="tag">visitantes únicos</span></div><div className="channels-grid"><div className="chart-box sm"><canvas id="evm-channels" /><div id="evm-channels-empty" className="chart-empty">Sin tráfico en este rango.</div></div><div className="ch-list" id="evm-channels-list" /></div></div>
+        <div className="card"><div className="sec-title">Páginas de entrada</div><div className="table-scroll"><table><thead><tr><th>Página</th><th>Visitantes</th><th>Canal principal</th></tr></thead><tbody id="evm-landing" /></table></div></div>
       </div>
 
       <div className="card">
-        <div className="sec-title">Suscripciones recientes</div>
-        <div className="table-scroll"><table><thead><tr><th>ID</th><th>Cliente</th><th>Plan</th><th>Valor/mes</th><th>País</th><th>Hace</th></tr></thead><tbody id="evm-orders" /></table></div>
+        <div className="sec-title">Canales → dinero <span className="tag">PRIORITARIO</span></div>
+        <div className="table-scroll"><table><thead><tr><th>Canal</th><th>Visitantes</th><th>Registros</th><th>Visita → registro</th><th>Pagos</th><th>Ingresos USD</th></tr></thead><tbody id="evm-chrev" /></table></div>
+        <div className="funnel-note">Atribución por primer contacto: el canal con el que llegó la persona la primera vez, no el último clic. Los pagos se atribuyen al canal con el que se registró el cliente. «Sin atribuir» = cuentas creadas antes de este sistema.</div>
+      </div>
+
+      <div className="card">
+        <div className="sec-title">Campañas (UTM)</div>
+        <div className="table-scroll"><table><thead><tr><th>Campaña</th><th>Canal</th><th>Visitantes</th><th>Registros</th></tr></thead><tbody id="evm-campaigns" /></table></div>
+      </div>
+
+      <div className="card">
+        <div className="sec-title">&quot;Casi pagan&quot; — checkouts sin completar <span className="tag">PRIORITARIO</span></div>
+        <div className="table-scroll"><table><thead><tr><th>Usuario</th><th>Plan</th><th>Valor (USD)</th><th>Estado</th><th>Hace</th><th /></tr></thead><tbody id="evm-almost" /></table></div>
+      </div>
+
+      <div className="row-2c">
+        <div className="card">
+          <div className="sec-title">Cancelaciones</div>
+          <div className="kpi-row" style={{ gridTemplateColumns: "1fr 1fr", marginBottom: 0 }}>
+            <div className="kpi"><span className="label">Canceladas en el periodo</span><span className="value" id="evm-cancel-n">—</span></div>
+            <div className="kpi"><span className="label">Churn simple</span><span className="value" id="evm-cancel-churn">—</span></div>
+          </div>
+          <div className="funnel-note">Churn = canceladas / (activas + canceladas). Aproximado: usa la fecha de última actualización de la suscripción.</div>
+        </div>
+        <div className="card"><div className="sec-title">Suscripciones recientes</div><div className="table-scroll"><table><thead><tr><th>ID</th><th>Cliente</th><th>Plan</th><th>Valor/mes</th><th>País</th><th>Hace</th></tr></thead><tbody id="evm-orders" /></table></div></div>
+      </div>
+
+      <div className="sec-title">Salud del Analyzer</div>
+      <div className="card">
+        <div className="kpi-row" style={{ marginBottom: 14 }}>
+          <div className="kpi"><span className="label">Auditorías</span><span className="value" id="evm-an-total">—</span><span className="muted" id="evm-an-split" style={{ fontSize: 12 }} /></div>
+          <div className="kpi"><span className="label">Tasa de éxito</span><span className="value" id="evm-an-rate">—</span></div>
+          <div className="kpi"><span className="label">Duración p50</span><span className="value" id="evm-an-p50">—</span></div>
+          <div className="kpi"><span className="label">Duración p95</span><span className="value" id="evm-an-p95">—</span></div>
+        </div>
+        <div className="table-scroll"><table><thead><tr><th>Día (Guayaquil)</th><th>Con sesión</th><th>Anónimas</th><th>Exitosas</th><th>Fallidas / reembolsadas</th></tr></thead><tbody id="evm-an-days" /></table></div>
       </div>
 
       <div className="sec-title">Demografía y tráfico</div>
       <div className="demo-grid">
         <div className="card"><div className="sec-title">Top países (por ingresos · Stripe)</div><div className="country-list" id="evm-demo-country" /></div>
+        <div className="card"><div className="sec-title">Países de visitantes</div><div className="country-list" id="evm-vcountry" /></div>
         <div className="card"><div className="sec-title">Dispositivos <span className="tag" id="evm-tag-dev">real</span></div><div className="chart-box sm"><canvas id="evm-devices" /><div id="evm-devices-empty" className="chart-empty">Sin tráfico en este rango.</div></div></div>
-        <div className="card"><div className="sec-title">Fuentes de tráfico <span className="tag" id="evm-tag-src">real</span></div><div className="chart-box sm"><canvas id="evm-sources" /><div id="evm-sources-empty" className="chart-empty">Sin tráfico en este rango.</div></div></div>
         <div className="card"><div className="sec-title">Nuevos vs recurrentes <span className="tag" id="evm-tag-nr">real</span></div><div className="chart-box sm"><canvas id="evm-newret" /><div id="evm-newret-empty" className="chart-empty">Sin tráfico en este rango.</div></div></div>
       </div>
     </div>
@@ -386,5 +545,27 @@ const CSS = `
 .evm .country-bar { height:100%; background:var(--grad-brand); border-radius:999px; }
 .evm .empty { text-align:center; color:var(--text-faint); padding:26px 12px; font-size:13px; }
 @media (max-width:1100px){ .evm .kpi-row{grid-template-columns:repeat(2,1fr)} .evm .row-2,.evm .row-2b,.evm .demo-grid{grid-template-columns:1fr} }
+.evm .kpi-row { grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); }
+.evm .row-2c { display:grid; grid-template-columns:1fr 1.5fr; gap:16px; margin:22px 0; }
+.evm .row-2c .card + .card { margin-top:0; }
+.evm .chip { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:700; padding:2px 9px; border-radius:999px; background:color-mix(in srgb, var(--c) 18%, transparent); color:var(--text); border:1px solid color-mix(in srgb, var(--c) 55%, transparent); white-space:nowrap; }
+.evm .channels-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:center; }
+.evm .ch-list { display:flex; flex-direction:column; gap:7px; }
+.evm .ch-row { display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:12px; }
+.evm .pill.open { background:rgba(52,211,153,.15); color:var(--green); }
+.evm .btn-reset { border:1px solid var(--red); background:transparent; color:var(--red); padding:6px 12px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; }
+.evm .btn-reset:hover { background:rgba(248,113,113,.12); }
+.evm .evm-modal { display:none; position:fixed; inset:0; z-index:60; background:rgba(0,0,0,.6); align-items:center; justify-content:center; padding:16px; }
+.evm .evm-modal.open { display:flex; }
+.evm .evm-modal-box { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:22px; max-width:460px; width:100%; display:flex; flex-direction:column; gap:12px; }
+.evm .evm-modal-title { font-size:17px; font-weight:800; }
+.evm .evm-modal-box p { margin:0; font-size:13px; line-height:1.5; }
+.evm .evm-check { display:flex; gap:8px; align-items:flex-start; font-size:12px; color:var(--text-dim); line-height:1.45; }
+.evm .evm-modal-msg { font-size:12px; color:var(--amber); min-height:16px; }
+.evm .evm-modal-actions { display:flex; justify-content:flex-end; gap:10px; }
+.evm .btn-ghost { background:transparent; border:1px solid var(--border); color:var(--text); padding:8px 14px; border-radius:10px; font-weight:600; cursor:pointer; }
+.evm .btn-danger { background:var(--red); border:0; color:#1a0505; padding:8px 14px; border-radius:10px; font-weight:800; cursor:pointer; }
+.evm .btn-danger:disabled { opacity:.6; cursor:wait; }
+@media (max-width:1100px){ .evm .row-2c,.evm .channels-grid{grid-template-columns:1fr} }
 @media (prefers-reduced-motion:reduce){ .evm .live-dot{ animation:none } .evm .card{ transition:none } }
 `;

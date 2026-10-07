@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { interpretBeat, type BeatBody } from "@/lib/analytics/track";
 
 /**
  * First-party analytics beacon. The client (components/analytics/page-tracker)
- * calls it on every route change AND on a ~15s heartbeat while the tab is
- * visible. It does two things:
- *   1. `sessions` upsert — one row per browser session (session_id), so the
- *      owner dashboard can show live visitors + session DURATION. Recorded for
- *      EVERYONE, but the owner/admin is flagged `is_internal` (visible to them,
- *      excluded from public metrics).
- *   2. `page_views` insert — the per-pageview log powering demographics/funnel.
- *      Skipped for internal traffic so it never inflates the metrics.
+ * sends `type: "pageview"` on mount / route change and `type: "heartbeat"` every
+ * ~15s while the tab is visible. It does three things:
+ *   1. `sessions` — one row per browser session (session_id) for live visitors
+ *      + duration. Channel / referrer / utm / landing are FIRST-TOUCH: written
+ *      only when the row is created, never by later beats.
+ *   2. `visitors` — one row per ev_anon visitor, first-touch, insert-only.
+ *   3. `page_views` — ONLY for `type === "pageview"` and non-internal traffic
+ *      (a heartbeat is not a page view).
  *
  * Public (anonymous visitors) but only WRITES via the service role. Never
  * returns data. Dev/preview hosts and known bots are dropped so localhost /
@@ -25,60 +26,17 @@ function deviceFromUA(ua: string): string {
   return "Escritorio";
 }
 
-// Known bots / preview crawlers — never counted as real visitors.
-const BOT_RE =
-  /bot|crawl|spider|slurp|bingpreview|facebookexternalhit|embedly|quora link preview|pinterest|slackbot|vkshare|telegrambot|whatsapp|headless|lighthouse|pagespeed|gtmetrix|uptime|monitor|preview/i;
-
-// Hosts we never record (local dev + Vercel preview deployments).
-function isDevOrPreviewHost(host: string): boolean {
-  return (
-    host.includes("localhost") ||
-    host.startsWith("127.0.0.1") ||
-    host.startsWith("0.0.0.0") ||
-    host.endsWith(".vercel.app")
-  );
-}
-
-// Referrers that are internal/dev noise → treated as "Directo".
-function isNoiseReferrer(hostname: string): boolean {
-  return (
-    hostname.includes("localhost") ||
-    hostname.startsWith("127.0.0.1") ||
-    hostname.endsWith(".vercel.app") ||
-    hostname === "vercel.com" ||
-    hostname.endsWith(".vercel.com")
-  );
-}
-
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json().catch(() => ({}))) as {
-      path?: string;
-      referrer?: string;
-      session_id?: string;
-      internal?: boolean;
-    };
+    const body = (await req.json().catch(() => ({}))) as BeatBody;
     const ua = req.headers.get("user-agent") || "";
-    const host = (req.headers.get("host") || "").replace(/^www\./, "");
-
-    // §6 — drop dev/preview hosts and bots entirely.
-    if (isDevOrPreviewHost(host) || BOT_RE.test(ua)) {
-      return new NextResponse(null, { status: 204 });
-    }
+    const host = req.headers.get("host") || "";
+    const beat = interpretBeat(body, { ua, host });
+    if (beat.drop) return new NextResponse(null, { status: 204 });
 
     const country = req.headers.get("x-vercel-ip-country");
     const cityRaw = req.headers.get("x-vercel-ip-city");
     const city = cityRaw ? decodeURIComponent(cityRaw) : null;
-
-    let referrer_domain = "Directo";
-    try {
-      if (body.referrer) {
-        const h = new URL(body.referrer).hostname.replace(/^www\./, "");
-        if (h && h !== host && !isNoiseReferrer(h)) referrer_domain = h;
-      }
-    } catch {
-      /* invalid referrer → Directo */
-    }
 
     let anon = req.cookies.get("ev_anon")?.value;
     const res = new NextResponse(null, { status: 204 });
@@ -93,39 +51,72 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const path = (body.path || "").slice(0, 300) || null;
     const device = deviceFromUA(ua);
-    const internal = !!body.internal;
     const supa = createSupabaseServiceClient();
+    const now = new Date().toISOString();
 
-    // §2 — session heartbeat (everyone, internal flagged). Upsert on
-    // session_id: `started_at` is omitted so it keeps its original value on
-    // update; `last_seen_at` is bumped every beat (server clock).
     if (body.session_id) {
+      const sid = String(body.session_id).slice(0, 64);
+      // Common case: the session exists → bump liveness only (first-touch
+      // columns are never rewritten).
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supa.from("sessions") as any).upsert(
-        {
-          session_id: String(body.session_id).slice(0, 64),
-          anon_id: anon,
-          path,
-          referrer_domain,
-          country: country || null,
-          city,
-          device,
-          is_internal: internal,
-          last_seen_at: new Date().toISOString(),
-        },
-        { onConflict: "session_id" },
-      );
+      const { data: bumped } = await (supa.from("sessions") as any)
+        .update({ last_seen_at: now, path: beat.path })
+        .eq("session_id", sid)
+        .select("session_id");
+
+      if (!bumped?.length) {
+        // First beat of the session: insert with first-touch attribution.
+        // ignoreDuplicates makes a racing second first-beat a no-op.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supa.from("sessions") as any).upsert(
+          {
+            session_id: sid,
+            anon_id: anon,
+            path: beat.path,
+            landing_path: beat.path,
+            referrer_domain: beat.referrerDomain,
+            channel: beat.channel,
+            utm_source: beat.utmSource,
+            utm_medium: beat.utmMedium,
+            utm_campaign: beat.utmCampaign,
+            country: country || null,
+            city,
+            device,
+            is_internal: beat.internal,
+            last_seen_at: now,
+          },
+          { onConflict: "session_id", ignoreDuplicates: true },
+        );
+        if (!beat.internal) {
+          // Visitor first-touch: only the very first session of this ev_anon
+          // wins; later sessions hit the primary key and are ignored.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await (supa.from("visitors") as any).upsert(
+            {
+              anon_id: anon,
+              first_channel: beat.channel,
+              first_referrer_domain: beat.referrerDomain,
+              first_landing_path: beat.path,
+              utm_source: beat.utmSource,
+              utm_medium: beat.utmMedium,
+              utm_campaign: beat.utmCampaign,
+              country: country || null,
+              device,
+            },
+            { onConflict: "anon_id", ignoreDuplicates: true },
+          );
+        }
+      }
     }
 
-    // page_views — only real (non-internal) traffic, so metrics stay clean.
-    if (!internal) {
+    if (beat.writePageView) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await supa.from("page_views").insert({
         anon_id: anon,
-        path,
-        referrer_domain,
+        path: beat.path,
+        referrer_domain: beat.referrerDomain,
+        channel: beat.channel,
         country: country || null,
         city,
         device,

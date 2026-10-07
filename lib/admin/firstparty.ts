@@ -1,119 +1,140 @@
 import "server-only";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { countryLabel } from "@/lib/admin/geo";
 
 /* ============================================================================
-   Analítica first-party: consulta la tabla `page_views` (poblada por /api/track).
-   Da tráfico real (visitantes en vivo, dispositivos, fuentes, nuevos-vs-recurrentes,
-   visitas para el embudo) sin depender de PostHog. Bajo volumen → agregación en JS.
+   Analítica first-party del panel del dueño. Lee `page_views` / `sessions` /
+   `visitors` (poblados por /api/track). TODA agregación ocurre en Postgres
+   (funciones ov_* de la migración 0035): nada de traer miles de filas a JS.
+   Quien llama pasa ventanas ya recortadas al reset (ver metrics.ts).
    ============================================================================ */
 
-const COUNTRY: Record<string, string> = {
-  US: "🇺🇸 Estados Unidos", MX: "🇲🇽 México", ES: "🇪🇸 España", CO: "🇨🇴 Colombia", AR: "🇦🇷 Argentina",
-  GB: "🇬🇧 Reino Unido", CA: "🇨🇦 Canadá", CL: "🇨🇱 Chile", PE: "🇵🇪 Perú", BR: "🇧🇷 Brasil",
-  DE: "🇩🇪 Alemania", FR: "🇫🇷 Francia", IT: "🇮🇹 Italia", NL: "🇳🇱 Países Bajos", AU: "🇦🇺 Australia",
-};
-const flag = (cc?: string | null) => (cc && COUNTRY[cc]) || (cc ? "🌐 " + cc : "🌐 Desconocido");
 const iso = (ms: number) => new Date(ms).toISOString();
 
-type Row = { anon_id: string; path: string | null; referrer_domain: string | null; country: string | null; city: string | null; device: string | null; created_at: string };
-
-async function fetchRange(gteMs: number, lteMs: number, limit = 10000): Promise<Row[]> {
+/** Calls an ov_* SQL function; throws on error so callers can degrade. */
+async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T[]> {
   const supa = createSupabaseServiceClient();
-  const { data } = await supa
-    .from("page_views")
-    .select("anon_id, path, referrer_domain, country, city, device, created_at")
-    .gte("created_at", iso(gteMs))
-    .lt("created_at", iso(lteMs))
-    .order("created_at", { ascending: false })
-    .limit(limit);
-  return (data ?? []) as unknown as Row[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supa as any).rpc(fn, args);
+  if (error) throw new Error(`${fn}: ${error.message}`);
+  if (Array.isArray(data)) return data as T[];
+  return data == null ? [] : [data as T];
 }
 
-/** ¿La tabla existe y tiene algún dato? (decide real vs demo) */
+const win = (gte: number, lte: number) => ({ p_from: iso(gte), p_to: iso(lte) });
+
+/** ¿La tabla existe y tiene algún dato? */
 export async function fpHasAnyData(): Promise<boolean> {
   try {
     const supa = createSupabaseServiceClient();
     const { count, error } = await supa.from("page_views").select("id", { count: "exact", head: true });
-    if (error) return false; // tabla aún no creada (migración no aplicada)
+    if (error) return false;
     return (count ?? 0) > 0;
-  } catch { return false; }
+  } catch {
+    return false;
+  }
 }
 
 const ACTIVE_WINDOW_MS = 45000; // a session is "live" if seen in the last 45s
 
-type LiveSession = { id: string; country: string; city: string; device: string; page: string; durationSec: number; internal: boolean };
+export type LiveSession = {
+  id: string;
+  country: string;
+  city: string;
+  device: string;
+  page: string;
+  channel: string;
+  durationSec: number;
+  internal: boolean;
+};
 
 /**
- * Live visitors + session duration, from the `sessions` table (heartbeat).
- * A session is active when last_seen_at is within the last ~45s. DURATION =
- * last_seen_at − started_at. Internal (owner) sessions are INCLUDED and flagged
- * so the owner can see tracking works — public metrics exclude internal
- * elsewhere (page_views). Returns empty on error / missing table.
+ * Live visitors. "Live" is NOW, so the reset does not apply. The counter
+ * EXCLUDES the owner's own (internal) sessions; those still appear in the list
+ * flagged "tú" so tracking can be verified.
  */
 export async function fpLiveVisitors() {
   const empty = { count: 0, sessions: [] as LiveSession[], source: "firstparty" as const };
   try {
     const supa = createSupabaseServiceClient();
     const cutoff = iso(Date.now() - ACTIVE_WINDOW_MS);
-    const { data, error } = await supa
-      .from("sessions")
-      .select("session_id, country, city, device, path, started_at, last_seen_at, is_internal")
-      .gte("last_seen_at", cutoff)
-      .order("last_seen_at", { ascending: false })
-      .limit(50);
-    if (error || !Array.isArray(data)) return empty;
+    const [list, external] = await Promise.all([
+      supa
+        .from("sessions")
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .select("session_id, country, city, device, path, channel, started_at, last_seen_at, is_internal" as any)
+        .gte("last_seen_at", cutoff)
+        .order("last_seen_at", { ascending: false })
+        .limit(50),
+      supa.from("sessions").select("session_id", { count: "exact", head: true }).gte("last_seen_at", cutoff).eq("is_internal", false),
+    ]);
+    if (list.error || !Array.isArray(list.data)) return empty;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rows = data as any[];
+    const rows = list.data as any[];
     const sessions: LiveSession[] = rows.slice(0, 12).map((r) => {
       const durMs = Date.parse(r.last_seen_at) - Date.parse(r.started_at);
       return {
         id: String(r.session_id).slice(0, 8),
-        country: flag(r.country),
+        country: countryLabel(r.country),
         city: r.city || "—",
         device: r.device || "—",
         page: r.path || "/",
+        channel: r.channel || "Directo",
         durationSec: Number.isFinite(durMs) ? Math.max(0, Math.round(durMs / 1000)) : 0,
         internal: !!r.is_internal,
       };
     });
-    return { count: rows.length, sessions, source: "firstparty" as const };
+    return { count: external.count ?? 0, sessions, source: "firstparty" as const };
   } catch {
     return empty;
   }
 }
 
-export async function fpVisits(gteMs: number, lteMs: number): Promise<number> {
-  const rows = await fetchRange(gteMs, lteMs);
-  return new Set(rows.map((r) => r.anon_id)).size;
+export async function fpVisits(gte: number, lte: number): Promise<number> {
+  const [r] = await rpc<number>("ov_visits", win(gte, lte));
+  return Number(r) || 0;
 }
 
-export async function fpDemographics(gteMs: number, lteMs: number) {
-  const rows = await fetchRange(gteMs, lteMs);
-  const byDevice: Record<string, Set<string>> = {};
-  const bySource: Record<string, Set<string>> = {};
-  const rangeAnon = new Set<string>();
-  for (const r of rows) {
-    rangeAnon.add(r.anon_id);
-    const d = r.device || "Desconocido";
-    (byDevice[d] = byDevice[d] || new Set()).add(r.anon_id);
-    const s = r.referrer_domain || "Directo";
-    (bySource[s] = bySource[s] || new Set()).add(r.anon_id);
-  }
-  const devices = Object.entries(byDevice).map(([name, set]) => ({ name, value: set.size })).sort((a, b) => b.value - a.value);
-  const sources = Object.entries(bySource).map(([name, set]) => ({ name, value: set.size })).sort((a, b) => b.value - a.value).slice(0, 8);
+type Named = { name: string; value: number };
 
-  // Nuevos vs recurrentes: de los visitantes del rango, cuántos ya existían antes.
-  let returning = 0;
-  if (rangeAnon.size) {
-    try {
-      const supa = createSupabaseServiceClient();
-      const ids = [...rangeAnon].slice(0, 1000);
-      const { data } = await supa.from("page_views").select("anon_id").lt("created_at", iso(gteMs)).in("anon_id", ids).limit(5000);
-      returning = new Set((data ?? []).map((r) => (r as { anon_id: string }).anon_id)).size;
-    } catch { /* deja returning=0 */ }
-  }
-  const total = rangeAnon.size;
-  const newVsReturning = [{ name: "Nuevos", value: Math.max(0, total - returning) }, { name: "Recurrentes", value: returning }];
+export async function fpChannels(gte: number, lte: number): Promise<Named[]> {
+  const rows = await rpc<{ channel: string; visitors: number }>("ov_channels", win(gte, lte));
+  return rows.map((r) => ({ name: r.channel, value: Number(r.visitors) }));
+}
 
-  return { devices, sources, newVsReturning, source: "firstparty" as const };
+export async function fpDevices(gte: number, lte: number): Promise<Named[]> {
+  const rows = await rpc<{ device: string; visitors: number }>("ov_devices", win(gte, lte));
+  return rows.map((r) => ({ name: r.device, value: Number(r.visitors) }));
+}
+
+export async function fpVisitorCountries(gte: number, lte: number): Promise<Named[]> {
+  const rows = await rpc<{ country: string | null; visitors: number }>("ov_visitor_countries", win(gte, lte));
+  return rows.map((r) => ({ name: countryLabel(r.country), value: Number(r.visitors) }));
+}
+
+/** One SQL query: of this window's visitors, how many were already known. */
+export async function fpNewVsReturning(gte: number, lte: number): Promise<Named[]> {
+  const [r] = await rpc<{ new_visitors: number; returning_visitors: number }>("ov_new_vs_returning", win(gte, lte));
+  return [
+    { name: "Nuevos", value: Number(r?.new_visitors) || 0 },
+    { name: "Recurrentes", value: Number(r?.returning_visitors) || 0 },
+  ];
+}
+
+export async function fpLandingPages(gte: number, lte: number) {
+  const rows = await rpc<{ path: string; visitors: number; top_channel: string }>("ov_landing_pages", {
+    ...win(gte, lte),
+    p_limit: 10,
+  });
+  return rows.map((r) => ({ path: r.path, visitors: Number(r.visitors), channel: r.top_channel }));
+}
+
+export async function fpCampaigns(gte: number, lte: number) {
+  const rows = await rpc<{ campaign: string; channel: string; visitors: number; signups: number }>("ov_campaigns", win(gte, lte));
+  return rows.map((r) => ({ campaign: r.campaign, channel: r.channel, visitors: Number(r.visitors), signups: Number(r.signups) }));
+}
+
+export async function fpChannelFunnel(gte: number, lte: number) {
+  const rows = await rpc<{ channel: string; visitors: number; signups: number }>("ov_channel_funnel", win(gte, lte));
+  return rows.map((r) => ({ channel: r.channel, visitors: Number(r.visitors), signups: Number(r.signups) }));
 }
