@@ -6,6 +6,7 @@ import { getT } from "@/lib/i18n/server";
 import { fill } from "@/lib/i18n/lookup";
 import { attributeSignup } from "@/lib/analytics/attribution";
 import { serviceAttributionStore } from "@/lib/analytics/attribution-store";
+import { LEGACY_COOKIE, VISITOR_COOKIE, resolveVisitorId } from "@/lib/analytics/visitor-id";
 
 // v3.9.1 — edge runtime kills cold-start latency on the auth callback.
 // Node functions on Vercel can cold-start at 500-1000ms; edge starts
@@ -179,13 +180,23 @@ export async function GET(request: NextRequest) {
   // capped at 1.5s, never throws — a login must not depend on analytics.
   const newUserId = data?.user?.id;
   if (newUserId) {
-    await Promise.race([
-      attributeSignup(serviceAttributionStore(), {
-        anonId: request.cookies.get("ev_anon")?.value,
-        userId: newUserId,
-      }).catch(() => "error"),
-      new Promise((resolve) => setTimeout(resolve, 1500)),
-    ]);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const visitor = resolveVisitorId({
+        vid: request.cookies.get(VISITOR_COOKIE)?.value,
+        legacy: request.cookies.get(LEGACY_COOKIE)?.value,
+      });
+      await Promise.race([
+        attributeSignup(serviceAttributionStore(), { anonId: visitor?.id, userId: newUserId }),
+        new Promise((resolve) => {
+          timer = setTimeout(resolve, 1500);
+        }),
+      ]);
+    } catch {
+      /* analytics must never break a login */
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
   }
 
   // Success — return the response we built earlier (with session cookies

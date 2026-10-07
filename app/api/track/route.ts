@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { interpretBeat, type BeatBody } from "@/lib/analytics/track";
+import { LEGACY_COOKIE, VISITOR_COOKIE, resolveVisitorId } from "@/lib/analytics/visitor-id";
 
 /**
  * First-party analytics beacon. The client (components/analytics/page-tracker)
@@ -9,7 +10,7 @@ import { interpretBeat, type BeatBody } from "@/lib/analytics/track";
  *   1. `sessions` — one row per browser session (session_id) for live visitors
  *      + duration. Channel / referrer / utm / landing are FIRST-TOUCH: written
  *      only when the row is created, never by later beats.
- *   2. `visitors` — one row per ev_anon visitor, first-touch, insert-only.
+ *   2. `visitors` — one row per ev_vid visitor, first-touch, insert-only.
  *   3. `page_views` — ONLY for `type === "pageview"` and non-internal traffic
  *      (a heartbeat is not a page view).
  *
@@ -38,11 +39,17 @@ export async function POST(req: NextRequest) {
     const cityRaw = req.headers.get("x-vercel-ip-city");
     const city = cityRaw ? decodeURIComponent(cityRaw) : null;
 
-    let anon = req.cookies.get("ev_anon")?.value;
+    // The tracker owns `ev_vid`. `ev_anon` belongs to the anonymous-audit
+    // session (signed token) and is only adopted when it's a legacy plain UUID.
+    const known = resolveVisitorId({
+      vid: req.cookies.get(VISITOR_COOKIE)?.value,
+      legacy: req.cookies.get(LEGACY_COOKIE)?.value,
+    });
+    let anon = known?.id;
     const res = new NextResponse(null, { status: 204 });
-    if (!anon) {
-      anon = crypto.randomUUID();
-      res.cookies.set("ev_anon", anon, {
+    if (!anon || known?.fromLegacy) {
+      anon = anon ?? crypto.randomUUID();
+      res.cookies.set(VISITOR_COOKIE, anon, {
         maxAge: 60 * 60 * 24 * 365,
         httpOnly: true,
         sameSite: "lax",
@@ -89,7 +96,7 @@ export async function POST(req: NextRequest) {
           { onConflict: "session_id", ignoreDuplicates: true },
         );
         if (!beat.internal) {
-          // Visitor first-touch: only the very first session of this ev_anon
+          // Visitor first-touch: only the very first session of this visitor
           // wins; later sessions hit the primary key and are ignored.
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           await (supa.from("visitors") as any).upsert(

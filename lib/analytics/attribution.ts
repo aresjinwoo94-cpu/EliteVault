@@ -1,12 +1,12 @@
 /**
  * Sign-up attribution (docs/owner-monitor-v2.md §3.3): link the first-party
- * `ev_anon` visitor to the new account and copy its first-touch channel onto
+ * `ev_vid` visitor to the new account and copy its first-touch channel onto
  * `profiles.acq_*`. Pure orchestration over a small store interface so it is
  * unit-tested; the callback wires the real Supabase store. NEVER throws — the
  * login must not depend on analytics.
  *
- * NOTE: `ev_anon` (this) is NOT the anonymous-audit cookie of `analyses.anon_id`
- * (migration 0023). They are different cookies; don't mix them.
+ * NOTE: `ev_vid` (this) is NOT the anonymous-audit cookie (`ev_anon`, signed,
+ * `analyses.anon_id`, migration 0023). Different cookies; don't mix them.
  */
 
 const FRESH_MS = 15 * 60 * 1000;

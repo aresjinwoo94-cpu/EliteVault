@@ -77,25 +77,38 @@ $$;
 
 create or replace function public.ov_channels(p_from timestamptz, p_to timestamptz)
 returns table (channel text, visitors bigint) language sql stable security definer set search_path = public as $$
-  select coalesce(pv.channel, 'Directo'), count(distinct pv.anon_id)
-  from public.page_views pv
-  where pv.created_at >= p_from and pv.created_at < p_to
+  -- One channel per visitor (the first one seen in the window) so shares sum to 100%.
+  select coalesce(f.channel, 'Directo'), count(*)
+  from (
+    select distinct on (pv.anon_id) pv.anon_id, pv.channel
+    from public.page_views pv
+    where pv.created_at >= p_from and pv.created_at < p_to
+    order by pv.anon_id, pv.created_at
+  ) f
   group by 1 order by 2 desc;
 $$;
 
 create or replace function public.ov_devices(p_from timestamptz, p_to timestamptz)
 returns table (device text, visitors bigint) language sql stable security definer set search_path = public as $$
-  select coalesce(pv.device, 'Desconocido'), count(distinct pv.anon_id)
-  from public.page_views pv
-  where pv.created_at >= p_from and pv.created_at < p_to
+  select coalesce(f.device, 'Desconocido'), count(*)
+  from (
+    select distinct on (pv.anon_id) pv.anon_id, pv.device
+    from public.page_views pv
+    where pv.created_at >= p_from and pv.created_at < p_to
+    order by pv.anon_id, pv.created_at
+  ) f
   group by 1 order by 2 desc;
 $$;
 
 create or replace function public.ov_visitor_countries(p_from timestamptz, p_to timestamptz)
 returns table (country text, visitors bigint) language sql stable security definer set search_path = public as $$
-  select pv.country, count(distinct pv.anon_id)
-  from public.page_views pv
-  where pv.created_at >= p_from and pv.created_at < p_to
+  select f.country, count(*)
+  from (
+    select distinct on (pv.anon_id) pv.anon_id, pv.country
+    from public.page_views pv
+    where pv.created_at >= p_from and pv.created_at < p_to
+    order by pv.anon_id, pv.created_at
+  ) f
   group by 1 order by 2 desc limit 30;
 $$;
 
@@ -203,7 +216,7 @@ $$;
 create or replace function public.ov_analyzer_latency(p_from timestamptz, p_to timestamptz)
 returns table (samples bigint, p50_ms numeric, p95_ms numeric)
 language sql stable security definer set search_path = public as $$
-  select count(t), percentile_cont(0.5) within group (order by t), percentile_cont(0.95) within group (order by t)
+  select count(t), (percentile_cont(0.5) within group (order by t))::numeric, (percentile_cont(0.95) within group (order by t))::numeric
   from (
     select (timings->>'totalMs')::numeric t from public.analyses
     where created_at >= p_from and created_at < p_to
