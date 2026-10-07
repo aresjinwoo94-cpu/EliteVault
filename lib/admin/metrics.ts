@@ -6,6 +6,7 @@ import { PLANS } from "@/lib/stripe/plans";
 import type { PlanTier } from "@/lib/supabase/types";
 import * as fp from "@/lib/admin/firstparty";
 import { countryLabel } from "@/lib/admin/geo";
+import { authProviderLabel, originSummary } from "@/lib/admin/trace";
 import { getResetAt } from "@/lib/admin/reset";
 import { clampToReset } from "@/lib/admin/reset-core";
 import { type Bounds, type Range, RANGES, bucketIndex, bucketLabel, guayaquilDay, rangeBounds } from "@/lib/admin/time";
@@ -210,6 +211,15 @@ export async function getAlmostBuyers(range: Range) {
   type Row = {
     id: string; email: string | null; plan: string; interval: "month" | "year"; valueUsd: number;
     status: "Abierto" | "Expirado"; channel: string | null; lastSeen: number; followed: boolean;
+    trace: Trace;
+  };
+  type Trace = {
+    origin: { known: boolean; text: string };
+    signupAt: string | null; minutesSinceSignup: number | null; provider: string;
+    stripeCountry: string; currency: string; locale: string | null;
+    attempts: number; checkoutCreatedAt: string;
+    device: string | null; visitorGeo: string | null; firstSeenAt: string | null;
+    audits: number; lastAuditUrl: string | null; lastAuditAt: string | null;
   };
   const sessions: Stripe.Checkout.Session[] = [];
   try {
@@ -228,14 +238,49 @@ export async function getAlmostBuyers(range: Range) {
   if (!sessions.length) return [] as Row[];
 
   const userIds = [...new Set(sessions.map((s) => s.metadata?.supabase_user_id).filter((x): x is string => !!x))];
-  const profileById: Record<string, { email: string; acq_channel: string | null }> = {};
+  type Prof = {
+    email: string; acq_channel: string | null; acq_referrer_domain?: string | null;
+    acq_utm_campaign?: string | null; acq_landing_path?: string | null; created_at?: string | null;
+  };
+  const profileById: Record<string, Prof> = {};
+  type Vis = { user_id: string; first_seen_at: string; first_channel: string | null; first_referrer_domain: string | null; first_landing_path: string | null; utm_campaign: string | null; country: string | null; device: string | null };
+  const visitorByUser: Record<string, Vis> = {};
+  const auditsByUser: Record<string, { n: number; url: string | null; at: string | null }> = {};
+  const providerByUser: Record<string, string> = {};
   let followed = new Set<string>();
   try {
     const supa = createSupabaseServiceClient();
     if (userIds.length) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (supa.from("profiles") as any).select("id, email, acq_channel").in("id", userIds);
-      for (const p of (data ?? []) as Array<{ id: string; email: string; acq_channel: string | null }>) profileById[p.id] = p;
+      const { data } = await (supa.from("profiles") as any)
+        .select("id, email, created_at, acq_channel, acq_referrer_domain, acq_utm_campaign, acq_landing_path")
+        .in("id", userIds);
+      for (const p of (data ?? []) as Array<Prof & { id: string }>) profileById[p.id] = p;
+      // First-touch visitor linked at sign-up (migration 0035 + attribution).
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: vs } = await (supa.from("visitors") as any)
+        .select("user_id, first_seen_at, first_channel, first_referrer_domain, first_landing_path, utm_campaign, country, device")
+        .in("user_id", userIds);
+      for (const v of (vs ?? []) as Vis[]) visitorByUser[v.user_id] = v;
+      // Audits they ran (engagement before abandoning).
+      const { data: an } = await supa
+        .from("analyses")
+        .select("user_id, url, created_at")
+        .in("user_id", userIds)
+        .order("created_at", { ascending: false })
+        .limit(300);
+      for (const a of (an ?? []) as Array<{ user_id: string; url: string | null; created_at: string }>) {
+        const cur = (auditsByUser[a.user_id] = auditsByUser[a.user_id] || { n: 0, url: a.url, at: a.created_at });
+        cur.n++;
+      }
+      // Sign-in method (Google vs magic link) from auth.
+      await Promise.all(userIds.slice(0, 12).map(async (id) => {
+        try {
+          const { data: au } = await supa.auth.admin.getUserById(id);
+          const prov = au?.user?.app_metadata?.provider as string | undefined;
+          if (prov) providerByUser[id] = prov;
+        } catch { /* sin auth admin */ }
+      }));
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: f } = await (supa.from("checkout_followups") as any).select("session_id").in("session_id", sessions.map((s) => s.id));
@@ -248,7 +293,13 @@ export async function getAlmostBuyers(range: Range) {
       const plan = planKey && PLANS[planKey] ? planKey : null;
       const interval = (s.line_items?.data?.[0]?.price?.recurring?.interval === "year" ? "year" : "month") as "month" | "year";
       const list = plan ? PLANS[plan].price[interval] : 0;
-      const prof = s.metadata?.supabase_user_id ? profileById[s.metadata.supabase_user_id] : undefined;
+      const uid = s.metadata?.supabase_user_id;
+      const prof = uid ? profileById[uid] : undefined;
+      const vis = uid ? visitorByUser[uid] : undefined;
+      const aud = uid ? auditsByUser[uid] : undefined;
+      const channel = prof?.acq_channel ?? vis?.first_channel ?? null;
+      const signupMs = prof?.created_at ? Date.parse(prof.created_at) : NaN;
+      const attempts = uid ? sessions.filter((x) => x.metadata?.supabase_user_id === uid).length : 1;
       return {
         id: s.id,
         email: prof?.email || s.customer_details?.email || null,
@@ -259,9 +310,31 @@ export async function getAlmostBuyers(range: Range) {
           list,
         ),
         status: s.status === "open" ? "Abierto" : "Expirado",
-        channel: prof?.acq_channel ?? null,
+        channel,
         lastSeen: Math.round((Date.now() / 1000 - s.created) / 60),
         followed: followed.has(s.id),
+        trace: {
+          origin: originSummary({
+            channel,
+            referrer: prof?.acq_referrer_domain ?? vis?.first_referrer_domain,
+            campaign: prof?.acq_utm_campaign ?? vis?.utm_campaign,
+            landing: prof?.acq_landing_path ?? vis?.first_landing_path,
+          }),
+          signupAt: Number.isFinite(signupMs) ? new Date(signupMs).toISOString() : null,
+          minutesSinceSignup: Number.isFinite(signupMs) ? Math.max(0, Math.round((s.created * 1000 - signupMs) / 60000)) : null,
+          provider: authProviderLabel(uid ? providerByUser[uid] : undefined),
+          stripeCountry: s.customer_details?.address?.country ? countryLabel(s.customer_details.address.country) : "—",
+          currency: (s.currency || "").toUpperCase() || "—",
+          locale: s.locale ?? null,
+          attempts,
+          checkoutCreatedAt: new Date(s.created * 1000).toISOString(),
+          device: vis?.device ?? null,
+          visitorGeo: vis?.country ? countryLabel(vis.country) : null,
+          firstSeenAt: vis?.first_seen_at ?? null,
+          audits: aud?.n ?? 0,
+          lastAuditUrl: aud?.url ?? null,
+          lastAuditAt: aud?.at ?? null,
+        },
       };
     })
     .sort((a, c) => a.lastSeen - c.lastSeen)

@@ -209,7 +209,16 @@ export function OwnerMonitor() {
       const body = $("evm-almost"); if (!body) return;
       const rows = await api("almost-buyers", { range: currentRange });
       if (!rows.length) { body.innerHTML = `<tr><td colspan="7"><div class="empty">Sin checkouts abandonados en este rango 🎉</div></td></tr>`; return; }
-      body.innerHTML = rows.map((r: any) => `<tr><td>${r.email ? esc(r.email) : '<span class="muted">Anónimo</span>'}${r.channel ? ` <span class="chip" style="--c:${channelColor(r.channel)}">${esc(r.channel)}</span>` : ""}</td><td><span class="pill">${esc(r.plan)} · ${r.interval === "year" ? "anual" : "mensual"}</span></td><td class="money">${fmtMoney2(r.valueUsd)}</td><td><span class="pill stage ${r.status === "Abierto" ? "open" : ""}">${esc(r.status)}</span></td><td class="muted mono">${timeAgo(r.lastSeen)}</td><td><button class="btn-follow ${r.followed ? "done" : ""}" data-id="${esc(r.id)}" data-on="${r.followed ? 1 : 0}">${r.followed ? "✓ Seguimiento" : "Marcar"}</button></td></tr>`).join("");
+      const gt = (iso: string | null) => (iso ? new Date(iso).toLocaleString("es-MX", { timeZone: "America/Guayaquil", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—");
+      const mins = (m: number | null) => (m == null ? "—" : m < 60 ? m + " min" : m < 1440 ? Math.round(m / 60) + " h" : Math.round(m / 1440) + " d");
+      const traceHtml = (t: any) => `<div class="trace"><div class="trace-origin ${t.origin.known ? "" : "unk"}">${esc(t.origin.text)}</div><div class="trace-grid">
+        <span>Registro</span><b>${gt(t.signupAt)} (${esc(t.provider)})</b>
+        <span>Registro → checkout</span><b>${mins(t.minutesSinceSignup)}</b>
+        <span>Checkout abierto</span><b>${gt(t.checkoutCreatedAt)} · ${t.attempts} intento${t.attempts === 1 ? "" : "s"}</b>
+        <span>País (Stripe) / moneda</span><b>${esc(t.stripeCountry)} · ${esc(t.currency)}${t.locale ? " · " + esc(t.locale) : ""}</b>
+        <span>Visitante</span><b>${t.visitorGeo ? esc(t.visitorGeo) : "—"}${t.device ? " · " + esc(t.device) : ""}${t.firstSeenAt ? " · 1ª visita " + gt(t.firstSeenAt) : ""}</b>
+        <span>Auditorías</span><b>${t.audits}${t.lastAuditUrl ? " · última: " + esc(t.lastAuditUrl) + " (" + gt(t.lastAuditAt) + ")" : ""}</b></div></div>`;
+      body.innerHTML = rows.map((r: any) => `<tr><td>${r.email ? esc(r.email) : '<span class="muted">Anónimo</span>'}${r.channel ? ` <span class="chip" style="--c:${channelColor(r.channel)}">${esc(r.channel)}</span>` : ""}${r.trace ? traceHtml(r.trace) : ""}</td><td><span class="pill">${esc(r.plan)} ·${r.interval === "year" ? "anual" : "mensual"}</span></td><td class="money">${fmtMoney2(r.valueUsd)}</td><td><span class="pill stage ${r.status === "Abierto" ? "open" : ""}">${esc(r.status)}</span></td><td class="muted mono">${timeAgo(r.lastSeen)}</td><td><button class="btn-follow ${r.followed ? "done" : ""}" data-id="${esc(r.id)}" data-on="${r.followed ? 1 : 0}">${r.followed ? "✓ Seguimiento" : "Marcar"}</button></td></tr>`).join("");
       body.querySelectorAll(".btn-follow").forEach((b) => ((b as HTMLElement).onclick = async () => {
         const el = b as HTMLElement; const next = el.dataset.on !== "1";
         el.dataset.on = next ? "1" : "0"; el.classList.toggle("done", next); el.textContent = next ? "✓ Seguimiento" : "Marcar";
@@ -553,6 +562,12 @@ const CSS = `
 .evm .ch-list { display:flex; flex-direction:column; gap:7px; }
 .evm .ch-row { display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:12px; }
 .evm .pill.open { background:rgba(52,211,153,.15); color:var(--green); }
+.evm .trace { margin-top:8px; padding:10px 12px; border-radius:10px; background:var(--bg-hover); font-size:12px; line-height:1.5; max-width:560px; }
+.evm .trace-origin { font-weight:700; color:var(--accent); margin-bottom:6px; }
+.evm .trace-origin.unk { color:var(--amber); }
+.evm .trace-grid { display:grid; grid-template-columns:150px 1fr; gap:3px 10px; }
+.evm .trace-grid span { color:var(--text-faint); }
+.evm .trace-grid b { font-weight:600; color:var(--text); word-break:break-word; }
 .evm .btn-reset { border:1px solid var(--red); background:transparent; color:var(--red); padding:6px 12px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; }
 .evm .btn-reset:hover { background:rgba(248,113,113,.12); }
 .evm .evm-modal { display:none; position:fixed; inset:0; z-index:60; background:rgba(0,0,0,.6); align-items:center; justify-content:center; padding:16px; }
