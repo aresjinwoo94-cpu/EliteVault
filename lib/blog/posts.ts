@@ -36,6 +36,23 @@ export type BlogPost = {
   faqs?: { q: string; a: string }[];
 };
 
+/**
+ * EliteVault teaser video (our own YouTube channel). Rendered as a no-JS
+ * "facade": the iframe loads only a thumbnail via srcdoc; clicking it
+ * navigates the frame to the real player with autoplay. That keeps the
+ * YouTube player JS out of the page until someone asks for it (site-speed),
+ * needs no script inside bodyHtml, and the plain link below stays crawlable.
+ */
+const TEASER_ID = "lH4O5UE4CPY";
+const TEASER_TITLE = "EliteVault Explained: Analyze Your Ecommerce Store for Free";
+const teaserVideo = `<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">Watch: ${TEASER_TITLE}</div>
+<div class="mt-4 overflow-hidden rounded-xl border border-white/[0.06]" style="aspect-ratio:16/9">
+<iframe class="h-full w-full" style="border:0" loading="lazy" title="${TEASER_TITLE}" src="https://www.youtube-nocookie.com/embed/${TEASER_ID}" srcdoc="&lt;style&gt;*{padding:0;margin:0;overflow:hidden}html,body{height:100%}img,span{position:absolute;width:100%;top:0;bottom:0;margin:auto}span{height:1.5em;text-align:center;font:48px/1.5 sans-serif;color:white;text-shadow:0 0 .5em black}&lt;/style&gt;&lt;a href=https://www.youtube-nocookie.com/embed/${TEASER_ID}?autoplay=1&gt;&lt;img src=https://img.youtube.com/vi/${TEASER_ID}/hqdefault.jpg alt=&quot;&quot;&gt;&lt;span&gt;&#9654;&lt;/span&gt;&lt;/a&gt;" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</div>
+<figcaption class="mt-3 text-xs text-white/35"><a href="https://youtu.be/${TEASER_ID}" rel="noopener">Watch on YouTube</a> · a short teaser from our own channel.</figcaption>
+</figure>`;
+
 export const BLOG_POSTS: BlogPost[] = [
   {
     slug: "is-your-store-ready-for-meta-ads",
@@ -1232,6 +1249,8 @@ export const BLOG_POSTS: BlogPost[] = [
     bodyHtml: `
 <p class="lede">A <strong>store analyzer</strong> explains why a store isn't converting — the part Shopify's own reports leave to you. Shopify counts what happened; reading it is a separate job. That's why owners still pay for interpretation: 70.22% of carts are abandoned (Baymard, 2025), and a dashboard shows that as one number. Our own <a href="/">store analyzer</a> is built for that gap.</p>
 
+${teaserVideo}
+
 <h2>Doesn't Shopify already track everything?</h2>
 <p>It tracks a lot, and keeps adding more: the <a href="https://www.shopify.com/editions/winter2026" rel="nofollow">Winter '26 Edition</a> brought heatmaps and bot filtering to its analytics. That is better measurement. Measurement still isn't diagnosis. A report can say conversion fell. It can't say your price vanished above the fold on a phone.</p>
 
@@ -1331,6 +1350,8 @@ export const BLOG_POSTS: BlogPost[] = [
       "The same notes keep showing up in 'review my store' threads. What they mean, a quick check for each, and how a store audit ranks the fixes.",
     bodyHtml: `
 <p class="lede">A <strong>store audit</strong> is a structured review of what stops visitors from buying. Read enough "review my store" threads and the same notes repeat: an unclear hero, buried trust, slow mobile, thin product pages, surprise costs. Fix those first. 70.22% of carts are abandoned (Baymard, 2025), so a free <a href="/free-website-audit">store audit</a> pays off fast.</p>
+
+${teaserVideo}
 
 <h2>What do "review my store" threads keep repeating?</h2>
 <p>Public store-review threads, on subreddits like r/reviewmyshopify and in the Shopify Community, tend to circle the same five spots. This is our editorial reading, not a measured count. Here they are in the order a visitor meets them:</p>
