@@ -290,7 +290,7 @@ export const BLOG_POSTS: BlogPost[] = [
 </ul>
 <div class="callout"><h3>Honesty check</h3><p>AI won't replace a great consultant for hands-on implementation, bespoke brand strategy, or untangling a messy backend. But for the <em>diagnosis</em> — the expensive, commoditized part — it now matches a senior first pass. Pay humans for the cure, not the X-ray.</p></div>
 <h2>The math that ends the debate</h2>
-<p>A consultant audit: $1,500–$2,000, one store, one moment in time, 5–10 business days turnaround. An AI audit: under a minute, re-runnable every time you change something, and <a href="/free-website-audit">free on your first run</a>. When you can re-audit after every iteration instead of once a quarter, you don't just save money — you compound improvements faster than a consultant cadence ever allowed. (Not sure what "good" even looks like? See <a href="/blog/good-conversion-rate-for-shopify">what's a good conversion rate for Shopify</a>.)</p>
+<p>A consultant audit: $1,500–$2,000, one store, one moment in time, 5–10 business days turnaround. An AI audit: under a minute, re-runnable every time you change something, and <a href="/free-website-audit">free on your first run</a>. When you can re-audit after every iteration instead of once a quarter, you don't just save money — you compound improvements faster than a consultant cadence ever allowed. (Not sure what "good" even looks like? See <a href="/blog/good-conversion-rate-for-shopify">what's a good conversion rate for Shopify</a>. Or see <a href="/blog/store-audit-review-my-store-feedback">what "review my store" threads keep saying</a>.)</p>
 <p>That's the real reason this stings for the audit-as-a-service crowd. It's not that AI is cheaper. It's that it removes the artificial scarcity their whole pricing depended on.</p>
 `.trim(),
     faqs: [
@@ -570,7 +570,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>Sometimes the store is fine and the targeting is off — you're buying clicks from people who were never going to buy. <strong>Diagnose:</strong> if on-page metrics look healthy but a specific campaign tanks, suspect targeting before the store.</p>
 
 <h2>The fastest way to find your reason</h2>
-<p>You could check all eight by hand — or get a senior-media-buyer read of your store in under a minute. <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=why-your-shopify-store-isnt-converting">EliteVault's free audit</a> annotates your homepage with the exact issues from this list, simulates how a buyer persona reacts, and ranks what to fix first by leverage. When you know <em>which</em> reason is yours, fixing it is the easy part — then work the <a href="/blog/how-to-increase-shopify-conversion-rate">11 highest-leverage fixes</a>.</p>
+<p>You could check all eight by hand — or get a senior-media-buyer read of your store in under a minute. <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=why-your-shopify-store-isnt-converting">EliteVault's free audit</a> annotates your homepage with the exact issues from this list, simulates how a buyer persona reacts, and ranks what to fix first by leverage. When you know <em>which</em> reason is yours, fixing it is the easy part — then work the <a href="/blog/how-to-increase-shopify-conversion-rate">11 highest-leverage fixes</a>. Posting your store for feedback first? Here is <a href="/blog/store-audit-review-my-store-feedback">what those threads usually say</a>.</p>
 `.trim(),
     faqs: [
       {
@@ -1305,6 +1305,117 @@ export const BLOG_POSTS: BlogPost[] = [
       },
       {
         q: "Is there a free store analyzer?",
+        a: "Yes. EliteVault's free audit page scans your store, and the Free plan includes one full audit with your score, an annotated screenshot and your top-priority fix. The rest of the ranked fixes and unlimited audits need a paid plan.",
+      },
+    ],
+  },
+  {
+    slug: "store-audit-review-my-store-feedback",
+    title: "Store Audit: What \"Review My Store\" Threads Keep Saying",
+    h1: "What do \"review my store\" threads keep saying? A store audit built from the feedback",
+    description:
+      "A store audit built from the notes 'review my store' threads keep repeating: unclear hero, buried trust, slow mobile, surprise costs. What to fix first.",
+    keyword: "store audit",
+    keywords: [
+      "store audit",
+      "free store audit",
+      "shopify store audit",
+      "review my shopify store",
+      "r/reviewmyshopify",
+    ],
+    date: "2026-10-07",
+    updated: "2026-10-07",
+    author: "Ariel Jiménez",
+    readingMinutes: 3,
+    excerpt:
+      "The same notes keep showing up in 'review my store' threads. What they mean, a quick check for each, and how a store audit ranks the fixes.",
+    bodyHtml: `
+<p class="lede">A <strong>store audit</strong> is a structured review of what stops visitors from buying. Read enough "review my store" threads and the same notes repeat: an unclear hero, buried trust, slow mobile, thin product pages, surprise costs. Fix those first. 70.22% of carts are abandoned (Baymard, 2025), so a free <a href="/free-website-audit">store audit</a> pays off fast.</p>
+
+<h2>What do "review my store" threads keep repeating?</h2>
+<p>Public store-review threads, on subreddits like r/reviewmyshopify and in the Shopify Community, tend to circle the same five spots. This is our editorial reading, not a measured count. Here they are in the order a visitor meets them:</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">Where reviewers usually point</div>
+<div class="mt-4"><svg viewBox="0 0 340 312" class="w-full h-auto" style="max-width:420px;margin:0 auto;display:block" role="img" aria-label="The path of a first-time visitor and the note reviewers usually leave at each step: 1, the hero, unclear what you sell; 2, trust, reviews and policies buried; 3, product page, thin copy and weak photos; 4, mobile speed, slow and cramped layout; 5, the cart, surprise shipping and fees."><line x1="30" y1="26" x2="30" y2="274" stroke="rgba(45,212,191,0.4)" stroke-width="2" /><rect x="10" y="4" width="320" height="52" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><circle cx="30" cy="30" r="12" fill="#0b0f14" stroke="#2DD4BF" stroke-width="2" /><text x="30" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="#2DD4BF">1</text><text x="52" y="26" font-size="16" font-weight="600" fill="#ffffff">The hero</text><text x="52" y="45" font-size="14.5" fill="rgba(255,255,255,0.6)">Unclear what you sell</text><rect x="10" y="66" width="320" height="52" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><circle cx="30" cy="92" r="12" fill="#0b0f14" stroke="#2DD4BF" stroke-width="2" /><text x="30" y="97" text-anchor="middle" font-size="14" font-weight="700" fill="#2DD4BF">2</text><text x="52" y="88" font-size="16" font-weight="600" fill="#ffffff">Trust</text><text x="52" y="107" font-size="14.5" fill="rgba(255,255,255,0.6)">Reviews and policies buried</text><rect x="10" y="128" width="320" height="52" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><circle cx="30" cy="154" r="12" fill="#0b0f14" stroke="#2DD4BF" stroke-width="2" /><text x="30" y="159" text-anchor="middle" font-size="14" font-weight="700" fill="#2DD4BF">3</text><text x="52" y="150" font-size="16" font-weight="600" fill="#ffffff">Product page</text><text x="52" y="169" font-size="14.5" fill="rgba(255,255,255,0.6)">Thin copy, weak photos</text><rect x="10" y="190" width="320" height="52" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><circle cx="30" cy="216" r="12" fill="#0b0f14" stroke="#2DD4BF" stroke-width="2" /><text x="30" y="221" text-anchor="middle" font-size="14" font-weight="700" fill="#2DD4BF">4</text><text x="52" y="212" font-size="16" font-weight="600" fill="#ffffff">Mobile speed</text><text x="52" y="231" font-size="14.5" fill="rgba(255,255,255,0.6)">Slow, cramped layout</text><rect x="10" y="252" width="320" height="52" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><circle cx="30" cy="278" r="12" fill="#0b0f14" stroke="#2DD4BF" stroke-width="2" /><text x="30" y="283" text-anchor="middle" font-size="14" font-weight="700" fill="#2DD4BF">5</text><text x="52" y="274" font-size="16" font-weight="600" fill="#ffffff">The cart</text><text x="52" y="293" font-size="14.5" fill="rgba(255,255,255,0.6)">Surprise shipping and fees</text></svg></div>
+<figcaption class="mt-3 text-xs text-white/35">Editorial summary of recurring feedback, not a measured count.</figcaption>
+</figure>
+
+<h2>What does that feedback actually mean?</h2>
+<p>Reviewers write in shorthand. Here is the translation, plus a check you can run in minutes:</p>
+
+<figure class="my-8">
+<table>
+<thead>
+<tr><th>The comment</th><th>What it usually means</th><th>Quick check</th></tr>
+</thead>
+<tbody>
+<tr><td>"What do you sell?"</td><td>The hero hides the offer</td><td>Show it to a stranger for 5 seconds</td></tr>
+<tr><td>"Looks sketchy"</td><td>Trust sits in the footer</td><td>Find reviews and returns near the buy button</td></tr>
+<tr><td>"Photos feel off"</td><td>Inconsistent or weak imagery</td><td>Scroll the product page on a phone</td></tr>
+<tr><td>"Slow for me"</td><td>Heavy images or apps</td><td>Run PageSpeed Insights on mobile</td></tr>
+<tr><td>"Why did I leave?"</td><td>Cost or friction at checkout</td><td>Buy from your own store</td></tr>
+</tbody>
+</table>
+</figure>
+
+<h2>What do the numbers say?</h2>
+<p>Reviewers judge pages. Few go through checkout, and that's where Baymard finds the biggest reason shoppers leave. That makes surprise costs the note threads miss most often, and the cheapest one to fix.</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">The numbers behind the notes</div>
+<div class="mt-4"><div class="grid gap-3 sm:grid-cols-3">
+<div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+<div class="font-mono text-[11px] uppercase tracking-widest text-white/40">Abandoned</div>
+<div class="mt-1 text-2xl font-semibold text-white">70.22%</div>
+<div class="mt-1 text-xs text-white/45">of carts, on average</div>
+</div>
+<div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+<div class="font-mono text-[11px] uppercase tracking-widest text-white/40">Top reason</div>
+<div class="mt-1 text-2xl font-semibold text-white">40%</div>
+<div class="mt-1 text-xs text-white/45">extra costs at checkout</div>
+</div>
+<div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+<div class="font-mono text-[11px] uppercase tracking-widest text-white/40">Not ready</div>
+<div class="mt-1 text-2xl font-semibold text-white">42%</div>
+<div class="mt-1 text-xs text-white/45">were only browsing</div>
+</div>
+</div></div>
+<figcaption class="mt-3 text-xs text-white/35">Source: <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">Baymard Institute</a> (updated September 2025). The 42% weren't ready to buy, and no design change can win them.</figcaption>
+</figure>
+
+<h2>Thread, checklist or store audit?</h2>
+<p>Threads give outside eyes but vary in quality. A checklist is consistent but you're still grading yourself.</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">Three ways to review a store</div>
+<div class="mt-4"><svg viewBox="0 0 340 258" class="w-full h-auto" style="max-width:420px;margin:0 auto;display:block" role="img" aria-label="Typical coverage of three ways to review a store. Review thread: free and gives outside eyes, but is slower, less consistent and does not rank fixes. Self-check: free, fast and consistent with a checklist, but no outside eyes and no ranked fixes. Store audit tool: free to start, fast, outside eyes, consistent, and ranks fixes."><text x="185" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Review</text><text x="185" y="34" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">thread</text><text x="252" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Self-check</text><text x="314" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">Store</text><text x="314" y="34" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">audit</text><line x1="0" y1="46" x2="340" y2="46" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="72" font-size="14.5" fill="rgba(255,255,255,0.75)">Free</text><circle cx="185" cy="67" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 180 67 L 183.5 71 L 190.5 63" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><circle cx="252" cy="67" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 247 67 L 250.5 71 L 257.5 63" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><circle cx="314" cy="67" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 309 67 L 312.5 71 L 319.5 63" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="0" y1="88" x2="340" y2="88" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="114" font-size="14.5" fill="rgba(255,255,255,0.75)">Fast</text><line x1="180" y1="109" x2="190" y2="109" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="252" cy="109" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 247 109 L 250.5 113 L 257.5 105" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><circle cx="314" cy="109" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 309 109 L 312.5 113 L 319.5 105" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="0" y1="130" x2="340" y2="130" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="156" font-size="14.5" fill="rgba(255,255,255,0.75)">Outside eyes</text><circle cx="185" cy="151" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 180 151 L 183.5 155 L 190.5 147" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="247" y1="151" x2="257" y2="151" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="314" cy="151" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 309 151 L 312.5 155 L 319.5 147" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="0" y1="172" x2="340" y2="172" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="198" font-size="14.5" fill="rgba(255,255,255,0.75)">Consistent</text><line x1="180" y1="193" x2="190" y2="193" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="252" cy="193" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 247 193 L 250.5 197 L 257.5 189" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><circle cx="314" cy="193" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 309 193 L 312.5 197 L 319.5 189" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="0" y1="214" x2="340" y2="214" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="240" font-size="14.5" fill="rgba(255,255,255,0.75)">Ranked fixes</text><line x1="180" y1="235" x2="190" y2="235" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="247" y1="235" x2="257" y2="235" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="314" cy="235" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 309 235 L 312.5 239 L 319.5 231" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /></svg></div>
+<figcaption class="mt-3 text-xs text-white/35">Typical coverage; threads vary and some give excellent detail.</figcaption>
+</figure>
+
+<h2>How do you run a store audit before you post?</h2>
+<ol>
+<li>Run the five quick checks above on your own store.</li>
+<li>Run an automated check to rank what you found, so you know which fix comes first.</li>
+<li>Post with your niche, traffic source and one specific question.</li>
+</ol>
+<p><a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=store-audit">Run a free store audit →</a> EliteVault's audit works from a screenshot of your live storefront, so it judges what a shopper sees. Full disclosure, EliteVault is our tool. Next: <a href="/blog/why-your-shopify-store-isnt-converting">why your Shopify store isn't converting</a>, or <a href="/blog/shopify-store-analyzer">what a Shopify store analyzer checks</a>.</p>
+`.trim(),
+    faqs: [
+      {
+        q: "What is a store audit?",
+        a: "A structured review of your storefront that finds what stops visitors from buying, such as an unclear hero, buried trust signals, slow mobile pages and checkout friction, and puts the fixes in order.",
+      },
+      {
+        q: "How is a store audit different from asking for a review on Reddit?",
+        a: "A review thread gives you a few human opinions, which vary in depth and consistency. A store audit applies the same checks every time and ranks the fixes. The two work well together: audit first, then ask a specific question.",
+      },
+      {
+        q: "What should I include when I post my store for review?",
+        a: "Your store link, your niche, where your traffic comes from, what you have already tried, and one specific question. Vague requests get vague answers. Check the subreddit's rules first, since many ban self-promotion.",
+      },
+      {
+        q: "Is there a free store audit?",
         a: "Yes. EliteVault's free audit page scans your store, and the Free plan includes one full audit with your score, an annotated screenshot and your top-priority fix. The rest of the ranked fixes and unlimited audits need a paid plan.",
       },
     ],
