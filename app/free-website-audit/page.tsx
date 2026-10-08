@@ -19,10 +19,12 @@ import { getT } from "@/lib/i18n/server";
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
 export const metadata: Metadata = {
-  title: "Ecommerce Web Analyzer — Free Store Audit Tool",
+  title: "Free Store Audit Tool — Ecommerce Web Analyzer",
   description:
-    "Free ecommerce web analyzer and store audit tool. Paste your URL and get a conversion score, an annotated screenshot and ranked fixes in 60 seconds. Shopify & DTC. No card.",
+    "Free store audit and ecommerce web analyzer. Paste your URL and get a conversion score, an annotated screenshot and ranked fixes in 60 seconds. Shopify & DTC. No card.",
   keywords: [
+    // Primary — this page is the dedicated "store audit" landing.
+    "store audit",
     // Group 1 — store audit / analyzer cluster.
     "ecommerce web analyzer",
     "ecommerce website analyzer",
@@ -60,7 +62,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/free-website-audit" },
   openGraph: {
-    title: "Free Website Audit & Conversion Analyzer — EliteVault",
+    title: "Free Store Audit & Conversion Analyzer — EliteVault",
     description:
       "A free AI website audit: score, annotated screenshot, and a ranked list of fixes in under a minute.",
     type: "website",

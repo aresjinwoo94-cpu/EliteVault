@@ -15,16 +15,17 @@ import { MarketingNav } from "@/components/marketing/nav";
  */
 export const metadata: Metadata = {
   title: {
-    absolute:
-      "Shopify Store Analyzer — Find What's Costing You Sales | EliteVault",
+    absolute: "Shopify Store Analyzer & Free Store Audit | EliteVault",
   },
   description:
-    "Free AI Shopify store analyzer. Get an annotated audit of your store page, ranked by what's costing you sales on paid traffic, before you scale.",
+    "Free AI Shopify store analyzer and store audit. Get an annotated audit of your store page, ranked by what's costing you sales on paid traffic, before you scale.",
   keywords: [
     // WP-D primary.
     "shopify store analyzer",
     "shopify analyzer",
     "analyze shopify store",
+    "store audit",
+    "free store audit",
     // Core bottom-funnel keywords that already rank — kept intact.
     "free website audit",
     "free shopify store audit",
@@ -47,16 +48,16 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   openGraph: {
     // WP-D — the share card leads with the analyzer, like the title does.
-    title: "Shopify Store Analyzer — Find What's Costing You Sales",
+    title: "Shopify Store Analyzer & Free Store Audit — Find What's Costing You Sales",
     description:
-      "A free AI analyzer for your Shopify store: an annotated audit of your store page, ranked by what's costing you sales on paid traffic.",
+      "A free AI analyzer and store audit for your Shopify store: an annotated audit of your store page, ranked by what's costing you sales on paid traffic.",
     type: "website",
     url: "/",
   },
   twitter: {
-    title: "Shopify Store Analyzer — Find What's Costing You Sales",
+    title: "Shopify Store Analyzer & Free Store Audit — Find What's Costing You Sales",
     description:
-      "A free AI analyzer for your Shopify store: an annotated audit of your store page, ranked by what's costing you sales on paid traffic.",
+      "A free AI analyzer and store audit for your Shopify store: an annotated audit of your store page, ranked by what's costing you sales on paid traffic.",
   },
 };
 
