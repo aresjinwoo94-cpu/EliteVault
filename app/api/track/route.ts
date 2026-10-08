@@ -75,26 +75,35 @@ export async function POST(req: NextRequest) {
       if (!bumped?.length) {
         // First beat of the session: insert with first-touch attribution.
         // ignoreDuplicates makes a racing second first-beat a no-op.
+        const legacy = {
+          session_id: sid,
+          anon_id: anon,
+          path: beat.path,
+          referrer_domain: beat.referrerDomain,
+          country: country || null,
+          city,
+          device,
+          is_internal: beat.internal,
+          last_seen_at: now,
+        };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supa.from("sessions") as any).upsert(
+        const ins = await (supa.from("sessions") as any).upsert(
           {
-            session_id: sid,
-            anon_id: anon,
-            path: beat.path,
+            ...legacy,
             landing_path: beat.path,
-            referrer_domain: beat.referrerDomain,
             channel: beat.channel,
             utm_source: beat.utmSource,
             utm_medium: beat.utmMedium,
             utm_campaign: beat.utmCampaign,
-            country: country || null,
-            city,
-            device,
-            is_internal: beat.internal,
-            last_seen_at: now,
           },
           { onConflict: "session_id", ignoreDuplicates: true },
         );
+        // Migration 0035 not applied yet → keep recording sessions the old way
+        // instead of losing live-visitor data between deploy and migration.
+        if (ins?.error) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await (supa.from("sessions") as any).upsert(legacy, { onConflict: "session_id", ignoreDuplicates: true });
+        }
         if (!beat.internal) {
           // Visitor first-touch: only the very first session of this visitor
           // wins; later sessions hit the primary key and are ignored.
@@ -118,16 +127,19 @@ export async function POST(req: NextRequest) {
     }
 
     if (beat.writePageView) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await supa.from("page_views").insert({
+      const row = {
         anon_id: anon,
         path: beat.path,
         referrer_domain: beat.referrerDomain,
-        channel: beat.channel,
         country: country || null,
         city,
         device,
-      } as any);
+      };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const pv = await supa.from("page_views").insert({ ...row, channel: beat.channel } as any);
+      // Same pre-0035 fallback (no `channel` column yet).
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (pv?.error) await supa.from("page_views").insert(row as any);
     }
 
     return res;

@@ -50,8 +50,8 @@ export function AnalyzerDemo({ reportV2 = false }: { reportV2?: boolean }) {
           so the demo panel stays legible; the teaser video is a 2:1 UI
           recording that needs the width.
         */}
-        <div className="grid lg:grid-cols-[2fr_3fr] gap-10 lg:gap-14 items-center">
-          <div>
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-10 lg:gap-14 items-center">
+          <div className="min-w-0">
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -102,6 +102,7 @@ export function AnalyzerDemo({ reportV2 = false }: { reportV2?: boolean }) {
             works".
           */}
           <motion.div
+            className="min-w-0"
             initial={{ opacity: 0, scale: 0.96 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
