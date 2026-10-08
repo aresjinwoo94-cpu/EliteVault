@@ -28,9 +28,9 @@ const KEYWORD = "shopify store analyzer";
 test("the landing's title, description and keywords lead with the analyzer", () => {
   assert.match(
     metadataBlock,
-    /absolute:\s*\n?\s*"Shopify Store Analyzer — Find What's Costing You Sales \| EliteVault"/,
+    /absolute:\s*\n?\s*"Shopify Store Analyzer & Free Store Audit \| EliteVault"/,
   );
-  assert.match(metadataBlock, /"Free AI Shopify store analyzer\./);
+  assert.match(metadataBlock, /"Free AI Shopify store analyzer and store audit\./);
   // First keyword wins the most weight; it must be the target.
   const keywords = metadataBlock.match(/keywords:\s*\[([\s\S]*?)\]/);
   assert.ok(keywords, "keywords array");

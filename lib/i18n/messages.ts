@@ -820,7 +820,7 @@ const en: Dict = {
   freeAudit: {
     badge1: "FREE WEBSITE AUDIT",
     badge2: "NO CREDIT CARD",
-    heroH1: "Ecommerce web analyzer — see why visitors bounce instead of buy",
+    heroH1: "Free store audit — see why visitors bounce instead of buy",
     heroBody:
       "EliteVault is an AI website analyzer built for ecommerce. Paste your URL and get an honest conversion score, an annotated screenshot of exactly what's costing you sales, your #1 fix unlocked, and a modeled 7-day Meta Ads ROAS range for a store like yours — free, no card, in under a minute.",
     heroCta: "Audit my store free",
@@ -1777,7 +1777,7 @@ const es: Dict = {
   freeAudit: {
     badge1: "AUDITORÍA WEB GRATIS",
     badge2: "SIN TARJETA",
-    heroH1: "Auditoría web gratis — descubre por qué se van sin comprar",
+    heroH1: "Auditoría de tienda gratis — descubre por qué se van sin comprar",
     heroBody:
       "EliteVault es un analizador web con IA hecho para ecommerce. Pega tu URL y recibe un score de conversión honesto, una captura anotada de exactamente qué te está costando ventas, tu arreglo #1 desbloqueado, y un rango modelado de ROAS a 7 días en Meta Ads para una tienda como la tuya — gratis, sin tarjeta, en menos de un minuto.",
     heroCta: "Audita mi tienda gratis",
