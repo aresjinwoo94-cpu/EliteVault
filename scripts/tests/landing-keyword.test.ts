@@ -38,6 +38,12 @@ test("the landing's title, description and keywords lead with the analyzer", () 
   assert.equal(first, KEYWORD);
 });
 
+test('"store audit" is in the <title>, og:title and twitter:title', () => {
+  for (const m of metadataBlock.matchAll(/(?:absolute|title):\s*\n?\s*"([^"]+)"/g)) {
+    assert.match(m[1], /store audit/i, `"${m[1]}" lost "store audit"`);
+  }
+});
+
 test("Meta ads no longer leads the title, description or hero", () => {
   // The <title>, description and og/twitter strings, not the whole file: the
   // long-tail keyword "meta ads forecast" keeps its own dedicated page.
@@ -93,8 +99,9 @@ test("the repositioned copy exists in both locales", () => {
 
   assert.match(en.hero.badge1, /shopify store analyzer/i);
   assert.match(es.hero.badge1, /analizador shopify/i);
-  assert.equal(`${en.hero.line1} ${en.hero.line2}`, "Find what's costing your Shopify store sales.");
-  assert.match(`${es.hero.line1} ${es.hero.line2}`, /tienda Shopify\.$/);
+  assert.equal(`${en.hero.line1} ${en.hero.line2}`, "Free Shopify store audit — find what's costing you sales.");
+  assert.match(`${en.hero.line1} ${en.hero.line2}`, /store audit/i);
+  assert.match(`${es.hero.line1} ${es.hero.line2}`, /tienda Shopify/);
   assert.match(en.hero.subPre + en.hero.subHighlight, /before you scale traffic — see the exact leaks, ranked by impact/);
   assert.match(es.hero.subPre + es.hero.subHighlight, /antes de escalar tráfico — mira las fugas exactas, ordenadas por impacto/);
 

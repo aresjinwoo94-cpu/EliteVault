@@ -33,8 +33,8 @@ const en: Dict = {
     // WP-D — repositioned from "Meta ads" to the analyzer itself: the store is
     // what we analyze, and paid traffic is only the reason it matters. The
     // gradient (line2) carries the keyword.
-    line1: "Find what's costing your",
-    line2: "Shopify store sales.",
+    line1: "Free Shopify store audit —",
+    line2: "find what's costing you sales.",
     line3: "",
     // Brief §1.1 — subtitle leads with the money (what the owner cares about),
     // then "ideal customer" + "how they see your site" (the analyzer's other two
@@ -995,8 +995,8 @@ const es: Dict = {
     // WP-D — reposicionado de "anuncios de Meta" al analizador: lo que
     // analizamos es la tienda, y el tráfico pago es solo el motivo por el que
     // importa. El degradado (line2) lleva la keyword.
-    line1: "Descubre qué le está costando ventas",
-    line2: "a tu tienda Shopify.",
+    line1: "Auditoría gratis de tu tienda Shopify —",
+    line2: "descubre qué te está costando ventas.",
     line3: "",
     // Brief §1.1 — el subtítulo abre con el dinero (lo que le importa al dueño),
     // luego "cliente ideal" + "cómo ve tu web" (los otros dos entregables reales
