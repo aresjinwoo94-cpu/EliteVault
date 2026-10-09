@@ -453,7 +453,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <h2>How to find <em>your</em> specific leaks</h2>
 <p>The fixes above are universal, but the order that matters for <strong>your</strong> store is specific. The fastest way to find it is to look at your homepage the way a skeptical buyer (or a senior media buyer) would. That's exactly what <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=how-to-increase-shopify-conversion-rate">EliteVault's free audit</a> does: it scores your store across layout, imagery, CRO principles and niche fit, annotates the screenshot with the exact problems, and ranks the fixes by leverage — so you're not guessing which of these 11 to do first.</p>
 
-<p>Once you've shipped the top three, re-audit and measure. Conversion optimization is a loop, not a one-time project. If you're not sure where you stand, start by checking <a href="/blog/why-your-shopify-store-isnt-converting">why your store might not be converting</a>, then <a href="/pricing">see how the full audit works</a>. When you have the traffic to run tests, here is <a href="/blog/ecommerce-cro-specialist">what an ecommerce CRO specialist does</a>, and <a href="/blog/shopify-landing-page-specialist">how to brief a landing page specialist</a>.</p>
+<p>Once you've shipped the top three, re-audit and measure. Conversion optimization is a loop, not a one-time project. If you're not sure where you stand, start by checking <a href="/blog/why-your-shopify-store-isnt-converting">why your store might not be converting</a>, then <a href="/pricing">see how the full audit works</a>. When you have the traffic to run tests, here is <a href="/blog/ecommerce-cro-specialist">what an ecommerce CRO specialist does</a>, and <a href="/blog/shopify-landing-page-specialist">how to brief a landing page specialist</a>. If the build uses AI, see <a href="/blog/ai-shopify-designer">what a human must still check</a>.</p>
 `.trim(),
     faqs: [
       {
@@ -1628,7 +1628,7 @@ ${teaserVideo}
 <li>Ask for a speed and mobile check before launch, then measure.</li>
 <li>Start with one small project to test the fit before a bigger commitment.</li>
 </ol>
-<p>Full disclosure, EliteVault is our tool, and it reads a screenshot of your live storefront. For the testing side, see <a href="/blog/ecommerce-cro-specialist">what an ecommerce CRO specialist does</a>, or the <a href="/blog/how-to-increase-shopify-conversion-rate">highest-leverage conversion fixes</a>.</p>
+<p>Full disclosure, EliteVault is our tool, and it reads a screenshot of your live storefront. For the testing side, see <a href="/blog/ecommerce-cro-specialist">what an ecommerce CRO specialist does</a>, or the <a href="/blog/how-to-increase-shopify-conversion-rate">highest-leverage conversion fixes</a>. Building with AI tools? Read <a href="/blog/ai-shopify-designer">what an AI Shopify designer still has to check</a>.</p>
 `.trim(),
     faqs: [
       {
@@ -1646,6 +1646,118 @@ ${teaserVideo}
       {
         q: "Should I run a store audit before hiring a specialist?",
         a: "Yes. An audit shows which problems exist and which matter most, so you brief the specialist on a real issue instead of paying them to find it. EliteVault's free audit works from a screenshot of your live storefront.",
+      },
+    ],
+  },
+  {
+    slug: "ai-shopify-designer",
+    title: "AI Shopify Designer: Using Claude Without Breaking a Store",
+    h1: "What does an AI Shopify designer actually do — and what must a human still check?",
+    description:
+      "What an AI Shopify designer does with Claude: draft sections fast, then check buttons, options, links and cart. What AI gets wrong and how to review it.",
+    keyword: "ai shopify designer",
+    keywords: [
+      "ai shopify designer",
+      "shopify designer claude",
+      "ai shopify store design",
+      "shopify liquid ai",
+      "hire shopify designer",
+    ],
+    date: "2026-10-09",
+    updated: "2026-10-09",
+    author: "Ariel Jiménez",
+    readingMinutes: 3,
+    excerpt:
+      "AI drafts Shopify sections in minutes. What an AI Shopify designer still has to check, and how to review an AI-built store.",
+    bodyHtml: `
+<p class="lede">An <strong>AI Shopify designer</strong> uses tools like Claude to draft sections, then checks and fixes what the AI gets wrong. AI makes a first draft in minutes. It doesn't know whether the cart works or the page sells, and 17% of shoppers who meant to buy left over site errors or crashes (Baymard, 2025). The human check is the job.</p>
+
+${teaserVideo}
+
+<h2>What does an AI Shopify designer actually do?</h2>
+<p>We recently saw a listing for a Shopify designer working with Claude and a provided workflow across several stores. The pattern is a loop, and the human sits in the middle of it. The designer supplies the judgment: does this page make a buying decision easy, and does every part of it work?</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">The AI-assisted design loop</div>
+<div class="mt-4"><svg viewBox="0 0 340 312" class="w-full h-auto" style="max-width:420px;margin:0 auto;display:block" role="img" aria-label="The working loop of an AI-assisted Shopify designer in five steps: 1, brief and references; 2, AI drafts a section with layout, copy, Liquid and CSS; 3, the designer reviews hierarchy, spacing and clarity; 4, fix what AI missed, such as buttons, product options, links and cart behavior; 5, ship and re-check on a real phone, then live. Steps 3 and 4 are the human work."><line x1="30" y1="26" x2="30" y2="274" stroke="rgba(45,212,191,0.4)" stroke-width="2" /><rect x="10" y="4" width="320" height="52" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><circle cx="30" cy="30" r="12" fill="#0b0f14" stroke="#2DD4BF" stroke-width="2" /><text x="30" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="#2DD4BF">1</text><text x="52" y="26" font-size="16" font-weight="600" fill="#ffffff">Brief and references</text><text x="52" y="45" font-size="14.5" fill="rgba(255,255,255,0.6)">What to build, and what to match</text><rect x="10" y="66" width="320" height="52" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><circle cx="30" cy="92" r="12" fill="#0b0f14" stroke="#2DD4BF" stroke-width="2" /><text x="30" y="97" text-anchor="middle" font-size="14" font-weight="700" fill="#2DD4BF">2</text><text x="52" y="88" font-size="16" font-weight="600" fill="#ffffff">AI drafts a section</text><text x="52" y="107" font-size="14.5" fill="rgba(255,255,255,0.6)">Layout, copy, Liquid, CSS</text><rect x="10" y="128" width="320" height="52" rx="12" fill="rgba(45,212,191,0.12)" stroke="#2DD4BF" stroke-width="1.5" /><circle cx="30" cy="154" r="12" fill="#0b0f14" stroke="#2DD4BF" stroke-width="2" /><text x="30" y="159" text-anchor="middle" font-size="14" font-weight="700" fill="#2DD4BF">3</text><text x="52" y="150" font-size="16" font-weight="600" fill="#2DD4BF">The designer reviews</text><text x="52" y="169" font-size="14.5" fill="rgba(255,255,255,0.6)">Hierarchy, spacing, clarity</text><rect x="10" y="190" width="320" height="52" rx="12" fill="rgba(45,212,191,0.12)" stroke="#2DD4BF" stroke-width="1.5" /><circle cx="30" cy="216" r="12" fill="#0b0f14" stroke="#2DD4BF" stroke-width="2" /><text x="30" y="221" text-anchor="middle" font-size="14" font-weight="700" fill="#2DD4BF">4</text><text x="52" y="212" font-size="16" font-weight="600" fill="#2DD4BF">Fix what AI missed</text><text x="52" y="231" font-size="14.5" fill="rgba(255,255,255,0.6)">Buttons, options, links, cart</text><rect x="10" y="252" width="320" height="52" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><circle cx="30" cy="278" r="12" fill="#0b0f14" stroke="#2DD4BF" stroke-width="2" /><text x="30" y="283" text-anchor="middle" font-size="14" font-weight="700" fill="#2DD4BF">5</text><text x="52" y="274" font-size="16" font-weight="600" fill="#ffffff">Ship and re-check</text><text x="52" y="293" font-size="14.5" fill="rgba(255,255,255,0.6)">On a real phone, then live</text></svg></div>
+<figcaption class="mt-3 text-xs text-white/35">Simplified from the scope in a recent public job listing. Teal steps are the human work.</figcaption>
+</figure>
+
+<h2>What can AI draft, and what must a human check?</h2>
+<p>AI is fast at the first pass. The risk is the details it gets quietly wrong:</p>
+
+<figure class="my-8">
+<table>
+<thead>
+<tr><th>Task</th><th>AI can draft</th><th>A human must check</th></tr>
+</thead>
+<tbody>
+<tr><td>Section layout</td><td>A clean first version</td><td>Mobile spacing, type, hierarchy</td></tr>
+<tr><td>Product page</td><td>Structure and copy</td><td>Clarity, trust, easy navigation</td></tr>
+<tr><td>Liquid, HTML, CSS</td><td>Working-looking code</td><td>Buttons, options, links, cart</td></tr>
+<tr><td>Feedback fixes</td><td>Quick edits</td><td>That nothing else broke</td></tr>
+</tbody>
+</table>
+</figure>
+
+<h2>Why does the human check matter so much?</h2>
+<p>A broken button doesn't look broken in a draft. It looks fine until a buyer taps it. Here are reasons shoppers who meant to buy still left, all of which a careless build can cause:</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">Where AI output can quietly cost sales</div>
+<div class="mt-4"><div class="grid gap-3 sm:grid-cols-3">
+<div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+<div class="font-mono text-[11px] uppercase tracking-widest text-white/40">Site errors</div>
+<div class="mt-1 text-2xl font-semibold text-white">17%</div>
+<div class="mt-1 text-xs text-white/45">left over errors or crashes</div>
+</div>
+<div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+<div class="font-mono text-[11px] uppercase tracking-widest text-white/40">Card doubts</div>
+<div class="mt-1 text-2xl font-semibold text-white">19%</div>
+<div class="mt-1 text-xs text-white/45">left over security doubts</div>
+</div>
+<div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+<div class="font-mono text-[11px] uppercase tracking-widest text-white/40">No total</div>
+<div class="mt-1 text-2xl font-semibold text-white">12%</div>
+<div class="mt-1 text-xs text-white/45">left with no visible order total</div>
+</div>
+</div></div>
+<figcaption class="mt-3 text-xs text-white/35">Source: <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">Baymard Institute</a> (updated September 2025). Respondents could pick more than one reason.</figcaption>
+</figure>
+
+<h2>Who covers what: AI, designer or store audit?</h2>
+<p>Each does one part well. None replaces the others, and skipping the human check is how a fast build becomes an expensive one:</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">Typical split of work</div>
+<div class="mt-4"><svg viewBox="0 0 340 216" class="w-full h-auto" style="max-width:420px;margin:0 auto;display:block" role="img" aria-label="Typical split of work on an AI-assisted store design. AI draft: a fast first draft. Designer: tests the cart and buttons, judges the buying flow and reviews the live page. Store audit: reviews the live page."><text x="185" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">AI</text><text x="185" y="34" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">draft</text><text x="252" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">Designer</text><text x="314" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Store</text><text x="314" y="34" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">audit</text><line x1="0" y1="46" x2="340" y2="46" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="72" font-size="14.5" fill="rgba(255,255,255,0.75)">Fast first draft</text><circle cx="185" cy="67" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 180 67 L 183.5 71 L 190.5 63" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="247" y1="67" x2="257" y2="67" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="309" y1="67" x2="319" y2="67" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="0" y1="88" x2="340" y2="88" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="114" font-size="14.5" fill="rgba(255,255,255,0.75)">Tests cart &amp; buttons</text><line x1="180" y1="109" x2="190" y2="109" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="252" cy="109" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 247 109 L 250.5 113 L 257.5 105" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="309" y1="109" x2="319" y2="109" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="0" y1="130" x2="340" y2="130" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="156" font-size="14.5" fill="rgba(255,255,255,0.75)">Judges buying flow</text><line x1="180" y1="151" x2="190" y2="151" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="252" cy="151" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 247 151 L 250.5 155 L 257.5 147" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="309" y1="151" x2="319" y2="151" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="0" y1="172" x2="340" y2="172" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="198" font-size="14.5" fill="rgba(255,255,255,0.75)">Reviews the live page</text><line x1="180" y1="193" x2="190" y2="193" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="252" cy="193" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 247 193 L 250.5 197 L 257.5 189" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><circle cx="314" cy="193" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 309 193 L 312.5 197 L 319.5 189" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /></svg></div>
+<figcaption class="mt-3 text-xs text-white/35">Typical split; real workflows vary and many designers also audit.</figcaption>
+</figure>
+
+<h2>How do you check an AI-built store?</h2>
+<ol>
+<li>Tap every button, option and link on a real phone.</li>
+<li>Add to cart and go through checkout yourself.</li>
+<li>Run a <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=ai-shopify-designer">free store audit →</a> for an outside read of the live page.</li>
+</ol>
+<p>Full disclosure, EliteVault is our tool. It reads a screenshot of your live storefront, so it can't click through your cart. Do that part by hand. For the build side, see <a href="/blog/shopify-landing-page-specialist">how to brief a Shopify landing page specialist</a>, or <a href="/blog/ecommerce-cro-specialist">what a CRO specialist does</a>.</p>
+`.trim(),
+    faqs: [
+      {
+        q: "What does an AI Shopify designer do?",
+        a: "They use AI tools such as Claude to draft sections and pages, then review the result, fix what the AI gets wrong, and check buttons, product options, links and cart behavior before it goes live. The judgment stays with the human.",
+      },
+      {
+        q: "Can AI design a Shopify store on its own?",
+        a: "It can produce a convincing first draft quickly, but it doesn't know whether the cart works, whether the page is clear on a phone, or whether it persuades a buyer. Someone has to check and correct the output.",
+      },
+      {
+        q: "What should I check on an AI-built Shopify page?",
+        a: "Tap every button, product option and link on a real phone, add to cart and complete a checkout yourself, and look at spacing, type and hierarchy on mobile. Then get an outside read of the live page.",
+      },
+      {
+        q: "Can a store audit test my cart and checkout?",
+        a: "Not with EliteVault. It reads a screenshot of your live storefront, so it judges what a shopper sees, but it can't click through a cart or checkout. Test that by hand.",
       },
     ],
   },
