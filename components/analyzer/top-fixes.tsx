@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { m as motion } from "framer-motion";
-import { ArrowUpRight, Lock, Zap, Sparkles, ArrowRight } from "lucide-react";
+import { ArrowUpRight, ExternalLink, Lock, Zap, Sparkles, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useT } from "@/components/i18n/locale-provider";
 import { fill } from "@/lib/i18n/lookup";
+import { themeBySlug } from "@/lib/analyzer/shopify-themes";
 
 interface Fix {
   title: string;
@@ -19,6 +20,10 @@ interface Fix {
    * field existed simply don't have it, and the row renders as it always did.
    */
   why?: string | null;
+  /** Fix Tracks — what on THIS page justifies the fix. Absent on the urgent list. */
+  evidence?: string | null;
+  /** Fix Tracks (theme_colors) — slug from lib/analyzer/shopify-themes.ts. */
+  theme_slug?: string | null;
 }
 
 /**
@@ -31,13 +36,29 @@ interface Fix {
  * the user must know WHAT they're missing) but the impact/effort detail
  * blurred, plus a counter + Pro CTA. Seeing one real fix + the shape of the
  * rest converts far better than blurring the entire list.
+ *
+ * Fix Tracks reuse this exact rendering (rows, lock, blur, upsell) through the
+ * optional `heading` / `header` / `note` / `children` slots, so nothing is
+ * duplicated. With none of them set the output is identical to before.
  */
 export function TopFixes({
   fixes,
   unlockedCount = Infinity,
+  heading,
+  header,
+  note,
+  children,
 }: {
   fixes: Fix[];
   unlockedCount?: number;
+  /** Overrides the card title. */
+  heading?: string;
+  /** Rendered right under the title (the Fix Tracks tab row). */
+  header?: React.ReactNode;
+  /** One fixed line above the list (e.g. the post-purchase disclaimer). */
+  note?: React.ReactNode;
+  /** Rendered after the list (loading / error / empty / locked states). */
+  children?: React.ReactNode;
 }) {
   const { t } = useT();
   const total = fixes?.length ?? 0;
@@ -47,8 +68,10 @@ export function TopFixes({
     <Card className="p-6">
       <div className="flex items-center gap-2 mb-4">
         <Zap className="size-4 text-champagne-400" />
-        <h3 className="text-sm font-medium">{t("topFixes.title")}</h3>
+        <h3 className="text-sm font-medium">{heading ?? t("topFixes.title")}</h3>
       </div>
+      {header}
+      {note}
 
       <ol className="space-y-2">
         {fixes.map((f, i) => {
@@ -82,6 +105,23 @@ export function TopFixes({
                     is the difference between a checklist and an argument they
                     can act on, so it's part of the paid "cure": blurred for
                     locked rows exactly like the impact/effort detail. */}
+                {f.evidence?.trim() && !locked && (
+                  <p className="mt-1.5 text-xs leading-relaxed text-white/45">
+                    <span className="text-white/60">{t("fixTracks.evidenceLabel")}</span>{" "}
+                    {f.evidence}
+                  </p>
+                )}
+                {f.theme_slug && !locked && themeBySlug(f.theme_slug) && (
+                  <a
+                    href={themeBySlug(f.theme_slug)!.url}
+                    target="_blank"
+                    rel="noopener nofollow"
+                    className="mt-1.5 inline-flex items-center gap-1 text-xs text-signal-300 hover:underline"
+                  >
+                    {t("fixTracks.themeLabel")}: {themeBySlug(f.theme_slug)!.name} ({t("fixTracks.themeFree")})
+                    <ExternalLink className="size-3" />
+                  </a>
+                )}
                 {f.why?.trim() && (
                   <p
                     className={cn(
@@ -133,6 +173,7 @@ export function TopFixes({
           );
         })}
       </ol>
+      {children}
 
       {/* Free-tier upsell footer — counter of what's still locked + CTA. */}
       {lockedCount > 0 && (

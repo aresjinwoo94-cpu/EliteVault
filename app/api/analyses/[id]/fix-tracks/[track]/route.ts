@@ -3,17 +3,16 @@ import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/s
 import { getAnonToken } from "@/lib/anon/session";
 import { getLocale } from "@/lib/i18n/server";
 import { analyzerFixTracksEnabled } from "@/lib/flags";
-import type { AnalysisResult, Teardown } from "@/lib/supabase/types";
+import type { AnalysisResult } from "@/lib/supabase/types";
+import { resolveCompetitor } from "@/lib/analyzer/fix-tracks-data";
 import { runFixTrack, type CompetitorContext } from "@/ai/agents/fix-track-agent";
 import {
   decideAccess,
   gateFixes,
   isGeneratedTrack,
   MAX_TRACK_ATTEMPTS,
-  parseNicheWinners,
   parseState,
   parseTrack,
-  pickCompetitor,
   type Viewer,
 } from "@/lib/analyzer/fix-tracks";
 
@@ -132,30 +131,18 @@ export async function GET(
   // ── competitor: pick the same-niche winner with a teardown (no AI yet) ──
   // Resolved BEFORE the free choice is recorded: an empty/failed lookup must not consume it.
   if (track === "competitor" && !state.tracks.competitor?.fixes?.length) {
-    const winners = parseNicheWinners(row.niche_winners).filter((w) => w.exactMatch);
-    const teardowns = new Map<string, Teardown>();
-    if (winners.length) {
-      const { data: td, error: tdErr } = await service
-        .from("winning_sites")
-        .select("domain, teardown")
-        .in("domain", winners.map((w) => w.domain))
-        .eq("status", "published")
-        .not("teardown", "is", null);
-      if (tdErr) {
-        // A DB blip must not look like "no competitor" (and must not burn the free choice).
-        return NextResponse.json({ error: "unavailable" }, { status: 503, headers: NO_STORE });
-      }
-      for (const r of (td ?? []) as unknown as { domain: string; teardown: Teardown | null }[]) {
-        if (r.teardown?.elements?.length) teardowns.set(r.domain, r.teardown);
-      }
+    const res = await resolveCompetitor(row.niche_winners);
+    if (!res.ok && res.reason === "error") {
+      // A DB blip must not look like "no competitor" (and must not burn the free choice).
+      return NextResponse.json({ error: "unavailable" }, { status: 503, headers: NO_STORE });
     }
-    const pick = pickCompetitor(winners, teardowns);
-    if (!pick) {
+    if (!res.ok) {
       return NextResponse.json(
         { track, viewer, choice: viewer === "paid" ? null : state.free_choice, empty: "no_competitor", fixes: [] },
         { headers: NO_STORE },
       );
     }
+    const pick = res;
     competitor = { title: pick.winner.title, domain: pick.winner.domain, teardown: pick.teardown };
     competitorMeta = {
       title: pick.winner.title,

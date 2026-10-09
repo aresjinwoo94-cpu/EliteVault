@@ -27,6 +27,8 @@ import { CategoryRadar } from "./category-radar";
 import { AnnotationsOverlay } from "./annotations-overlay";
 import { PersonaResponse } from "./persona-response";
 import { TopFixes } from "./top-fixes";
+import { FixTracks } from "./fix-tracks";
+import type { Track } from "@/lib/analyzer/fix-track-ids";
 import { ReportNav } from "./report-nav";
 // RewritePanel removed from v2.1 — Auto-Rewrite is no longer shown in the
 // analyzer; only Meta Ads Optimizer lives as the Scale-tier extra.
@@ -162,6 +164,13 @@ interface ViewerCtx {
    * only stops painting it.
    */
   reportV2?: boolean;
+  /**
+   * Fix Tracks (flag ANALYZER_FIX_TRACKS, resolved server-side). Present ⇒ the
+   * report shows the four-button FixTracks instead of the single Top fixes list;
+   * `choice` is the free/anonymous pick already recorded for this audit.
+   * Absent ⇒ byte-identical to before.
+   */
+  fixTracks?: { choice: Track | null; competitorAvailable: boolean };
 }
 
 export function AnalysisView({
@@ -865,12 +874,22 @@ export function AnalysisView({
                     scope={nicheWinners.scope ?? "niche"}
                   />
                 ) : null;
-                const topFixes = (
-                  <TopFixes
-                    fixes={data.result.top_fixes}
-                    unlockedCount={viewer.isPaid ? undefined : 1}
-                  />
-                );
+                const topFixes =
+                  viewer.fixTracks && !captureBlocked.blocked ? (
+                    <FixTracks
+                      analysisId={data.id}
+                      urgentFixes={data.result.top_fixes}
+                      isPaid={viewer.isPaid}
+                      isAnon={isAnon}
+                      initialChoice={viewer.fixTracks.choice}
+                      competitorAvailable={viewer.fixTracks.competitorAvailable}
+                    />
+                  ) : (
+                    <TopFixes
+                      fixes={data.result.top_fixes}
+                      unlockedCount={viewer.isPaid ? undefined : 1}
+                    />
+                  );
                 return winnersCard ? (
                   <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
                     <div className="min-w-0">{topFixes}</div>

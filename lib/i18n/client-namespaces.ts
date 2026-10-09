@@ -56,6 +56,7 @@ export const APP_NAMESPACES = [
   "checkout",
   "commandMenu",
   "community",
+  "fixTracks",
   "freeMeta",
   "gauges",
   "growthMap",

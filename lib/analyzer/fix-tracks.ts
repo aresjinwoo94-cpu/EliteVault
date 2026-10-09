@@ -7,18 +7,17 @@ import { themeBySlug } from "@/lib/analyzer/shopify-themes";
  * parts that must never regress, so they are directly unit-testable.
  */
 
-export const TRACKS = ["urgent", "post_purchase", "theme_colors", "competitor"] as const;
-export type Track = (typeof TRACKS)[number];
-/** The 3 tracks that need a (single, cached) extra AI call. `urgent` never does. */
-export const GENERATED_TRACKS = ["post_purchase", "theme_colors", "competitor"] as const;
-export type GeneratedTrack = (typeof GENERATED_TRACKS)[number];
+import {
+  GENERATED_TRACKS,
+  isGeneratedTrack,
+  parseTrack,
+  TRACKS,
+  type GeneratedTrack,
+  type Track,
+} from "@/lib/analyzer/fix-track-ids";
 
-export function parseTrack(v: unknown): Track | null {
-  return typeof v === "string" && (TRACKS as readonly string[]).includes(v) ? (v as Track) : null;
-}
-export function isGeneratedTrack(t: Track): t is GeneratedTrack {
-  return t !== "urgent";
-}
+export { GENERATED_TRACKS, isGeneratedTrack, parseTrack, TRACKS };
+export type { GeneratedTrack, Track };
 
 export interface StoredTrack {
   fixes?: FixTrackFix[];
