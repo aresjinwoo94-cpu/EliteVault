@@ -8,7 +8,9 @@ import {
   analyzerMapSpineEnabled,
   analyzerMetaPromoEnabled,
   analyzerReportV2Enabled,
+  analyzerFixTracksEnabled,
 } from "@/lib/flags";
+import { parseState } from "@/lib/analyzer/fix-tracks";
 import { toClientAnalysis } from "@/lib/analyzer/client-payload";
 
 export const dynamic = "force-dynamic";
@@ -149,6 +151,11 @@ export default async function AnalysisPage({
         metaPromo: analyzerMetaPromoEnabled(),
         // analyzer-report-redesign brief §1 — the redesigned report (flag).
         reportV2: analyzerReportV2Enabled(),
+        // Fix Tracks (brief §3): only the free CHOICE (a track id) reaches the client;
+        // the generated fixes come from the gated route.
+        fixTracks: analyzerFixTracksEnabled()
+          ? { choice: parseState((analysis as { fix_tracks?: unknown }).fix_tracks).free_choice }
+          : undefined,
       }}
       initialSimulation={initialSimulation}
       nicheWinners={nicheWinners}

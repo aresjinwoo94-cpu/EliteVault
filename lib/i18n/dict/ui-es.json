@@ -999,5 +999,34 @@
   },
   "pricing": {
     "billedYearlyFull": "{monthly}/mes facturado anualmente · ahorras {save}/año"
+  },
+  "fixTracks": {
+    "aria": "Elige qué fixes ver",
+    "tabUrgent": "Lo más urgente",
+    "tabPost": "Vender más después de la compra",
+    "tabTheme": "Tema y colores para Shopify",
+    "tabCompetitor": "Parecerte al ganador de tu nicho",
+    "pickPrompt": "Elige qué fixes quieres ver — el plan gratis desbloquea uno.",
+    "confirmHint": "Tu plan gratis desbloquea un grupo de fixes por auditoría, y la elección es definitiva.",
+    "confirm": "Ver estos fixes",
+    "loading": "Generando tus fixes… ~15 s",
+    "pending": "Aún generando — volvemos a comprobar…",
+    "error": "No pudimos generar estos fixes ahora mismo. Inténtalo de nuevo en unos 30 segundos.",
+    "errorExhausted": "No pudimos generar este grupo para esta auditoría. Prueba las otras pestañas.",
+    "unavailable": "Los fixes por categoría no están disponibles ahora mismo.",
+    "retry": "Reintentar",
+    "lockedTitle": "Bloqueado en el plan gratis",
+    "lockedBodyAnon": "Tu elección gratis en esta auditoría es «{track}». Crea una cuenta gratis para conservarla, o pásate a Pro para abrir los cuatro.",
+    "lockedBodyFree": "Tu elección gratis en esta auditoría es «{track}». Pro abre los cuatro al instante.",
+    "ctaSignup": "Crear cuenta gratis",
+    "ctaPro": "Desbloquear todo con Pro",
+    "postNote": "Basado en tu página de producto — no vemos tu checkout ni tus emails.",
+    "emptyCompetitor": "Aún no tenemos el desglose de una tienda ganadora en tu nicho.",
+    "emptyCompetitorLink": "Explorar la Library",
+    "benchmarkLabel": "Tienda de referencia",
+    "evidenceLabel": "Visto en tu página:",
+    "themeLabel": "Tema recomendado",
+    "themeFree": "gratis",
+    "openStore": "Abrir"
   }
 }

@@ -999,5 +999,34 @@
   },
   "pricing": {
     "billedYearlyFull": "{monthly}/mo billed yearly · save {save}/yr"
+  },
+  "fixTracks": {
+    "aria": "Choose which fixes to see",
+    "tabUrgent": "Most urgent",
+    "tabPost": "Sell more after the purchase",
+    "tabTheme": "Shopify theme & colors",
+    "tabCompetitor": "Match your niche's top store",
+    "pickPrompt": "Pick the fixes you want to see — free plan unlocks one.",
+    "confirmHint": "Your free plan unlocks one set of fixes per audit, and the choice is final.",
+    "confirm": "See these fixes",
+    "loading": "Generating your fixes… ~15 s",
+    "pending": "Still generating — checking again…",
+    "error": "We couldn't generate these fixes just now. Try again in about 30 seconds.",
+    "errorExhausted": "We couldn't generate this track for this audit. Try the other tabs.",
+    "unavailable": "Fix tracks aren't available right now.",
+    "retry": "Try again",
+    "lockedTitle": "Locked on the free plan",
+    "lockedBodyAnon": "Your free pick on this audit is “{track}”. Create a free account to keep it, or go Pro to open all four.",
+    "lockedBodyFree": "Your free pick on this audit is “{track}”. Pro opens all four, instantly.",
+    "ctaSignup": "Create free account",
+    "ctaPro": "Unlock all with Pro",
+    "postNote": "Based on your product page — we don't see your checkout or emails.",
+    "emptyCompetitor": "We don't have a breakdown of a top store in your niche yet.",
+    "emptyCompetitorLink": "Browse the Library",
+    "benchmarkLabel": "Benchmark store",
+    "evidenceLabel": "Seen on your page:",
+    "themeLabel": "Recommended theme",
+    "themeFree": "free",
+    "openStore": "Open"
   }
 }

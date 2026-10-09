@@ -10,7 +10,9 @@ import {
   analyzerMapSpineEnabled,
   analyzerMetaPromoEnabled,
   analyzerReportV2Enabled,
+  analyzerFixTracksEnabled,
 } from "@/lib/flags";
+import { parseState } from "@/lib/analyzer/fix-tracks";
 import { toClientAnalysis } from "@/lib/analyzer/client-payload";
 import type { DiscoverySignals } from "@/lib/analyzer/discovery-signals";
 
@@ -133,6 +135,9 @@ async function AnonAuditPageInner({
         metaPromo: analyzerMetaPromoEnabled(),
         // analyzer-report-redesign brief §1 — the redesigned report (flag).
         reportV2: analyzerReportV2Enabled(),
+        fixTracks: analyzerFixTracksEnabled()
+          ? { choice: parseState((row as { fix_tracks?: unknown }).fix_tracks).free_choice }
+          : undefined,
       }}
       initialSimulation={null}
       nicheWinners={nicheWinners}

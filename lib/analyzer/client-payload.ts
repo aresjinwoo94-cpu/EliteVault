@@ -12,6 +12,10 @@
  *    client component reads it; the page derives the gated card from it
  *    server-side (gateWinners in lib/library/niche-winners.ts). So it is
  *    dropped for EVERY viewer.
+ *  • `fix_tracks` — the Fix Tracks cache: full text of every generated track
+ *    (including fixes #2+ a free viewer must not read). Served ONLY by
+ *    /api/analyses/[id]/fix-tracks/[track], which gates per viewer. The page
+ *    passes just the free choice (a track id) separately.
  *  • `meta_ads` — the Meta Ads Optimizer output. The Meta run writes it for
  *    Pro and Scale (inngest/functions/run-meta-simulation.ts bundles it into
  *    Pro's run) and the report renders it only inside the block for viewers
@@ -25,9 +29,10 @@
 export function toClientAnalysis<T extends Record<string, unknown>>(
   row: T,
   viewer: { canRunMeta: boolean },
-): Omit<T, "niche_winners" | "meta_ads"> & { meta_ads: unknown } {
-  const { niche_winners: storedWinners, meta_ads: metaAds, ...rest } = row;
+): Omit<T, "niche_winners" | "meta_ads" | "fix_tracks"> & { meta_ads: unknown } {
+  const { niche_winners: storedWinners, meta_ads: metaAds, fix_tracks: storedTracks, ...rest } = row;
   void storedWinners; // withheld on purpose — see above
+  void storedTracks; // Fix Tracks cache holds every generated fix IN FULL — only the gated route may serve it
   return { ...rest, meta_ads: viewer.canRunMeta ? (metaAds ?? null) : null };
 }
 

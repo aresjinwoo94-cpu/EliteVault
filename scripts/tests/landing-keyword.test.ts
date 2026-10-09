@@ -105,8 +105,19 @@ test("the repositioned copy exists in both locales", () => {
   assert.match(en.hero.subPre + en.hero.subHighlight, /before you scale traffic — see the exact leaks, ranked by impact/);
   assert.match(es.hero.subPre + es.hero.subHighlight, /antes de escalar tráfico — mira las fugas exactas, ordenadas por impacto/);
 
-  assert.equal(en.socialStrip.b1Title, "Find your highest-impact fixes");
-  assert.equal(es.socialStrip.b1Title, "Encuentra tus arreglos de mayor impacto");
+  // Brief §2 — the strip promises what the Fix Tracks deliver (card 3 is untouched).
+  assert.equal(en.socialStrip.eyebrow, "What you'll discover");
+  assert.equal(es.socialStrip.eyebrow, "Aquí descubrirás");
+  assert.equal(en.socialStrip.b1Title, "How to make more sales after the purchase");
+  assert.equal(es.socialStrip.b1Title, "Cómo generar más ventas después de la compra");
+  assert.equal(en.socialStrip.b2Title, "How to redesign your Shopify store the right way");
+  assert.equal(es.socialStrip.b2Title, "Cómo rediseñar bien tu tienda Shopify");
+  assert.equal(en.socialStrip.b3Title, "See every leak on the page");
+  assert.equal(es.socialStrip.b3Title, "Mira cada fuga de la página");
+  assert.equal(en.socialStrip.b3Sub, "Caught before they drain your ad budget.");
+  assert.equal(es.socialStrip.b3Sub, "Detectadas antes de que drenen tu presupuesto.");
+  assert.equal(en.socialStrip.b4Title, "How to win in your niche");
+  assert.equal(es.socialStrip.b4Title, "Cómo triunfar en tu nicho");
 
   // Audience is defined by ad spend now, not by team size.
   assert.match(en.whoFor.body, /ecommerce owners already investing in acquisition/);

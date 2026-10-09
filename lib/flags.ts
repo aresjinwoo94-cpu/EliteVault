@@ -175,11 +175,13 @@ export function autoLocaleEnabled(): boolean {
 /**
  * Analyzer "Fix Tracks" (docs/store-audit-fix-tracks-premium.md §3).
  *
- * DEFAULT OFF in git. OFF ⇒ the fix-tracks route 404s, the analyzer asks for no
- * extra field (observed_palette) and the report is byte-identical to today. It
- * flips to ON in the same change that ships the UI + landing cards (WP-3),
- * never before — the landing promises what the tracks deliver.
+ * DEFAULT ON (shipped together with the report UI and the landing cards, which
+ * promise exactly what the tracks deliver). OFF ⇒ the fix-tracks route 404s, the
+ * analyzer asks for no extra field (observed_palette) and the report is
+ * byte-identical to before the feature — set `ANALYZER_FIX_TRACKS=false` to
+ * revert without a deploy. Needs migration 0036; without it the route answers
+ * 503 and the report falls back to the classic Top fixes list.
  */
 export function analyzerFixTracksEnabled(): boolean {
-  return enabled("ANALYZER_FIX_TRACKS", false);
+  return enabled("ANALYZER_FIX_TRACKS", true);
 }
