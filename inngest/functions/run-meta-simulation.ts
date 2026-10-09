@@ -106,9 +106,12 @@ export const runMetaSimulationFn = inngest.createFunction(
       if (!result || typeof result.score !== "number") {
         throw new Error("Source analysis has no completed result");
       }
-      const host = row.url
-        ? new URL(row.url).hostname.replace("www.", "")
-        : "ecommerce";
+      let host = "ecommerce";
+      try {
+        if (row.url) host = new URL(row.url).hostname.replace("www.", "");
+      } catch {
+        /* malformed stored URL: keep the generic label, the engine still runs */
+      }
       // Niche for the engine's benchmark bands. The hostname's first label ("acme") almost
       // never matches a category, which silently used the generic band; prefer the niche the
       // pipeline detected from the screenshot, then the stored winners' niche, then a keyword scan.

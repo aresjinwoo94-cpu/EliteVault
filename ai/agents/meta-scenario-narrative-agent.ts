@@ -80,6 +80,8 @@ export async function runScenarioNarrative(opts: {
         fast: true,
         signal: opts.signal,
         deadlineAt: opts.deadlineAt,
+        // Exactly ONE provider call per simulation: no deferred hedge (a second draw = a second quota hit).
+        hedgeAfterMs: 0,
         parts: [
           {
             text:

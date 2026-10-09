@@ -44,8 +44,8 @@ export interface RoasRange {
  * story. Keys are matched as substrings against the (lowercased) niche.
  */
 const NICHE_BANDS: { keys: string[]; band: [number, number] }[] = [
-  { keys: ["skincare", "beauty", "cosmetic", "makeup"], band: [1.8, 3.5] },
-  { keys: ["supplement", "vitamin", "health", "nutrition"], band: [1.2, 2.5] },
+  { keys: ["skincare", "beauty", "cosmetic", "makeup", "grooming"], band: [1.8, 3.5] },
+  { keys: ["supplement", "vitamin", "health", "nutrition", "wellness"], band: [1.2, 2.5] },
   { keys: ["jewel", "jewellery", "watch"], band: [2.0, 4.0] },
   { keys: ["pet", "dog", "cat"], band: [2.0, 4.0] },
   { keys: ["fashion", "apparel", "clothing", "wear", "footwear", "shoe"], band: [1.5, 3.0] },
@@ -54,7 +54,7 @@ const NICHE_BANDS: { keys: string[]; band: [number, number] }[] = [
   { keys: ["electronic", "gadget", "tech"], band: [1.2, 2.5] },
   { keys: ["food", "snack", "beverage", "drink", "coffee", "tea"], band: [1.3, 2.5] },
   { keys: ["toy", "kid", "baby"], band: [1.5, 3.0] },
-  { keys: ["accessor"], band: [1.5, 2.5] },
+  { keys: ["accessor", "eyewear", "glasses"], band: [1.5, 2.5] },
 ];
 
 /** Market-average band for stores whose niche we can't classify. */

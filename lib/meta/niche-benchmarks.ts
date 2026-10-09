@@ -33,8 +33,8 @@ type RawBand = {
 const DEFAULT_CVR: [number, number] = [0.012, 0.035];
 
 const NICHE_TABLE: RawBand[] = [
-  { keys: ["skincare", "beauty", "cosmetic", "makeup"], cpm: [15, 30], ctr: [0.015, 0.04], roas: [1.8, 3.5], cvr: [0.015, 0.04] },
-  { keys: ["supplement", "vitamin", "health", "nutrition"], cpm: [25, 50], ctr: [0.008, 0.025], roas: [1.2, 2.5], cvr: [0.01, 0.03] },
+  { keys: ["skincare", "beauty", "cosmetic", "makeup", "grooming"], cpm: [15, 30], ctr: [0.015, 0.04], roas: [1.8, 3.5], cvr: [0.015, 0.04] },
+  { keys: ["supplement", "vitamin", "health", "nutrition", "wellness"], cpm: [25, 50], ctr: [0.008, 0.025], roas: [1.2, 2.5], cvr: [0.01, 0.03] },
   { keys: ["jewel", "jewellery", "watch"], cpm: [20, 40], ctr: [0.01, 0.02], roas: [2.0, 4.0], cvr: [0.008, 0.025] },
   { keys: ["pet", "dog", "cat"], cpm: [15, 25], ctr: [0.015, 0.03], roas: [2.0, 4.0], cvr: [0.015, 0.035] },
   { keys: ["fashion", "apparel", "clothing", "wear", "footwear", "shoe"], cpm: [12, 22], ctr: [0.01, 0.03], roas: [1.5, 3.0], cvr: [0.012, 0.035] },
@@ -43,7 +43,7 @@ const NICHE_TABLE: RawBand[] = [
   { keys: ["electronic", "gadget"], cpm: [20, 35], ctr: [0.01, 0.02], roas: [1.2, 2.5] },
   { keys: ["food", "snack", "beverage", "drink", "coffee", "tea"], cpm: [15, 25], ctr: [0.01, 0.03], roas: [1.3, 2.5] },
   { keys: ["toy", "kid", "baby"], cpm: [12, 22], ctr: [0.01, 0.03], roas: [1.5, 3.0] },
-  { keys: ["tech", "accessor"], cpm: [15, 25], ctr: [0.015, 0.03], roas: [1.5, 2.5] },
+  { keys: ["tech", "accessor", "eyewear", "glasses"], cpm: [15, 25], ctr: [0.015, 0.03], roas: [1.5, 2.5] },
 ];
 
 // Market-average fallback (blend of the table) for unclassifiable niches.

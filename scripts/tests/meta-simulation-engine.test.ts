@@ -18,8 +18,8 @@ import { fallbackNarrative, sanitizeNarrative } from "../../lib/meta/scenario-na
 
 const NICHES = ["skincare", "apparel", "pet", "home", "fitness", "beverage", "jewelry", "supplement", "baby", "accessories", "unknown-thing", ""];
 const SCORES = [0, 15, 30, 39, 40, 54, 55, 69, 70, 84, 85, 100];
-const AOVS = [9, 25, 60, 150, 600];
-const BUDGETS = [10, 50, 200, 1000];
+const AOVS = [5, 9, 25, 60, 150, 600];
+const BUDGETS = [3, 5, 10, 50, 200, 1000];
 const COUNTRIES: SimulatorCountry[] = ["US", "EU-W", "EU-S", "LATAM", "INDIA-SEA", "WW"];
 const PRODUCTS: SimulatorProductType[] = ["physical", "digital", "subscription", "service"];
 const RIVALS: SimulatorCompetitiveness[] = ["low", "medium", "high", "extreme"];
@@ -58,7 +58,7 @@ test("conservative ≤ balanced ≤ aggressive in ROAS and purchases for every i
     assert.ok(t("balanced").purchases <= t("aggressive").purchases + 1e-9, `purchases b≤a ${JSON.stringify(i)}`);
     assert.ok(t("conservative").spend < t("balanced").spend && t("balanced").spend < t("aggressive").spend);
   }
-  assert.ok(n > 2000, `grid too small: ${n}`);
+  assert.ok(n > 4000, `grid too small: ${n}`);
 });
 
 test("the funnel arithmetic holds on every day and totals are the sums of the days", () => {
@@ -90,6 +90,7 @@ test("hard ceilings: ROAS never exceeds the score ceiling, the variant cap or 6x
     const ceil = scoreRoasCeiling(Math.max(0, Math.min(100, i.score)));
     for (const v of ["conservative", "balanced", "aggressive"] as const) {
       assert.ok(s[v].totals.roas <= Math.min(ceil, 6) + 0.011, `${v} ${s[v].totals.roas} > ${ceil} for ${JSON.stringify(i)}`);
+      for (const d of s[v].days) assert.ok(d.roas <= Math.min(ceil, 6) + 0.011, `${v} day ${d.day} roas ${d.roas} > ${ceil}`);
     }
     if (i.score < 40) assert.ok(s.aggressive.totals.roas <= 1.2 + 0.011, "weak stores never project > 1.2x");
   }
@@ -246,4 +247,37 @@ test("the optimizer and the simulator tell the same story: same benchmark table"
   const bands = nicheBenchmarks("pet")!;
   // The simulator's day-4 CPM (no learning penalty, US, medium rivalry) sits inside the same band the optimizer is clamped to.
   assert.ok(t.cpm >= bands.cpm[0] * 0.9 && t.cpm <= bands.cpm[1] * 1.3);
+});
+
+test("ordering survives rounding at tiny budgets/AOVs (regression: totals were summed from rounded days)", () => {
+  const bad: SimInputs = { niche: "Electronics", score: 54, aovUsd: 10, dailyBudgetUsd: 5, marginPct: 30, country: "CA", productType: "service", competitiveness: "medium", month: 9 };
+  const s = simulateAll(bad);
+  assert.ok(s.conservative.totals.roas <= s.balanced.totals.roas && s.balanced.totals.roas <= s.aggressive.totals.roas);
+  assert.ok(s.conservative.totals.purchases <= s.balanced.totals.purchases && s.balanced.totals.purchases <= s.aggressive.totals.purchases);
+  // Deterministic fuzz over the whole low-budget corner.
+  let seed = 12345;
+  const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32);
+  for (let k = 0; k < 20000; k++) {
+    const i: SimInputs = {
+      niche: NICHES[Math.floor(rnd() * NICHES.length)],
+      score: Math.floor(rnd() * 101),
+      aovUsd: Math.round(1 + rnd() * 300),
+      dailyBudgetUsd: Math.round((1 + rnd() * 30) * 100) / 100,
+      country: COUNTRIES[Math.floor(rnd() * COUNTRIES.length)],
+      productType: PRODUCTS[Math.floor(rnd() * PRODUCTS.length)],
+      competitiveness: RIVALS[Math.floor(rnd() * RIVALS.length)],
+      month: Math.floor(rnd() * 12),
+    };
+    const r = simulateAll(i);
+    assert.ok(r.conservative.totals.roas <= r.balanced.totals.roas && r.balanced.totals.roas <= r.aggressive.totals.roas, JSON.stringify(i));
+    assert.ok(r.conservative.totals.purchases <= r.balanced.totals.purchases && r.balanced.totals.purchases <= r.aggressive.totals.purchases, JSON.stringify(i));
+  }
+});
+
+test("niches the Library actually produces map to a benchmark row, not the generic fallback", () => {
+  const generic = nicheBenchmarks("zzz-unknown")!;
+  for (const n of ["wellness", "grooming", "eyewear", "skincare", "pet", "baby", "home", "apparel", "beverage", "accessories", "footwear", "fitness", "beauty"]) {
+    const b = nicheBenchmarks(n)!;
+    assert.notDeepEqual(b.cpm, generic.cpm, n);
+  }
 });

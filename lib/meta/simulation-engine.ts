@@ -186,33 +186,40 @@ function baseDays(i: SimInputs, variant: Variant): SimDay[] {
 }
 
 function finish(i: SimInputs, variant: Variant, days: SimDay[]): SimScenarioNumbers {
-  // Hard ceiling: scale revenue/purchases down (never up) so total ROAS ≤ min(score ceiling, variant cap).
+  // Hard ceiling: scale revenue/purchases down (never up) so ROAS <= min(score ceiling, variant cap) -
+  // for the 7-day total AND for every single day (a day can't beat the ceiling the total can't).
   const spend = days.reduce((a, d) => a + d.spend, 0);
   const rawRevenue = days.reduce((a, d) => a + d.revenue, 0);
   const cap = Math.min(scoreRoasCeiling(i.score), VARIANT_ROAS_CAP[variant], 6);
   const scale = spend > 0 && rawRevenue / spend > cap ? (cap * spend) / rawRevenue : 1;
 
-  const out: SimDay[] = days.map((d) => {
-    const purchases = d.purchases * scale;
-    const revenue = d.revenue * scale;
-    return {
-      day: d.day,
-      spend: r2(d.spend),
-      impressions: Math.round(d.impressions),
-      clicks: Math.round(d.clicks),
-      ctr: Math.round(d.ctr * 10000) / 10000,
-      cpc: r2(d.cpc),
-      cpm: r2(d.cpm),
-      purchases: r2(purchases),
-      revenue: r2(revenue),
-      cpa: purchases > 0 ? r2(d.spend / purchases) : 0,
-      roas: d.spend > 0 ? r2(revenue / d.spend) : 0,
-    };
+  // Unrounded, capped days. Totals are computed from THESE and rounded once at the end:
+  // summing per-day rounded cents let rounding noise exceed the real gap between variants
+  // at tiny budgets and break conservative <= balanced <= aggressive.
+  const exact = days.map((d) => {
+    const revScaled = d.revenue * scale;
+    const revenue = d.spend > 0 ? Math.min(revScaled, cap * d.spend) : revScaled;
+    const purchases = d.revenue > 0 ? d.purchases * (revenue / d.revenue) : 0;
+    return { ...d, revenue, purchases };
   });
 
-  const tSpend = out.reduce((a, d) => a + d.spend, 0);
-  const tRevenue = out.reduce((a, d) => a + d.revenue, 0);
-  const tPurchases = out.reduce((a, d) => a + d.purchases, 0);
+  const out: SimDay[] = exact.map((d) => ({
+    day: d.day,
+    spend: r2(d.spend),
+    impressions: Math.round(d.impressions),
+    clicks: Math.round(d.clicks),
+    ctr: Math.round(d.ctr * 10000) / 10000,
+    cpc: r2(d.cpc),
+    cpm: r2(d.cpm),
+    purchases: r2(d.purchases),
+    revenue: r2(d.revenue),
+    cpa: d.purchases > 0 ? r2(d.spend / d.purchases) : 0,
+    roas: d.spend > 0 ? r2(d.revenue / d.spend) : 0,
+  }));
+
+  const tSpend = exact.reduce((a, d) => a + d.spend, 0);
+  const tRevenue = exact.reduce((a, d) => a + d.revenue, 0);
+  const tPurchases = exact.reduce((a, d) => a + d.purchases, 0);
   const roas = tSpend > 0 ? tRevenue / tSpend : 0;
   const [lo, hi] = RANGE[variant];
 
