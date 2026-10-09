@@ -11,7 +11,7 @@
  *   • Reproducible — a pure function of (score, niche). Same inputs → same
  *     range, always. No randomness, no time dependence.
  *   • Niche-aware — bands mirror the modeler's own 2024-25 niche benchmark
- *     table (ai/agents/meta-campaign-scenario-agent.ts). Unknown niches fall
+ *     table (lib/meta/niche-benchmarks.ts / simulation-engine.ts). Unknown niches fall
  *     back to a market-average band.
  *   • Honest at the low end — a weak store (score < ~50) produces a range
  *     whose LOW end dips below 1.0x (a net loss), because that's what cold

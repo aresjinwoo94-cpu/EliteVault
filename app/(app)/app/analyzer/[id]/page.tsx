@@ -140,7 +140,7 @@ export default async function AnalysisPage({
       // Server-side gate: the stored niche winners never leave the server, and
       // the Meta Ads Optimizer payload only reaches plans that can run Meta
       // (the only viewers the report renders it for).
-      initial={toClientAnalysis(analysis, { canRunMeta }) as never}
+      initial={toClientAnalysis(analysis, { canSeeOptimizer: plan.unlocksScale }) as never}
       viewer={{
         canPublish: plan.canPublish,
         publishedSlug,

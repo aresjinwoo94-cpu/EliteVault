@@ -72,9 +72,9 @@ const ROW = {
 };
 
 test("the stored niche winners (real stores + revenue) NEVER reach the client, for any plan", () => {
-  for (const canRunMeta of [false, true]) {
-    const out = toClientAnalysis(ROW, { canRunMeta }) as Record<string, unknown>;
-    assert.equal("niche_winners" in out, false, `canRunMeta=${canRunMeta}`);
+  for (const canSeeOptimizer of [false, true]) {
+    const out = toClientAnalysis(ROW, { canSeeOptimizer }) as Record<string, unknown>;
+    assert.equal("niche_winners" in out, false, `canSeeOptimizer=${canSeeOptimizer}`);
     assert.doesNotMatch(JSON.stringify(out), /rival\.com|140000/);
   }
 });
@@ -83,14 +83,14 @@ test("the stored niche winners (real stores + revenue) NEVER reach the client, f
 // viewers who can run Meta — that is unchanged. Everyone else (anonymous, Free,
 // a paid user who downgraded) must not receive it.
 test("the Meta Ads Optimizer payload reaches the client only for viewers who can run Meta", () => {
-  assert.equal((toClientAnalysis(ROW, { canRunMeta: false }) as { meta_ads: unknown }).meta_ads, null);
-  assert.deepEqual((toClientAnalysis(ROW, { canRunMeta: true }) as { meta_ads: unknown }).meta_ads, ROW.meta_ads);
-  assert.equal((toClientAnalysis({ ...ROW, meta_ads: undefined }, { canRunMeta: true }) as { meta_ads: unknown }).meta_ads, null);
+  assert.equal((toClientAnalysis(ROW, { canSeeOptimizer: false }) as { meta_ads: unknown }).meta_ads, null);
+  assert.deepEqual((toClientAnalysis(ROW, { canSeeOptimizer: true }) as { meta_ads: unknown }).meta_ads, ROW.meta_ads);
+  assert.equal((toClientAnalysis({ ...ROW, meta_ads: undefined }, { canSeeOptimizer: true }) as { meta_ads: unknown }).meta_ads, null);
 });
 
 test("the gate keeps everything else and does not mutate the row", () => {
   const snapshot = JSON.stringify(ROW);
-  const out = toClientAnalysis(ROW, { canRunMeta: false }) as Record<string, unknown>;
+  const out = toClientAnalysis(ROW, { canSeeOptimizer: false }) as Record<string, unknown>;
   assert.equal(out.id, "a1");
   assert.equal(out.status, "succeeded");
   assert.deepEqual(out.result, { score: 61 });
@@ -107,7 +107,7 @@ test("the polling endpoint's gate follows the same rule, failing closed", () => 
   assert.equal(canRun("scale"), true);
   assert.match(
     code("app/api/analyses/[id]/route.ts"),
-    /plan != null && \(plan\.quotas\.metaRunsPerMonth \?\? 1\) !== 0/,
+    /plan != null && plan\.unlocksScale/,
     "an unknown or missing plan must fail closed",
   );
 });
@@ -118,12 +118,12 @@ test("every page and endpoint that hands an analysis to the client goes through 
   // before); what matters is that the gate is what gets passed.
   assert.match(
     owned,
-    /initial=\{toClientAnalysis\(analysis,\s*\{\s*canRunMeta\s*\}\)(\s+as\s+\w+)?\}/,
+    /initial=\{toClientAnalysis\(analysis,\s*\{\s*canSeeOptimizer:\s*plan\.unlocksScale\s*\}\)(\s+as\s+\w+)?\}/,
   );
   const anon = code("app/audit/[id]/page.tsx");
-  assert.match(anon, /initial=\{toClientAnalysis\(row,\s*\{\s*canRunMeta:\s*false\s*\}\)(\s+as\s+\w+)?\}/);
+  assert.match(anon, /initial=\{toClientAnalysis\(row,\s*\{\s*canSeeOptimizer:\s*false\s*\}\)(\s+as\s+\w+)?\}/);
   const preview = code("app/preview/anon-audit/page.tsx");
-  assert.match(preview, /toClientAnalysis\(row,\s*\{\s*canRunMeta:\s*false\s*\}\)/);
+  assert.match(preview, /toClientAnalysis\(row,\s*\{\s*canSeeOptimizer:\s*false\s*\}\)/);
   const poll = code("app/api/analyses/[id]/route.ts");
   assert.match(poll, /gateMetaAds\(/);
 

@@ -8,8 +8,8 @@
  * than show a naked number.
  *
  * Numbers mirror the 2024-25 cold-traffic benchmark table baked into the
- * Meta Campaign Scenario agent (ai/agents/meta-campaign-scenario-agent.ts) so
- * the optimizer and the modeler tell the same story. Ranges are 0..1 for
+ * Meta Campaign Scenario engine (lib/meta/simulation-engine.ts) so
+ * the optimizer and the modeler tell the same story (the engine reads THIS table). Ranges are 0..1 for
  * rates (ctr/cvr), USD for cpm/cpc, and a multiple for roas.
  */
 

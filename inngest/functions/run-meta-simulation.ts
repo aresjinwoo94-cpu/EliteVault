@@ -3,6 +3,7 @@ import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { runMetaSimulation } from "@/ai/agents/run-meta-simulation";
 import { runMetaAdsOptimizerAgent } from "@/ai/agents/meta-ads-optimizer-agent";
 import { enterMeter } from "@/lib/usage/context";
+import { resolveNiche } from "@/lib/library/niche-winners";
 import type {
   AnalysisResult,
   BuyerPersona,
@@ -14,8 +15,8 @@ import type {
  *
  * Triggered by the `meta-simulation/requested` event when a Scale-plan
  * user submits AOV + daily budget on an existing analysis. Runs the
- * 3-scenario orchestrator (which itself fans out into 3 parallel
- * Gemini Flash-Lite calls) and persists whatever succeeded.
+ * orchestrator: a deterministic engine computes all numbers and ONE AI call
+ * writes the narrative (falls back to a templated one), then persists.
  *
  * Partial success is FINE here — if 1 of 3 scenarios blows up we still
  * write the other 2 with `status='succeeded'` and surface the errors
@@ -90,7 +91,7 @@ export const runMetaSimulationFn = inngest.createFunction(
     const ctx = await step.run("load-analysis-context", async () => {
       const { data: row, error: err } = await service
         .from("analyses")
-        .select("url, result, user_id, meta_ads, buyer_persona")
+        .select("url, result, user_id, meta_ads, buyer_persona, detected_niche, niche_winners")
         .eq("id", analysisId)
         .single();
       if (err || !row) {
@@ -108,16 +109,25 @@ export const runMetaSimulationFn = inngest.createFunction(
       const host = row.url
         ? new URL(row.url).hostname.replace("www.", "")
         : "ecommerce";
-      const niche = host.split(".")[0];
+      // Niche for the engine's benchmark bands. The hostname's first label ("acme") almost
+      // never matches a category, which silently used the generic band; prefer the niche the
+      // pipeline detected from the screenshot, then the stored winners' niche, then a keyword scan.
+      // (cast: the hand-written Database type collapses selects to `never`, see typecheck baseline)
+      const nrow = row as unknown as { detected_niche?: unknown; niche_winners?: { niche?: unknown } | null; url?: string | null };
+      const niche =
+        (typeof nrow.detected_niche === "string" && nrow.detected_niche.trim()) ||
+        (typeof nrow.niche_winners?.niche === "string" && nrow.niche_winners.niche.trim()) ||
+        resolveNiche({ url: nrow.url ?? null, summary: result.summary ?? null }) ||
+        host.split(".")[0];
       return {
         url: row.url ?? "",
         score: result.score,
         summary: result.summary ?? "",
         niche,
-        // Fase 2 — the Meta BLOCK bundles the Optimizer with the Modeler.
-        // If this analysis has no Ads-Optimizer output yet (Pro audits skip
-        // it at audit time to save cost), compute it now as part of this run.
-        needsMetaAds: row.meta_ads == null,
+        // The Ads Optimizer is a SCALE feature (pricing + owner decision 2026-10-09). If a
+        // Scale user's analysis has no Optimizer output yet, compute it as part of this run.
+        // Pro runs the Modeler only — never the Optimizer (also gated at the payload).
+        needsMetaAds: row.meta_ads == null && plan === "scale",
         topFixes: result.top_fixes ?? [],
         persona: (row.buyer_persona as BuyerPersona | null) ?? null,
       };
@@ -166,11 +176,9 @@ export const runMetaSimulationFn = inngest.createFunction(
         .eq("id", simulationId);
     });
 
-    // Step 5 (Fase 2 P0-2): the Meta block = Modeler + Ads Optimizer as ONE
-    // unit. If the analysis lacks Ads-Optimizer output (Pro audits skip it at
-    // audit time), compute + persist it now so a Pro user's single monthly run
-    // delivers both. Skipped for Scale (already computed at audit time) and
-    // never blocks the simulation result if it fails.
+    // Step 5: Ads Optimizer — SCALE ONLY (Pro's monthly run is the Modeler alone; the
+    // pricing page lists the Optimizer under Scale). Computed + persisted here when a
+    // Scale user's analysis lacks it; never blocks the simulation result if it fails.
     if (ctx.needsMetaAds) {
       await step.run("run-meta-ads-optimizer", async () => {
         try {

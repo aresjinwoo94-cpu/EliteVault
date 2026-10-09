@@ -126,7 +126,7 @@ async function AnonAuditPageInner({
     <AnalysisView
       // Server-side gate: the stored niche winners (real stores + revenue) are
       // read above for the locked card and never leave the server.
-      initial={toClientAnalysis(row, { canRunMeta: false }) as never}
+      initial={toClientAnalysis(row, { canSeeOptimizer: false }) as never}
       viewer={{
         canPublish: false,
         publishedSlug: null,

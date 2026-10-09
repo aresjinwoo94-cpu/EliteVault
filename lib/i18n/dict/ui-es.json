@@ -654,7 +654,15 @@
     "chartAria": "Inversión frente a ingresos a 7 días, máximo aprox. {max} $",
     "proOnePerMo": "Pro · 1 / mes",
     "usedOfMonth": "{used} de {limit} este mes",
-    "remainingOf": "{remaining} de {limit}"
+    "remainingOf": "{remaining} de {limit}",
+    "rangeLabel": "Rango modelado",
+    "breakEven": "ROAS de equilibrio",
+    "verdictProfit": "Este escenario gana unos {n} tras el gasto en anuncios con tu margen del {m} % (antes de otros costes).",
+    "verdictLoss": "Este escenario pierde unos {n} tras el gasto en anuncios con tu margen del {m} %.",
+    "verdictBreakEven": "Este escenario queda cerca del punto de equilibrio tras el gasto en anuncios con tu margen del {m} %.",
+    "noMargin": "Añade tu margen bruto para ver el ROAS de equilibrio y tu ganancia o pérdida real.",
+    "netAfterAds": "Neto tras anuncios",
+    "lockedTagline": "Proyecta una campaña de Meta Ads en 3 escenarios honestos — conservador, equilibrado, agresivo — antes de gastar un dólar"
   },
   "optimizer": {
     "title": "Optimizador de Meta Ads",
@@ -678,7 +686,8 @@
     "fmtImage": "Imagen única",
     "fmtCarousel": "Carrusel",
     "fmtUgc": "Vídeo UGC",
-    "fmtDemo": "Vídeo demo"
+    "fmtDemo": "Vídeo demo",
+    "lockedTagline": "Objetivos de CPC, CPM, CTR y ROAS calibrados a TU auditoría, más plan de pruebas y ángulos creativos"
   },
   "scaleLocked": {
     "seedDemo": "30-45 EE. UU./CA · intereses de tu nicho · lookalike de compradores recientes · retargeting tolerante a iOS desde el día 4",
