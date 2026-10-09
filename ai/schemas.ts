@@ -133,6 +133,25 @@ export const CaptureBlockedSchema = z.object({
   reason: z.string().max(300).nullable().optional(),
 });
 
+/**
+ * Fix Tracks §3.3 — up to 6 hex colours the model already SEES in the
+ * screenshot (~30 output tokens). Only requested when ANALYZER_FIX_TRACKS is on
+ * (see ANALYSIS_TOOL_SCHEMA_WITH_PALETTE). Tolerant like potential_why: garbage
+ * becomes undefined, never a validation failure (a failure triggers the repair
+ * pass = a 2nd AI call).
+ */
+export const HEX_RE = /^#[0-9a-f]{6}$/i;
+export const ObservedPaletteSchema = z.preprocess((v) => {
+  if (!Array.isArray(v)) return undefined;
+  const out = v
+    .filter((s): s is string => typeof s === "string")
+    .map((s) => s.trim())
+    .filter((s) => HEX_RE.test(s))
+    .map((s) => s.toLowerCase())
+    .slice(0, 6);
+  return out.length ? out : undefined;
+}, z.array(z.string()).optional());
+
 export const AnalysisResultSchema = z.object({
   /**
    * Brief §1/§2 — `score` and `scenarios` are NO LONGER emitted by the model.
@@ -171,6 +190,8 @@ export const AnalysisResultSchema = z.object({
    * repair pass. Absent is read as "not blocked".
    */
   capture_blocked: CaptureBlockedSchema.optional(),
+  /** Fix Tracks §3.3 — hex colours seen in the screenshot (flag ANALYZER_FIX_TRACKS). */
+  observed_palette: ObservedPaletteSchema,
   /**
    * 2-3 store-specific reasons behind the $ potential band, written by the model
    * inside the same analyzer call (no new AI call). The band itself is computed
@@ -195,6 +216,50 @@ export const AnalysisResultSchema = z.object({
     .optional(),
 });
 export type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
+
+/**
+ * One fix inside a Fix Track. Same shape as TopFix PLUS `evidence` — what on
+ * THIS store's page justifies it. A fix without a concrete evidence string is
+ * dropped in code (lib/analyzer/fix-tracks.ts), never shown.
+ */
+export const FixTrackFixSchema = z.object({
+  title: z.string().min(3).max(120),
+  impact: z.enum(["high", "medium", "low"]),
+  effort: z.enum(["S", "M", "L"]),
+  why: z.string().max(280).optional(),
+  evidence: z.string().min(12).max(300),
+  /** theme_colors only — must be one of lib/analyzer/shopify-themes.ts. */
+  theme_slug: z.string().max(40).optional(),
+});
+export type FixTrackFix = z.infer<typeof FixTrackFixSchema>;
+
+export const FixTrackSchema = z.object({
+  fixes: z.array(FixTrackFixSchema).max(3),
+});
+export type FixTrackOutput = z.infer<typeof FixTrackSchema>;
+
+export const FIX_TRACK_TOOL_SCHEMA = {
+  type: "object",
+  properties: {
+    fixes: {
+      type: "array",
+      maxItems: 3,
+      items: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          impact: { type: "string", enum: ["high", "medium", "low"] },
+          effort: { type: "string", enum: ["S", "M", "L"] },
+          why: { type: "string" },
+          evidence: { type: "string" },
+          theme_slug: { type: "string" },
+        },
+        required: ["title", "impact", "effort", "why", "evidence"],
+      },
+    },
+  },
+  required: ["fixes"],
+} as const;
 
 export const RewriteResultSchema = z.object({
   section: z.string(),
@@ -336,6 +401,28 @@ export const ANALYSIS_TOOL_SCHEMA = {
     "ad_readiness",
     "potential_why",
   ],
+} as const;
+
+/**
+ * ANALYSIS_TOOL_SCHEMA + `observed_palette` (Fix Tracks §3.3). Used ONLY when
+ * ANALYZER_FIX_TRACKS is on; the default schema is untouched so flag-off audits
+ * are byte-identical. REQUIRED here because Gemini's responseSchema silently
+ * drops optional keys; the Zod side stays optional + tolerant.
+ */
+export const ANALYSIS_TOOL_SCHEMA_WITH_PALETTE = {
+  ...ANALYSIS_TOOL_SCHEMA,
+  properties: {
+    ...ANALYSIS_TOOL_SCHEMA.properties,
+    observed_palette: {
+      type: "array",
+      minItems: 3,
+      maxItems: 6,
+      items: { type: "string" },
+      description:
+        "The 3-6 dominant brand colours visible in the screenshot, as #rrggbb hex, most prominent first.",
+    },
+  },
+  required: [...ANALYSIS_TOOL_SCHEMA.required, "observed_palette"],
 } as const;
 
 export const REWRITE_TOOL_SCHEMA = {
