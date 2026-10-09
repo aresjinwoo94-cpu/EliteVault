@@ -21,6 +21,7 @@ let anonToken: string | null = null;
 let agentCalls = 0;
 let agentResult: { fixes: unknown[]; haystack: string } | null = null;
 let missingColumn = false;
+let teardownError = false;
 
 function state(row: Row): Record<string, unknown> {
   return (row.fix_tracks as Record<string, unknown>) ?? {};
@@ -34,10 +35,10 @@ const rpcs: Record<string, (a: Record<string, unknown>) => unknown> = {
   },
   fix_tracks_claim: ({ p_id, p_track }) => {
     const row = analyses.find((r) => r.id === p_id)!;
-    const cur = state(row)[p_track as string] as { fixes?: unknown; pending_at?: string } | undefined;
+    const cur = state(row)[p_track as string] as { fixes?: unknown; pending_at?: string; attempts?: number } | undefined;
     const stale = cur?.pending_at && Date.now() - new Date(cur.pending_at).getTime() > 30_000;
-    if (!cur || (!cur.fixes && stale)) {
-      row.fix_tracks = { ...state(row), [p_track as string]: { pending_at: new Date().toISOString() } };
+    if (!cur || (!cur.fixes && stale && (cur.attempts ?? 0) < 3)) {
+      row.fix_tracks = { ...state(row), [p_track as string]: { pending_at: new Date().toISOString(), attempts: (cur?.attempts ?? 0) + 1 } };
       return true;
     }
     return false;
@@ -65,7 +66,8 @@ function builder(table: string) {
       }
       return { data: null, error: null };
     },
-    then: (res: (v: unknown) => unknown) => res({ data: table === "winning_sites" ? teardowns : [], error: null }),
+    then: (res: (v: unknown) => unknown) =>
+      res(table === "winning_sites" && teardownError ? { data: null, error: { message: "db down" } } : { data: table === "winning_sites" ? teardowns : [], error: null }),
   };
   return b;
 }
@@ -135,6 +137,7 @@ beforeEach(() => {
   agentCalls = 0;
   agentResult = { fixes: goodFixes, haystack: "" };
   missingColumn = false;
+  teardownError = false;
   process.env.ANALYZER_FIX_TRACKS = "true";
 });
 
@@ -270,5 +273,32 @@ test("a track already claimed by another request is not generated again (second 
   const second = await call("theme_colors");
   assert.equal(second.status, 202);
   assert.equal(second.body.pending, true);
+  assert.equal(agentCalls, 0);
+});
+
+test("free user hitting an empty competitor state does NOT burn the one free choice", async () => {
+  teardowns = [];
+  const r = await call("competitor");
+  assert.equal(r.body.empty, "no_competitor");
+  assert.equal(r.body.choice, null);
+  assert.equal(state(analyses[0]).free_choice, undefined);
+  // …so the free user can still pick another track afterwards.
+  assert.equal((await call("post_purchase")).status, 200);
+});
+
+test("winning_sites query error is a 503, not a fake empty state, and burns nothing", async () => {
+  teardownError = true;
+  const r = await call("competitor");
+  assert.equal(r.status, 503);
+  assert.equal(state(analyses[0]).free_choice, undefined);
+  assert.equal(agentCalls, 0);
+});
+
+test("after 3 failed attempts the track stops spending AI (429)", async () => {
+  profiles.u1 = "pro";
+  analyses[0].fix_tracks = { post_purchase: { pending_at: new Date(Date.now() - 60_000).toISOString(), attempts: 3 } };
+  const r = await call("post_purchase");
+  assert.equal(r.status, 429);
+  assert.equal(r.body.error, "attempts_exhausted");
   assert.equal(agentCalls, 0);
 });

@@ -99,7 +99,9 @@ export async function runFixTrack(opts: {
       "2. evidence = a SHORT quote/paraphrase of a concrete detail from THIS store's findings below (its brand/domain, a named finding, a colour, a score). A fix that could apply to any store is worthless — omit it.\n" +
       "3. No invented numbers: never write a % or $ figure, uplift or revenue estimate. These are estimates, not guarantees.\n" +
       "4. BANNED filler: 'improve your CRO', 'optimize your store', 'best practices', 'increase conversions', 'boost sales'.\n" +
-      "5. Only use facts in the data below; if the data is thin, return fewer fixes.\n" +
+      "5. Never name a Shopify theme in title/why/evidence unless it is in ALLOWED THEMES (and then set theme_slug).
+" +
+      "6. Only use facts in the data below; if the data is thin, return fewer fixes.\n" +
       (locale === "es"
         ? "LANGUAGE: write every human-readable string in natural Spanish. Keep enum values, JSON keys and slugs exactly as the schema requires."
         : "LANGUAGE: English.");

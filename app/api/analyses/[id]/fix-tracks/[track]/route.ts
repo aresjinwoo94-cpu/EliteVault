@@ -9,6 +9,7 @@ import {
   decideAccess,
   gateFixes,
   isGeneratedTrack,
+  MAX_TRACK_ATTEMPTS,
   parseNicheWinners,
   parseState,
   parseTrack,
@@ -126,6 +127,44 @@ export async function GET(
       { status: 403, headers: NO_STORE },
     );
   }
+  let competitor: CompetitorContext | null = null;
+  let competitorMeta: Record<string, unknown> | null = null;
+  // ── competitor: pick the same-niche winner with a teardown (no AI yet) ──
+  // Resolved BEFORE the free choice is recorded: an empty/failed lookup must not consume it.
+  if (track === "competitor" && !state.tracks.competitor?.fixes?.length) {
+    const winners = parseNicheWinners(row.niche_winners).filter((w) => w.exactMatch);
+    const teardowns = new Map<string, Teardown>();
+    if (winners.length) {
+      const { data: td, error: tdErr } = await service
+        .from("winning_sites")
+        .select("domain, teardown")
+        .in("domain", winners.map((w) => w.domain))
+        .eq("status", "published")
+        .not("teardown", "is", null);
+      if (tdErr) {
+        // A DB blip must not look like "no competitor" (and must not burn the free choice).
+        return NextResponse.json({ error: "unavailable" }, { status: 503, headers: NO_STORE });
+      }
+      for (const r of (td ?? []) as unknown as { domain: string; teardown: Teardown | null }[]) {
+        if (r.teardown?.elements?.length) teardowns.set(r.domain, r.teardown);
+      }
+    }
+    const pick = pickCompetitor(winners, teardowns);
+    if (!pick) {
+      return NextResponse.json(
+        { track, viewer, choice: viewer === "paid" ? null : state.free_choice, empty: "no_competitor", fixes: [] },
+        { headers: NO_STORE },
+      );
+    }
+    competitor = { title: pick.winner.title, domain: pick.winner.domain, teardown: pick.teardown };
+    competitorMeta = {
+      title: pick.winner.title,
+      domain: pick.winner.domain,
+      url: pick.winner.url,
+      faviconUrl: pick.winner.faviconUrl ?? null,
+    };
+  }
+
   if (access.kind === "choose") {
     const { data: won, error: rpcErr } = await service.rpc("fix_tracks_choose", {
       p_id: id,
@@ -167,37 +206,12 @@ export async function GET(
     );
   }
 
-  // ── competitor: pick the same-niche winner with a teardown (no AI yet) ──
-  let competitor: CompetitorContext | null = null;
-  let competitorMeta: Record<string, unknown> | null = null;
-  if (track === "competitor") {
-    const winners = parseNicheWinners(row.niche_winners).filter((w) => w.exactMatch);
-    const teardowns = new Map<string, Teardown>();
-    if (winners.length) {
-      const { data: td } = await service
-        .from("winning_sites")
-        .select("domain, teardown")
-        .in("domain", winners.map((w) => w.domain))
-        .eq("status", "published")
-        .not("teardown", "is", null);
-      for (const r of (td ?? []) as unknown as { domain: string; teardown: Teardown | null }[]) {
-        if (r.teardown?.elements?.length) teardowns.set(r.domain, r.teardown);
-      }
-    }
-    const pick = pickCompetitor(winners, teardowns);
-    if (!pick) {
-      return NextResponse.json(
-        { track, viewer, choice, empty: "no_competitor", fixes: [] },
-        { headers: NO_STORE },
-      );
-    }
-    competitor = { title: pick.winner.title, domain: pick.winner.domain, teardown: pick.teardown };
-    competitorMeta = {
-      title: pick.winner.title,
-      domain: pick.winner.domain,
-      url: pick.winner.url,
-      faviconUrl: pick.winner.faviconUrl ?? null,
-    };
+  // Hard cap: after MAX_TRACK_ATTEMPTS failed generations stop spending AI on this track.
+  if (!stored?.fixes?.length && (stored?.attempts ?? 0) >= MAX_TRACK_ATTEMPTS) {
+    return NextResponse.json(
+      { error: "attempts_exhausted", track, viewer, choice },
+      { status: 429, headers: NO_STORE },
+    );
   }
 
   // ── claim + generate (exactly one AI call) ─────────────────────────────

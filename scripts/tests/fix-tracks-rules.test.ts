@@ -67,6 +67,12 @@ test("theme_slug outside the closed list drops the fix; a listed slug is kept", 
   assert.equal(sanitizeFixes([fix({ theme_slug: "dawn" })], { track: "post_purchase", haystack: HAY })[0].theme_slug, undefined);
 });
 
+test("theme_slug null or empty is treated as absent, not a rejection", () => {
+  const opts = { track: "theme_colors" as const, haystack: HAY };
+  assert.equal(sanitizeFixes([fix({ theme_slug: null })], opts).length, 1);
+  assert.equal(sanitizeFixes([fix({ theme_slug: "" })], opts).length, 1);
+});
+
 test("at most 3 fixes survive", () => {
   const many = Array.from({ length: 6 }, (_, i) => fix({ title: `Boots upsell number ${i}` }));
   assert.equal(sanitizeFixes(many, { track: "post_purchase", haystack: HAY }).length, 3);

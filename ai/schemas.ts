@@ -229,7 +229,8 @@ export const FixTrackFixSchema = z.object({
   why: z.string().max(280).optional(),
   evidence: z.string().min(12).max(300),
   /** theme_colors only — must be one of lib/analyzer/shopify-themes.ts. */
-  theme_slug: z.string().max(40).optional(),
+  // Gemini sometimes emits null / "" for an optional field: treat as absent, never reject the fix.
+  theme_slug: z.preprocess((v) => (typeof v === "string" && v.trim() ? v : undefined), z.string().max(40).optional()),
 });
 export type FixTrackFix = z.infer<typeof FixTrackFixSchema>;
 

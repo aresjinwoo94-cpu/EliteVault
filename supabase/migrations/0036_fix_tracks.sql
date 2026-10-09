@@ -11,7 +11,8 @@
 -- double-clicks / two tabs ATOMIC (a read-then-write in the route can't):
 --   • fix_tracks_choose  — set free_choice only if still unset, return the winner.
 --   • fix_tracks_claim   — claim the right to generate a track (one AI call),
---                          stale or failed claims (> 30 s, which doubles as the retry cool-down) can be re-claimed.
+--                          stale or failed claims (> 30 s, which doubles as the retry cool-down) can be
+--                          re-claimed, at most 3 attempts per track (hard cap on AI spend).
 --   • fix_tracks_store   — write the finished track / clear a failed claim.
 -- Service-role only (revoked from anon/authenticated).
 --
@@ -53,7 +54,9 @@ declare
 begin
   update public.analyses
      set fix_tracks = coalesce(fix_tracks, '{}'::jsonb)
-                      || jsonb_build_object(p_track, jsonb_build_object('pending_at', now()))
+                      || jsonb_build_object(p_track, jsonb_build_object(
+                        'pending_at', now(),
+                        'attempts', coalesce((fix_tracks->p_track->>'attempts')::int, 0) + 1))
    where id = p_id
      and (
        fix_tracks is null
@@ -61,6 +64,7 @@ begin
        or (
          fix_tracks->p_track->'fixes' is null
          and (fix_tracks->p_track->>'pending_at')::timestamptz < now() - interval '30 seconds'
+         and coalesce((fix_tracks->p_track->>'attempts')::int, 0) < 3
        )
      );
   get diagnostics v_rows = row_count;

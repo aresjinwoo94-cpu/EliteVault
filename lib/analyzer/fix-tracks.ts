@@ -25,7 +25,11 @@ export interface StoredTrack {
   meta?: Record<string, unknown>;
   generated_at?: string;
   pending_at?: string;
+  attempts?: number;
 }
+
+/** Max generation attempts per track per analysis (mirrors fix_tracks_claim in 0036). */
+export const MAX_TRACK_ATTEMPTS = 3;
 export interface FixTracksState {
   free_choice: Track | null;
   tracks: Partial<Record<GeneratedTrack, StoredTrack>>;
