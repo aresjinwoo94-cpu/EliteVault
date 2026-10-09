@@ -178,7 +178,7 @@ export function FixTracks({
     setActive(track);
     setStatus({ kind: "idle" });
     setLocked(false);
-    if (isPaid || !choice || choice === track) writeUrl(track);
+    if (isPaid || choice === track) writeUrl(track);
     if (isPaid) {
       setConfirming(null);
       if (track === "urgent") phCapture("fix_track_selected", { track, plan, cached: true });
@@ -202,6 +202,7 @@ export function FixTracks({
     if (!confirming) return;
     const track = confirming;
     setConfirming(null);
+    writeUrl(track); // only once the viewer has confirmed the (final) choice
     void load(track);
   };
 

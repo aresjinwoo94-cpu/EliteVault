@@ -11,10 +11,8 @@ import {
   gateFixes,
   isGeneratedTrack,
   MAX_TRACK_ATTEMPTS,
-  parseNicheWinners,
   parseState,
   parseTrack,
-  pickCompetitor,
   type Viewer,
 } from "@/lib/analyzer/fix-tracks";
 

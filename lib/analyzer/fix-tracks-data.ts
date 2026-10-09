@@ -18,6 +18,16 @@ export type CompetitorResolution =
   | { ok: false; reason: "none" | "error" };
 
 export async function resolveCompetitor(storedNicheWinners: unknown): Promise<CompetitorResolution> {
+  // Never throws: the report pages await this, and a missing env / rejected fetch must
+  // degrade to "error" (button stays enabled), not take the whole report down.
+  try {
+    return await resolve(storedNicheWinners);
+  } catch {
+    return { ok: false, reason: "error" };
+  }
+}
+
+async function resolve(storedNicheWinners: unknown): Promise<CompetitorResolution> {
   const winners = parseNicheWinners(storedNicheWinners).filter((w) => w.exactMatch);
   if (winners.length === 0) return { ok: false, reason: "none" };
   const { data, error } = await createSupabaseServiceClient()
