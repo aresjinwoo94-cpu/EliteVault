@@ -307,7 +307,7 @@ export const BLOG_POSTS: BlogPost[] = [
 </ul>
 <div class="callout"><h3>Honesty check</h3><p>AI won't replace a great consultant for hands-on implementation, bespoke brand strategy, or untangling a messy backend. But for the <em>diagnosis</em> — the expensive, commoditized part — it now matches a senior first pass. Pay humans for the cure, not the X-ray.</p></div>
 <h2>The math that ends the debate</h2>
-<p>A consultant audit: $1,500–$2,000, one store, one moment in time, 5–10 business days turnaround. An AI audit: under a minute, re-runnable every time you change something, and <a href="/free-website-audit">free on your first run</a>. When you can re-audit after every iteration instead of once a quarter, you don't just save money — you compound improvements faster than a consultant cadence ever allowed. (Not sure what "good" even looks like? See <a href="/blog/good-conversion-rate-for-shopify">what's a good conversion rate for Shopify</a>. Or see <a href="/blog/store-audit-review-my-store-feedback">what "review my store" threads keep saying</a>.)</p>
+<p>A consultant audit: $1,500–$2,000, one store, one moment in time, 5–10 business days turnaround. An AI audit: under a minute, re-runnable every time you change something, and <a href="/free-website-audit">free on your first run</a>. When you can re-audit after every iteration instead of once a quarter, you don't just save money — you compound improvements faster than a consultant cadence ever allowed. (Not sure what "good" even looks like? See <a href="/blog/good-conversion-rate-for-shopify">what's a good conversion rate for Shopify</a>. Or see <a href="/blog/ecommerce-cro-specialist">what a CRO specialist does</a>, or <a href="/blog/store-audit-review-my-store-feedback">what "review my store" threads keep saying</a>.)</p>
 <p>That's the real reason this stings for the audit-as-a-service crowd. It's not that AI is cheaper. It's that it removes the artificial scarcity their whole pricing depended on.</p>
 `.trim(),
     faqs: [
@@ -453,7 +453,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <h2>How to find <em>your</em> specific leaks</h2>
 <p>The fixes above are universal, but the order that matters for <strong>your</strong> store is specific. The fastest way to find it is to look at your homepage the way a skeptical buyer (or a senior media buyer) would. That's exactly what <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=how-to-increase-shopify-conversion-rate">EliteVault's free audit</a> does: it scores your store across layout, imagery, CRO principles and niche fit, annotates the screenshot with the exact problems, and ranks the fixes by leverage — so you're not guessing which of these 11 to do first.</p>
 
-<p>Once you've shipped the top three, re-audit and measure. Conversion optimization is a loop, not a one-time project. If you're not sure where you stand, start by checking <a href="/blog/why-your-shopify-store-isnt-converting">why your store might not be converting</a>, then <a href="/pricing">see how the full audit works</a>.</p>
+<p>Once you've shipped the top three, re-audit and measure. Conversion optimization is a loop, not a one-time project. If you're not sure where you stand, start by checking <a href="/blog/why-your-shopify-store-isnt-converting">why your store might not be converting</a>, then <a href="/pricing">see how the full audit works</a>. When you have the traffic to run tests, here is <a href="/blog/ecommerce-cro-specialist">what an ecommerce CRO specialist does</a>.</p>
 `.trim(),
     faqs: [
       {
@@ -1438,6 +1438,115 @@ ${teaserVideo}
       {
         q: "Is there a free store audit?",
         a: "Yes. EliteVault's free audit page scans your store, and the Free plan includes one full audit with your score, an annotated screenshot and your top-priority fix. The rest of the ranked fixes and unlimited audits need a paid plan.",
+      },
+    ],
+  },
+  {
+    slug: "ecommerce-cro-specialist",
+    title: "Ecommerce CRO Specialist: What They Do & When to Hire",
+    h1: "What does an ecommerce CRO specialist actually do — and when is it worth hiring one?",
+    description:
+      "What an ecommerce CRO specialist does: offer tests, post-purchase upsells, product-page fixes and funnel analysis. How the work splits and when to hire.",
+    keyword: "ecommerce cro specialist",
+    keywords: [
+      "ecommerce cro specialist",
+      "post-purchase upsell",
+      "shopify cro specialist",
+      "hire cro specialist",
+      "ecommerce conversion rate optimization",
+    ],
+    date: "2026-10-08",
+    updated: "2026-10-08",
+    author: "Ariel Jiménez",
+    readingMinutes: 3,
+    excerpt:
+      "Offer tests, post-purchase upsells, product pages and funnel analysis: what an ecommerce CRO specialist does, and when hiring one pays off.",
+    bodyHtml: `
+<p class="lede">An <strong>ecommerce CRO specialist</strong> finds where visitors drop off, then tests offers, pages and upsells to raise profit per visitor. It's worth paying for because most of the work is testing, not ideas: 70.22% of carts are abandoned (Baymard, 2025), and each fix needs proof. Here is the job, and when to hire.</p>
+
+${teaserVideo}
+
+<h2>What does an ecommerce CRO specialist actually do?</h2>
+<p>We recently saw a listing for a CRO and post-purchase upsell specialist across several Shopify stores. Its scope shows the job well. Underneath, it's one loop:</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">The working loop</div>
+<div class="mt-4"><svg viewBox="0 0 340 312" class="w-full h-auto" style="max-width:420px;margin:0 auto;display:block" role="img" aria-label="The working loop of an ecommerce CRO specialist in five steps: 1, find the leak with funnel data and a store audit; 2, form a hypothesis, one change for one reason; 3, run the test of an offer, an upsell or a page; 4, read the result in profit per visitor, not just average order value; 5, keep, change or retest, then pick the next test."><line x1="30" y1="26" x2="30" y2="274" stroke="rgba(45,212,191,0.4)" stroke-width="2" /><rect x="10" y="4" width="320" height="52" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><circle cx="30" cy="30" r="12" fill="#0b0f14" stroke="#2DD4BF" stroke-width="2" /><text x="30" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="#2DD4BF">1</text><text x="52" y="26" font-size="16" font-weight="600" fill="#ffffff">Find the leak</text><text x="52" y="45" font-size="14.5" fill="rgba(255,255,255,0.6)">Funnel data plus a store audit</text><rect x="10" y="66" width="320" height="52" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><circle cx="30" cy="92" r="12" fill="#0b0f14" stroke="#2DD4BF" stroke-width="2" /><text x="30" y="97" text-anchor="middle" font-size="14" font-weight="700" fill="#2DD4BF">2</text><text x="52" y="88" font-size="16" font-weight="600" fill="#ffffff">Form a hypothesis</text><text x="52" y="107" font-size="14.5" fill="rgba(255,255,255,0.6)">One change, one reason</text><rect x="10" y="128" width="320" height="52" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><circle cx="30" cy="154" r="12" fill="#0b0f14" stroke="#2DD4BF" stroke-width="2" /><text x="30" y="159" text-anchor="middle" font-size="14" font-weight="700" fill="#2DD4BF">3</text><text x="52" y="150" font-size="16" font-weight="600" fill="#ffffff">Run the test</text><text x="52" y="169" font-size="14.5" fill="rgba(255,255,255,0.6)">An offer, an upsell or a page</text><rect x="10" y="190" width="320" height="52" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><circle cx="30" cy="216" r="12" fill="#0b0f14" stroke="#2DD4BF" stroke-width="2" /><text x="30" y="221" text-anchor="middle" font-size="14" font-weight="700" fill="#2DD4BF">4</text><text x="52" y="212" font-size="16" font-weight="600" fill="#ffffff">Read the result</text><text x="52" y="231" font-size="14.5" fill="rgba(255,255,255,0.6)">Profit per visitor, not just AOV</text><rect x="10" y="252" width="320" height="52" rx="12" fill="rgba(45,212,191,0.12)" stroke="#2DD4BF" stroke-width="1.5" /><circle cx="30" cy="278" r="12" fill="#0b0f14" stroke="#2DD4BF" stroke-width="2" /><text x="30" y="283" text-anchor="middle" font-size="14" font-weight="700" fill="#2DD4BF">5</text><text x="52" y="274" font-size="16" font-weight="600" fill="#2DD4BF">Keep, change, retest</text><text x="52" y="293" font-size="14.5" fill="rgba(255,255,255,0.6)">Then pick the next test</text></svg></div>
+<figcaption class="mt-3 text-xs text-white/35">Based on the scope in a recent public job listing, simplified.</figcaption>
+</figure>
+
+<h2>What does the work cover?</h2>
+<p>The listing asked for five areas. Each one is a test, not a redesign. That is the point: small, measured changes beat a big redesign you can't evaluate.</p>
+
+<figure class="my-8">
+<table>
+<thead>
+<tr><th>Area</th><th>What gets tested</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td>Offers</td><td>Pricing, bundles, quantity breaks, free-shipping thresholds</td><td>Raises order value</td></tr>
+<tr><td>Post-purchase</td><td>Upsell and downsell after checkout</td><td>Adds revenue without new traffic</td></tr>
+<tr><td>Product page</td><td>Clarity, trust, objections</td><td>Lifts conversion</td></tr>
+<tr><td>Cart</td><td>Cross-sells and thresholds</td><td>Grows basket size</td></tr>
+<tr><td>Funnel</td><td>Where and why buyers drop</td><td>Points the next test</td></tr>
+</tbody>
+</table>
+</figure>
+
+<h2>Why is the goal profit per visitor, not just AOV?</h2>
+<p>A higher average order value can still lose money if discounts, shipping or refunds eat it. The listing said as much: higher order value helps only when it produces better overall profit. Many checkout leaks are about cost and friction:</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">Friction a specialist tests against</div>
+<div class="mt-4"><div class="grid gap-3 sm:grid-cols-3">
+<div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+<div class="font-mono text-[11px] uppercase tracking-widest text-white/40">Abandoned</div>
+<div class="mt-1 text-2xl font-semibold text-white">70.22%</div>
+<div class="mt-1 text-xs text-white/45">of carts, on average</div>
+</div>
+<div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+<div class="font-mono text-[11px] uppercase tracking-widest text-white/40">Top reason</div>
+<div class="mt-1 text-2xl font-semibold text-white">40%</div>
+<div class="mt-1 text-xs text-white/45">extra costs at checkout</div>
+</div>
+<div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+<div class="font-mono text-[11px] uppercase tracking-widest text-white/40">Forced account</div>
+<div class="mt-1 text-2xl font-semibold text-white">18%</div>
+<div class="mt-1 text-xs text-white/45">left over account creation</div>
+</div>
+</div></div>
+<figcaption class="mt-3 text-xs text-white/35">Source: <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">Baymard Institute</a> (updated September 2025). Respondents could pick more than one reason.</figcaption>
+</figure>
+
+<h2>Who does what: audit, specialist or developer?</h2>
+<p>They overlap less than you'd think. An audit finds the leak. A specialist turns it into tests. A developer builds what the test needs. It's easy to hire the third role first and find out too late that nobody was deciding what to build.</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">Typical split of work</div>
+<div class="mt-4"><svg viewBox="0 0 340 258" class="w-full h-auto" style="max-width:420px;margin:0 auto;display:block" role="img" aria-label="Typical split of work. Store audit: finds the leak. CRO specialist: finds the leak, designs the test, runs the test and owns the results. Developer: builds the changes."><text x="185" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Store</text><text x="185" y="34" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">audit</text><text x="252" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">CRO</text><text x="252" y="34" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">specialist</text><text x="314" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Developer</text><line x1="0" y1="46" x2="340" y2="46" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="72" font-size="14.5" fill="rgba(255,255,255,0.75)">Finds the leak</text><circle cx="185" cy="67" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 180 67 L 183.5 71 L 190.5 63" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><circle cx="252" cy="67" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 247 67 L 250.5 71 L 257.5 63" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="309" y1="67" x2="319" y2="67" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="0" y1="88" x2="340" y2="88" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="114" font-size="14.5" fill="rgba(255,255,255,0.75)">Designs the test</text><line x1="180" y1="109" x2="190" y2="109" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="252" cy="109" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 247 109 L 250.5 113 L 257.5 105" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="309" y1="109" x2="319" y2="109" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="0" y1="130" x2="340" y2="130" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="156" font-size="14.5" fill="rgba(255,255,255,0.75)">Runs the test</text><line x1="180" y1="151" x2="190" y2="151" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="252" cy="151" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 247 151 L 250.5 155 L 257.5 147" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="309" y1="151" x2="319" y2="151" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="0" y1="172" x2="340" y2="172" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="198" font-size="14.5" fill="rgba(255,255,255,0.75)">Builds changes</text><line x1="180" y1="193" x2="190" y2="193" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="247" y1="193" x2="257" y2="193" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="314" cy="193" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 309 193 L 312.5 197 L 319.5 189" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="0" y1="214" x2="340" y2="214" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="240" font-size="14.5" fill="rgba(255,255,255,0.75)">Owns results</text><line x1="180" y1="235" x2="190" y2="235" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="252" cy="235" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 247 235 L 250.5 239 L 257.5 231" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="309" y1="235" x2="319" y2="235" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /></svg></div>
+<figcaption class="mt-3 text-xs text-white/35">Typical split; real roles vary, and many specialists also build.</figcaption>
+</figure>
+
+<h2>When is it worth hiring one?</h2>
+<p>When you have enough traffic to test and a known leak worth testing. With very little traffic, fix the obvious problems first; a test can't settle. Start by running a <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=ecommerce-cro-specialist">free store audit →</a> so you hire for a real problem. Full disclosure, EliteVault is our tool, and it reads a screenshot of your live storefront.</p>
+<p>Weighing options? Compare <a href="/blog/ecommerce-store-audit-vs-consultant">an audit with a consultant</a>, work the <a href="/blog/how-to-increase-shopify-conversion-rate">highest-leverage fixes</a> yourself, or see what <a href="/blog/store-audit-review-my-store-feedback">"review my store" threads keep saying</a>.</p>
+`.trim(),
+    faqs: [
+      {
+        q: "What does an ecommerce CRO specialist do?",
+        a: "They find where visitors drop off in your funnel, form hypotheses, run tests on offers, product pages, carts and upsells, and report what to keep, change or test next. The aim is more profit per visitor, not only a higher conversion rate.",
+      },
+      {
+        q: "What is a post-purchase upsell?",
+        a: "An extra offer shown right after checkout, usually one click to add, with a cheaper downsell if the buyer declines. It adds revenue from customers who already decided to buy, without changing the original checkout.",
+      },
+      {
+        q: "Do I need a CRO specialist or just a store audit?",
+        a: "Start with an audit. It shows which leaks exist and which matter most. Bring in a specialist when you have enough traffic to run tests and a leak worth testing. Hiring before you know the problem usually means paying to find it.",
+      },
+      {
+        q: "Is a higher average order value always good?",
+        a: "No. Higher order value only helps when it improves overall profit. Discounts, shipping costs and refunds can erase the gain, which is why profit per visitor is the better target.",
       },
     ],
   },
