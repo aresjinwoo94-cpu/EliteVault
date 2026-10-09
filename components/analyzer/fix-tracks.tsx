@@ -72,12 +72,15 @@ export function FixTracks({
   isPaid,
   isAnon,
   initialChoice,
+  competitorAvailable,
 }: {
   analysisId: string;
   urgentFixes: Fix[];
   isPaid: boolean;
   isAnon: boolean;
   initialChoice: Track | null;
+  /** False ⇒ the niche has no same-niche winner with a teardown: button disabled, not selectable. */
+  competitorAvailable: boolean;
 }) {
   const { t } = useT();
   const plan = isPaid ? "paid" : isAnon ? "anon" : "free";
@@ -92,9 +95,14 @@ export function FixTracks({
   const [locked, setLocked] = useState(false);
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reqSeq = useRef(0);
+  const mounted = useRef(true);
 
-  useEffect(() => () => {
-    if (pollTimer.current) clearTimeout(pollTimer.current);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      if (pollTimer.current) clearTimeout(pollTimer.current);
+    };
   }, []);
 
   const writeUrl = useCallback((track: Track | null) => {
@@ -115,7 +123,7 @@ export function FixTracks({
       setLocked(false);
       try {
         const res = await fetch(`/api/analyses/${analysisId}/fix-tracks/${track}`, { cache: "no-store" });
-        if (seq !== reqSeq.current) return;
+        if (seq !== reqSeq.current || !mounted.current) return;
         const body = (await res.json().catch(() => ({}))) as Record<string, any>;
         if (res.status === 200) {
           setData((d) => ({ ...d, [track]: { fixes: body.fixes ?? null, empty: body.empty, meta: body.meta ?? null } }));
@@ -148,7 +156,8 @@ export function FixTracks({
 
   // Deep link (?fixes=…) — paid open the tab; free/anon only the one they own.
   useEffect(() => {
-    const fromUrl = readUrlTrack();
+    const fromUrlRaw = readUrlTrack();
+    const fromUrl = fromUrlRaw === "competitor" && !competitorAvailable ? null : fromUrlRaw;
     if (!fromUrl) {
       if (active && active !== "urgent" && !data[active]) void load(active);
       return;
@@ -163,15 +172,17 @@ export function FixTracks({
   }, []);
 
   const select = (track: Track) => {
+    if (track === "competitor" && !competitorAvailable) return;
     if (pollTimer.current) clearTimeout(pollTimer.current);
     reqSeq.current++;
     setActive(track);
     setStatus({ kind: "idle" });
     setLocked(false);
-    writeUrl(track);
+    if (isPaid || !choice || choice === track) writeUrl(track);
     if (isPaid) {
       setConfirming(null);
-      if (track !== "urgent" && !data[track]) void load(track);
+      if (track === "urgent") phCapture("fix_track_selected", { track, plan, cached: true });
+      else if (!data[track]) void load(track);
       return;
     }
     if (choice && track !== choice) {
@@ -197,8 +208,9 @@ export function FixTracks({
   const onKey = (e: React.KeyboardEvent, i: number) => {
     if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
     e.preventDefault();
+    // Arrows only MOVE focus; Enter/Space (the button's click) activates. Activating on
+    // arrow would let a paid user arrow across the row and fire up to 3 AI generations.
     const next = TRACKS[(i + (e.key === "ArrowRight" ? 1 : TRACKS.length - 1)) % TRACKS.length];
-    select(next);
     document.getElementById(`fix-tab-${next}`)?.focus();
   };
 
@@ -211,6 +223,7 @@ export function FixTracks({
       {TRACKS.map((track, i) => {
         const selected = active === track;
         const lockedTab = !isPaid && !!choice && choice !== track;
+        const soon = track === "competitor" && !competitorAvailable;
         return (
           <button
             key={track}
@@ -218,18 +231,23 @@ export function FixTracks({
             role="tab"
             type="button"
             aria-selected={selected}
-            tabIndex={selected || (!active && i === 0) ? 0 : -1}
+            aria-disabled={soon || undefined}
+            title={soon ? t("fixTracks.comingSoon") : undefined}
+            tabIndex={(active ? selected : i === 0) ? 0 : -1}
             onClick={() => select(track)}
             onKeyDown={(e) => onKey(e, i)}
             className={cn(
               "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-medium transition-colors min-h-[44px]",
-              selected
+              soon
+                ? "cursor-not-allowed border-white/[0.05] bg-white/[0.01] text-white/30"
+                : selected
                 ? "border-signal-500/50 bg-signal-600/15 text-white"
                 : "border-white/[0.08] bg-white/[0.02] text-white/60 hover:border-white/20 hover:text-white",
             )}
           >
             {lockedTab && <Lock className="size-3 text-white/40" />}
             {t(TAB_KEY[track])}
+            {soon && <span className="text-[10px] font-normal text-white/40">· {t("fixTracks.comingSoon")}</span>}
           </button>
         );
       })}

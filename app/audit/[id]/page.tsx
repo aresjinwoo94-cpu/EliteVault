@@ -13,6 +13,7 @@ import {
   analyzerFixTracksEnabled,
 } from "@/lib/flags";
 import { parseState } from "@/lib/analyzer/fix-tracks";
+import { resolveCompetitor } from "@/lib/analyzer/fix-tracks-data";
 import { toClientAnalysis } from "@/lib/analyzer/client-payload";
 import type { DiscoverySignals } from "@/lib/analyzer/discovery-signals";
 
@@ -117,6 +118,10 @@ async function AnonAuditPageInner({
     stored: row.niche_winners,
   });
 
+  const competitorAvailable = analyzerFixTracksEnabled()
+    ? await resolveCompetitor(row.niche_winners).then((r) => r.ok || r.reason === "error")
+    : true;
+
   return (
     <AnalysisView
       // Server-side gate: the stored niche winners (real stores + revenue) are
@@ -136,7 +141,10 @@ async function AnonAuditPageInner({
         // analyzer-report-redesign brief §1 — the redesigned report (flag).
         reportV2: analyzerReportV2Enabled(),
         fixTracks: analyzerFixTracksEnabled()
-          ? { choice: parseState((row as { fix_tracks?: unknown }).fix_tracks).free_choice }
+          ? {
+              choice: parseState((row as { fix_tracks?: unknown }).fix_tracks).free_choice,
+              competitorAvailable,
+            }
           : undefined,
       }}
       initialSimulation={null}

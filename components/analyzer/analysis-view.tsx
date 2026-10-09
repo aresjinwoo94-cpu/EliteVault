@@ -170,7 +170,7 @@ interface ViewerCtx {
    * `choice` is the free/anonymous pick already recorded for this audit.
    * Absent ⇒ byte-identical to before.
    */
-  fixTracks?: { choice: Track | null };
+  fixTracks?: { choice: Track | null; competitorAvailable: boolean };
 }
 
 export function AnalysisView({
@@ -882,6 +882,7 @@ export function AnalysisView({
                       isPaid={viewer.isPaid}
                       isAnon={isAnon}
                       initialChoice={viewer.fixTracks.choice}
+                      competitorAvailable={viewer.fixTracks.competitorAvailable}
                     />
                   ) : (
                     <TopFixes
