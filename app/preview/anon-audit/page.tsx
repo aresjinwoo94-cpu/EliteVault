@@ -79,7 +79,7 @@ async function AnonRevealPreviewPageInner({
     <AnalysisView
       // Same server-side gate as /audit/[id]: stored niche winners stay here.
       initial={
-        toClientAnalysis(row, { canRunMeta: false }) as unknown as Parameters<
+        toClientAnalysis(row, { canSeeOptimizer: false }) as unknown as Parameters<
           typeof AnalysisView
         >[0]["initial"]
       }

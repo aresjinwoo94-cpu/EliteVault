@@ -302,3 +302,24 @@ test("the anonymous CTA carries no billing promise and is reported as sign-up in
   // The bar must be told where the rail takes over; no silent default.
   assert.match(ui, /hideAt,\s*\n\}: PromoProps & \{ hideAt: "xl" \| "2xl" \}/);
 });
+
+// Owner decision 2026-10-09: the Ads Optimizer is a SCALE feature (the pricing page says so).
+// Pro runs the Modeler only. Enforced on the server — payload, polling and the Inngest run —
+// and Pro sees the locked preview as the upsell.
+test("Optimizer is Scale-only: Pro never receives meta_ads, and its run doesn't compute it", () => {
+  for (const key of ["free", "pro"] as const) {
+    assert.equal(PLANS[key].unlocksScale, false, key);
+  }
+  assert.equal(PLANS.scale.unlocksScale, true);
+  // Pro CAN run the Modeler (1/mo) but gets no Optimizer payload:
+  assert.equal((PLANS.pro.quotas.metaRunsPerMonth ?? 1) !== 0, true);
+  assert.equal((toClientAnalysis(ROW, { canSeeOptimizer: PLANS.pro.unlocksScale }) as { meta_ads: unknown }).meta_ads, null);
+  assert.deepEqual(
+    (toClientAnalysis(ROW, { canSeeOptimizer: PLANS.scale.unlocksScale }) as { meta_ads: unknown }).meta_ads,
+    ROW.meta_ads,
+  );
+  assert.match(code("inngest/functions/run-meta-simulation.ts"), /needsMetaAds: row\.meta_ads == null && plan === "scale"/);
+  const view = code("components/analyzer/analysis-view.tsx");
+  assert.match(view, /<LockedMetaAdsPreview \/>/);
+  assert.doesNotMatch(view, /data\.meta_ads != null \? \(\s*<MetaAdsOptimizer meta=\{data\.meta_ads as never\} \/>\s*\) : viewer\.isScale/);
+});

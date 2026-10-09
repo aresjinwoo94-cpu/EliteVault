@@ -483,3 +483,34 @@ El Analyzer está rápido ahora y no puede empeorar.
 5. `npm run typecheck` y la suite de tests en verde (incluido `landing-keyword.test.ts` actualizado).
 6. Revisión visual móvil/tablet/desktop: grid 1/2/4 columnas intacto, títulos largos sin romper alturas.
 7. Subagente de verificación confirma 1–6 y que la §2.5 está resuelta antes del merge a main.
+
+---
+
+## Decisiones del dueño (2026-10-09, tras `docs/premium-audit-REPORT.md`)
+
+Estas decisiones **prevalecen** sobre lo escrito arriba donde difieran.
+
+1. **Library (H1):** filtrar `status='published' AND is_live=true` en TODO el código (listado/búsqueda, contadores, páginas SEO por nicho, dashboard) **y** cerrar la política RLS de `winning_sites` para que `anon`/`authenticated` solo lean filas publicadas y vivas. Verificar después Library, búsqueda por imagen, card de winners y páginas SEO. → WP-6.
+2. **Optimizer (H4):** Scale-only, bloqueado **en el servidor** (payload, polling y la corrida de Inngest), no solo en la UI. Pro ve `LockedMetaAdsPreview` como upsell. El pricing ("solo Scale") no cambia. → WP-5 (hecho).
+3. **Pricing (H6):** quitar "Priority queue + priority support" del pricing en en y es. Compare Mode: gatear en el servidor (Pro/Scale). Texto del plan Free: "1 auditoría gratis + eliges un tipo de fixes". → WP-6.
+4. **Cobertura (H2):** revisar las 17 tiendas en `review` y subir a `published` solo las que pasen `scripts/library/verify.mts`; luego correr discover/verify/momentum para los 6 nichos con < 5 tiendas vivas, priorizando generar **teardowns** para los 9 nichos que no tienen. → WP-6.
+   - Elegir un track vacío (`competitor` sin teardown) **no** consume `free_choice` (hecho en WP-2).
+   - Mientras el nicho del análisis no tenga un ganador con teardown, el botón `competitor` se ve **deshabilitado** con "Pronto en tu nicho / Coming soon for your niche" y no se puede elegir (hecho en WP-3).
+5. **Pruebas end-to-end con cuentas reales:** al final de WP-6, **una sola tienda, una corrida por plan** (anónimo, free, pro, scale). No repetir sin necesidad (cuota de Gemini).
+
+### Estado de los WPs
+| WP | Estado |
+|---|---|
+| WP-0 línea base de latencia | mergeado (#87) |
+| WP-1 H1 "store audit" | mergeado (#88) |
+| WP-2 Fix Tracks backend + migración 0036 (aplicada en prod 2026-10-09) | mergeado (#90) |
+| WP-3 Fix Tracks UI + tarjetas landing | mergeado (#92), flag `ANALYZER_FIX_TRACKS` ON |
+| WP-4 auditoría premium | informe en #93 |
+| WP-5 simulador determinista + Optimizer Scale-only | PR abierto |
+| WP-6 winners → tienda, Library, pricing, cobertura, E2E por plan | pendiente |
+
+### Notas de implementación WP-5
+- Motor determinista en `lib/meta/simulation-engine.ts`; la IA solo escribe la narrativa en **1** llamada (`ai/agents/meta-scenario-narrative-agent.ts`) con respaldo determinista. Invariantes cubiertos por tests de propiedades (`scripts/tests/meta-simulation-engine.test.ts`).
+- El agente por escenario (`meta-campaign-scenario-agent.ts`) se eliminó.
+- Los targets del Optimizer se recortan en código a las bandas del nicho y al rango de ROAS modelado de la auditoría (`lib/meta/optimizer-targets.ts`).
+- Limitación conocida: la narrativa del simulador sigue siendo solo en inglés (como antes).
