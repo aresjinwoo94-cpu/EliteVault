@@ -171,3 +171,15 @@ export function analyzerMetaPromoEnabled(): boolean {
 export function autoLocaleEnabled(): boolean {
   return enabled("AUTO_LOCALE", false);
 }
+
+/**
+ * Analyzer "Fix Tracks" (docs/store-audit-fix-tracks-premium.md §3).
+ *
+ * DEFAULT OFF in git. OFF ⇒ the fix-tracks route 404s, the analyzer asks for no
+ * extra field (observed_palette) and the report is byte-identical to today. It
+ * flips to ON in the same change that ships the UI + landing cards (WP-3),
+ * never before — the landing promises what the tracks deliver.
+ */
+export function analyzerFixTracksEnabled(): boolean {
+  return enabled("ANALYZER_FIX_TRACKS", false);
+}

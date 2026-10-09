@@ -2,11 +2,13 @@ import "server-only";
 import { resolveAnalyzerProviders, type GenerateOptions } from "@/ai/provider";
 import {
   ANALYSIS_TOOL_SCHEMA,
+  ANALYSIS_TOOL_SCHEMA_WITH_PALETTE,
   AnalysisResultSchema,
   type AnalysisResult,
 } from "@/ai/schemas";
 import { ANALYZER_SYSTEM, buildAnalyzerUserMessage } from "@/ai/prompts";
 import { classifyPageKind } from "@/lib/analyzer/page-kind";
+import { analyzerFixTracksEnabled } from "@/lib/flags";
 import type { BuyerPersona } from "@/lib/supabase/types";
 import { deadlineAt, isDeadlineError } from "@/lib/deadline";
 import {
@@ -227,7 +229,8 @@ export async function runAnalyzerAgent(opts: {
     name: "submit_analysis",
     description:
       "Submit the structured audit for the provided ecommerce store.",
-    schema: ANALYSIS_TOOL_SCHEMA,
+    // Fix Tracks §3.3 — palette only when the flag is on; off ⇒ byte-identical schema.
+    schema: analyzerFixTracksEnabled() ? ANALYSIS_TOOL_SCHEMA_WITH_PALETTE : ANALYSIS_TOOL_SCHEMA,
   };
   const generateOpts = {
     system: ANALYZER_SYSTEM,

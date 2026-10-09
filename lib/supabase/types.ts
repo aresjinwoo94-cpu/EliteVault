@@ -124,6 +124,8 @@ export interface AnalysisResult {
   capture_blocked?: { detected: boolean; reason?: string | null };
   /** 2-3 store-specific reasons behind the $ potential band. Absent on older audits. */
   potential_why?: string[];
+  /** Fix Tracks §3.3 — up to 6 #rrggbb colours seen in the screenshot (flag ANALYZER_FIX_TRACKS). */
+  observed_palette?: string[];
 }
 
 export interface AdReadiness {
@@ -399,6 +401,8 @@ export interface Database {
           // screenshot + the precomputed Winners payload. See niche-winners.ts.
           detected_niche: string | null;
           niche_winners: unknown;
+          // Fix Tracks cache + free choice (migration 0036) — see lib/analyzer/fix-tracks.ts.
+          fix_tracks: unknown;
           is_published: boolean;
           published_at: string | null;
           error: string | null;
