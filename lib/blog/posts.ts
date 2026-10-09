@@ -453,7 +453,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <h2>How to find <em>your</em> specific leaks</h2>
 <p>The fixes above are universal, but the order that matters for <strong>your</strong> store is specific. The fastest way to find it is to look at your homepage the way a skeptical buyer (or a senior media buyer) would. That's exactly what <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=how-to-increase-shopify-conversion-rate">EliteVault's free audit</a> does: it scores your store across layout, imagery, CRO principles and niche fit, annotates the screenshot with the exact problems, and ranks the fixes by leverage — so you're not guessing which of these 11 to do first.</p>
 
-<p>Once you've shipped the top three, re-audit and measure. Conversion optimization is a loop, not a one-time project. If you're not sure where you stand, start by checking <a href="/blog/why-your-shopify-store-isnt-converting">why your store might not be converting</a>, then <a href="/pricing">see how the full audit works</a>. When you have the traffic to run tests, here is <a href="/blog/ecommerce-cro-specialist">what an ecommerce CRO specialist does</a>.</p>
+<p>Once you've shipped the top three, re-audit and measure. Conversion optimization is a loop, not a one-time project. If you're not sure where you stand, start by checking <a href="/blog/why-your-shopify-store-isnt-converting">why your store might not be converting</a>, then <a href="/pricing">see how the full audit works</a>. When you have the traffic to run tests, here is <a href="/blog/ecommerce-cro-specialist">what an ecommerce CRO specialist does</a>, and <a href="/blog/shopify-landing-page-specialist">how to brief a landing page specialist</a>.</p>
 `.trim(),
     faqs: [
       {
@@ -1529,7 +1529,7 @@ ${teaserVideo}
 
 <h2>When is it worth hiring one?</h2>
 <p>When you have enough traffic to test and a known leak worth testing. With very little traffic, fix the obvious problems first; a test can't settle. Start by running a <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=ecommerce-cro-specialist">free store audit →</a> so you hire for a real problem. Full disclosure, EliteVault is our tool, and it reads a screenshot of your live storefront.</p>
-<p>Weighing options? Compare <a href="/blog/ecommerce-store-audit-vs-consultant">an audit with a consultant</a>, work the <a href="/blog/how-to-increase-shopify-conversion-rate">highest-leverage fixes</a> yourself, or see what <a href="/blog/store-audit-review-my-store-feedback">"review my store" threads keep saying</a>.</p>
+<p>Weighing options? Compare <a href="/blog/ecommerce-store-audit-vs-consultant">an audit with a consultant</a>, work the <a href="/blog/how-to-increase-shopify-conversion-rate">highest-leverage fixes</a> yourself, or see what <a href="/blog/store-audit-review-my-store-feedback">"review my store" threads keep saying</a>. If the fix is a new page, here is <a href="/blog/shopify-landing-page-specialist">how to brief a Shopify landing page specialist</a>.</p>
 `.trim(),
     faqs: [
       {
@@ -1547,6 +1547,105 @@ ${teaserVideo}
       {
         q: "Is a higher average order value always good?",
         a: "No. Higher order value only helps when it improves overall profit. Discounts, shipping costs and refunds can erase the gain, which is why profit per visitor is the better target.",
+      },
+    ],
+  },
+  {
+    slug: "shopify-landing-page-specialist",
+    title: "Shopify Landing Page Specialist: What They Do & How to Brief",
+    h1: "What does a Shopify landing page specialist actually do — and how do you brief one?",
+    description:
+      "What a Shopify landing page specialist does, what a good brief includes, and why page speed decides results. How to hire one without managing every step.",
+    keyword: "shopify landing page specialist",
+    keywords: [
+      "shopify landing page specialist",
+      "shopify landing page",
+      "hire shopify specialist",
+      "shopify page builder freelancer",
+      "shopify landing page speed",
+    ],
+    date: "2026-10-08",
+    updated: "2026-10-08",
+    author: "Ariel Jiménez",
+    readingMinutes: 3,
+    excerpt:
+      "What a Shopify landing page specialist does, the six-item brief that lets them work alone, and why speed decides the result.",
+    bodyHtml: `
+<p class="lede">A <strong>Shopify landing page specialist</strong> takes a reference page and a rough idea and builds it in Shopify so it looks sharp and loads clean. The build is the easy part. A clear brief and a fast page decide results: a store that loads in one second converts at 3.05%, at four seconds 0.67% (Portent, 2022).</p>
+
+${teaserVideo}
+
+<h2>What does a Shopify landing page specialist actually do?</h2>
+<p>We recently saw a listing for exactly this role: build landing pages, clean up existing stores, and rebuild layouts and features from examples. The work follows one path. The reference saves time, the rough idea says what the page must achieve, and a specialist who knows the theme's limits keeps the build quick and the code light:</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">From reference to live page</div>
+<div class="mt-4"><svg viewBox="0 0 340 312" class="w-full h-auto" style="max-width:420px;margin:0 auto;display:block" role="img" aria-label="How a Shopify landing page specialist works in five steps: 1, a reference page you want to match; 2, a rough idea with the offer, audience and one goal; 3, the build, with sections and features in Shopify; 4, a speed and mobile check so the page looks sharp on a phone and loads clean; 5, launch and measure, then fix what the data shows."><line x1="30" y1="26" x2="30" y2="274" stroke="rgba(45,212,191,0.4)" stroke-width="2" /><rect x="10" y="4" width="320" height="52" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><circle cx="30" cy="30" r="12" fill="#0b0f14" stroke="#2DD4BF" stroke-width="2" /><text x="30" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="#2DD4BF">1</text><text x="52" y="26" font-size="16" font-weight="600" fill="#ffffff">A reference page</text><text x="52" y="45" font-size="14.5" fill="rgba(255,255,255,0.6)">The page you want to match</text><rect x="10" y="66" width="320" height="52" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><circle cx="30" cy="92" r="12" fill="#0b0f14" stroke="#2DD4BF" stroke-width="2" /><text x="30" y="97" text-anchor="middle" font-size="14" font-weight="700" fill="#2DD4BF">2</text><text x="52" y="88" font-size="16" font-weight="600" fill="#ffffff">A rough idea</text><text x="52" y="107" font-size="14.5" fill="rgba(255,255,255,0.6)">Offer, audience, one goal</text><rect x="10" y="128" width="320" height="52" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><circle cx="30" cy="154" r="12" fill="#0b0f14" stroke="#2DD4BF" stroke-width="2" /><text x="30" y="159" text-anchor="middle" font-size="14" font-weight="700" fill="#2DD4BF">3</text><text x="52" y="150" font-size="16" font-weight="600" fill="#ffffff">The build</text><text x="52" y="169" font-size="14.5" fill="rgba(255,255,255,0.6)">Sections and features in Shopify</text><rect x="10" y="190" width="320" height="52" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><circle cx="30" cy="216" r="12" fill="#0b0f14" stroke="#2DD4BF" stroke-width="2" /><text x="30" y="221" text-anchor="middle" font-size="14" font-weight="700" fill="#2DD4BF">4</text><text x="52" y="212" font-size="16" font-weight="600" fill="#ffffff">Speed and mobile check</text><text x="52" y="231" font-size="14.5" fill="rgba(255,255,255,0.6)">Sharp on a phone, loads clean</text><rect x="10" y="252" width="320" height="52" rx="12" fill="rgba(45,212,191,0.12)" stroke="#2DD4BF" stroke-width="1.5" /><circle cx="30" cy="278" r="12" fill="#0b0f14" stroke="#2DD4BF" stroke-width="2" /><text x="30" y="283" text-anchor="middle" font-size="14" font-weight="700" fill="#2DD4BF">5</text><text x="52" y="274" font-size="16" font-weight="600" fill="#2DD4BF">Launch and measure</text><text x="52" y="293" font-size="14.5" fill="rgba(255,255,255,0.6)">Then fix what the data shows</text></svg></div>
+<figcaption class="mt-3 text-xs text-white/35">Simplified from the scope in a recent public job listing.</figcaption>
+</figure>
+
+<h2>What should a good brief include?</h2>
+<p>Most "we'll manage every step" projects stall on a vague brief. Give the specialist these six things and they can work alone:</p>
+
+<figure class="my-8">
+<table>
+<thead>
+<tr><th>Brief item</th><th>What to hand over</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td>Reference</td><td>One page to match, and what you like</td><td>Removes guesswork</td></tr>
+<tr><td>Goal</td><td>One action: buy, sign up, book</td><td>Keeps the page focused</td></tr>
+<tr><td>Offer</td><td>Price, bonus, guarantee</td><td>The copy depends on it</td></tr>
+<tr><td>Assets</td><td>Photos, logo, reviews</td><td>Avoids delays</td></tr>
+<tr><td>Limits</td><td>Theme, apps, brand rules</td><td>Prevents rebuilds</td></tr>
+<tr><td>Success</td><td>The number that proves it worked</td><td>Ends the debate</td></tr>
+</tbody>
+</table>
+</figure>
+
+<h2>Why do speed and clarity decide it?</h2>
+<p>A sharp page that loads slowly still loses buyers. Heavy images and stacked apps are the usual cause, and a specialist who cleans them up often helps more than one who adds sections. Clarity is the other half: a visitor should see what the page offers, and what to do next, without scrolling.</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">Conversion rate by page load time</div>
+<div class="mt-4"><svg viewBox="0 0 340 214" class="w-full h-auto" style="max-width:420px;margin:0 auto;display:block" role="img" aria-label="Ecommerce conversion rate by page load time (Portent, 2022): a site that loads in 1 second converts at 3.05%; 2 seconds, 1.68%; 3 seconds, 1.12%; 4 seconds, 0.67%."><text x="0" y="19" font-size="14.5" fill="rgba(255,255,255,0.7)">Loads in 1 second</text><rect x="0" y="26" width="244" height="16" rx="4" fill="#2DD4BF" /><text x="252" y="40" font-size="15" font-weight="600" fill="#ffffff">3.05%</text><text x="0" y="71" font-size="14.5" fill="rgba(255,255,255,0.7)">Loads in 2 seconds</text><rect x="0" y="78" width="134.4" height="16" rx="4" fill="rgba(45,212,191,0.55)" /><text x="142.4" y="92" font-size="15" font-weight="600" fill="#ffffff">1.68%</text><text x="0" y="123" font-size="14.5" fill="rgba(255,255,255,0.7)">Loads in 3 seconds</text><rect x="0" y="130" width="89.60000000000001" height="16" rx="4" fill="rgba(45,212,191,0.55)" /><text x="97.60000000000001" y="144" font-size="15" font-weight="600" fill="#ffffff">1.12%</text><text x="0" y="175" font-size="14.5" fill="rgba(255,255,255,0.7)">Loads in 4 seconds</text><rect x="0" y="182" width="53.6" height="16" rx="4" fill="rgba(45,212,191,0.55)" /><text x="61.6" y="196" font-size="15" font-weight="600" fill="#ffffff">0.67%</text></svg></div>
+<figcaption class="mt-3 text-xs text-white/35">Source: Portent, 2022, via <a href="https://cartflows.com/statistics/ecommerce-conversion/" rel="nofollow">CartFlows ecommerce conversion statistics</a>.</figcaption>
+</figure>
+
+<h2>Who does what: audit, specialist or you?</h2>
+<p>Hiring a builder before you know what's broken is the expensive order. Each role has a job:</p>
+
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">Typical split of work</div>
+<div class="mt-4"><svg viewBox="0 0 340 216" class="w-full h-auto" style="max-width:420px;margin:0 auto;display:block" role="img" aria-label="Typical split of work on a landing page. Store audit: finds what to fix and helps check the result. Specialist: builds the page and checks the result. You: set the offer and check the result."><text x="185" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Store</text><text x="185" y="34" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">audit</text><text x="252" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">Specialist</text><text x="314" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">You</text><line x1="0" y1="46" x2="340" y2="46" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="72" font-size="14.5" fill="rgba(255,255,255,0.75)">Finds what to fix</text><circle cx="185" cy="67" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 180 67 L 183.5 71 L 190.5 63" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="247" y1="67" x2="257" y2="67" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="309" y1="67" x2="319" y2="67" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="0" y1="88" x2="340" y2="88" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="114" font-size="14.5" fill="rgba(255,255,255,0.75)">Builds the page</text><line x1="180" y1="109" x2="190" y2="109" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="252" cy="109" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 247 109 L 250.5 113 L 257.5 105" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="309" y1="109" x2="319" y2="109" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="0" y1="130" x2="340" y2="130" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="156" font-size="14.5" fill="rgba(255,255,255,0.75)">Sets the offer</text><line x1="180" y1="151" x2="190" y2="151" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="247" y1="151" x2="257" y2="151" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="314" cy="151" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 309 151 L 312.5 155 L 319.5 147" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="0" y1="172" x2="340" y2="172" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="198" font-size="14.5" fill="rgba(255,255,255,0.75)">Checks the result</text><circle cx="185" cy="193" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 180 193 L 183.5 197 L 190.5 189" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><circle cx="252" cy="193" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 247 193 L 250.5 197 L 257.5 189" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><circle cx="314" cy="193" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 309 193 L 312.5 197 L 319.5 189" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /></svg></div>
+<figcaption class="mt-3 text-xs text-white/35">Typical split; real roles overlap, and many specialists also advise.</figcaption>
+</figure>
+
+<h2>How do you hire one without managing every step?</h2>
+<ol>
+<li>Run a <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-landing-page-specialist">free store audit →</a> to see what to fix first.</li>
+<li>Write the six-item brief above, with one reference page.</li>
+<li>Ask for a speed and mobile check before launch, then measure.</li>
+<li>Start with one small project to test the fit before a bigger commitment.</li>
+</ol>
+<p>Full disclosure, EliteVault is our tool, and it reads a screenshot of your live storefront. For the testing side, see <a href="/blog/ecommerce-cro-specialist">what an ecommerce CRO specialist does</a>, or the <a href="/blog/how-to-increase-shopify-conversion-rate">highest-leverage conversion fixes</a>.</p>
+`.trim(),
+    faqs: [
+      {
+        q: "What does a Shopify landing page specialist do?",
+        a: "They build landing pages in Shopify from a reference page and a rough idea, clean up and improve existing stores, and rebuild page layouts and features from examples, with the aim of pages that look sharp and load fast.",
+      },
+      {
+        q: "What should I give a Shopify specialist before they start?",
+        a: "One reference page, a single goal for the page, the offer, your assets such as photos and reviews, any limits on theme or apps, and the number that will show it worked. A clear brief matters more than a long one.",
+      },
+      {
+        q: "Does page speed really affect conversion?",
+        a: "Yes. Portent's 2022 data, cited by CartFlows, found conversion of 3.05% for sites loading in one second, 1.68% at two, 1.12% at three and 0.67% at four. Treat it as directional, since results vary by store.",
+      },
+      {
+        q: "Should I run a store audit before hiring a specialist?",
+        a: "Yes. An audit shows which problems exist and which matter most, so you brief the specialist on a real issue instead of paying them to find it. EliteVault's free audit works from a screenshot of your live storefront.",
       },
     ],
   },
