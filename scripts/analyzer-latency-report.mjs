@@ -136,6 +136,9 @@ console.log(
 );
 table("Por día (Guayaquil)", (a) => day(a.created_at));
 table("Por modelo", modelOf);
+// Who captured the page (analyses.timings.captureProvider, recorded since 2026-10-10). "caché" = served
+// from the screenshot cache; "?" = an audit from before this field existed.
+table("Por proveedor de captura", (a) => a.timings?.captureProvider ?? (a.timings?.captureCached ? "caché" : "?"));
 
 const ok = analyses.filter((a) => a.status === "succeeded");
 const t = ok.map(secs).filter((v) => v != null);

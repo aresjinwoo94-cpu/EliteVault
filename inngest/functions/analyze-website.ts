@@ -12,6 +12,7 @@ import type { AnswerInfo } from "@/ai/provider";
 import { resolveAnalyzerConcurrency } from "@/lib/inngest-concurrency";
 import type { PlanTier } from "@/lib/supabase/types";
 import { captureScreenshot } from "@/lib/screenshot";
+import type { CaptureProvider } from "@/lib/screenshot-core";
 import {
   readScreenshotCache,
   writeScreenshotCache,
@@ -295,6 +296,8 @@ export const analyzeWebsite = inngest.createFunction(
       const uploadAndUrl = async (
         base64: string,
         mediaType: "image/png" | "image/jpeg",
+        // Which provider captured it; null for a user upload (analyses.timings.captureProvider).
+        provider: CaptureProvider | null = null,
       ) => {
         const path = `${analysisId}.${extOf(mediaType)}`;
         const { error: upErr } = await service.storage
@@ -320,6 +323,7 @@ export const analyzeWebsite = inngest.createFunction(
           mediaType,
           ms: Date.now() - captureT0,
           cached: false,
+          provider,
         };
       };
 
@@ -349,6 +353,7 @@ export const analyzeWebsite = inngest.createFunction(
                 mediaType: cached.media_type,
                 ms: Date.now() - captureT0,
                 cached: true,
+                provider: null,
               };
             }
           }
@@ -365,7 +370,7 @@ export const analyzeWebsite = inngest.createFunction(
       const shot = await captureScreenshot(url, {
         budgetMs: Math.max(5_000, dl.remaining() - UPLOAD_RESERVE_MS),
       });
-      return uploadAndUrl(shot.base64, shot.mediaType);
+      return uploadAndUrl(shot.base64, shot.mediaType, shot.provider);
     };
 
     // v2.2 site discovery runs IN PARALLEL with the screenshot capture above.
