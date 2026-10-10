@@ -20,7 +20,7 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 export const metadata: Metadata = {
   title: "Winning Shopify Stores 2026 — Live Library | EliteVault",
   description:
-    "Browse a live library of winning Shopify & DTC stores validated by real revenue signals. Filter by niche, search by image similarity, and copy what actually converts.",
+    "Browse a curated library of standout Shopify & DTC stores, checked before they are published. Filter by niche, search by image similarity, and study what tends to convert.",
   keywords: [
     "winning shopify stores",
     "winning ecommerce stores",
@@ -81,7 +81,7 @@ const STEPS = [
 const FAQS = [
   {
     q: "How do you find winning Shopify stores?",
-    a: "An AI agent watches paid-social cohorts and revenue signals and surfaces stores actually generating sales right now — not a stale 'top stores' list. Each entry comes with metrics so you study winners that are genuinely working, filtered by niche.",
+    a: "We curate it: an AI assistant proposes candidate stores in each niche, and every one passes automated checks (site live, complete listing, niche fit) before it is published. Each entry shows modeled metrics so you can study what is likely working — they are estimates, not figures reported by the brands, and the library is re-checked periodically rather than in real time.",
   },
   {
     q: "Is the winning-stores library free?",

@@ -35,7 +35,7 @@ interface Row {
   title: string | null;
   niche: string | null;
   metrics: { conv_rate?: number; traffic_est?: number } | null;
-  ad_signals: { active_ads?: number } | null;
+  ad_signals: ({ active_ads?: number } & Record<string, unknown>) | null;
   active_ads_count: number | null;
   ads_last_checked_at: string | null;
 }
@@ -89,12 +89,15 @@ const outcome = await mapSettled(
           ? row.ad_signals.active_ads
           : null;
     let adsCheckedAt = row.ads_last_checked_at;
+    // Set ONLY when Meta really answered; it is the sole proof the UI accepts (lib/library/ad-signal.ts).
+    let measuredSignals: Record<string, unknown> | null = null;
 
     if (useMeta) {
       const { activeAds: fresh } = await countActiveAds(row.title || row.domain);
       if (fresh !== null) {
         activeAds = fresh;
         adsCheckedAt = now;
+        measuredSignals = { ...(row.ad_signals ?? {}), active_ads: fresh, source: "meta_ad_library", measured_at: now, estimated: false };
         metaHits++;
       }
     }
@@ -116,7 +119,10 @@ const outcome = await mapSettled(
 
     const patch: Record<string, unknown> = {
       active_ads_count: activeAds,
-      ads_last_checked_at: adsCheckedAt ?? now,
+      // Previously `?? now`: every run stamped a "checked" date on rows Meta never answered for,
+      // which made seeded numbers look freshly measured. Keep it null unless really measured.
+      ads_last_checked_at: adsCheckedAt,
+      ...(measuredSignals ? { ad_signals: measuredSignals } : {}),
       est_conv_rate: conv,
       est_revenue_low: revenue?.low ?? null,
       est_revenue_high: revenue?.high ?? null,

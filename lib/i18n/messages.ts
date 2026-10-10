@@ -165,7 +165,7 @@ const en: Dict = {
     studyLabel: "Path 2 — Model",
     studyTitle: "Or study the ones already converting",
     studyBody:
-      "Browse a live library of winning Shopify & DTC stores validated by real revenue signals. Filter by niche and find the winners structurally closest to yours.",
+      "Browse a curated library of standout Shopify & DTC stores, checked before they are published. Filter by niche and find the stores structurally closest to yours.",
     studyCta: "Browse winning stores",
   },
   footer: {
@@ -274,9 +274,9 @@ const en: Dict = {
     heading: "More than a checklist tool.",
     subheading:
       "EliteVault is the kind of leverage that used to belong to agencies and growth consultants. Now it lives in your dashboard.",
-    feature1Title: "A live portfolio of winners",
+    feature1Title: "A curated library of winners",
     feature1Body:
-      "An AI agent watches paid-social cohorts and surfaces stores actually generating revenue right now — not a stale Pinterest board.",
+      "An AI assistant proposes standout stores in each niche and every one is checked before it is published — not a stale Pinterest board. Metrics are modeled estimates and labelled as such.",
     feature2Title: "Image-similarity search",
     feature2Body:
       "Drop a screenshot of your own store. We find the closest converting siblings by visual structure — not by tags.",
@@ -286,7 +286,7 @@ const en: Dict = {
     feature4Title: "Campaign Scenario Modeler",
     feature4Body:
       "Project a 7-day Meta Ads campaign across 3 honest scenarios — conservative, balanced, aggressive — calibrated to your audit, AOV and budget. Included on Pro (1 projection/month), unlimited on Scale. Estimates, not guarantees.",
-    feature1Live: "Live",
+    feature1Live: "Est.",
     feature2Match: "match",
     feature2Your: "Your store",
     feature2Close: "Closest match",
@@ -563,14 +563,14 @@ const en: Dict = {
   winnersPage: {
     badge1: "WINNING STORES LIBRARY",
     badge2: "REVENUE-VALIDATED, NOT A MOODBOARD",
-    heroH1: "A live library of winning ecommerce stores",
+    heroH1: "A curated library of winning ecommerce stores",
     heroBody:
       "Browse Shopify and DTC stores that are actually generating revenue right now — filter by niche, see full metrics, and find the winners structurally closest to yours with image-similarity search. Then audit your own store free.",
     heroCta: "Browse winning stores",
     heroCaption: "3 winners free · no credit card",
     whatH2: "What's inside the library",
     whatSub:
-      "Not a Pinterest board of pretty stores — winners validated by real revenue signals.",
+      "Not a Pinterest board of pretty stores — curated winners, checked before they are published.",
     card1Label: "Stores actually selling",
     card1Body:
       "An AI agent surfaces stores generating revenue now from paid-social cohorts — not a stale 'top 10' list recycled since 2023.",
@@ -1124,7 +1124,7 @@ const es: Dict = {
     studyLabel: "Camino 2 — Modela",
     studyTitle: "O estudia las que ya están convirtiendo",
     studyBody:
-      "Explora una biblioteca viva de tiendas Shopify y DTC ganadoras validadas por señales reales de ingresos. Filtra por nicho y encuentra las más parecidas a la tuya.",
+      "Explora una biblioteca curada de tiendas Shopify y DTC destacadas, comprobadas antes de publicarse. Filtra por nicho y encuentra las más parecidas a la tuya.",
     studyCta: "Ver tiendas ganadoras",
   },
   footer: {
@@ -1233,9 +1233,9 @@ const es: Dict = {
     heading: "Mucho más que una herramienta de checklist.",
     subheading:
       "EliteVault es el tipo de ventaja que antes solo tenían las agencias y los consultores de growth. Ahora vive en tu dashboard.",
-    feature1Title: "Un portafolio de ganadores en vivo",
+    feature1Title: "Una biblioteca curada de ganadores",
     feature1Body:
-      "Un agente de IA vigila los cohortes de paid social y te muestra tiendas que de verdad están generando ingresos ahora mismo — no un tablero de Pinterest desactualizado.",
+      "Un asistente de IA propone tiendas destacadas en cada nicho y cada una se comprueba antes de publicarse, no un tablero de Pinterest desactualizado. Las métricas son estimaciones modeladas y se etiquetan como tales.",
     feature2Title: "Búsqueda por similitud de imagen",
     feature2Body:
       "Sube una captura de tu propia tienda. Encontramos las tiendas que más convierten parecidas a la tuya por estructura visual — no por etiquetas.",
@@ -1245,7 +1245,7 @@ const es: Dict = {
     feature4Title: "Modelador de Escenarios de Campaña",
     feature4Body:
       "Proyecta una campaña de Meta Ads de 7 días en 3 escenarios honestos — conservador, equilibrado, agresivo — calibrados a tu auditoría, tu AOV y tu presupuesto. Incluido en Pro (1 proyección/mes), ilimitado en Scale. Estimaciones, no garantías.",
-    feature1Live: "En vivo",
+    feature1Live: "Est.",
     feature2Match: "match",
     feature2Your: "Tu tienda",
     feature2Close: "Más parecida",
@@ -1521,14 +1521,14 @@ const es: Dict = {
   winnersPage: {
     badge1: "LIBRERÍA DE TIENDAS GANADORAS",
     badge2: "VALIDADAS POR INGRESOS, NO UN MOODBOARD",
-    heroH1: "Una librería en vivo de tiendas ecommerce ganadoras",
+    heroH1: "Una librería curada de tiendas ecommerce ganadoras",
     heroBody:
       "Explora tiendas de Shopify y DTC que de verdad están generando ingresos ahora mismo — filtra por nicho, mira métricas completas y encuentra las ganadoras más parecidas a la tuya con búsqueda por similitud de imagen. Luego audita tu propia tienda gratis.",
     heroCta: "Explorar tiendas ganadoras",
     heroCaption: "3 ganadoras gratis · sin tarjeta",
     whatH2: "Qué hay dentro de la librería",
     whatSub:
-      "No un tablero de Pinterest de tiendas bonitas — ganadoras validadas por señales reales de ingresos.",
+      "No un tablero de Pinterest de tiendas bonitas: ganadoras curadas y comprobadas antes de publicarse.",
     card1Label: "Tiendas que de verdad venden",
     card1Body:
       "Un agente de IA muestra tiendas que generan ingresos ahora a partir de cohortes de paid social — no una lista 'top 10' reciclada desde 2023.",
