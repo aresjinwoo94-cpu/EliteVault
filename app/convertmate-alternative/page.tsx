@@ -93,7 +93,7 @@ const MIGRATION_ROWS = [
   },
   {
     used: "Benchmarking against other Shopify stores",
-    gets: "Library of revenue-validated winning stores, filterable by niche + image search",
+    gets: "Library of curated winning stores, filterable by niche + image search",
   },
   {
     used: "Deciding when a page is 'ready' for paid traffic",
@@ -104,7 +104,7 @@ const MIGRATION_ROWS = [
 const PROOF_POINTS = [
   { icon: Scan, text: "Audit in under 60 seconds, from just your URL" },
   { icon: Brain, text: "Niche-aware judgment — skincare is not supplements" },
-  { icon: Library, text: "Winning-stores library validated by revenue signals" },
+  { icon: Library, text: "Curated winning-stores library" },
   { icon: ShieldCheck, text: "Free diagnosis · no credit card · nothing to install" },
 ];
 
@@ -178,7 +178,7 @@ export default function ConvertMateAlternativePage() {
           <p className="mt-4 max-w-2xl text-lg text-white/55 leading-relaxed">
             Where ConvertMate optimized individual product pages, EliteVault
             audits the whole store like a senior media buyer — and pairs the
-            audit with a library of revenue-validated winning stores so you can
+            audit with a library of curated winning stores so you can
             copy what already converts in your niche.
           </p>
           {/*
@@ -311,7 +311,7 @@ export default function ConvertMateAlternativePage() {
               <ArrowRight className="ml-1.5 inline size-3.5 transition-transform group-hover:translate-x-0.5" />
             </p>
             <p className="mt-1.5 text-sm text-white/55 leading-relaxed">
-              Revenue-validated winners, filterable by niche, with image search.
+              Curated winners, filterable by niche, with image search.
             </p>
           </Link>
         </section>

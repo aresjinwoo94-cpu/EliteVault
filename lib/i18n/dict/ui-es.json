@@ -343,7 +343,7 @@
     "saved": "Guardada en tu colección",
     "removeSaved": "Quitar de guardadas",
     "save": "Guardar",
-    "headline": "Tiendas que <g>de verdad venden.</g>",
+    "headline": "Tiendas que vale la pena <g>estudiar.</g>",
     "detectedNiche": "Nicho detectado:",
     "winnersOnFree": "3 ganadoras en Gratis — más de {n} en Pro"
   },
@@ -497,7 +497,7 @@
     "q1": "¿La biblioteca de tiendas ganadoras es gratis?",
     "a1": "El plan Gratis incluye 3 tiendas ganadoras seleccionadas a mano con métricas completas y el feed de la comunidad. Pro y Scale desbloquean la biblioteca completa, entradas ilimitadas y la búsqueda por similitud de imagen.",
     "q2": "¿En qué se diferencia de una herramienta espía de Shopify?",
-    "a2": "Las herramientas espía vuelcan productos y creatividades de anuncios. EliteVault está hecho para la conversión: combina ganadoras validadas por ingresos con búsqueda por similitud de imagen (encuentra las tiendas estructuralmente más cercanas a la tuya) y una auditoría gratuita de tu propia tienda, para que copies los principios que de verdad convierten.",
+    "a2": "Las herramientas espía vuelcan productos y creatividades de anuncios. EliteVault está hecho para la conversión: combina ganadoras curadas con búsqueda por similitud de imagen (encuentra las tiendas estructuralmente más cercanas a la tuya) y una auditoría gratuita de tu propia tienda, para que copies los principios que de verdad convierten.",
     "q3": "¿Puedo encontrar ganadoras de mi nicho concreto?",
     "a3": "Sí. Filtra la biblioteca por nicho para estudiar las tiendas más relevantes de tu categoría: lo que convierte en skincare es distinto de los suplementos, y la biblioteca lo respeta."
   },
@@ -520,8 +520,8 @@
   "nichePage": {
     "fromLibrary": "DE LA BIBLIOTECA",
     "winnersPill": "{n} GANADORAS DE {label}",
-    "h1": "Tiendas Shopify ganadoras de {label}, validadas por ingresos.",
-    "intro": "Estas {n} tiendas ({plural}) están convirtiendo ahora mismo: las muestran las señales de ingresos, no se eligieron por su aspecto",
+    "h1": "Tiendas Shopify ganadoras de {label}, curadas.",
+    "intro": "Estas {n} tiendas ({plural}) las propuso un asistente de IA y pasaron comprobaciones automáticas; no se eligieron por su aspecto",
     "avg": "(promedian una <b>tasa de conversión del {pct} %</b>)",
     "introEnd": ". Estudia cómo estructuran su hero, la confianza y la oferta, y luego haz la misma auditoría en tu propia tienda, gratis.",
     "cta": "Audita mi tienda gratis",
@@ -785,7 +785,7 @@
     "topConverting": "Tiendas que más convierten",
     "curated": "Ganadoras seleccionadas a mano, actualizadas periódicamente",
     "unlockOne": "Desbloquea la ganadora de tu nicho",
-    "unlockBody": "Mira a cada tienda que te está superando ahora mismo: sus ingresos estimados y los anuncios exactos que ejecutan.",
+    "unlockBody": "Mira las tiendas que ganan en tu nicho: sus ingresos estimados y el enlace a cada tienda.",
     "goPro": "Pasar a Pro",
     "realStores": "Tiendas reales, enlaces a sus tiendas e ingresos estimados con modelo, en Pro.",
     "estimated": "Estimado con señales públicas. No son cifras reportadas por las marcas.",

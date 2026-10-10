@@ -32,7 +32,7 @@ const ENDPOINT = `https://graph.facebook.com/${GRAPH_VERSION}/ads_archive`;
  * with META_AD_LIBRARY_COUNTRIES (comma-separated ISO codes). A count therefore means "active ads
  * reaching these countries" — the UI says so.
  */
-const EU_DEFAULT = ["DE", "FR", "ES", "IT", "NL"];
+const EU_DEFAULT = ["DE", "FR", "ES", "IT", "NL", "GB"];
 export function adLibraryCountries(env: Record<string, string | undefined> = process.env): string[] {
   const list = (env.META_AD_LIBRARY_COUNTRIES ?? "")
     .split(",")

@@ -99,17 +99,23 @@ test("a stored count survives only with a fresh measurement stamp", async () => 
 
 // ── momentum + meta client ───────────────────────────────────────────────────
 
-test("momentum writes the measurement marker only on a real Meta answer and no longer stamps 'checked' on rows Meta never answered", () => {
+test("momentum, refresh and signal write the measurement marker only on a real Meta answer and no longer stamps 'checked' on rows Meta never answered", () => {
   const src = read("scripts/library/momentum.mts");
-  assert.match(src, /measuredSignals = \{[\s\S]*?source: "meta_ad_library"[\s\S]*?measured_at: now[\s\S]*?estimated: false/);
+  assert.match(src, /measuredSignals = withMeasurement\(row\.ad_signals, fresh, now\)/);
+  const refresh = read("lib/library/refresh.ts");
+  assert.doesNotMatch(refresh, /ads_last_checked_at: adsCheckedAt \?\? now/);
+  assert.match(refresh, /measuredSignals = withMeasurement\(/);
+  assert.match(read("scripts/library/signal.mts"), /ad_signals: withMeasurement\(/);
+  assert.match(read("scripts/library/discover.mts"), /ads_last_checked_at: null,/);
+  assert.match(read("scripts/expand-library.ts"), /stripMeasurementProof\(/);
   assert.match(src, /ads_last_checked_at: adsCheckedAt,/);
   assert.doesNotMatch(src, /ads_last_checked_at: adsCheckedAt \?\? now/);
 });
 
 test("the Meta client queries the EU by default (commercial ads are public only there) and honours an override", () => {
-  assert.deepEqual(adLibraryCountries({}), ["DE", "FR", "ES", "IT", "NL"]);
+  assert.deepEqual(adLibraryCountries({}), ["DE", "FR", "ES", "IT", "NL", "GB"]);
   assert.deepEqual(adLibraryCountries({ META_AD_LIBRARY_COUNTRIES: "gb, de ,xx1,fr" }), ["GB", "DE", "FR"]);
-  assert.deepEqual(adLibraryCountries({ META_AD_LIBRARY_COUNTRIES: "" }), ["DE", "FR", "ES", "IT", "NL"]);
+  assert.deepEqual(adLibraryCountries({ META_AD_LIBRARY_COUNTRIES: "" }), ["DE", "FR", "ES", "IT", "NL", "GB"]);
 });
 
 test("countActiveAds sends the EU countries and returns null (never 0) when Meta refuses", async () => {
@@ -123,7 +129,7 @@ test("countActiveAds sends the EU countries and returns null (never 0) when Meta
   try {
     const r = await countActiveAds("Allbirds");
     assert.equal(r.activeAds, null);
-    assert.match(decodeURIComponent(seen), /ad_reached_countries=\["DE","FR","ES","IT","NL"\]/);
+    assert.match(decodeURIComponent(seen), /ad_reached_countries=\["DE","FR","ES","IT","NL","GB"\]/);
   } finally {
     globalThis.fetch = real;
     delete process.env.META_AD_LIBRARY_TOKEN;
@@ -133,7 +139,7 @@ test("countActiveAds sends the EU countries and returns null (never 0) when Meta
 // ── the words ────────────────────────────────────────────────────────────────
 
 const CLAIMS =
-  /live portfolio|portafolio (de ganadores )?en vivo|watches paid[- ]social|monitors paid[- ]social|vigila(n)? (los )?cohortes|monitoriza continuamente|re-?validated by the AI|drop out automatically|salen automáticamente|live metrics|métricas en vivo|live Meta ad counts|recuento de anuncios de Meta en vivo|(?<!not a )live Meta Ad Library count|(?<!no es un )recuento en vivo de la Meta Ad Library|validated by real revenue signals|validadas? por señales reales de ingresos|live library of winning|biblioteca viva|librería en vivo|Estimated from public Meta Ad Library signals/i;
+  /live portfolio|portafolio (de ganadores )?en vivo|watches paid[- ]social|monitors paid[- ]social|vigila(n)? (los )?cohortes|monitoriza continuamente|re-?validated by the AI|drop out automatically|salen automáticamente|live metrics|métricas en vivo|live Meta ad counts|recuento de anuncios de Meta en vivo|(?<!not a )live Meta Ad Library count|(?<!no es un )recuento en vivo de la Meta Ad Library|validated by real revenue signals|validadas? por señales reales de ingresos|live library of winning|biblioteca viva|librería en vivo|revenue-validated|validadas? por (ingresos|revenue)|actually generating revenue|actually selling|de verdad venden|converting right now|tracked live|ingresos ahora mismo|generating revenue now|Live Library|Estimated from public Meta Ad Library signals/i;
 
 test("no user-facing copy claims live monitoring, live metrics or live Meta counts that don't happen", () => {
   const hits: string[] = [];
@@ -165,4 +171,13 @@ test("the badge is rendered only from a usable (i.e. measured) count; the toolti
   assert.match(ui, /\{showAds && <AdsBadge n=\{w\.activeAds as number\} \/>\}/);
   const en = (messages.en as unknown as { nicheWinners: Record<string, string> }).nicheWinners;
   assert.match(en.realSignal, /Measured count from the Meta Ad Library/);
+});
+
+test("withMeasurement is the only producer of the proof, and seeds are stripped of it", async () => {
+  const { withMeasurement, stripMeasurementProof } = await import("../../lib/library/ad-signal");
+  const now = new Date(NOW).toISOString();
+  const proof = withMeasurement({ activity_score: 80, estimated: true }, 42, now);
+  assert.deepEqual(measuredActiveAds({ active_ads_count: 42, ad_signals: proof }, NOW), { count: 42, measuredAt: now }, "a real measurement overrides the old estimated flag");
+  const seed = stripMeasurementProof({ source: AD_SOURCE_META, measured_at: now, estimated: false, active_ads: 9 });
+  assert.equal(measuredActiveAds({ active_ads_count: 9, ad_signals: seed }, NOW), null, "an AI-written proof is removed on write");
 });

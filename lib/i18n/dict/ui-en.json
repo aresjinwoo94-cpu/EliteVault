@@ -343,7 +343,7 @@
     "saved": "Saved to your collection",
     "removeSaved": "Remove from saved",
     "save": "Save",
-    "headline": "Stores that are <g>actually selling.</g>",
+    "headline": "Stores worth <g>studying.</g>",
     "detectedNiche": "Detected niche:",
     "winnersOnFree": "3 winners on Free — {n}+ more on Pro"
   },
@@ -497,7 +497,7 @@
     "q1": "Is the winning-stores library free?",
     "a1": "The Free plan includes 3 hand-picked winning stores with full metrics and the community feed. Pro and Scale unlock the full library, unlimited entries and image-similarity search.",
     "q2": "How is this different from a Shopify spy tool?",
-    "a2": "Spy tools dump products and ad creatives. EliteVault is built for conversion: it pairs revenue-validated winners with image-similarity search (find the stores structurally closest to yours) and a free audit of your own store, so you copy the principles that actually convert.",
+    "a2": "Spy tools dump products and ad creatives. EliteVault is built for conversion: it pairs curated winners with image-similarity search (find the stores structurally closest to yours) and a free audit of your own store, so you copy the principles that actually convert.",
     "q3": "Can I find winners in my specific niche?",
     "a3": "Yes. Filter the library by niche so you study the stores most relevant to your category — what converts in skincare is different from supplements, and the library respects that."
   },
@@ -520,8 +520,8 @@
   "nichePage": {
     "fromLibrary": "FROM THE LIBRARY",
     "winnersPill": "{n} {label} WINNERS",
-    "h1": "Winning {label} Shopify stores, validated by revenue.",
-    "intro": "These {n} {plural} are converting right now — surfaced by revenue signals, not picked for looks",
+    "h1": "Winning {label} Shopify stores, curated.",
+    "intro": "These {n} {plural} were proposed by an AI assistant and passed automated checks, not picked for looks",
     "avg": "(they average a <b>{pct}% conversion rate</b>)",
     "introEnd": ". Study how they structure their hero, trust and offer — then run the same audit on your own store, free.",
     "cta": "Audit my store free",
@@ -785,7 +785,7 @@
     "topConverting": "Top converting stores",
     "curated": "Curated winners · hand-picked, refreshed periodically",
     "unlockOne": "Unlock the winner in your niche",
-    "unlockBody": "See every store outspending you right now — their estimated revenue and the exact ads they're running.",
+    "unlockBody": "See the stores winning in your niche — their estimated revenue and a link to each store.",
     "goPro": "Go Pro",
     "realStores": "Real stores, their store links and modeled revenue estimates — on Pro.",
     "estimated": "Estimated from public signals. Not figures reported by the brands.",

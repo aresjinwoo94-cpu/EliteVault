@@ -13,6 +13,7 @@
 // Offline job: must use GEMINI_API_KEY_JOBS, never the production key (scripts/lib/jobs-key.mjs).
 import "./lib/require-jobs-key.mjs";
 import { readFileSync } from "node:fs";
+import { stripMeasurementProof } from "../lib/library/ad-signal";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -79,7 +80,8 @@ for (const c of result.candidates) {
     thumbnail_url: `https://s.wordpress.com/mshots/v1/${encodeURIComponent(c.url)}?w=800&h=560`,
     metrics: c.metrics,
     tags: c.tags,
-    ad_signals: c.ad_signals,
+    // An AI seed can never carry the proof of a Meta measurement (lib/library/ad-signal.ts).
+    ad_signals: stripMeasurementProof(c.ad_signals as Record<string, unknown> | null),
     ad_signals_updated_at: new Date().toISOString(),
     added_by_ai: true,
   };

@@ -210,7 +210,8 @@ for (const niche of niches) {
       thumbnail_url: `https://s.wordpress.com/mshots/v1/${encodeURIComponent(c.url)}?w=800&h=560`,
       favicon_url: faviconUrl(c.domain),
       active_ads_count: c.activeAds,
-      ads_last_checked_at: c.activeAds !== null ? new Date().toISOString() : null,
+      // Never stamped here: a discovered/seeded count is not a measurement (only `momentum` proves one).
+      ads_last_checked_at: null,
       added_by_ai: c.source === "discovery_agent",
       source: c.source,
       status: "draft",

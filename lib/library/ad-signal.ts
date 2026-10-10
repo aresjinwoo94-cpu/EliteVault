@@ -56,3 +56,23 @@ export function measuredActiveAds(
   if (typeof n !== "number" || !Number.isFinite(n) || n <= 0) return null;
   return { count: Math.round(n), measuredAt: s.measured_at as string };
 }
+
+/**
+ * The ONLY way to build the proof of measurement. Call it exclusively with a count that the
+ * Meta Ad Library API actually returned (never a seed, an estimate or an agent's guess).
+ */
+export function withMeasurement(prev: Record<string, unknown> | null | undefined, count: number, nowIso: string): Record<string, unknown> {
+  return { ...(prev ?? {}), active_ads: count, source: AD_SOURCE_META, measured_at: nowIso, estimated: false };
+}
+
+/**
+ * Seeds (discovery agent, expand-library, hand-filled rows) must never carry the proof: drop any
+ * `source` / `measured_at` an AI or a script may have put in `ad_signals`.
+ */
+export function stripMeasurementProof<T extends Record<string, unknown> | null | undefined>(signals: T): T {
+  if (!signals || typeof signals !== "object") return signals;
+  const { source: _s, measured_at: _m, ...rest } = signals as Record<string, unknown>;
+  void _s;
+  void _m;
+  return rest as T;
+}

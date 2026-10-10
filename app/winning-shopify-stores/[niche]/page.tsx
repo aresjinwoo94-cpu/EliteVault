@@ -45,7 +45,7 @@ export async function generateMetadata(props: {
     title: {
       absolute: `Winning ${meta.label} Shopify Stores (2026) — Real Examples | EliteVault`,
     },
-    description: `A revenue-validated list of winning ${meta.plural} on Shopify: real stores, real conversion metrics, tracked live. Study what converts in ${meta.label.toLowerCase()} and audit your own store free.`,
+    description: `A curated list of winning ${meta.plural} on Shopify: real stores with modeled conversion metrics. Study what converts in ${meta.label.toLowerCase()} and audit your own store free.`,
     keywords: [
       `winning ${meta.label.toLowerCase()} shopify stores`,
       `best ${meta.label.toLowerCase()} shopify stores`,
@@ -105,7 +105,7 @@ export default async function NichePage(props: {
       "@type": "CollectionPage",
       name: `Winning ${page.label} Shopify Stores`,
       url: `${baseUrl}/winning-shopify-stores/${page.slug}`,
-      description: `Revenue-validated winning ${page.plural} on Shopify with live conversion metrics.`,
+      description: `Curated winning ${page.plural} on Shopify with modeled conversion metrics.`,
     },
     {
       "@context": "https://schema.org",

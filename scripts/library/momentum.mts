@@ -28,6 +28,7 @@ import {
 } from "./_shared.mts";
 import { countActiveAds, metaApiConfigured } from "../../lib/library/meta-ad-library.ts";
 import { momentumScore, estRevenueRange } from "../../lib/library/quality.ts";
+import { withMeasurement } from "../../lib/library/ad-signal.ts";
 
 interface Row {
   id: string;
@@ -97,7 +98,7 @@ const outcome = await mapSettled(
       if (fresh !== null) {
         activeAds = fresh;
         adsCheckedAt = now;
-        measuredSignals = { ...(row.ad_signals ?? {}), active_ads: fresh, source: "meta_ad_library", measured_at: now, estimated: false };
+        measuredSignals = withMeasurement(row.ad_signals, fresh, now);
         metaHits++;
       }
     }

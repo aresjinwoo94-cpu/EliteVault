@@ -10,8 +10,8 @@
  * `review` for "no signal" could never get one and stayed parked forever.
  *
  * It does exactly what `momentum` does for one row — `countActiveAds(title || domain)`
- * against the Meta Ad Library — and writes ONLY `active_ads_count` + `ads_last_checked_at`
- * when the API answers with a positive number. It never touches `status`: promoting is
+ * against the Meta Ad Library — and writes ONLY `active_ads_count`, `ads_last_checked_at` and the
+ * measurement proof (`ad_signals.source/measured_at`) when the API answers with a positive number. It never touches `status`: promoting is
  * `library:verify`'s job (run it after this one), so a row only publishes if it passes
  * the same gate as every other store.
  *
@@ -26,6 +26,7 @@ import {
   exitWith,
 } from "./_shared.mts";
 import { countActiveAds, metaApiConfigured } from "../../lib/library/meta-ad-library.ts";
+import { withMeasurement } from "../../lib/library/ad-signal.ts";
 
 interface Row {
   id: string;
@@ -36,6 +37,7 @@ interface Row {
   is_live: boolean;
   active_ads_count: number | null;
   internal_score: number | null;
+  ad_signals: Record<string, unknown> | null;
 }
 
 const svc = serviceClient();
@@ -49,7 +51,7 @@ if (!metaApiConfigured()) {
 
 const { data, error } = await svc
   .from("winning_sites")
-  .select("id, domain, title, niche, status, is_live, active_ads_count, internal_score")
+  .select("id, domain, title, niche, status, is_live, active_ads_count, internal_score, ad_signals")
   .eq("status", "review")
   .eq("is_live", true);
 if (error) {
@@ -71,10 +73,11 @@ const out = await mapSettled(
       return `  · ${row.domain.padEnd(28)} no usable signal (${activeAds === null ? "no data" : "0 active ads"})`;
     }
     filled++;
+    const now = new Date().toISOString();
     if (!dry) {
       const { error: upErr } = await svc
         .from("winning_sites")
-        .update({ active_ads_count: activeAds, ads_last_checked_at: new Date().toISOString() })
+        .update({ active_ads_count: activeAds, ads_last_checked_at: now, ad_signals: withMeasurement(row.ad_signals, activeAds, now) })
         .eq("id", row.id);
       if (upErr) throw new Error(upErr.message);
     }

@@ -238,7 +238,7 @@ const en: Dict = {
     rowAudit: "AI CRO audit in under 60 seconds",
     rowScreenshot: "Annotated screenshot with prioritized fixes",
     rowPersona: "Buyer-persona simulation (reacts in their voice)",
-    rowLibrary: "Library of revenue-validated winning stores",
+    rowLibrary: "Library of curated winning stores",
     rowImageSearch: "Image-similarity store search",
     rowMetaModeler: "Meta Ads campaign modeler (7-day, 3 scenarios)",
     rowNicheAware: "Niche-aware judgment (skincare ≠ supplements)",
@@ -562,18 +562,18 @@ const en: Dict = {
   },
   winnersPage: {
     badge1: "WINNING STORES LIBRARY",
-    badge2: "REVENUE-VALIDATED, NOT A MOODBOARD",
+    badge2: "CURATED, NOT A MOODBOARD",
     heroH1: "A curated library of winning ecommerce stores",
     heroBody:
-      "Browse Shopify and DTC stores that are actually generating revenue right now — filter by niche, see full metrics, and find the winners structurally closest to yours with image-similarity search. Then audit your own store free.",
+      "Browse curated Shopify and DTC stores that stand out in their niche — filter by niche, see modeled metrics, and find the winners structurally closest to yours with image-similarity search. Then audit your own store free.",
     heroCta: "Browse winning stores",
     heroCaption: "3 winners free · no credit card",
     whatH2: "What's inside the library",
     whatSub:
       "Not a Pinterest board of pretty stores — curated winners, checked before they are published.",
-    card1Label: "Stores actually selling",
+    card1Label: "Stores worth studying",
     card1Body:
-      "An AI agent surfaces stores generating revenue now from paid-social cohorts — not a stale 'top 10' list recycled since 2023.",
+      "An AI assistant proposes standout stores in each niche and every one is checked before it is published — not a stale 'top 10' list recycled since 2023.",
     card2Label: "Filter by your niche",
     card2Body:
       "What converts in skincare destroys conversion in supplements. Filter to the winners that match your category.",
@@ -581,7 +581,7 @@ const en: Dict = {
     card3Body:
       "Drop a screenshot of your store and find the closest converting siblings by visual structure — not by tags.",
     howH2: "How to use it",
-    step1Title: "Find revenue-validated winners",
+    step1Title: "Find curated winners",
     step1Body:
       "Start from stores proven to convert cold traffic, filtered to your niche — your library of solved problems.",
     step2Title: "Study the full metrics",
@@ -1197,7 +1197,7 @@ const es: Dict = {
     rowAudit: "Auditoría CRO con IA en menos de 60 segundos",
     rowScreenshot: "Captura anotada con arreglos priorizados",
     rowPersona: "Simulación de buyer-persona (reacciona con su voz)",
-    rowLibrary: "Librería de tiendas ganadoras validadas por revenue",
+    rowLibrary: "Librería de tiendas ganadoras curadas",
     rowImageSearch: "Búsqueda de tiendas por similitud de imagen",
     rowMetaModeler: "Modelador de campañas Meta Ads (7 días, 3 escenarios)",
     rowNicheAware: "Juicio consciente del nicho (skincare ≠ suplementos)",
@@ -1520,18 +1520,18 @@ const es: Dict = {
   },
   winnersPage: {
     badge1: "LIBRERÍA DE TIENDAS GANADORAS",
-    badge2: "VALIDADAS POR INGRESOS, NO UN MOODBOARD",
+    badge2: "CURADAS, NO UN MOODBOARD",
     heroH1: "Una librería curada de tiendas ecommerce ganadoras",
     heroBody:
-      "Explora tiendas de Shopify y DTC que de verdad están generando ingresos ahora mismo — filtra por nicho, mira métricas completas y encuentra las ganadoras más parecidas a la tuya con búsqueda por similitud de imagen. Luego audita tu propia tienda gratis.",
+      "Explora tiendas de Shopify y DTC curadas que destacan en su nicho — filtra por nicho, mira métricas modeladas y encuentra las ganadoras más parecidas a la tuya con búsqueda por similitud de imagen. Luego audita tu propia tienda gratis.",
     heroCta: "Explorar tiendas ganadoras",
     heroCaption: "3 ganadoras gratis · sin tarjeta",
     whatH2: "Qué hay dentro de la librería",
     whatSub:
       "No un tablero de Pinterest de tiendas bonitas: ganadoras curadas y comprobadas antes de publicarse.",
-    card1Label: "Tiendas que de verdad venden",
+    card1Label: "Tiendas que vale la pena estudiar",
     card1Body:
-      "Un agente de IA muestra tiendas que generan ingresos ahora a partir de cohortes de paid social — no una lista 'top 10' reciclada desde 2023.",
+      "Un asistente de IA propone tiendas destacadas en cada nicho y cada una se comprueba antes de publicarse, no una lista de «top 10» reciclada desde 2023.",
     card2Label: "Filtra por tu nicho",
     card2Body:
       "Lo que convierte en skincare destruye la conversión en suplementos. Filtra a las ganadoras que encajan con tu categoría.",
@@ -1539,7 +1539,7 @@ const es: Dict = {
     card3Body:
       "Sube una captura de tu tienda y encuentra las ganadoras más parecidas por estructura visual — no por etiquetas.",
     howH2: "Cómo usarla",
-    step1Title: "Encuentra ganadoras validadas por ingresos",
+    step1Title: "Encuentra ganadoras curadas",
     step1Body:
       "Parte de tiendas que ya convierten tráfico frío, filtradas a tu nicho — tu librería de problemas resueltos.",
     step2Title: "Estudia las métricas completas",

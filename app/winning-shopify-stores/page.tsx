@@ -18,7 +18,7 @@ import { getQualifyingNiches } from "@/lib/library/niche-pages";
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
 export const metadata: Metadata = {
-  title: "Winning Shopify Stores 2026 — Live Library | EliteVault",
+  title: "Winning Shopify Stores 2026 — Curated Library | EliteVault",
   description:
     "Browse a curated library of standout Shopify & DTC stores, checked before they are published. Filter by niche, search by image similarity, and study what tends to convert.",
   keywords: [
@@ -33,9 +33,9 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/winning-shopify-stores" },
   openGraph: {
-    title: "Winning Shopify Stores — Live Library — EliteVault",
+    title: "Winning Shopify Stores — Curated Library — EliteVault",
     description:
-      "A revenue-validated library of winning ecommerce stores, filterable by niche, with image-similarity search.",
+      "A curated library of winning ecommerce stores, filterable by niche, with image-similarity search.",
     type: "website",
     url: `${baseUrl}/winning-shopify-stores`,
   },
@@ -89,7 +89,7 @@ const FAQS = [
   },
   {
     q: "How is this different from a Shopify spy tool?",
-    a: "Spy tools dump products and ad creatives. EliteVault is built for conversion: it pairs revenue-validated winners with image-similarity search (find the stores structurally closest to yours) and a free audit of your own store, so you copy the principles that actually convert.",
+    a: "Spy tools dump products and ad creatives. EliteVault is built for conversion: it pairs curated winners with image-similarity search (find the stores structurally closest to yours) and a free audit of your own store, so you copy the principles that actually convert.",
   },
   {
     q: "Can I find winners in my specific niche?",
@@ -107,7 +107,7 @@ export default async function WinningShopifyStoresPage() {
       name: "EliteVault — Winning Shopify Stores Library",
       url: `${baseUrl}/winning-shopify-stores`,
       description:
-        "A live, revenue-validated library of winning Shopify and ecommerce stores, filterable by niche, with image-similarity search.",
+        "A curated library of winning Shopify and ecommerce stores, filterable by niche, with image-similarity search.",
     },
     {
       "@context": "https://schema.org",
