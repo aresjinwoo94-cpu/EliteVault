@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
-// @ts-expect-error — plain .mjs shared by .mjs and .mts scripts
 import { applyJobsGeminiEnv, resolveJobsGeminiEnv } from "../lib/jobs-key.mjs";
 
 /**
@@ -62,10 +61,10 @@ test("a refused env is not mutated", () => {
 
 function runGuard(env: Record<string, string>) {
   // ENV_FILE points nowhere → the guard reads ONLY the explicit env (no developer .env.local).
-  return spawnSync(process.execPath, ["-e", `import(${JSON.stringify("file:///" + GUARD.replace(/\\/g, "/"))}).then(()=>{console.log("GEMINI_API_KEY="+process.env.GEMINI_API_KEY+";POOL2="+process.env.GEMINI_API_KEY_2)})`], {
-    env: { PATH: process.env.PATH ?? "", ENV_FILE: resolve(ROOT, "does-not-exist.env"), ...env },
-    encoding: "utf8",
-  });
+  const url = "file:///" + GUARD.replace(/\\/g, "/");
+  const code = `import(${JSON.stringify(url)}).then(()=>{console.log("GEMINI_API_KEY="+process.env.GEMINI_API_KEY+";POOL2="+process.env.GEMINI_API_KEY_2)})`;
+  const childEnv: Record<string, string> = { PATH: process.env.PATH ?? "", ENV_FILE: resolve(ROOT, "does-not-exist.env"), ...env };
+  return spawnSync(process.execPath, ["-e", code], { env: childEnv as unknown as NodeJS.ProcessEnv, encoding: "utf8" });
 }
 
 test("process: exits 1 with an explanation when only the production key is present", () => {
