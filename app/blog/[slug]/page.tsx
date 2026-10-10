@@ -180,15 +180,14 @@ export default async function BlogPostPage({
             a ranked punch-list of fixes, in under a minute.
           </p>
           {/*
-            Points at the PUBLIC analyzer, not /sign-up. The copy above promises
-            a free audit in under a minute; /sign-up?next=/app/analyzer made
-            cold blog traffic create an account before seeing anything, which
-            broke that promise at the worst moment. /free-website-audit embeds
-            the anonymous audit box and runs the same pipeline with no account,
-            and it is the indexable page we already rank.
+            Goes to the real Analyzer (/app/analyzer) via sign-up: a signed-in
+            visitor lands on it directly (middleware bounces /sign-up to `next`),
+            everyone else signs up — Google included — and then lands on it.
+            The public /free-website-audit page is the SEO landing, not where a
+            reader who finished an article should be sent.
           */}
           <Link
-            href="/free-website-audit?utm_source=blog&utm_medium=cta&utm_campaign=post-footer"
+            href="/sign-up?next=/app/analyzer&utm_source=blog&utm_medium=cta&utm_campaign=post-footer"
             className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-champagne-400 px-5 py-3 text-sm font-medium text-obsidian-950 hover:bg-champagne-300 transition-colors"
           >
             Audit my store free

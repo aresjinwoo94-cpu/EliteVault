@@ -11,10 +11,11 @@
  *   • `keyword`      → the primary query the post targets
  *   • cross-links    → internal links between posts + to the money pages
  *
- * Audit CTAs point at /free-website-audit, never /sign-up: that page is the
- * indexable analyzer and it runs the audit anonymously, so a cold reader gets
- * the thing the copy promised instead of a signup wall. Forecast CTAs go to
- * /meta-ads-forecast, which carries the same anonymous box.
+ * Audit CTAs (inline links and the footer block in app/blog/[slug]/page.tsx)
+ * go to /sign-up?next=/app/analyzer: a signed-in reader lands straight on the
+ * Analyzer, everyone else signs up (Google included) and lands there. Plain
+ * prose links to /free-website-audit are SEO links to the indexable landing.
+ * Forecast CTAs go to /meta-ads-forecast, which carries an anonymous box.
  */
 export type BlogPost = {
   slug: string;
@@ -92,7 +93,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <h2>Readiness first, forecast second</h2>
 <p>You don't need perfection to start — you need a store that doesn't fight the campaign. Once it can take the traffic, model the campaign before you fund it: the <a href="/meta-ads-forecast">Meta Ads scenario modeler</a> projects a 7-day campaign across conservative, balanced and aggressive cases from your AOV and budget, so you spend knowing the floor, not just the dream. And if the clicks are already coming but not converting, start with <a href="/blog/why-meta-ads-arent-converting">why your Meta ads aren't converting</a>.</p>
 <h2>The fastest way to know</h2>
-<p>You could check all six by hand — or get a senior-media-buyer read of your store in under a minute. <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=is-your-store-ready-for-meta-ads">EliteVault's free audit</a> annotates your homepage with the exact issues from this list, scores your readiness across the six categories, simulates how a buyer persona reacts, and ranks what to fix first by leverage — free, no card. When you know which leak is yours, fixing it before you spend is the easy part.</p>
+<p>You could check all six by hand — or get a senior-media-buyer read of your store in under a minute. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=is-your-store-ready-for-meta-ads">EliteVault's free audit</a> annotates your homepage with the exact issues from this list, scores your readiness across the six categories, simulates how a buyer persona reacts, and ranks what to fix first by leverage — free, no card. When you know which leak is yours, fixing it before you spend is the easy part.</p>
 `.trim(),
     faqs: [
       {
@@ -451,7 +452,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>If your Meta ad promises one thing and the landing page shows another, paid traffic bounces. Message-match the angle, the image, and the offer.</p>
 
 <h2>How to find <em>your</em> specific leaks</h2>
-<p>The fixes above are universal, but the order that matters for <strong>your</strong> store is specific. The fastest way to find it is to look at your homepage the way a skeptical buyer (or a senior media buyer) would. That's exactly what <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=how-to-increase-shopify-conversion-rate">EliteVault's free audit</a> does: it scores your store across layout, imagery, CRO principles and niche fit, annotates the screenshot with the exact problems, and ranks the fixes by leverage — so you're not guessing which of these 11 to do first.</p>
+<p>The fixes above are universal, but the order that matters for <strong>your</strong> store is specific. The fastest way to find it is to look at your homepage the way a skeptical buyer (or a senior media buyer) would. That's exactly what <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=how-to-increase-shopify-conversion-rate">EliteVault's free audit</a> does: it scores your store across layout, imagery, CRO principles and niche fit, annotates the screenshot with the exact problems, and ranks the fixes by leverage — so you're not guessing which of these 11 to do first.</p>
 
 <p>Once you've shipped the top three, re-audit and measure. Conversion optimization is a loop, not a one-time project. If you're not sure where you stand, start by checking <a href="/blog/why-your-shopify-store-isnt-converting">why your store might not be converting</a>, then <a href="/pricing">see how the full audit works</a>. When you have the traffic to run tests, here is <a href="/blog/ecommerce-cro-specialist">what an ecommerce CRO specialist does</a>, and <a href="/blog/shopify-landing-page-specialist">how to brief a landing page specialist</a>. If the build uses AI, see <a href="/blog/ai-shopify-designer">what a human must still check</a>.</p>
 `.trim(),
@@ -521,7 +522,7 @@ export const BLOG_POSTS: BlogPost[] = [
 </ol>
 
 <h2>Measure your own baseline, then beat it</h2>
-<p>A number in isolation tells you little; a number with context and a trend tells you everything. EliteVault scores your store the way a buyer experiences it and tracks that score week over week, so you can see whether you're improving regardless of where the "industry average" sits. You can <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=good-conversion-rate-for-shopify">run a free audit</a> to get your baseline, or <a href="/pricing">see how weekly monitoring works</a>.</p>
+<p>A number in isolation tells you little; a number with context and a trend tells you everything. EliteVault scores your store the way a buyer experiences it and tracks that score week over week, so you can see whether you're improving regardless of where the "industry average" sits. You can <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=good-conversion-rate-for-shopify">run a free audit</a> to get your baseline, or <a href="/pricing">see how weekly monitoring works</a>.</p>
 
 <p><em>A note on honesty: any benchmark — including ours — is an estimate, not a precise stat. Use these ranges as direction, and trust your own segmented data over any blanket figure.</em></p>
 `.trim(),
@@ -587,7 +588,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>Sometimes the store is fine and the targeting is off — you're buying clicks from people who were never going to buy. <strong>Diagnose:</strong> if on-page metrics look healthy but a specific campaign tanks, suspect targeting before the store.</p>
 
 <h2>The fastest way to find your reason</h2>
-<p>You could check all eight by hand — or get a senior-media-buyer read of your store in under a minute. <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=why-your-shopify-store-isnt-converting">EliteVault's free audit</a> annotates your homepage with the exact issues from this list, simulates how a buyer persona reacts, and ranks what to fix first by leverage. When you know <em>which</em> reason is yours, fixing it is the easy part — then work the <a href="/blog/how-to-increase-shopify-conversion-rate">11 highest-leverage fixes</a>. Posting your store for feedback first? Here is <a href="/blog/store-audit-review-my-store-feedback">what those threads usually say</a>.</p>
+<p>You could check all eight by hand — or get a senior-media-buyer read of your store in under a minute. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=why-your-shopify-store-isnt-converting">EliteVault's free audit</a> annotates your homepage with the exact issues from this list, simulates how a buyer persona reacts, and ranks what to fix first by leverage. When you know <em>which</em> reason is yours, fixing it is the easy part — then work the <a href="/blog/how-to-increase-shopify-conversion-rate">11 highest-leverage fixes</a>. Posting your store for feedback first? Here is <a href="/blog/store-audit-review-my-store-feedback">what those threads usually say</a>.</p>
 `.trim(),
     faqs: [
       {
@@ -777,7 +778,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>That's a <strong>4.6x</strong> difference in conversion between a one-second and a four-second store, on identical traffic. And it stays worth chasing at the margin: Google and Deloitte measured an <strong>8.4%</strong> lift in retail conversion from a <strong>0.1-second</strong> improvement in mobile load time (2019, via CartFlows).</p>
 <p>Which reframes the whole redesign. An autoplaying hero video, five review apps, three chat widgets and a 4MB above-the-fold image are design choices — and they are the ones costing you sales. Your 2026 design budget is a performance budget.</p>
-<p>Your store nails a few of these and quietly fails others. <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=ecommerce-design-trends-2026">See it scored in 60 seconds →</a></p>
+<p>Your store nails a few of these and quietly fails others. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=ecommerce-design-trends-2026">See it scored in 60 seconds →</a></p>
 
 <h2>Is designing mobile-first still worth it in 2026?</h2>
 <p>Yes — and for a reason that only recently became true. Mobile no longer just carries the traffic; it converts as well as desktop.</p>
@@ -821,7 +822,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>None of the three are wrong. They're just far below the four things that decide whether a stranger buys.</p>
 
 <h2>So where should you actually start?</h2>
-<p>Pick the failure point, not the trend. If you're unsure which is yours, the <a href="/blog/how-to-increase-shopify-conversion-rate">highest-leverage conversion fixes</a> and the <a href="/blog/why-your-shopify-store-isnt-converting">eight usual reasons a store doesn't convert</a> are the fastest read. Or skip the guessing entirely: <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=ecommerce-design-trends-2026">run a free audit</a> and get your homepage scored on exactly these four — speed, mobile, trust, checkout friction — with a ranked list of what to fix first. Trends are easier to follow once you know which one you're actually failing.</p>
+<p>Pick the failure point, not the trend. If you're unsure which is yours, the <a href="/blog/how-to-increase-shopify-conversion-rate">highest-leverage conversion fixes</a> and the <a href="/blog/why-your-shopify-store-isnt-converting">eight usual reasons a store doesn't convert</a> are the fastest read. Or skip the guessing entirely: <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=ecommerce-design-trends-2026">run a free audit</a> and get your homepage scored on exactly these four — speed, mobile, trust, checkout friction — with a ranked list of what to fix first. Trends are easier to follow once you know which one you're actually failing.</p>
 `.trim(),
     faqs: [
       {
@@ -1003,7 +1004,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>Two more sit just below the chart and are worth knowing because they're pure plumbing: a declined card (10%) and too few payment methods (9%), both from the same Baymard data. Neither is a design problem, and both are quietly fixable — which makes them the cheapest percentage points on the whole list.</p>
 <p>Read the ranking again and notice what isn't on it anywhere: the price of the product. Nobody abandons because your candle costs $34. They abandon because it cost $34 on the product page and $51.80 at checkout. Every reason above the 13% mark is a promise the checkout broke — about cost, about speed, about safety, or about how long this was going to take.</p>
-<p>You can guess which of these seven is costing you — or <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=why-customers-abandon-cart-2026">see it in about 60 seconds →</a></p>
+<p>You can guess which of these seven is costing you — or <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=why-customers-abandon-cart-2026">see it in about 60 seconds →</a></p>
 
 <h2>Which one is killing your checkout?</h2>
 <p>Only one of these is your biggest leak, and the honest answer is that you can't tell by staring at your own store — you already know where everything is, which is exactly the knowledge a first-time buyer doesn't have.</p>
@@ -1014,7 +1015,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p><strong>2. Turn on guest checkout (18%).</strong> Forcing account creation costs you nearly one in five ready buyers so you can collect an email you could have asked for after the sale. Enable guest checkout, then offer the account at the thank-you page, when they've already given you the email anyway.</p>
 <p><strong>3. Put security and returns where the doubt happens (19% + 13%).</strong> Card-security doubts and return-policy concerns are both trust failures, and both get solved by placement rather than policy: payment marks and a one-line return promise next to the pay button, not linked in the footer.</p>
 <p>The two 17% reasons — a checkout that runs too long, and site errors or crashes — are worth a pass after those three, and both are measurable rather than debatable: count the fields and the steps between cart and confirmation, then complete a purchase on a mid-range Android phone on mobile data rather than your office wifi. Most checkout errors founders never see are the ones that only happen on a slower device.</p>
-<p>Do those three and you've addressed the reasons behind most winnable abandonment, without spending a dollar on traffic. Then work the <a href="/blog/how-to-increase-shopify-conversion-rate">highest-leverage conversion fixes</a> upstream of the cart — or have it done for you: a <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=why-customers-abandon-cart-2026">free audit</a> scores your store against exactly these friction points and ranks what to fix first. Recovering a fraction of that 70% is cheaper than buying the traffic twice.</p>
+<p>Do those three and you've addressed the reasons behind most winnable abandonment, without spending a dollar on traffic. Then work the <a href="/blog/how-to-increase-shopify-conversion-rate">highest-leverage conversion fixes</a> upstream of the cart — or have it done for you: a <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=why-customers-abandon-cart-2026">free audit</a> scores your store against exactly these friction points and ranks what to fix first. Recovering a fraction of that 70% is cheaper than buying the traffic twice.</p>
 `.trim(),
     faqs: [
       {
@@ -1085,7 +1086,7 @@ export const BLOG_POSTS: BlogPost[] = [
 </figure>
 
 <p>Two corrections worth making loudly, because the wrong version is everywhere. <strong>Checkout UI extensions did not become free for all paid plans.</strong> Apps can customise the thank-you and order-status pages on Basic and up — that part is real — but the information, shipping and payment steps are still Shopify Plus. And <strong>SimGym is not a component library</strong>. It's an AI-shopper simulator for your theme, closer to a flight simulator for your storefront than to a set of React components.</p>
-<p>None of which tells you whether your store converts today. <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=new-free-shopify-tools-2026">Get that scored free in about 60 seconds →</a></p>
+<p>None of which tells you whether your store converts today. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=new-free-shopify-tools-2026">Get that scored free in about 60 seconds →</a></p>
 
 <h2>Which ones are actually worth using?</h2>
 <p>Ranked for a single owner running the store alone, not for an agency with a roadmap:</p>
@@ -1102,7 +1103,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <h2>What can't Shopify's free tools tell you?</h2>
 <p>Everything on that list helps you <em>build</em> faster — write a section, test a theme, read a cleaner report. None of it tells you why a stranger landed on your store and left without buying. Shopify's analytics show you that conversion dropped; they don't show you that your price is invisible above the fold on a phone, that your only trust signal is in the footer, or that your hero image takes four seconds to paint.</p>
 <p>SimGym is the closest Shopify has come, and it's a genuinely interesting product — but it simulates behaviour on a theme change rather than diagnosing the store you have today, and it bills per run. That gap is exactly the one we built for, so treat the next sentence as an ad: <em>full disclosure, EliteVault is our tool.</em></p>
-<p>Shopify's new tools help you build faster — but not fix what isn't converting. <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=new-free-shopify-tools-2026">See your store's conversion leaks free →</a></p>
+<p>Shopify's new tools help you build faster — but not fix what isn't converting. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=new-free-shopify-tools-2026">See your store's conversion leaks free →</a></p>
 
 <h2>So what should you actually do this week?</h2>
 <p>Turn Sidekick on, run bot filtering, and leave the rest until it's clearly relevant to your stage. If you want a wider view of what free diagnostics can and can't do, <a href="/blog/free-website-audit-tools">free website audit tools: what they check</a> compares the categories honestly, and <a href="/blog/reverse-engineer-winning-shopify-stores">how to reverse-engineer a winning Shopify store</a> is the better use of an afternoon than reading all 300 release notes. New tools are worth adopting; they're just never the reason a store starts converting.</p>
@@ -1205,7 +1206,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <li>Wait about a minute for the scan and read the ranked list.</li>
 <li>Fix the top-ranked issue first, then re-run to confirm it moved.</li>
 </ol>
-<p><a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-store-analyzer">Analyze your store free →</a> Full disclosure, EliteVault is our tool. For other options, see <a href="/blog/free-website-audit-tools">free website audit tools</a>; for the fixes themselves, <a href="/blog/why-your-shopify-store-isnt-converting">why your Shopify store isn't converting</a>. And if Shopify already tracks your data, <a href="/blog/store-analyzer-vs-shopify-analytics">why owners still pay for someone to read it</a>.</p>
+<p><a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-store-analyzer">Analyze your store free →</a> Full disclosure, EliteVault is our tool. For other options, see <a href="/blog/free-website-audit-tools">free website audit tools</a>; for the fixes themselves, <a href="/blog/why-your-shopify-store-isnt-converting">why your Shopify store isn't converting</a>. And if Shopify already tracks your data, <a href="/blog/store-analyzer-vs-shopify-analytics">why owners still pay for someone to read it</a>.</p>
 `.trim(),
     faqs: [
       {
@@ -1307,7 +1308,7 @@ ${teaserVideo}
 
 <h2>How do you start?</h2>
 <p>Keep your dashboard for counting. Add an outside read for the why. EliteVault's free audit works from a screenshot of your live storefront, so it judges what a shopper sees, not your analytics. Full disclosure, EliteVault is our tool.</p>
-<p><a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=store-analyzer">Analyze your store free →</a> To see what a good analyzer covers, read <a href="/blog/shopify-store-analyzer">what a Shopify store analyzer checks</a>; for the human option, <a href="/blog/ecommerce-store-audit-vs-consultant">audit vs consultant</a>.</p>
+<p><a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=store-analyzer">Analyze your store free →</a> To see what a good analyzer covers, read <a href="/blog/shopify-store-analyzer">what a Shopify store analyzer checks</a>; for the human option, <a href="/blog/ecommerce-store-audit-vs-consultant">audit vs consultant</a>.</p>
 `.trim(),
     faqs: [
       {
@@ -1420,7 +1421,7 @@ ${teaserVideo}
 <li>Run an automated check to rank what you found, so you know which fix comes first.</li>
 <li>Post with your niche, traffic source and one specific question.</li>
 </ol>
-<p><a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=store-audit">Run a free store audit →</a> EliteVault's audit works from a screenshot of your live storefront, so it judges what a shopper sees. Full disclosure, EliteVault is our tool. Next: <a href="/blog/why-your-shopify-store-isnt-converting">why your Shopify store isn't converting</a>, or <a href="/blog/shopify-store-analyzer">what a Shopify store analyzer checks</a>.</p>
+<p><a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=store-audit">Run a free store audit →</a> EliteVault's audit works from a screenshot of your live storefront, so it judges what a shopper sees. Full disclosure, EliteVault is our tool. Next: <a href="/blog/why-your-shopify-store-isnt-converting">why your Shopify store isn't converting</a>, or <a href="/blog/shopify-store-analyzer">what a Shopify store analyzer checks</a>.</p>
 `.trim(),
     faqs: [
       {
@@ -1528,7 +1529,7 @@ ${teaserVideo}
 </figure>
 
 <h2>When is it worth hiring one?</h2>
-<p>When you have enough traffic to test and a known leak worth testing. With very little traffic, fix the obvious problems first; a test can't settle. Start by running a <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=ecommerce-cro-specialist">free store audit →</a> so you hire for a real problem. Full disclosure, EliteVault is our tool, and it reads a screenshot of your live storefront.</p>
+<p>When you have enough traffic to test and a known leak worth testing. With very little traffic, fix the obvious problems first; a test can't settle. Start by running a <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=ecommerce-cro-specialist">free store audit →</a> so you hire for a real problem. Full disclosure, EliteVault is our tool, and it reads a screenshot of your live storefront.</p>
 <p>Weighing options? Compare <a href="/blog/ecommerce-store-audit-vs-consultant">an audit with a consultant</a>, work the <a href="/blog/how-to-increase-shopify-conversion-rate">highest-leverage fixes</a> yourself, or see what <a href="/blog/store-audit-review-my-store-feedback">"review my store" threads keep saying</a>. If the fix is a new page, here is <a href="/blog/shopify-landing-page-specialist">how to brief a Shopify landing page specialist</a>.</p>
 `.trim(),
     faqs: [
@@ -1623,7 +1624,7 @@ ${teaserVideo}
 
 <h2>How do you hire one without managing every step?</h2>
 <ol>
-<li>Run a <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-landing-page-specialist">free store audit →</a> to see what to fix first.</li>
+<li>Run a <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-landing-page-specialist">free store audit →</a> to see what to fix first.</li>
 <li>Write the six-item brief above, with one reference page.</li>
 <li>Ask for a speed and mobile check before launch, then measure.</li>
 <li>Start with one small project to test the fit before a bigger commitment.</li>
@@ -1738,7 +1739,7 @@ ${teaserVideo}
 <ol>
 <li>Tap every button, option and link on a real phone.</li>
 <li>Add to cart and go through checkout yourself.</li>
-<li>Run a <a href="/free-website-audit?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=ai-shopify-designer">free store audit →</a> for an outside read of the live page.</li>
+<li>Run a <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=ai-shopify-designer">free store audit →</a> for an outside read of the live page.</li>
 </ol>
 <p>Full disclosure, EliteVault is our tool. It reads a screenshot of your live storefront, so it can't click through your cart. Do that part by hand. For the build side, see <a href="/blog/shopify-landing-page-specialist">how to brief a Shopify landing page specialist</a>, or <a href="/blog/ecommerce-cro-specialist">what a CRO specialist does</a>.</p>
 `.trim(),
