@@ -312,7 +312,10 @@
     "unpublishFailed": "No se pudo despublicar",
     "reportFailed": "No se pudo enviar la denuncia",
     "by": "por {author}",
-    "tier": "Nivel:"
+    "tier": "Nivel:",
+    "compareLockedTitle": "Compare Mode es una función Pro",
+    "compareLockedBody": "Compara auditorías publicadas lado a lado: puntuaciones, categorías, escenarios y correcciones. Disponible en Pro y Scale.",
+    "compareLockedCta": "Desbloquear Compare Mode con Pro →"
   },
   "libraryView": {
     "imageSearchPro": "La búsqueda por imagen es una función Pro",
@@ -778,7 +781,6 @@
     "estSignal": "Estimación de IA: modelada con el AOV del nicho, no es una cifra medida",
     "perMoEst": "/mes est.",
     "match": "% de coincidencia",
-    "seeAds": "Ver sus anuncios activos",
     "winnersInNiche": "Ganadoras de tu nicho",
     "topConverting": "Tiendas que más convierten",
     "curated": "Ganadoras seleccionadas a mano, actualizadas periódicamente",
@@ -789,7 +791,8 @@
     "estimated": "Estimado con señales públicas. No son cifras reportadas por las marcas.",
     "adsAria": "{n} anuncios activos: señal real, recuento en vivo de la Meta Ad Library",
     "revAria": "Ingresos estimados de ~{low} $ a {high} $ al mes: estimación de IA",
-    "unlockAllN": "Desbloquea las {n} ganadoras de tu nicho"
+    "unlockAllN": "Desbloquea las {n} ganadoras de tu nicho",
+    "visitStore": "Visitar su tienda"
   },
   "annotations": {
     "title": "Auditoría anotada",

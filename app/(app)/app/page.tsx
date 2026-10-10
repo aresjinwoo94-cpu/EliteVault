@@ -38,7 +38,9 @@ export default async function OverviewPage() {
         .limit(3),
       supabase
         .from("winning_sites")
-        .select("*", { count: "exact", head: true }),
+        .select("*", { count: "exact", head: true })
+        .eq("status", "published")
+        .eq("is_live", true),
     ]);
 
   const plan = PLANS[(profile?.plan ?? "free") as keyof typeof PLANS];

@@ -22,6 +22,8 @@
     "library:backfill": "tsx scripts/backfill-library-images.mts",
     "library:discover": "tsx --tsconfig scripts/library/tsconfig.json scripts/library/discover.mts",
     "library:verify": "tsx --tsconfig scripts/library/tsconfig.json scripts/library/verify.mts",
+    "library:signal": "tsx --tsconfig scripts/library/tsconfig.json scripts/library/signal.mts",
+    "library:teardown": "tsx --tsconfig scripts/library/tsconfig.json scripts/library/teardown.mts",
     "library:momentum": "tsx --tsconfig scripts/library/tsconfig.json scripts/library/momentum.mts",
     "library:audit": "tsx --tsconfig scripts/library/tsconfig.json scripts/library/audit.mts"
   },

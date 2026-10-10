@@ -312,7 +312,10 @@
     "unpublishFailed": "Could not unpublish",
     "reportFailed": "Could not submit report",
     "by": "by {author}",
-    "tier": "Tier:"
+    "tier": "Tier:",
+    "compareLockedTitle": "Compare Mode is a Pro feature",
+    "compareLockedBody": "Compare published audits side by side — scores, categories, scenarios and fixes. Available on Pro and Scale.",
+    "compareLockedCta": "Unlock Compare Mode with Pro →"
   },
   "libraryView": {
     "imageSearchPro": "Image search is a Pro feature",
@@ -778,7 +781,6 @@
     "estSignal": "AI estimate — modeled from niche AOV, not a measured figure",
     "perMoEst": "/mo est.",
     "match": "% match",
-    "seeAds": "See their active ads",
     "winnersInNiche": "Winners in your niche",
     "topConverting": "Top converting stores",
     "curated": "Curated winners · hand-picked, refreshed periodically",
@@ -789,7 +791,8 @@
     "estimated": "Estimated from public signals. Not figures reported by the brands.",
     "adsAria": "{n} active ads — real signal, live Meta Ad Library count",
     "revAria": "Estimated revenue ~${low} to ${high} per month — AI estimate",
-    "unlockAllN": "Unlock all {n} winners in your niche"
+    "unlockAllN": "Unlock all {n} winners in your niche",
+    "visitStore": "Visit their store"
   },
   "annotations": {
     "title": "Annotated audit",
