@@ -155,7 +155,7 @@ function buildLandingJsonLd() {
     {
       question: "Is there a free plan?",
       // Prices derive from PLANS (single source of truth) — never hardcode.
-      answer: `Yes. The Free plan runs one full audit of your store — score, annotated screenshot, your #1 priority fix unlocked and a modeled 7-day ROAS range — plus 3 hand-picked winning stores with full metrics. Pro ($${PLANS.pro.price.month}/mo) unlocks the rest of your ranked fixes, the buyer-persona simulation, unlimited audits and 1 Meta campaign projection/month. Scale ($${PLANS.scale.price.month}/mo) adds unlimited projections and the REST API.`,
+      answer: `Yes. The Free plan runs one full audit of your store — score, annotated screenshot, one set of fixes of your choice unlocked and a modeled 7-day ROAS range — plus 3 hand-picked winning stores with full metrics. Pro ($${PLANS.pro.price.month}/mo) unlocks the rest of your ranked fixes, the buyer-persona simulation, unlimited audits and 1 Meta campaign projection/month. Scale ($${PLANS.scale.price.month}/mo) adds unlimited projections and the REST API.`,
     },
   ];
 

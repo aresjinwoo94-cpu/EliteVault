@@ -86,3 +86,26 @@ test("Compare Mode is gated on the SERVER for Pro/Scale (it is sold as Pro/Scale
     assert.ok(c.compareLockedTitle && c.compareLockedBody && c.compareLockedCta, locale);
   }
 });
+
+// Premium audit H1 (verifier finding): the winners module had two UNFILTERED fallbacks that
+// ran on ANY query error and could show review/dead stores to paying users. They are gone.
+test("winners module fails closed: no unfiltered winning_sites fallback, only http(s) links", () => {
+  const src = read("lib/library/niche-winners.ts");
+  assert.doesNotMatch(src, /\.select\(LEGACY_COLS\)/);
+  assert.doesNotMatch(src, /trying legacy shape/);
+  // every service read of winning_sites inside this module carries both filters
+  const reads = src.match(/\.from\("winning_sites"\)[\s\S]{0,260}?(?=\n\s*(?:const|let|if|return|\/\/|\}))/g) ?? [];
+  assert.ok(reads.length >= 3);
+  for (const r of reads) {
+    assert.match(r, /\.eq\("status", "published"\)/, r.slice(0, 120));
+    assert.match(r, /\.eq\("is_live", true\)/, r.slice(0, 120));
+  }
+  assert.ok(src.includes("/^https?:"), "only http(s) store links reach the card");
+});
+
+test("teardown job never adds a second teardown and counts only real writes", () => {
+  const src = read("scripts/library/teardown.mts");
+  assert.match(src, /if \(inNiche\.some\(\(r\) => r\.teardown\)\) continue;/);
+  assert.match(src, /\.is\("teardown", null\)/);
+  assert.match(src, /upd\.length > 0/);
+});

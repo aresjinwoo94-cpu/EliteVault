@@ -68,7 +68,7 @@ const SCHEMA = {
 } as const;
 
 // (1) Business claims about a third party: never allowed anywhere — rejects the whole teardown.
-const BUSINESS = /\b(revenue|traffic|visitors per|conversion rate|converts at|per month|million|sales volume|market share)\b|\/mo/i;
+const BUSINESS = /\b(revenue|traffic|visitors per|conversion rate|converts at|per month|million|sales volume|market share)\b|\/mo\b/i;
 // (2) EPHEMERAL content (promos, dates, launches, numbers) that is stale in weeks: an element that
 // contains it is DROPPED (we need >= 3 clean ones); a summary that contains it rejects the teardown.
 const EPHEMERAL =
@@ -129,7 +129,7 @@ const MAX_TRIES = 3;
 const targets: Row[][] = []; // per niche: ranked candidates
 for (const n of niches) {
   const inNiche = rows.filter((r) => r.niche === n);
-  if (inNiche.some((r) => r.teardown) && !only) continue; // --missing semantics: already covered
+  if (inNiche.some((r) => r.teardown)) continue; // one is enough; never add a second or overwrite a curated one
   const cands = inNiche.filter((r) => !r.teardown).slice(0, MAX_TRIES);
   if (cands.length) targets.push(cands);
 }
@@ -178,9 +178,14 @@ for (const cands of targets) {
     console.log(`✓ ${td.elements.length} elements — ${td.summary}`);
     for (const e of td.elements) console.log(`     [${e.dimension}] ${e.element}: ${e.observation}`);
     if (!dry) {
-      const { error: upErr } = await svc.from("winning_sites").update({ teardown: td }).eq("id", t.id).is("teardown", null);
+      const { data: upd, error: upErr } = await svc
+        .from("winning_sites")
+        .update({ teardown: td })
+        .eq("id", t.id)
+        .is("teardown", null)
+        .select("id");
       if (upErr) throw new Error(upErr.message);
-      written++;
+      if (upd && upd.length > 0) written++;
     }
     break; // one teardown per niche is enough
   } catch (err) {
