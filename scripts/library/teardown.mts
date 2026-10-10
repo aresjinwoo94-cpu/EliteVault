@@ -127,7 +127,8 @@ type Row = { id: string; url: string; domain: string; title: string | null; nich
 const rows = (data ?? []) as unknown as Row[];
 
 const niches = Object.keys(NICHE_LABELS).filter((n) => (only ? n === only : true));
-const MAX_TRIES = 3;
+// Stores to try per niche before giving up (cookie walls / unreadable renders are common): --tries N.
+const MAX_TRIES = Math.max(1, Math.min(10, Number(arg("--tries", "3")) || 3));
 const targets: Row[][] = []; // per niche: ranked candidates
 for (const n of niches) {
   const inNiche = rows.filter((r) => r.niche === n);
