@@ -21,6 +21,8 @@
  *   • never overwrites an existing teardown (they were hand-curated).
  *   • English only, like the existing ones.
  */
+// Offline job: must use GEMINI_API_KEY_JOBS, never the production key (scripts/lib/jobs-key.mjs).
+import "../lib/require-jobs-key.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { serviceClient, arg, hasFlag, requireExpansionColumns, exitWith } from "./_shared.mts";

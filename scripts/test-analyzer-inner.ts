@@ -1,4 +1,6 @@
 (async () => {
+  // Offline job: must use GEMINI_API_KEY_JOBS, never the production key (scripts/lib/jobs-key.mjs).
+  await import("./lib/require-jobs-key.mjs");
   const { runAnalyzerAgent } = await import("../ai/agents/analyzer-agent");
   const { captureScreenshot } = await import("../lib/screenshot");
 

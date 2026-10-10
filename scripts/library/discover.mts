@@ -22,6 +22,8 @@
  * Idempotent: rows are upserted on `url`, and `domain_key` (unique) blocks the
  * same store arriving twice under a different URL spelling.
  */
+// Offline job: must use GEMINI_API_KEY_JOBS, never the production key (scripts/lib/jobs-key.mjs).
+import "../lib/require-jobs-key.mjs";
 import {
   serviceClient,
   arg,

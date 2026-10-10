@@ -5,6 +5,8 @@
  * Calls Gemini directly (bypasses the `server-only` import that blocks
  * standalone Node execution of /ai/agents/*).
  */
+// Offline job: must use GEMINI_API_KEY_JOBS, never the production key (scripts/lib/jobs-key.mjs).
+import "./lib/require-jobs-key.mjs";
 import { readFileSync } from "node:fs";
 
 const env = Object.fromEntries(
@@ -20,7 +22,7 @@ const { GoogleGenAI, Type } = await import("@google/genai");
 const svc = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
 });
-const ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const SYSTEM = `You are EliteVault's Meta Ads Optimizer — a senior media buyer
 with 8+ years scaling DTC ecommerce on Meta. You think in CAC and breakeven

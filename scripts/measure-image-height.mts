@@ -22,6 +22,8 @@
  * numbers here are not production numbers. The RATIO between two arms measured
  * under the same conditions is the part that survives that.
  */
+// Offline job: must use GEMINI_API_KEY_JOBS, never the production key (scripts/lib/jobs-key.mjs).
+import "./lib/require-jobs-key.mjs";
 import { readFileSync } from "node:fs";
 
 /**

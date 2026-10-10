@@ -1,7 +1,9 @@
-﻿import { GoogleGenAI, Type } from "@google/genai";
+﻿// Offline job: must use GEMINI_API_KEY_JOBS, never the production key (scripts/lib/jobs-key.mjs).
+import "./lib/require-jobs-key.mjs";
+import { GoogleGenAI, Type } from "@google/genai";
 import { readFileSync } from "node:fs";
 const env = Object.fromEntries(readFileSync(".env.local","utf8").split("\n").filter(l=>l && !l.startsWith("#") && l.includes("=")).map(l=>[l.slice(0,l.indexOf("=")).trim(), l.slice(l.indexOf("=")+1).trim()]));
-const ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const model = env.GEMINI_MODEL;
 console.log(`Model: ${model}`);
 
