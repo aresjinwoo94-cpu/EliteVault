@@ -119,7 +119,7 @@ async function AnonAuditPageInner({
   });
 
   const competitorAvailable = analyzerFixTracksEnabled()
-    ? await resolveCompetitor(row.niche_winners).then((r) => r.ok || r.reason === "error")
+    ? await resolveCompetitor(row.niche_winners, row.url).then((r) => r.ok || r.reason === "error")
     : true;
 
   return (

@@ -131,7 +131,7 @@ export async function GET(
   // ── competitor: pick the same-niche winner with a teardown (no AI yet) ──
   // Resolved BEFORE the free choice is recorded: an empty/failed lookup must not consume it.
   if (track === "competitor" && !state.tracks.competitor?.fixes?.length) {
-    const res = await resolveCompetitor(row.niche_winners);
+    const res = await resolveCompetitor(row.niche_winners, row.url);
     if (!res.ok && res.reason === "error") {
       // A DB blip must not look like "no competitor" (and must not burn the free choice).
       return NextResponse.json({ error: "unavailable" }, { status: 503, headers: NO_STORE });
