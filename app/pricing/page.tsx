@@ -15,7 +15,7 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Simple, transparent pricing for EliteVault. Free tier: one full audit with your #1 fix unlocked + 3 hand-picked winning stores. Pro at $19/mo for the full analyzer. Scale at $29/mo for Meta Ads optimization + 7-day scenario modeler + REST API.",
+    "Simple, transparent pricing for EliteVault. Free tier: one full audit with one set of fixes of your choice unlocked + 3 hand-picked winning stores. Pro at $19/mo for the full analyzer. Scale at $29/mo for Meta Ads optimization + 7-day scenario modeler + REST API.",
   keywords: [
     "elitevault pricing",
     "ecommerce audit pricing",

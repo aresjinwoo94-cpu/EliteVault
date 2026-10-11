@@ -124,6 +124,10 @@ export async function searchLibrary(opts: {
     .select(
       "id, url, domain, title, niche, thumbnail_url, metrics, description, is_featured, is_preselected, ad_signals, teardown",
     )
+    // Only stores that passed the publication gate AND are alive (owner decision 2026-10-09;
+    // the RLS policy enforces the same — see migration 0037).
+    .eq("status", "published")
+    .eq("is_live", true)
     .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(opts.limit ?? 36);
@@ -207,6 +211,8 @@ export async function getNiches(): Promise<string[]> {
   const { data } = await service
     .from("winning_sites")
     .select("niche")
+    .eq("status", "published")
+    .eq("is_live", true)
     .order("niche");
   if (!data) return [];
   return Array.from(new Set(data.map((d) => d.niche)));
@@ -216,8 +222,12 @@ export async function getNiches(): Promise<string[]> {
 export async function getLibraryStats() {
   const service = createSupabaseServiceClient();
   const [{ count: total }, { data: byNiche }] = await Promise.all([
-    service.from("winning_sites").select("*", { count: "exact", head: true }),
-    service.from("winning_sites").select("niche"),
+    service
+      .from("winning_sites")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "published")
+      .eq("is_live", true),
+    service.from("winning_sites").select("niche").eq("status", "published").eq("is_live", true),
   ]);
   const niches: Record<string, number> = {};
   for (const r of byNiche ?? []) {

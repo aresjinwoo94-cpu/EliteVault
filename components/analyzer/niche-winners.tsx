@@ -9,7 +9,6 @@ import {
   Sparkles,
   ArrowRight,
   Radio,
-  Megaphone,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -145,18 +144,19 @@ function WinnerRow({ w }: { w: NicheWinner }) {
       </div>
 
       {/*
-        The strongest hook in the module: the buyer wants the CREATIVES that
-        are running, not a number. Deep-links into the public Meta Ad Library.
+        The CTA opens the winning STORE itself (owner decision, brief §4.3). The
+        "N active ads" badge above stays as the proof that it is scaling, but it is no
+        longer where the click goes. Clean third-party link: no UTMs, no params.
       */}
-      {w.adsUrl && (
+      {w.url && (
         <a
-          href={w.adsUrl}
+          href={w.url}
           target="_blank"
           rel="noopener nofollow"
           className="mt-2.5 flex items-center justify-center gap-1.5 rounded-lg border border-champagne-400/20 bg-champagne-400/[0.06] px-2.5 py-1.5 text-[11px] font-medium text-champagne-200 transition-colors hover:border-champagne-400/35 hover:bg-champagne-400/[0.1]"
         >
-          <Megaphone className="size-3" />
-          {t("nicheWinners.seeAds")}
+          <ExternalLink className="size-3" />
+          {t("nicheWinners.visitStore")}
           <ArrowRight className="size-3" />
         </a>
       )}

@@ -229,7 +229,9 @@ function revenueOf(row: WinningRow): { low: number; high: number } | null {
  */
 function toWinner(row: WinningRow, detectedNiche: string): NicheWinner | null {
   const domain = normalizeDomain(row?.domain ?? row?.url) ?? str(row?.domain);
-  const url = str(row?.url) ?? (domain ? `https://${domain}` : null);
+  const rawUrl = str(row?.url);
+  // Only http(s) links ever reach the card (a stored javascript:/data: URL must never become an href).
+  const url = rawUrl && /^https?:\/\//i.test(rawUrl) ? rawUrl : domain ? `https://${domain}` : null;
   if (!domain || !url) return null;
   const title = str(row.title) ?? domain;
   return {
@@ -304,21 +306,11 @@ export async function getNicheWinners(
       .limit(60);
 
     if (full.error) {
-      // Missing column / renamed column / RLS change. Log it — silence here
-      // would hide a real schema drift — then serve the legacy shape.
-      console.warn(
-        `[niche-winners] full query failed, falling back to legacy columns: ${full.error.message}`,
-      );
-      const legacy = await service
-        .from("winning_sites")
-        .select(LEGACY_COLS)
-        .in("niche", niches)
-        .limit(60);
-      if (legacy.error) {
-        console.warn(`[niche-winners] legacy query error: ${legacy.error.message}`);
-        return empty;
-      }
-      rows = (Array.isArray(legacy.data) ? legacy.data : []) as unknown as WinningRow[];
+      // Any failure resolves to "no winners" (the card hides). There is deliberately NO
+      // unfiltered fallback any more: it ran on ANY error and could surface review/dead
+      // stores to paying users (premium audit H1). Log loudly — schema drift must not hide.
+      console.warn(`[niche-winners] query failed, showing no winners: ${full.error.message}`);
+      return empty;
     } else {
       rows = (Array.isArray(full.data) ? full.data : []) as unknown as WinningRow[];
     }
@@ -514,20 +506,9 @@ export async function buildNicheWinnersFromScreenshot(input: {
 
     const { data, error } = await query;
     if (error) {
-      // Most likely a pre-0017 DB without status/is_live. Retry unfiltered on
-      // the legacy shape so the matcher still works during migration.
-      console.warn(
-        `[niche-winners] match query failed, trying legacy shape: ${error.message}`,
-      );
-      const legacy = await service
-        .from("winning_sites")
-        .select("id, url, domain, title, niche, description, metrics, ad_signals, is_featured")
-        .limit(14);
-      if (legacy.error || !Array.isArray(legacy.data)) return null;
-      return finishMatch(
-        legacy.data as unknown as WinningRow[],
-        { detectedNiche, niche, scope, related, keywords, ownDomain, screenshotBase64: input.screenshotBase64, mediaType: input.mediaType },
-      );
+      // No unfiltered legacy retry (see getNicheWinners): fail closed.
+      console.warn(`[niche-winners] match query failed, no winners: ${error.message}`);
+      return null;
     }
 
     const rows = (Array.isArray(data) ? data : []) as unknown as WinningRow[];

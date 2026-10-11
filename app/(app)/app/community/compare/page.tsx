@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { ArrowLeft, Sparkles } from "lucide-react";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient, getUserResult } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { redirect } from "next/navigation";
+import { PLANS } from "@/lib/stripe/plans";
 import { getT } from "@/lib/i18n/server";
 
 export const metadata = { title: "Compare · Community" };
@@ -29,6 +31,32 @@ export default async function ComparePage({
   searchParams: Promise<{ slugs?: string }>;
 }) {
   const { t } = await getT();
+
+  // Compare Mode is a Pro/Scale feature (pricing page). Gated HERE, on the server — the
+  // feed's button isn't plan-aware, so without this any signed-in user could open the URL.
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await getUserResult();
+  if (!user) redirect("/sign-in?next=/app/community");
+  const { data: prof } = await supabase.from("profiles").select("plan").eq("id", user.id).single();
+  const planKey = (prof as { plan?: string } | null)?.plan;
+  const plan = planKey && planKey in PLANS ? PLANS[planKey as keyof typeof PLANS] : PLANS.free;
+  if (!plan.canPublish) {
+    return (
+      <div className="p-8 max-w-2xl mx-auto text-center">
+        <h1 className="font-serif text-3xl">{t("community.compareLockedTitle")}</h1>
+        <p className="mt-2 text-white/55">{t("community.compareLockedBody")}</p>
+        <Link
+          href="/app/checkout?plan=pro&interval=month"
+          className="mt-6 inline-block text-champagne-400"
+        >
+          {t("community.compareLockedCta")}
+        </Link>
+      </div>
+    );
+  }
+
   const sp = await searchParams;
   const slugs = (sp.slugs ?? "").split(",").filter(Boolean).slice(0, 3);
 
@@ -49,7 +77,6 @@ export default async function ComparePage({
     );
   }
 
-  const supabase = await createSupabaseServerClient();
   const { data: items } = await supabase
     .from("community_analyses")
     .select(

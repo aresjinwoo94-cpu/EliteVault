@@ -781,9 +781,9 @@ const en: Dict = {
   plans: {
     free: {
       name: "Free",
-      desc: "Run one free audit of your own store — overall score, annotated screenshot AND your #1 priority fix, unlocked, no credit card. Browse 3 hand-picked winning stores with full metrics and read the community feed. Upgrade to Pro to unlock the rest of your ranked fixes, buyer-persona simulation and unlimited audits.",
+      desc: "Run one free audit of your own store — overall score, annotated screenshot AND one set of fixes of your choice (most urgent, post-purchase, theme & colors or your niche's top store), unlocked, no credit card. Browse 3 hand-picked winning stores with full metrics and read the community feed. Upgrade to Pro to unlock the rest of your ranked fixes, buyer-persona simulation and unlimited audits.",
       f0: "1 free audit: score + annotated screenshot",
-      f1: "Your #1 highest-impact fix — unlocked & actionable",
+      f1: "You choose one type of fixes — unlocked & actionable",
       f2: "3 hand-picked winning stores with full metrics",
       f3: "Browse the Community feed",
       f4: "The rest of your ranked fixes + buyer-persona simulation",
@@ -814,7 +814,6 @@ const en: Dict = {
       f2: "Meta Ads optimizer: CPC, CPM, CTR & ROAS targets",
       f3: "REST API access (bearer tokens)",
       f4: "200 analyses / month",
-      f5: "Priority queue + priority support",
     },
   },
   freeAudit: {
@@ -1738,9 +1737,9 @@ const es: Dict = {
   plans: {
     free: {
       name: "Gratis",
-      desc: "Haz una auditoría gratis de tu propia tienda: puntuación global, captura anotada Y tu corrección prioritaria nº 1, desbloqueada y sin tarjeta de crédito. Explora 3 tiendas ganadoras seleccionadas a mano con todas sus métricas y lee el feed de la comunidad. Pasa a Pro para desbloquear el resto de tus correcciones ordenadas, la simulación de buyer persona y auditorías ilimitadas.",
+      desc: "Haz una auditoría gratis de tu propia tienda: puntuación global, captura anotada Y un grupo de correcciones a tu elección (lo más urgente, posventa, tema y colores o la tienda líder de tu nicho), desbloqueado y sin tarjeta de crédito. Explora 3 tiendas ganadoras seleccionadas a mano con todas sus métricas y lee el feed de la comunidad. Pasa a Pro para desbloquear el resto de tus correcciones ordenadas, la simulación de buyer persona y auditorías ilimitadas.",
       f0: "1 auditoría gratis: puntuación + captura anotada",
-      f1: "Tu corrección nº 1 de mayor impacto — desbloqueada y accionable",
+      f1: "Eliges un tipo de correcciones — desbloqueado y accionable",
       f2: "3 tiendas ganadoras seleccionadas a mano con métricas completas",
       f3: "Explora el feed de la Comunidad",
       f4: "El resto de tus correcciones ordenadas + simulación de buyer persona",
@@ -1771,7 +1770,6 @@ const es: Dict = {
       f2: "Optimizador de Meta Ads: objetivos de CPC, CPM, CTR y ROAS",
       f3: "Acceso a la API REST (tokens bearer)",
       f4: "200 análisis / mes",
-      f5: "Cola prioritaria + soporte prioritario",
     },
   },
   freeAudit: {

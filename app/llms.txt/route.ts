@@ -29,7 +29,7 @@ EliteVault is operated by ${COMPANY.legalEntity} (${COMPANY.country}). Scores, p
 - REST API with bearer tokens (Scale plan).
 
 ## Pricing
-- Free: one audit of your own store (score, annotated screenshot, #1 fix unlocked, modeled ROAS range) + 3 winning stores with full metrics. No card required.
+- Free: one audit of your own store (score, annotated screenshot, one set of fixes of your choice unlocked, modeled ROAS range) + 3 winning stores with full metrics. No card required.
 - Pro: $${PLANS.pro.price.month}/mo (or $${PLANS.pro.price.year}/yr) — full Analyzer, unlimited audits, buyer-persona simulations, 1 Meta campaign projection/month.
 - Scale: $${PLANS.scale.price.month}/mo (or $${PLANS.scale.price.year}/yr) — unlimited Meta Ads scenario projections + optimizer targets + REST API.
 

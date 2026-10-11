@@ -50,7 +50,11 @@ export async function getQualifyingNiches(): Promise<
 > {
   try {
     const service = createSupabaseServiceClient();
-    const { data } = await service.from("winning_sites").select("niche");
+    const { data } = await service
+      .from("winning_sites")
+      .select("niche")
+      .eq("status", "published")
+      .eq("is_live", true);
     if (!Array.isArray(data)) return [];
     const counts = new Map<string, number>();
     for (const row of data as unknown as { niche: string }[]) {
@@ -78,7 +82,9 @@ export async function getNichePage(slug: string): Promise<NichePageData | null> 
     const { data } = await service
       .from("winning_sites")
       .select("title, domain, niche, thumbnail_url, metrics, is_featured")
-      .eq("niche", slug);
+      .eq("niche", slug)
+      .eq("status", "published")
+      .eq("is_live", true);
     if (!Array.isArray(data) || data.length < MIN_STORES) return null;
     const stores = (
       data as unknown as {
