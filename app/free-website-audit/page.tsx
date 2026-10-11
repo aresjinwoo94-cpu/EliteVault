@@ -19,23 +19,24 @@ import { getT } from "@/lib/i18n/server";
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
 export const metadata: Metadata = {
-  title: "Free Store Audit Tool — Ecommerce Web Analyzer",
+  title: "Free CRO Audit for Ecommerce — Conversion Check in 60s",
   description:
-    "Free store audit and ecommerce web analyzer. Paste your URL and get a conversion score, an annotated screenshot and ranked fixes in 60 seconds. Shopify & DTC. No card.",
+    "Free CRO audit for your ecommerce store: paste your URL and get a conversion check, an annotated screenshot and ranked fixes in about a minute. Shopify, DTC & dropshipping. No card.",
   keywords: [
-    // Primary — this page is the dedicated "store audit" landing.
-    "store audit",
-    // Group 1 — store audit / analyzer cluster.
+    // Keyword ownership: see docs/seo-cannibalization-fix.md. The homepage owns
+    // "store audit" / "shopify store analyzer"; this page owns "free cro audit".
+    // "free cro audit" (wording taken from real Upwork requests; the earlier
+    // "free ecommerce website audit" showed no volume in Semrush).
+    "free cro audit",
+    "cro audit for ecommerce",
+    "free conversion audit",
+    "ecommerce website audit",
+    "online store website audit",
+    // Group 1 — website analyzer cluster.
     "ecommerce web analyzer",
     "ecommerce website analyzer",
     "online store analyzer",
-    // "shopify store analyzer" moved to the homepage (WP-D), which now leads
-    // with it in its title and H1. Two of our own pages chasing one term just
-    // splits the signal; this page keeps "ecommerce web analyzer".
-    "ecommerce store audit tool",
     "website analyzer for ecommerce",
-    "free store analyzer",
-    "shopify audit tool",
     "website analyzer",
     // Group 3 — dropshipping store audit cluster.
     "dropshipping store audit",
@@ -46,27 +47,25 @@ export const metadata: Metadata = {
     "is my dropshipping store good",
     // Core keywords that already rank — kept intact.
     "free website audit",
-    "free shopify store audit",
-    "shopify store audit",
     "web analyzer",
     "free website analyzer",
     "website audit tool",
-    "free store audit",
     "conversion audit",
-    // Design/desire cluster (buyer-persona SEO layer).
-    "shopify store design audit",
-    "does my store look trustworthy",
-    "ecommerce website design review",
-    "why visitors don't buy",
-    "store design conversion audit",
   ],
   alternates: { canonical: "/free-website-audit" },
   openGraph: {
-    title: "Free Store Audit & Conversion Analyzer — EliteVault",
+    title: "Free CRO Audit for Ecommerce — EliteVault",
     description:
       "A free AI website audit: score, annotated screenshot, and a ranked list of fixes in under a minute.",
     type: "website",
     url: `${baseUrl}/free-website-audit`,
+  },
+  // Without this the page inherits the layout default ("Free AI store audit
+  // before you run Meta ads") — a "store audit" claim the homepage owns.
+  twitter: {
+    title: "Free CRO Audit for Ecommerce — EliteVault",
+    description:
+      "A free AI website audit: score, annotated screenshot, and a ranked list of fixes in under a minute.",
   },
 };
 
