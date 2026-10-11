@@ -123,8 +123,12 @@ export function FixTracks({
       setLocked(false);
       try {
         const res = await fetch(`/api/analyses/${analysisId}/fix-tracks/${track}`, { cache: "no-store" });
-        if (seq !== reqSeq.current || !mounted.current) return;
+        if (!mounted.current) return;
         const body = (await res.json().catch(() => ({}))) as Record<string, any>;
+        // The server has ALREADY recorded a pick it answered 200 for, even if the viewer clicked away
+        // (e.g. onto urgent) while it was loading: reflect it so the lock state stays truthful.
+        if (res.status === 200 && !isPaid && body.choice) setChoice(body.choice as Track);
+        if (seq !== reqSeq.current) return;
         if (res.status === 200) {
           setData((d) => ({ ...d, [track]: { fixes: body.fixes ?? null, empty: body.empty, meta: body.meta ?? null } }));
           if (!isPaid && body.choice) setChoice(body.choice as Track);
