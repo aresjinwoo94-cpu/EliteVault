@@ -36,7 +36,10 @@ export interface FixTracksState {
 
 export function parseState(raw: unknown): FixTracksState {
   const o = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
-  const choice = parseTrack(o.free_choice);
+  // `urgent` used to be a pickable track that spent the free choice. It no longer is (its fixes ship
+  // with the audit and cost no AI), so a legacy row holding it means "nothing spent yet".
+  const rawChoice = parseTrack(o.free_choice);
+  const choice = rawChoice === "urgent" ? null : rawChoice;
   const tracks: FixTracksState["tracks"] = {};
   for (const t of GENERATED_TRACKS) {
     const v = o[t];
@@ -54,9 +57,12 @@ export type Access =
   | { kind: "choose" }
   | { kind: "locked"; choice: Track };
 
-/** Server-side gate (§3.4). Paid opens everything; free/anon get exactly one track, forever. */
+/**
+ * Server-side gate (§3.4). Paid opens everything. Free/anon ALWAYS see `urgent` (its fixes are already in the
+ * audit: no AI, nothing to spend) and get exactly ONE of the three generated tracks, forever.
+ */
 export function decideAccess(viewer: Viewer, track: Track, state: FixTracksState): Access {
-  if (viewer === "paid") return { kind: "serve" };
+  if (viewer === "paid" || track === "urgent") return { kind: "serve" };
   if (!state.free_choice) return { kind: "choose" };
   return state.free_choice === track ? { kind: "serve" } : { kind: "locked", choice: state.free_choice };
 }

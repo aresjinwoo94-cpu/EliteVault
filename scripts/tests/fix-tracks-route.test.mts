@@ -29,9 +29,12 @@ function state(row: Row): Record<string, unknown> {
 
 const rpcs: Record<string, (a: Record<string, unknown>) => unknown> = {
   fix_tracks_choose: ({ p_id, p_track }) => {
+    if (p_track === "urgent") return null;
     const row = analyses.find((r) => r.id === p_id)!;
-    if (!state(row).free_choice) row.fix_tracks = { ...state(row), free_choice: p_track };
-    return state(row).free_choice ?? null;
+    const cur = state(row).free_choice;
+    if (!cur || cur === "urgent") row.fix_tracks = { ...state(row), free_choice: p_track };
+    const now = state(row).free_choice;
+    return now === "urgent" ? null : (now ?? null);
   },
   fix_tracks_claim: ({ p_id, p_track }) => {
     const row = analyses.find((r) => r.id === p_id)!;
@@ -201,18 +204,61 @@ test("free: picks one track (fix #1 full, #2+ stripped), a second distinct track
   assert.equal(b.status, 403);
   assert.equal(b.body.error, "locked");
   assert.equal(b.body.choice, "post_purchase");
+  // urgent stays visible after the pick (it never was the pick)
   const c = await call("urgent");
-  assert.equal(c.status, 403);
+  assert.equal(c.status, 200);
+  assert.equal(c.body.fixes, null);
   assert.equal(agentCalls, 1);
 });
 
-test("free choosing `urgent` costs 0 AI calls and still locks the choice", async () => {
+test("free viewing `urgent` is free: 0 AI calls, free_choice untouched, and a later pick still works once", async () => {
   const a = await call("urgent");
   assert.equal(a.status, 200);
   assert.equal(a.body.fixes, null);
+  assert.equal(a.body.choice, null, "seeing urgent does not report a choice");
+  assert.equal(state(analyses[0]).free_choice, undefined, "free_choice is NOT written");
   assert.equal(agentCalls, 0);
-  assert.equal((await call("competitor")).status, 403);
-  assert.equal(agentCalls, 0);
+  // viewing it again changes nothing
+  assert.equal((await call("urgent")).status, 200);
+  assert.equal(state(analyses[0]).free_choice, undefined);
+
+  // picking one of the other three is what spends the choice…
+  const pick = await call("competitor");
+  assert.equal(pick.status, 200);
+  assert.equal(pick.body.choice, "competitor");
+  assert.equal(state(analyses[0]).free_choice, "competitor");
+  assert.equal(agentCalls, 1);
+  // …a second, different one is locked without calling the AI…
+  const second = await call("post_purchase");
+  assert.equal(second.status, 403);
+  assert.equal(second.body.choice, "competitor");
+  assert.equal(agentCalls, 1);
+  // …and urgent is still visible.
+  assert.equal((await call("urgent")).status, 200);
+});
+
+test("anonymous: same — urgent is free, the first generated track is the one pick, the next is locked with 0 AI", async () => {
+  authUser = null;
+  analyses = [baseRow({ user_id: null, anon_id: "tok-1" })];
+  anonToken = "tok-1";
+  assert.equal((await call("urgent")).status, 200);
+  assert.equal(state(analyses[0]).free_choice, undefined);
+  assert.equal((await call("theme_colors")).status, 200);
+  assert.equal(state(analyses[0]).free_choice, "theme_colors");
+  assert.equal(agentCalls, 1);
+  assert.equal((await call("post_purchase")).status, 403);
+  assert.equal(agentCalls, 1);
+  assert.equal((await call("urgent")).status, 200);
+});
+
+test("legacy row that spent the pick on 'urgent' under the old rule is unspent: it can still pick one track", async () => {
+  analyses[0].fix_tracks = { free_choice: "urgent" };
+  assert.equal((await call("urgent")).status, 200);
+  const pick = await call("post_purchase");
+  assert.equal(pick.status, 200);
+  assert.equal(pick.body.choice, "post_purchase");
+  assert.equal(state(analyses[0]).free_choice, "post_purchase");
+  assert.equal((await call("theme_colors")).status, 403);
 });
 
 test("pro/scale: all four tracks open", async () => {
