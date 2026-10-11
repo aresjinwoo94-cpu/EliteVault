@@ -86,9 +86,9 @@ export function FixTracks({
   const plan = isPaid ? "paid" : isAnon ? "anon" : "free";
 
   const [choice, setChoice] = useState<Track | null>(isPaid ? null : initialChoice);
-  // Paid land on "urgent" (already in the audit, nothing to fetch); free/anon on
-  // their pick, or on nothing until they choose.
-  const [active, setActive] = useState<Track | null>(isPaid ? "urgent" : initialChoice);
+  // Everyone lands on "urgent" (its fixes are already in the audit — nothing to fetch, nothing to spend)
+  // except a free/anon viewer who already spent their pick: they land on it.
+  const [active, setActive] = useState<Track | null>(isPaid ? "urgent" : (initialChoice ?? "urgent"));
   const [confirming, setConfirming] = useState<Track | null>(null);
   const [data, setData] = useState<Partial<Record<Track, TrackPayload>>>({});
   const [status, setStatus] = useState<Status>({ kind: "idle" });
@@ -123,8 +123,12 @@ export function FixTracks({
       setLocked(false);
       try {
         const res = await fetch(`/api/analyses/${analysisId}/fix-tracks/${track}`, { cache: "no-store" });
-        if (seq !== reqSeq.current || !mounted.current) return;
+        if (!mounted.current) return;
         const body = (await res.json().catch(() => ({}))) as Record<string, any>;
+        // The server has ALREADY recorded a pick it answered 200 for, even if the viewer clicked away
+        // (e.g. onto urgent) while it was loading: reflect it so the lock state stays truthful.
+        if (res.status === 200 && !isPaid && body.choice) setChoice(body.choice as Track);
+        if (seq !== reqSeq.current) return;
         if (res.status === 200) {
           setData((d) => ({ ...d, [track]: { fixes: body.fixes ?? null, empty: body.empty, meta: body.meta ?? null } }));
           if (!isPaid && body.choice) setChoice(body.choice as Track);
@@ -154,7 +158,7 @@ export function FixTracks({
     [analysisId, isPaid, plan],
   );
 
-  // Deep link (?fixes=…) — paid open the tab; free/anon only the one they own.
+  // Deep link (?fixes=…) — urgent is open to everyone; paid open any tab; free/anon only the one they own.
   useEffect(() => {
     const fromUrlRaw = readUrlTrack();
     const fromUrl = fromUrlRaw === "competitor" && !competitorAvailable ? null : fromUrlRaw;
@@ -162,11 +166,13 @@ export function FixTracks({
       if (active && active !== "urgent" && !data[active]) void load(active);
       return;
     }
-    if (isPaid || !choice || fromUrl === choice) {
-      if (isPaid || choice) {
-        setActive(fromUrl);
-        if (fromUrl !== "urgent" && !data[fromUrl]) void load(fromUrl);
-      }
+    if (fromUrl === "urgent") {
+      setActive("urgent");
+      return;
+    }
+    if (isPaid || (choice && fromUrl === choice)) {
+      setActive(fromUrl);
+      if (!data[fromUrl]) void load(fromUrl);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -178,8 +184,9 @@ export function FixTracks({
     setActive(track);
     setStatus({ kind: "idle" });
     setLocked(false);
-    if (isPaid || choice === track) writeUrl(track);
-    if (isPaid) {
+    if (isPaid || track === "urgent" || choice === track) writeUrl(track);
+    if (isPaid || track === "urgent") {
+      // urgent is open to everyone and never spends the free pick: no request, no confirmation.
       setConfirming(null);
       if (track === "urgent") phCapture("fix_track_selected", { track, plan, cached: true });
       else if (!data[track]) void load(track);
@@ -223,7 +230,7 @@ export function FixTracks({
     >
       {TRACKS.map((track, i) => {
         const selected = active === track;
-        const lockedTab = !isPaid && !!choice && choice !== track;
+        const lockedTab = !isPaid && !!choice && choice !== track && track !== "urgent";
         const soon = track === "competitor" && !competitorAvailable;
         return (
           <button
@@ -256,7 +263,8 @@ export function FixTracks({
   );
 
   const current = active ? data[active] : undefined;
-  const urgentShown = active === "urgent" && (isPaid || choice === "urgent" || status.kind === "unavailable");
+  // urgent's fixes are part of the audit: shown to everyone (free/anon: #1 open, the rest locked — TopFixes).
+  const urgentShown = active === "urgent";
   const generatedFixes = active && active !== "urgent" ? (current?.fixes ?? null) : null;
   const trackName = choice ? t(TAB_KEY[choice]) : "";
   const showList = urgentShown || (generatedFixes && generatedFixes.length > 0 && !locked);
@@ -318,6 +326,9 @@ export function FixTracks({
     );
   } else if (status.kind === "unavailable" && active !== "urgent") {
     body = <p className="text-sm text-white/60">{t("fixTracks.unavailable")}</p>;
+  } else if (active === "urgent" && !isPaid && !choice) {
+    // Viewing urgent is free; remind that ONE more type is included and unlocks on confirm.
+    body = <p className="text-xs text-white/55">{t("fixTracks.pickPrompt")}</p>;
   } else if (active === "competitor" && current?.empty === "no_competitor") {
     body = (
       <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 text-sm text-white/70">

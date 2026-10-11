@@ -99,7 +99,9 @@ test("free and anonymous pick ONE track; any other is locked; paid opens all", (
     const chosen: FixTracksState = { free_choice: "competitor", tracks: {} };
     assert.deepEqual(decideAccess(v, "competitor", chosen), { kind: "serve" });
     assert.deepEqual(decideAccess(v, "post_purchase", chosen), { kind: "locked", choice: "competitor" });
-    assert.deepEqual(decideAccess(v, "urgent", chosen), { kind: "locked", choice: "competitor" });
+    // urgent is never locked and never "chosen": its fixes ship with the audit (no AI, nothing to spend)
+    assert.deepEqual(decideAccess(v, "urgent", chosen), { kind: "serve" });
+    assert.deepEqual(decideAccess(v, "urgent", empty), { kind: "serve" });
   }
   assert.deepEqual(decideAccess("paid", "theme_colors", { free_choice: "urgent", tracks: {} }), { kind: "serve" });
 });
@@ -122,6 +124,9 @@ test("free/anon get fix #1 in full and fixes #2+ stripped to title only (server-
 test("parseState tolerates garbage", () => {
   assert.deepEqual(parseState(null), empty);
   assert.deepEqual(parseState({ free_choice: "hack", competitor: "x" }).free_choice, null);
+  // a pick of "urgent" made under the old rule counts as nothing spent
+  assert.equal(parseState({ free_choice: "urgent" }).free_choice, null);
+  assert.equal(parseState({ free_choice: "theme_colors" }).free_choice, "theme_colors");
 });
 
 // ── competitor selection (§3.3) ─────────────────────────────────────────
