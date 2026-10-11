@@ -1,4 +1,5 @@
 import "server-only";
+import { withMeasurement } from "@/lib/library/ad-signal";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { normalizeDomain, canonicalUrl, faviconUrl } from "@/lib/library/domain";
 import { judgeStore, momentumScore, estRevenueRange } from "@/lib/library/quality";
@@ -225,12 +226,15 @@ export async function momentumBatch(limit = 20): Promise<MomentumResult> {
             ? row.ad_signals.active_ads
             : null;
       let adsCheckedAt = row.ads_last_checked_at;
+      // Proof of a REAL Meta answer (lib/library/ad-signal.ts) — null unless Meta answered.
+      let measuredSignals: Record<string, unknown> | null = null;
 
       if (useMeta) {
         const { activeAds: fresh } = await countActiveAds(row.title || row.domain);
         if (fresh !== null) {
           activeAds = fresh;
           adsCheckedAt = now;
+          measuredSignals = withMeasurement(row.ad_signals as Record<string, unknown> | null, fresh, now);
           result.metaHits++;
         }
       }
@@ -249,7 +253,9 @@ export async function momentumBatch(limit = 20): Promise<MomentumResult> {
 
       await updateSite(svc, row.id, {
         active_ads_count: activeAds,
-        ads_last_checked_at: adsCheckedAt ?? now,
+        // Never stamp "checked" on a row Meta did not answer for (it made seeds look measured).
+        ads_last_checked_at: adsCheckedAt,
+        ...(measuredSignals ? { ad_signals: measuredSignals } : {}),
         est_conv_rate: conv,
         est_revenue_low: revenue?.low ?? null,
         est_revenue_high: revenue?.high ?? null,

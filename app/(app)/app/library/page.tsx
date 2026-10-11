@@ -10,7 +10,7 @@ import { getSavedSiteIds, getSavedSites } from "@/app/actions/saved-sites";
 export const metadata = {
   title: "Library",
   description:
-    "Browse a curated library of winning ecommerce stores actually generating revenue — filter by niche, study what converts, and search by image similarity.",
+    "Browse a curated library of winning ecommerce stores — filter by niche, study what converts, and search by image similarity.",
   keywords: [
     "winning shopify stores",
     "winning ecommerce stores library",

@@ -4,6 +4,7 @@ import { NICHE_LABELS } from "@/lib/library/niche-pages";
 import { metaAdLibraryUrl, faviconUrl, normalizeDomain } from "@/lib/library/domain";
 import { estRevenueRange } from "@/lib/library/quality";
 import { nicheWinnersEnabled } from "@/lib/flags";
+import { isFreshMeasurement, measuredActiveAds, type AdSignalsLike } from "@/lib/library/ad-signal";
 import { detectImageNiche } from "@/ai/agents/image-niche-detector";
 import { runSearchAgent } from "@/ai/agents/search-agent";
 
@@ -42,8 +43,13 @@ export interface NicheWinner {
   exactMatch: boolean;
   /** How close this store's niche is to the analyzed one, 0-100. */
   matchPct: number;
-  /** Cached count of active Meta ads, or null when we have no data. */
+  /**
+   * Active Meta ads — ONLY a recent, real Meta Ad Library measurement (lib/library/ad-signal.ts);
+   * null otherwise, which hides the badge. Seeded/estimated counts never get here.
+   */
   activeAds: number | null;
+  /** When `activeAds` was measured (ISO). Present iff `activeAds` is. */
+  activeAdsMeasuredAt?: string | null;
   /** Deep link to this brand's live creatives in the public Meta Ad Library. */
   adsUrl: string;
   /** Modeled monthly revenue range (USD), or null when signals are missing. */
@@ -128,7 +134,7 @@ interface WinningRow {
   title: string;
   niche: string;
   metrics: { conv_rate?: number; traffic_est?: number } | null;
-  ad_signals: { active_ads?: number } | null;
+  ad_signals: AdSignalsLike | null;
   is_featured: boolean;
   // ── Added by migration 0017. Absent on a DB that hasn't run it yet, which
   // is exactly why every read below is defensive (see LEGACY_COLS).
@@ -234,6 +240,7 @@ function toWinner(row: WinningRow, detectedNiche: string): NicheWinner | null {
   const url = rawUrl && /^https?:\/\//i.test(rawUrl) ? rawUrl : domain ? `https://${domain}` : null;
   if (!domain || !url) return null;
   const title = str(row.title) ?? domain;
+  const measured = measuredActiveAds(row);
   return {
     title,
     domain,
@@ -242,7 +249,9 @@ function toWinner(row: WinningRow, detectedNiche: string): NicheWinner | null {
     nicheLabel: NICHE_LABELS[row.niche]?.label ?? str(row.niche) ?? "Ecommerce",
     exactMatch: row.niche === detectedNiche,
     matchPct: matchPctFor(detectedNiche, row.niche),
-    activeAds: adsOf(row),
+    // DISPLAY value: a measured count or nothing (adsOf() stays for ranking only).
+    activeAds: measured?.count ?? null,
+    activeAdsMeasuredAt: measured?.measuredAt ?? null,
     // The brand NAME finds far more of a store's creatives than its domain
     // does, since that's what the Page is called on Meta.
     adsUrl: metaAdLibraryUrl(title),
@@ -731,7 +740,12 @@ function parseStoredWinners(
     result: {
       niche: typeof s.niche === "string" ? s.niche : "",
       nicheLabel: typeof s.nicheLabel === "string" ? s.nicheLabel : "Your niche",
-      winners: s.winners as NicheWinner[],
+      // A stored snapshot can't prove its ad counts are current or measured (older audits
+      // stored seeded numbers): keep a count only with a fresh measurement stamp.
+      winners: (s.winners as NicheWinner[]).map((w) => {
+        const ok = typeof w?.activeAds === "number" && isFreshMeasurement(w.activeAdsMeasuredAt);
+        return { ...w, activeAds: ok ? w.activeAds : null, activeAdsMeasuredAt: ok ? w.activeAdsMeasuredAt : null };
+      }),
     },
     scope: s.scope === "global" ? "global" : "niche",
   };

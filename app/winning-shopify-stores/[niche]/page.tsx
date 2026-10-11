@@ -45,7 +45,7 @@ export async function generateMetadata(props: {
     title: {
       absolute: `Winning ${meta.label} Shopify Stores (2026) — Real Examples | EliteVault`,
     },
-    description: `A revenue-validated list of winning ${meta.plural} on Shopify: real stores, real conversion metrics, tracked live. Study what converts in ${meta.label.toLowerCase()} and audit your own store free.`,
+    description: `A curated list of winning ${meta.plural} on Shopify: real stores with modeled conversion metrics. Study what converts in ${meta.label.toLowerCase()} and audit your own store free.`,
     keywords: [
       `winning ${meta.label.toLowerCase()} shopify stores`,
       `best ${meta.label.toLowerCase()} shopify stores`,
@@ -56,7 +56,7 @@ export async function generateMetadata(props: {
     alternates: { canonical: `/winning-shopify-stores/${niche}` },
     openGraph: {
       title: `Winning ${meta.label} Shopify Stores — EliteVault`,
-      description: `Real ${meta.plural} actually converting, with live metrics from the EliteVault Library.`,
+      description: `Real ${meta.plural} from the EliteVault Library, with modeled metrics.`,
       type: "website",
       url: `${baseUrl}/winning-shopify-stores/${niche}`,
     },
@@ -79,11 +79,11 @@ export default async function NichePage(props: {
   const faqs = [
     {
       q: `What makes a winning ${page.label.toLowerCase()} Shopify store?`,
-      a: `In ${page.label.toLowerCase()}, the stores that convert pair instant offer clarity with category-appropriate trust: strong above-the-fold imagery, visible social proof, and a checkout with no surprises. The ${page.stores.length} ${page.plural} in this list are validated by real revenue signals — not picked for looks${page.avgConv != null ? `, and they average a ${page.avgConv}% conversion rate` : ""}.`,
+      a: `In ${page.label.toLowerCase()}, the stores that convert pair instant offer clarity with category-appropriate trust: strong above-the-fold imagery, visible social proof, and a checkout with no surprises. The ${page.stores.length} ${page.plural} in this list were chosen by an AI assistant and passed automated checks — not picked for looks${page.avgConv != null ? `, and they average a ${page.avgConv}% conversion rate` : ""}.`,
     },
     {
       q: `How do you verify these ${page.plural} are actually winning?`,
-      a: "An AI agent watches paid-social cohorts and revenue signals and only surfaces stores generating sales right now. Each entry carries live metrics (conversion rate, CTR, traffic), so you study what's genuinely working — not a stale inspiration board.",
+      a: "We don't claim to audit their books. Candidate stores are proposed by an AI assistant and published only after automated checks (site live, complete listing, niche fit). Conversion rate, CTR and traffic are estimates modeled from public signals — not numbers reported by the brands — and we label them as such.",
     },
     {
       q: `Can I compare my store against these ${page.plural}?`,
@@ -105,7 +105,7 @@ export default async function NichePage(props: {
       "@type": "CollectionPage",
       name: `Winning ${page.label} Shopify Stores`,
       url: `${baseUrl}/winning-shopify-stores/${page.slug}`,
-      description: `Revenue-validated winning ${page.plural} on Shopify with live conversion metrics.`,
+      description: `Curated winning ${page.plural} on Shopify with modeled conversion metrics.`,
     },
     {
       "@context": "https://schema.org",

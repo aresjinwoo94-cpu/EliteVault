@@ -26,8 +26,20 @@
 const GRAPH_VERSION = "v21.0";
 const ENDPOINT = `https://graph.facebook.com/${GRAPH_VERSION}/ads_archive`;
 
-/** Default reach country set — override per call when a niche is EU-heavy. */
-const DEFAULT_COUNTRIES = ["US"];
+/**
+ * Default reach country set. The Ad Library API returns NON-political ads only for the EU/UK:
+ * a query for ["US"] sees political/issue ads, so a normal store always counted 0/none. Override
+ * with META_AD_LIBRARY_COUNTRIES (comma-separated ISO codes). A count therefore means "active ads
+ * reaching these countries" — the UI says so.
+ */
+const EU_DEFAULT = ["DE", "FR", "ES", "IT", "NL", "GB"];
+export function adLibraryCountries(env: Record<string, string | undefined> = process.env): string[] {
+  const list = (env.META_AD_LIBRARY_COUNTRIES ?? "")
+    .split(",")
+    .map((c) => c.trim().toUpperCase())
+    .filter((c) => /^[A-Z]{2}$/.test(c));
+  return list.length ? list : EU_DEFAULT;
+}
 
 function token(): string | null {
   const t = process.env.META_AD_LIBRARY_TOKEN?.trim();
@@ -93,7 +105,7 @@ export async function countActiveAds(
 
   const max = opts.max ?? 200;
   const timeoutMs = opts.timeoutMs ?? 15_000;
-  const countries = opts.countries ?? DEFAULT_COUNTRIES;
+  const countries = opts.countries ?? adLibraryCountries();
 
   const params = new URLSearchParams({
     access_token: accessToken,
@@ -152,7 +164,7 @@ export async function discoverAdvertisers(
   const params = new URLSearchParams({
     access_token: accessToken,
     search_terms: keyword.trim(),
-    ad_reached_countries: JSON.stringify(opts.countries ?? DEFAULT_COUNTRIES),
+    ad_reached_countries: JSON.stringify(opts.countries ?? adLibraryCountries()),
     ad_active_status: "ACTIVE",
     ad_type: "ALL",
     fields: "page_name,ad_snapshot_url,ad_creative_link_captions",

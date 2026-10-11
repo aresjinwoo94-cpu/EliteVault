@@ -12,7 +12,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   },
   {
     q: "Where do the 'winning sites' in the Library come from?",
-    a: "An agent continuously monitors paid social cohorts, Shopify trend signals, and growth communities. Every site is re-validated by the AI for traffic/engagement signals before it enters the Library. Stores that stop performing drop out automatically.",
+    a: "An AI assistant proposes candidate stores in each niche, and every one is checked automatically (site live, complete listing, niche fit) before it enters the Library. The Library is re-checked periodically, and stores that go offline are removed. Ad-activity figures are labelled as estimates unless they come from a recent Meta Ad Library measurement.",
   },
   {
     q: "Is the Analyzer accurate on small or new stores?",
