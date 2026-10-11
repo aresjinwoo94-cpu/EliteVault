@@ -36,6 +36,7 @@ import { AnalyzingState } from "./analyzing-state";
 import { PublishCallout } from "@/components/community/publish-callout";
 import { ReviewPrompt } from "@/components/reviews/review-prompt";
 import { MetaAdsOptimizer } from "./meta-ads-optimizer";
+import { LockedMetaAdsPreview } from "./scale-locked-preview";
 import { MetaCampaignSimulator } from "./meta-campaign-simulator";
 // NichePositionBar ("Where you stand") and StrengthsIssuesMap ("Strengths vs
 // issues") were removed in the tech-fixes §5 de-duplication: the Growth Map
@@ -449,11 +450,16 @@ export function AnalysisView({
       {viewer.canRunMeta ? (
         v2 ? (
           <div id="section-simulator" className={`space-y-6 ${anchorOffset}`}>
-            {data.meta_ads != null ? (
-              <MetaAdsOptimizer meta={data.meta_ads as never} />
-            ) : viewer.isScale ? (
-              <MetaAdsPending />
-            ) : null}
+            {viewer.isScale ? (
+              data.meta_ads != null ? (
+                <MetaAdsOptimizer meta={data.meta_ads as never} />
+              ) : (
+                <MetaAdsPending />
+              )
+            ) : (
+              // Pro runs the Modeler only; the Optimizer is a Scale feature (server-gated).
+              <LockedMetaAdsPreview />
+            )}
             <MetaCampaignSimulator
               analysisId={data.id}
               initial={initialSimulation ?? null}
@@ -462,11 +468,16 @@ export function AnalysisView({
           </div>
         ) : (
           <>
-            {data.meta_ads != null ? (
-              <MetaAdsOptimizer meta={data.meta_ads as never} />
-            ) : viewer.isScale ? (
-              <MetaAdsPending />
-            ) : null}
+            {viewer.isScale ? (
+              data.meta_ads != null ? (
+                <MetaAdsOptimizer meta={data.meta_ads as never} />
+              ) : (
+                <MetaAdsPending />
+              )
+            ) : (
+              // Pro runs the Modeler only; the Optimizer is a Scale feature (server-gated).
+              <LockedMetaAdsPreview />
+            )}
             <MetaCampaignSimulator
               analysisId={data.id}
               initial={initialSimulation ?? null}

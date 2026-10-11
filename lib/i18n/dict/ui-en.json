@@ -654,7 +654,15 @@
     "chartAria": "7-day spend vs revenue, max approx ${max}",
     "proOnePerMo": "Pro · 1 / mo",
     "usedOfMonth": "{used} of {limit} this month",
-    "remainingOf": "{remaining} of {limit}"
+    "remainingOf": "{remaining} of {limit}",
+    "rangeLabel": "Modeled range",
+    "breakEven": "Break-even ROAS",
+    "verdictProfit": "This scenario earns about {n} after ad spend at your {m}% margin (before other costs).",
+    "verdictLoss": "This scenario loses about {n} after ad spend at your {m}% margin.",
+    "verdictBreakEven": "This scenario lands around break-even after ad spend at your {m}% margin.",
+    "noMargin": "Add your gross margin to see the break-even ROAS and your real profit or loss.",
+    "netAfterAds": "Net after ads",
+    "lockedTagline": "Project a Meta Ads campaign across 3 honest scenarios — conservative, balanced, aggressive — before you spend a dollar"
   },
   "optimizer": {
     "title": "Meta Ads Optimizer",
@@ -678,7 +686,8 @@
     "fmtImage": "Single image",
     "fmtCarousel": "Carousel",
     "fmtUgc": "UGC video",
-    "fmtDemo": "Demo video"
+    "fmtDemo": "Demo video",
+    "lockedTagline": "CPC, CPM, CTR & ROAS targets calibrated to YOUR audit, plus testing plan + creative angles"
   },
   "scaleLocked": {
     "seedDemo": "30-45 US/CA · interests in your niche · lookalike of recent purchasers · iOS-tolerant retargeting from day 4",

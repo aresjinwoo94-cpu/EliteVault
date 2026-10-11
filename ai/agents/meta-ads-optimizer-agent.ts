@@ -1,6 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { getProvider } from "@/ai/provider";
+import { clampOptimizerTargets } from "@/lib/meta/optimizer-targets";
 import type { MetaAdsRecommendation, BuyerPersona } from "@/lib/supabase/types";
 
 /**
@@ -257,5 +258,8 @@ export async function runMetaAdsOptimizerAgent(opts: {
           .join("; "),
     );
   }
-  return parsed.data;
+  // Keep the targets inside the niche bands / the audit's modeled ROAS range (code, not prompt).
+  const { targets, adjusted } = clampOptimizerTargets(parsed.data.targets, parsed.data.niche || opts.niche, opts.score);
+  if (adjusted.length) console.info("[meta-ads] targets calibrated to niche bands:", adjusted.join(","));
+  return { ...parsed.data, targets };
 }

@@ -16,24 +16,23 @@
  *    (including fixes #2+ a free viewer must not read). Served ONLY by
  *    /api/analyses/[id]/fix-tracks/[track], which gates per viewer. The page
  *    passes just the free choice (a track id) separately.
- *  • `meta_ads` — the Meta Ads Optimizer output. The Meta run writes it for
- *    Pro and Scale (inngest/functions/run-meta-simulation.ts bundles it into
- *    Pro's run) and the report renders it only inside the block for viewers
- *    who can run Meta. So it reaches exactly those viewers — the report's
- *    behaviour is unchanged — and nobody else: an anonymous or Free viewer,
- *    or a paid user who downgraded to Free (the row keeps the column).
+ *  • `meta_ads` — the Meta Ads Optimizer output: a SCALE feature (pricing page +
+ *    owner decision 2026-10-09). It reaches Scale viewers only. Pro (who can run
+ *    the Modeler but not the Optimizer — they see a locked preview), Free,
+ *    anonymous, and anyone who downgraded (the row keeps the column) get null.
+ *    Enforced HERE, on the server, not just by hiding it in the UI.
  *
  * Pure and import-free so the rule is directly testable.
  */
 
 export function toClientAnalysis<T extends Record<string, unknown>>(
   row: T,
-  viewer: { canRunMeta: boolean },
+  viewer: { canSeeOptimizer: boolean },
 ): Omit<T, "niche_winners" | "meta_ads" | "fix_tracks"> & { meta_ads: unknown } {
   const { niche_winners: storedWinners, meta_ads: metaAds, fix_tracks: storedTracks, ...rest } = row;
   void storedWinners; // withheld on purpose — see above
   void storedTracks; // Fix Tracks cache holds every generated fix IN FULL — only the gated route may serve it
-  return { ...rest, meta_ads: viewer.canRunMeta ? (metaAds ?? null) : null };
+  return { ...rest, meta_ads: viewer.canSeeOptimizer ? (metaAds ?? null) : null };
 }
 
 /**
@@ -43,7 +42,7 @@ export function toClientAnalysis<T extends Record<string, unknown>>(
  */
 export function gateMetaAds<T extends Record<string, unknown>>(
   row: T,
-  canRunMeta: boolean,
+  canSeeOptimizer: boolean,
 ): T & { meta_ads: unknown } {
-  return { ...row, meta_ads: canRunMeta ? (row.meta_ads ?? null) : null };
+  return { ...row, meta_ads: canSeeOptimizer ? (row.meta_ads ?? null) : null };
 }

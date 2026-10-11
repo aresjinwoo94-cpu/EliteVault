@@ -40,7 +40,7 @@ export function LockedMetaAdsPreview() {
     <LockWrapper
       icon={Megaphone}
       title={t("optimizer.title")}
-      tagline="CPC, CPM, CTR & ROAS targets calibrated to YOUR audit, plus testing plan + creative angles"
+      tagline={t("optimizer.lockedTagline")}
     >
       {/* Targets row — same layout as the real component */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -95,7 +95,7 @@ export function LockedSimulatorPreview() {
     <LockWrapper
       icon={TrendingUp}
       title={t("scaleLocked.simTitle")}
-      tagline="Project a Meta Ads campaign across 3 honest scenarios — conservative, balanced, aggressive — before you spend a dollar"
+      tagline={t("simulator.lockedTagline")}
     >
       {/* Three scenario cards — same shape as the real ones */}
       <div className="grid md:grid-cols-3 gap-3">

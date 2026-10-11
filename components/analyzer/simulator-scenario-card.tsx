@@ -17,6 +17,11 @@ import { SimulatorChart } from "./simulator-chart";
 import { cn } from "@/lib/utils";
 import type { SimulationScenario } from "@/lib/supabase/types";
 import { useT } from "@/components/i18n/locale-provider";
+import { fill } from "@/lib/i18n/lookup";
+
+const RANGE_DASH = " – ";
+const fmtRange = (label: string, r: [number, number]) =>
+  [label, [r[0], r[1]].map((n) => n.toFixed(1) + "x").join(RANGE_DASH)].join(": ");
 
 /**
  * One scenario card (conservative | balanced | aggressive).
@@ -135,9 +140,45 @@ export function SimulatorScenarioCard({
             </span>
           </div>
 
+          {/* Honest uncertainty: a range, never a falsely precise single number. */}
+          {totals.roas_range && (
+            <p className="mt-1 text-xs text-white/50 tnum">
+              {fmtRange(t("simulator.rangeLabel"), totals.roas_range)}
+            </p>
+          )}
+
           <p className="mt-3 text-sm text-white/65 leading-relaxed">
             {scenario.summary}
           </p>
+
+          {/* Break-even at the operator's margin — the number that decides whether to spend. */}
+          {scenario.economics ? (
+            <div
+              className={`mt-3 rounded-lg border px-3 py-2 text-xs leading-relaxed ${
+                scenario.economics.verdict === "profit"
+                  ? "border-success/30 bg-success/[0.06] text-white/80"
+                  : scenario.economics.verdict === "loss"
+                    ? "border-destructive/30 bg-destructive/[0.06] text-white/80"
+                    : "border-white/[0.08] bg-white/[0.03] text-white/70"
+              }`}
+            >
+              <span className="font-medium text-white">
+                {t("simulator.breakEven")}: {scenario.economics.break_even_roas.toFixed(2)}x
+              </span>{" "}
+              {fill(
+                t(
+                  scenario.economics.verdict === "profit"
+                    ? "simulator.verdictProfit"
+                    : scenario.economics.verdict === "loss"
+                      ? "simulator.verdictLoss"
+                      : "simulator.verdictBreakEven",
+                ),
+                { n: fmtUsd(Math.abs(scenario.economics.net_after_ads)), m: scenario.economics.margin_pct },
+              )}
+            </div>
+          ) : (
+            <p className="mt-3 text-xs text-white/45">{t("simulator.noMargin")}</p>
+          )}
 
           {/* Win condition */}
           <div className="mt-4 flex items-start gap-2 rounded-lg border border-white/[0.05] bg-white/[0.02] px-3 py-2">
@@ -155,7 +196,7 @@ export function SimulatorScenarioCard({
             The simulator is honest about losses now; the UI shows them.
           */}
           {(() => {
-            const net = totals.revenue - totals.spend;
+            const net = scenario.economics ? scenario.economics.net_after_ads : totals.revenue - totals.spend;
             const netLabel = net >= 0 ? `+${fmtUsd(net)}` : `−${fmtUsd(Math.abs(net))}`;
             return (
               <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
@@ -164,7 +205,7 @@ export function SimulatorScenarioCard({
                     [t("simulator.spend"), fmtUsd(totals.spend), "text-white"],
                     [t("simulator.revenue"), fmtUsd(totals.revenue), "text-white"],
                     [
-                      t("simulator.net"),
+                      t(scenario.economics ? "simulator.netAfterAds" : "simulator.net"),
                       netLabel,
                       net >= 0 ? "text-success" : "text-destructive",
                     ],

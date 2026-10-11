@@ -116,7 +116,7 @@ export async function GET(
     credits_charged: number | null;
   };
 
-  // The Meta Ads Optimizer payload only goes to viewers who can run Meta (see
+  // The Meta Ads Optimizer payload only goes to Scale viewers (see
   // lib/analyzer/client-payload.ts). Only look the plan up when there is
   // something to withhold — almost every poll has meta_ads = null.
   let payload: typeof row = row;
@@ -128,7 +128,7 @@ export async function GET(
       .single();
     const planKey = (prof as { plan?: string } | null)?.plan;
     const plan = planKey && planKey in PLANS ? PLANS[planKey as PlanTier] : null;
-    payload = gateMetaAds(row, plan != null && (plan.quotas.metaRunsPerMonth ?? 1) !== 0);
+    payload = gateMetaAds(row, plan != null && plan.unlocksScale);
   }
 
   // Stale-job detection

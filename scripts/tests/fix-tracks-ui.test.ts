@@ -81,7 +81,7 @@ test("the Fix Tracks cache never reaches the browser (full text of locked fixes)
     meta_ads: null,
     fix_tracks: { free_choice: "post_purchase", post_purchase: { fixes: [{ title: "secret #2", why: "secret why" }] } },
   };
-  const out = toClientAnalysis(row, { canRunMeta: false }) as Record<string, unknown>;
+  const out = toClientAnalysis(row, { canSeeOptimizer: false }) as Record<string, unknown>;
   assert.equal("fix_tracks" in out, false);
   assert.equal(JSON.stringify(out).includes("secret"), false);
 });

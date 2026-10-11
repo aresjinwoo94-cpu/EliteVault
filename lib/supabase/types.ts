@@ -299,6 +299,15 @@ export interface SimulationScenario {
     purchases: number;
     roas: number;               // weighted across all days
     cpa: number;
+    /** Modeled uncertainty band around `roas` (engine, WP-5). Absent on older runs. */
+    roas_range?: [number, number];
+  };
+  /** Break-even + net after ad spend at the operator's margin. Absent without a margin / on older runs. */
+  economics?: {
+    margin_pct: number;
+    break_even_roas: number;
+    net_after_ads: number;
+    verdict: "profit" | "break_even" | "loss";
   };
   /** Strategic recommendation: tactical adjustment to consider. */
   recommendation: string;
