@@ -21,6 +21,8 @@
  *   • never overwrites an existing teardown (they were hand-curated).
  *   • English only, like the existing ones.
  */
+// Offline job: must use GEMINI_API_KEY_JOBS, never the production key (scripts/lib/jobs-key.mjs).
+import "../lib/require-jobs-key.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { serviceClient, arg, hasFlag, requireExpansionColumns, exitWith } from "./_shared.mts";
@@ -125,7 +127,8 @@ type Row = { id: string; url: string; domain: string; title: string | null; nich
 const rows = (data ?? []) as unknown as Row[];
 
 const niches = Object.keys(NICHE_LABELS).filter((n) => (only ? n === only : true));
-const MAX_TRIES = 3;
+// Stores to try per niche before giving up (cookie walls / unreadable renders are common): --tries N.
+const MAX_TRIES = Math.max(1, Math.min(10, Number(arg("--tries", "3")) || 3));
 const targets: Row[][] = []; // per niche: ranked candidates
 for (const n of niches) {
   const inNiche = rows.filter((r) => r.niche === n);

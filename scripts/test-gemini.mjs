@@ -3,6 +3,8 @@
  *   1. Connectivity (free-form prompt)
  *   2. Structured analyzer run against a real screenshot
  */
+// Offline job: must use GEMINI_API_KEY_JOBS, never the production key (scripts/lib/jobs-key.mjs).
+import "./lib/require-jobs-key.mjs";
 import { GoogleGenAI, Type } from "@google/genai";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -16,12 +18,12 @@ const env = Object.fromEntries(
     .map((l) => [l.slice(0, l.indexOf("=")).trim(), l.slice(l.indexOf("=") + 1).trim()]),
 );
 
-if (!env.GEMINI_API_KEY) {
+if (!process.env.GEMINI_API_KEY) {
   console.error("✗ GEMINI_API_KEY not set");
   process.exit(1);
 }
 
-const ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 console.log("=== 1) Connectivity (Flash) ===");
 const ping = await ai.models.generateContent({

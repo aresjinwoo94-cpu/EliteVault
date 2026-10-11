@@ -22,6 +22,8 @@
  * capture from a real audit that SUCCEEDED and shipped a 5/100 "score" for a
  * verification screen — the failure WP-A exists to prevent.
  */
+// Offline job: must use GEMINI_API_KEY_JOBS, never the production key (scripts/lib/jobs-key.mjs).
+import "./lib/require-jobs-key.mjs";
 import { readFileSync } from "node:fs";
 
 // tsx doesn't load .env.local the way Next does, and the provider reads its

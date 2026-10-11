@@ -42,6 +42,8 @@
  *   BENCH_OUT          JSONL output path (default ./benchmark-vision-<ts>.jsonl)
  *   BENCH_SAMPLES_DIR  where to save each valid audit JSON for quality review
  */
+// Offline job: must use GEMINI_API_KEY_JOBS, never the production key (scripts/lib/jobs-key.mjs).
+import "./lib/require-jobs-key.mjs";
 import { readFileSync, appendFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
