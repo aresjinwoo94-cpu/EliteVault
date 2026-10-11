@@ -132,7 +132,7 @@ export default async function AnalysisPage({
   // Fix Tracks — is there a same-niche winner with a teardown? If not, the competitor
   // button renders disabled ("Coming soon for your niche"). A lookup ERROR keeps it enabled.
   const competitorAvailable = analyzerFixTracksEnabled()
-    ? await resolveCompetitor(analysis.niche_winners).then((r) => r.ok || r.reason === "error")
+    ? await resolveCompetitor(analysis.niche_winners, analysis.url).then((r) => r.ok || r.reason === "error")
     : true;
 
   return (
