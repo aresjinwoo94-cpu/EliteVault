@@ -45,6 +45,25 @@ test("no post lists another post's primary keyword in its keywords", () => {
   }
 });
 
+test("no post title, h1 or keyword contains a homepage-reserved phrase", () => {
+  // Catches variants the exact-match rule misses ("free store audit tool",
+  // "shopify store analyzer free"), and the visible title / H1 too.
+  const phrases = HOME_RESERVED.map(norm);
+  for (const p of allPosts()) {
+    const fields: [string, string][] = [
+      ["title", p.title],
+      ["h1", p.h1],
+      ["keyword", p.keyword],
+      ...(p.keywords ?? []).map((k): [string, string] => ["keywords", k]),
+    ];
+    for (const [name, value] of fields) {
+      for (const ph of phrases) {
+        assert.ok(!norm(value).includes(ph), `${p.slug} ${name} "${value}" contains reserved phrase "${ph}"`);
+      }
+    }
+  }
+});
+
 test("no post targets a keyword reserved for the homepage", () => {
   const reserved = new Set(HOME_RESERVED.map(norm));
   for (const p of allPosts()) {

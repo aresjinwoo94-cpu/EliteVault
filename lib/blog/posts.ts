@@ -1367,7 +1367,7 @@ ${teaserVideo}
       "The same notes keep showing up when owners ask for a review of their Shopify store. What they mean, a quick check for each, and which fix to make first.",
     bodyHtml: `
 <p class="lede">If you ask strangers to <strong>review your Shopify store</strong>, you will mostly get the same five notes back: an unclear hero, buried trust, thin product pages, slow mobile and surprise costs at the cart. Fix those first and the feedback you get afterwards gets sharper. This is an editorial reading of public threads, not a measured count. The one hard number here comes from Baymard: 70.22% of carts are abandoned (2025).</p>
-<p>Requests like this show up on subreddits such as r/reviewmyshopify and in the Shopify Community. Some communities restrict store-review posts to limit self-promotion, so read the rules before you post. The better your request, the better the answers: say what you sell, where your traffic comes from, what you've already tried, and ask one specific question.</p>
+<p>Requests like this show up on subreddits such as r/reviewmyshopify and in the Shopify Community. Store-review requests are not welcome everywhere, so read each community's rules before you post. The better your request, the better the answers: say what you sell, where your traffic comes from, what you've already tried, and ask one specific question.</p>
 <p>The rest of this post translates the shorthand reviewers use into what it usually means, gives you a quick check for each note, and shows how to run the same review on yourself before you ask anyone.</p>
 
 ${teaserVideo}

@@ -57,6 +57,13 @@ export const metadata: Metadata = {
     type: "website",
     url: `${baseUrl}/free-website-audit`,
   },
+  // Without this the page inherits the layout default ("Free AI store audit
+  // before you run Meta ads") — a "store audit" claim the homepage owns.
+  twitter: {
+    title: "Free Ecommerce Website Audit — EliteVault",
+    description:
+      "A free AI website audit: score, annotated screenshot, and a ranked list of fixes in under a minute.",
+  },
 };
 
 const CHECKS = [
