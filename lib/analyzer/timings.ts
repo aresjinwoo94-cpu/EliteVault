@@ -23,10 +23,15 @@ export type VisionTiming = {
   modelSwitched?: boolean;
 };
 
+export const CAPTURE_PROVIDERS = ["screenshotone", "thumio", "microlink", "mshots", "og"] as const;
+export type CaptureProviderName = (typeof CAPTURE_PROVIDERS)[number];
+
 export type AnalysisTimings = {
   v: 1;
   captureMs: number | null;
   captureCached: boolean | null;
+  /** Who captured the page. Null on a cache hit, a user upload, or a run recorded before this field. */
+  captureProvider: CaptureProviderName | null;
   visionMs: number | null;
   saveMs: number;
   /** From mark-running (run start, after any queue wait) to the save. */
@@ -65,7 +70,7 @@ const num = (v: unknown): number | null =>
   typeof v === "number" && Number.isFinite(v) && v >= 0 ? Math.round(v) : null;
 
 export function buildAnalysisTimings(input: {
-  capture?: { ms?: unknown; cached?: unknown } | null;
+  capture?: { ms?: unknown; cached?: unknown; provider?: unknown } | null;
   vision: VisionTiming | null;
   saveMs: number;
   runStartedAtMs: number;
@@ -77,6 +82,9 @@ export function buildAnalysisTimings(input: {
     captureMs: num(input.capture?.ms),
     captureCached:
       typeof input.capture?.cached === "boolean" ? input.capture.cached : null,
+    captureProvider: (CAPTURE_PROVIDERS as readonly unknown[]).includes(input.capture?.provider)
+      ? (input.capture!.provider as CaptureProviderName)
+      : null,
     visionMs: num(v?.visionMs),
     saveMs: num(input.saveMs) ?? 0,
     totalMs: num((input.now ?? Date.now()) - input.runStartedAtMs) ?? 0,

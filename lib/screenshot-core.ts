@@ -194,6 +194,13 @@ export function flipWww(url: string): string | null {
   }
 }
 
+/** The links of the capture chain, as recorded in analyses.timings.captureProvider. */
+export type CaptureProvider = "screenshotone" | "thumio" | "microlink" | "mshots" | "og";
+
+function withProvider<T extends object>(provider: CaptureProvider, shot: T): T & { provider: CaptureProvider } {
+  return { ...shot, provider };
+}
+
 /**
  * Public entry point — tries providers in order until one succeeds, within a
  * HARD total time budget.
@@ -218,6 +225,8 @@ export async function captureScreenshot(
 ): Promise<{
   base64: string;
   mediaType: "image/png" | "image/jpeg";
+  /** Which link of the chain produced this shot (recorded in analyses.timings). */
+  provider: CaptureProvider;
 }> {
   const errors: string[] = [];
   const deadline = Date.now() + (opts.budgetMs ?? DEFAULT_CAPTURE_BUDGET_MS);
@@ -244,9 +253,12 @@ export async function captureScreenshot(
     for (const candidate of alt ? [url, alt] : [url]) {
       if (remaining() < MIN_USEFUL_MS) break;
       try {
-        return await captureWithScreenshotOne(candidate, {
-          timeoutMs: Math.min(30_000, remaining()),
-        });
+        return withProvider(
+          "screenshotone",
+          await captureWithScreenshotOne(candidate, {
+            timeoutMs: Math.min(30_000, remaining()),
+          }),
+        );
       } catch (err) {
         const msg = (err as Error).message;
         console.warn(`[screenshot] ScreenshotOne failed (${candidate}): ${msg}`);
@@ -273,7 +285,7 @@ export async function captureScreenshot(
   // if it ever misbehaves; the Microlink/mshots chain still follows.
   if (!process.env.SCREENSHOT_DISABLE_THUMIO && remaining() >= MIN_USEFUL_MS) {
     try {
-      return await captureWithThumIo(url, remaining());
+      return withProvider("thumio", await captureWithThumIo(url, remaining()));
     } catch (err) {
       const msg = (err as Error).message;
       console.warn(`[screenshot] thum.io failed: ${msg}`);
@@ -287,7 +299,7 @@ export async function captureScreenshot(
   // bot-blocked sites.
   if (remaining() >= MIN_USEFUL_MS) {
     try {
-      return await captureWithMicrolink(url, remaining());
+      return withProvider("microlink", await captureWithMicrolink(url, remaining()));
     } catch (err) {
       const msg = (err as Error).message;
       console.warn(`[screenshot] Microlink failed: ${msg}`);
@@ -300,7 +312,7 @@ export async function captureScreenshot(
   // Provider 3: mshots with aggressive placeholder detection
   if (remaining() >= MIN_USEFUL_MS) {
     try {
-      return await captureWithMshots(url, remaining());
+      return withProvider("mshots", await captureWithMshots(url, remaining()));
     } catch (err) {
       const msg = (err as Error).message;
       console.warn(`[screenshot] mshots failed: ${msg}`);
@@ -322,7 +334,7 @@ export async function captureScreenshot(
   // an actual audit for a large slice of bot-protected stores.
   if (remaining() >= 3_000) {
     try {
-      return await captureViaOgImage(url, remaining());
+      return withProvider("og", await captureViaOgImage(url, remaining()));
     } catch (err) {
       const msg = (err as Error).message;
       console.warn(`[screenshot] og:image fallback failed: ${msg}`);

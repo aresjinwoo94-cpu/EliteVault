@@ -144,6 +144,7 @@ test("buildAnalysisTimings: shape and tolerance of missing/garbage inputs", () =
     v: 1,
     captureMs: 6123,
     captureCached: false,
+    captureProvider: null, // not given here ⇒ null (never invented); see capture-provider.test.ts
     visionMs: 21000,
     saveMs: 80,
     totalMs: 40_000,
