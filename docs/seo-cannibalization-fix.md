@@ -154,3 +154,20 @@ Keywords reservadas para los 3 blogs nuevos con el video definitivo (no usarlas 
 - `above the fold ecommerce`
 
 El video también irá embebido en los posts existentes `why-your-shopify-store-isnt-converting` e `is-your-store-ready-for-meta-ads`, sin crear posts nuevos para esos temas.
+
+---
+
+## 8. Addendum 2026-10-11 — resultados de Semrush y reemplazos
+
+Volúmenes medidos por el dueño en Semrush (US, desktop):
+
+| Keyword | Volumen US | Decisión |
+|---|---|---|
+| free ecommerce website audit | n/a (0) | **Reemplazada** → `free cro audit` (wording de solicitudes reales de Upwork: "CRO Audit") |
+| review my shopify store | 20 (global 100) | Se mantiene |
+| cro audit cost | n/a (0) | **Reemplazada** → `shopify cro audit` (Upwork: "Shopify CRO Audit", "Shopify CRO Audit Report") |
+| how to read shopify analytics | 20 (global 70) | Se mantiene |
+| how to analyze your shopify store | sin dato (0) | **Reemplazada** → `shopify store analysis` (30 US, global 220) |
+| shopify store feedback | 20 | Secundaria de "review my shopify store" |
+
+Upwork bloquea la lectura automática (403); las frases salen de los títulos de solicitudes públicas devueltas por búsqueda. Los volúmenes de `free cro audit` y `shopify cro audit` están **sin validar**: comprobar en Semrush en la próxima ronda.

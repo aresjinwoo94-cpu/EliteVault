@@ -19,14 +19,17 @@ import { getT } from "@/lib/i18n/server";
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
 export const metadata: Metadata = {
-  title: "Free Ecommerce Website Audit — Conversion Check in 60s",
+  title: "Free CRO Audit for Ecommerce — Conversion Check in 60s",
   description:
-    "Free ecommerce website audit: paste your URL and get a conversion check, an annotated screenshot and ranked fixes in about a minute. Shopify, DTC & dropshipping. No card.",
+    "Free CRO audit for your ecommerce store: paste your URL and get a conversion check, an annotated screenshot and ranked fixes in about a minute. Shopify, DTC & dropshipping. No card.",
   keywords: [
     // Keyword ownership: see docs/seo-cannibalization-fix.md. The homepage owns
-    // "store audit" / "shopify store analyzer"; this page owns
-    // "free ecommerce website audit".
-    "free ecommerce website audit",
+    // "store audit" / "shopify store analyzer"; this page owns "free cro audit".
+    // "free cro audit" (wording taken from real Upwork requests; the earlier
+    // "free ecommerce website audit" showed no volume in Semrush).
+    "free cro audit",
+    "cro audit for ecommerce",
+    "free conversion audit",
     "ecommerce website audit",
     "online store website audit",
     // Group 1 — website analyzer cluster.
@@ -51,7 +54,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/free-website-audit" },
   openGraph: {
-    title: "Free Ecommerce Website Audit — EliteVault",
+    title: "Free CRO Audit for Ecommerce — EliteVault",
     description:
       "A free AI website audit: score, annotated screenshot, and a ranked list of fixes in under a minute.",
     type: "website",
@@ -60,7 +63,7 @@ export const metadata: Metadata = {
   // Without this the page inherits the layout default ("Free AI store audit
   // before you run Meta ads") — a "store audit" claim the homepage owns.
   twitter: {
-    title: "Free Ecommerce Website Audit — EliteVault",
+    title: "Free CRO Audit for Ecommerce — EliteVault",
     description:
       "A free AI website audit: score, annotated screenshot, and a ranked list of fixes in under a minute.",
   },

@@ -252,17 +252,17 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     slug: "ecommerce-store-audit-vs-consultant",
-    title: "How Much Does a CRO Audit Cost? (2026 Prices + a Free Option)",
-    h1: "How much does a CRO audit cost — and what do you actually get for $2,000?",
+    title: "Shopify CRO Audit Cost: What $2,000 Buys (+ a Free Option)",
+    h1: "How much does a Shopify CRO audit cost — and what do you actually get for $2,000?",
     description:
       "A consultant CRO audit runs $1,500–$2,000 per store. What that price covers, the framework they use, and how to run the same checks free in about a minute.",
-    keyword: "cro audit cost",
+    keyword: "shopify cro audit",
     keywords: [
-      "cro audit cost",
-      "how much does a cro audit cost",
-      "cro consultant cost",
-      "cro agency pricing",
-      "ecommerce cro audit price",
+      "shopify cro audit",
+      "shopify cro audit report",
+      "cro website audit",
+      "cro audit vs consultant",
+      "ecommerce cro audit",
     ],
     date: "2026-06-17",
     updated: "2026-10-11",
@@ -271,7 +271,7 @@ export const BLOG_POSTS: BlogPost[] = [
     excerpt:
       "Consultants charge $1,500–$2,000 to audit your store. The framework was never secret — just slow and manual. Here it is, in the open.",
     bodyHtml: `
-<p class="lede">A CRO audit from a consultant typically costs $1,500–$2,000 per store, and for that money you get a diagnosis, evidence and a prioritized punch-list. The uncomfortable truth they'd rather you didn't notice: the entire diagnosis fits on one page — and a machine can now run it in 60 seconds.</p>
+<p class="lede">A Shopify CRO audit from a consultant typically costs $1,500–$2,000 per store, and for that money you get a diagnosis, evidence and a prioritized punch-list. The uncomfortable truth they'd rather you didn't notice: the entire diagnosis fits on one page — and a machine can now run it in 60 seconds.</p>
 <p>The price depends on scope, on how many pages or steps they review, and on whether implementation is included. The audit itself is usually one store, one moment in time, and about 5–10 business days of turnaround. This post breaks down what that price covers, the framework behind it, and how to run the same checks yourself for free.</p>
 <p>I'm not anti-consultant. The best ones are worth every dollar for implementation and strategy. But the <em>audit</em> — the part where someone looks at your store and tells you what's broken and in what order to fix it — has been quietly commoditized. The framework was never secret. It was just slow and manual, which is exactly what made it billable.</p>
 <p>So here's the whole thing, in the open: what a CRO audit costs, what it contains, and how to run it on your own store this afternoon.</p>
@@ -1135,14 +1135,14 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     slug: "shopify-store-analyzer",
-    title: "How to Analyze Your Shopify Store (What to Check, in Order)",
-    h1: "How do you analyze your own Shopify store — and what should you check first?",
+    title: "Shopify Store Analysis: What to Check, in Order (Step by Step)",
+    h1: "How do you run a Shopify store analysis — and what should you check first?",
     description:
-      "A step-by-step way to analyze your Shopify store: what to check, in what order, how it differs from a speed test — and how to run the full check free.",
-    keyword: "how to analyze your shopify store",
+      "A step-by-step Shopify store analysis: what to check, in what order, how it differs from a speed test — and how to run the full check free.",
+    keyword: "shopify store analysis",
     keywords: [
-      "how to analyze your shopify store",
       "shopify store analysis",
+      "how to analyze your shopify store",
       "analyze my shopify store",
       "shopify store analysis checklist",
     ],
@@ -1153,7 +1153,7 @@ export const BLOG_POSTS: BlogPost[] = [
     excerpt:
       "How to analyze your Shopify store: the five things to check, in order, how it differs from a speed test, and how to run the full check free.",
     bodyHtml: `
-<p class="lede">To <strong>analyze your Shopify store</strong>, check five things in order: what a visitor sees above the fold, trust signals, the product page, speed and mobile, and checkout friction. Fix the first one that's broken, then check again. It matters because 70.22% of carts are abandoned (Baymard, 2025), and the leaks usually sit in those five places. A speed test covers only one of them.</p>
+<p class="lede">A <strong>Shopify store analysis</strong> checks five things, in this order: what a visitor sees above the fold, trust signals, the product page, speed and mobile, and checkout friction. Fix the first one that's broken, then check again. It matters because 70.22% of carts are abandoned (Baymard, 2025), and the leaks usually sit in those five places. A speed test covers only one of them.</p>
 <p>You can do the whole check by hand in an afternoon, and the sections below give you the order and the question to ask at each step. If you would rather run it in one pass, the last section shows how.</p>
 
 <h2>How do you analyze your Shopify store, step by step?</h2>
