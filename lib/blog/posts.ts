@@ -127,10 +127,10 @@ export const BLOG_POSTS: BlogPost[] = [
       "website audit tool",
       "free cro audit tools",
       "website analyzer tools",
-      "free store audit tool",
+      "website grader",
     ],
     date: "2026-06-17",
-    updated: "2026-07-18",
+    updated: "2026-10-11",
     author: "Ariel Jiménez",
     readingMinutes: 7,
     excerpt:
@@ -160,7 +160,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <h2>How to run a free conversion audit of your store</h2>
 <p>You can grade the six categories above by hand — but you can't see your own store objectively after staring at it for 300 hours. The fix is a tool that reacts like a first-time visitor. That's exactly what <a href="/free-website-audit">EliteVault's free website audit</a> does: paste your URL and get a conversion score, an annotated screenshot marking each issue, a buyer-persona reaction, and the fixes ranked by impact — free, in under a minute, nothing to install.</p>
 <p>One more note if you're tool-shopping in 2026: some CRO tools are being discontinued. ConvertMate — the AI product-page optimizer for Shopify — has announced it's shutting down; if you relied on it, there's <a href="/convertmate-alternative">a free ConvertMate alternative</a> that covers the same job with a full-store conversion audit.</p>
-<p>Pair it with the free fundamentals — run <strong>PageSpeed Insights</strong> for speed and set up <strong>Google Search Console</strong> for SEO — and you've covered all three audit types for $0. Then fix in order of leverage: usually the conversion findings move revenue fastest. Start with <a href="/blog/how-to-increase-shopify-conversion-rate">the 11 highest-leverage fixes</a>, and if you're running paid traffic, read <a href="/blog/why-meta-ads-arent-converting">why your Meta ads aren't converting</a>.</p>
+<p>Pair it with the free fundamentals — run <strong>PageSpeed Insights</strong> for speed and set up <strong>Google Search Console</strong> for SEO — and you've covered all three audit types for $0. Then fix in order of leverage: usually the conversion findings move revenue fastest. Start with <a href="/blog/how-to-increase-shopify-conversion-rate">the 11 highest-leverage fixes</a>, and if you're running paid traffic, read <a href="/blog/why-meta-ads-arent-converting">why your Meta ads aren't converting</a>. Or skip straight to a <a href="/">free Shopify store audit</a> of your own store.</p>
 `.trim(),
     faqs: [
       {
@@ -252,28 +252,29 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     slug: "ecommerce-store-audit-vs-consultant",
-    title: "The $2,000 Store Audit Is Dead: What 60-Second AI Reveals (2026)",
-    h1: "The $2,000 store audit is dead — here's the exact framework consultants don't want you to have",
+    title: "How Much Does a CRO Audit Cost? (2026 Prices + a Free Option)",
+    h1: "How much does a CRO audit cost — and what do you actually get for $2,000?",
     description:
-      "CRO consultants charge $1,500–$2,000 for an ecommerce store audit. Here's the exact framework they use — and how a 60-second AI audit now does the same job free.",
-    keyword: "ecommerce store audit",
+      "A consultant CRO audit runs $1,500–$2,000 per store. What that price covers, the framework they use, and how to run the same checks free in about a minute.",
+    keyword: "cro audit cost",
     keywords: [
-      "ecommerce store audit",
-      "shopify store audit",
       "cro audit cost",
+      "how much does a cro audit cost",
       "cro consultant cost",
-      "ai store audit",
-      "store audit vs consultant",
+      "cro agency pricing",
+      "ecommerce cro audit price",
     ],
     date: "2026-06-17",
+    updated: "2026-10-11",
     author: "Ariel Jiménez",
     readingMinutes: 8,
     excerpt:
       "Consultants charge $1,500–$2,000 to audit your store. The framework was never secret — just slow and manual. Here it is, in the open.",
     bodyHtml: `
-<p class="lede">A CRO consultant will charge you $1,500–$2,000 to tell you your CTA is below the fold. The uncomfortable truth they'd rather you didn't notice: the entire diagnosis fits on one page — and a machine can now run it in 60 seconds.</p>
+<p class="lede">A CRO audit from a consultant typically costs $1,500–$2,000 per store, and for that money you get a diagnosis, evidence and a prioritized punch-list. The uncomfortable truth they'd rather you didn't notice: the entire diagnosis fits on one page — and a machine can now run it in 60 seconds.</p>
+<p>The price depends on scope, on how many pages or steps they review, and on whether implementation is included. The audit itself is usually one store, one moment in time, and about 5–10 business days of turnaround. This post breaks down what that price covers, the framework behind it, and how to run the same checks yourself for free.</p>
 <p>I'm not anti-consultant. The best ones are worth every dollar for implementation and strategy. But the <em>audit</em> — the part where someone looks at your store and tells you what's broken and in what order to fix it — has been quietly commoditized. The framework was never secret. It was just slow and manual, which is exactly what made it billable.</p>
-<p>So here's the whole thing, in the open. Run it on your own store this afternoon.</p>
+<p>So here's the whole thing, in the open: what a CRO audit costs, what it contains, and how to run it on your own store this afternoon.</p>
 <h2>What you're actually paying $2,000 for</h2>
 <p>A senior CRO audit is three deliverables wearing a trench coat:</p>
 <ol>
@@ -309,6 +310,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <div class="callout"><h3>Honesty check</h3><p>AI won't replace a great consultant for hands-on implementation, bespoke brand strategy, or untangling a messy backend. But for the <em>diagnosis</em> — the expensive, commoditized part — it now matches a senior first pass. Pay humans for the cure, not the X-ray.</p></div>
 <h2>The math that ends the debate</h2>
 <p>A consultant audit: $1,500–$2,000, one store, one moment in time, 5–10 business days turnaround. An AI audit: under a minute, re-runnable every time you change something, and <a href="/free-website-audit">free on your first run</a>. When you can re-audit after every iteration instead of once a quarter, you don't just save money — you compound improvements faster than a consultant cadence ever allowed. (Not sure what "good" even looks like? See <a href="/blog/good-conversion-rate-for-shopify">what's a good conversion rate for Shopify</a>. Or see <a href="/blog/ecommerce-cro-specialist">what a CRO specialist does</a>, or <a href="/blog/store-audit-review-my-store-feedback">what "review my store" threads keep saying</a>.)</p>
+<p>Want to see what the automated version looks like before paying anyone? Run a <a href="/">free Shopify store audit</a> on your own store and compare it with the framework above.</p>
 <p>That's the real reason this stings for the audit-as-a-service crowd. It's not that AI is cheaper. It's that it removes the artificial scarcity their whole pricing depended on.</p>
 `.trim(),
     faqs: [
@@ -1133,29 +1135,29 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     slug: "shopify-store-analyzer",
-    title: "Shopify Store Analyzer: What It Checks & Which to Use (2026)",
-    h1: "What is a Shopify store analyzer — and what should it actually check?",
+    title: "How to Analyze Your Shopify Store (What to Check, in Order)",
+    h1: "How do you analyze your own Shopify store — and what should you check first?",
     description:
-      "A Shopify store analyzer scores your store and ranks what's costing you sales. What it checks, how it differs from a speed test, and how to run one free.",
-    keyword: "shopify store analyzer",
+      "A step-by-step way to analyze your Shopify store: what to check, in what order, how it differs from a speed test — and how to run the full check free.",
+    keyword: "how to analyze your shopify store",
     keywords: [
-      "shopify store analyzer",
-      "shopify store analyzer free",
-      "shopify store audit tool",
-      "analyze shopify store",
-      "shopify conversion analyzer",
+      "how to analyze your shopify store",
+      "shopify store analysis",
+      "analyze my shopify store",
+      "shopify store analysis checklist",
     ],
     date: "2026-10-04",
-    updated: "2026-10-04",
+    updated: "2026-10-11",
     author: "Ariel Jiménez",
     readingMinutes: 3,
     excerpt:
-      "What a Shopify store analyzer checks, how it differs from a speed test, and the five things worth fixing first.",
+      "How to analyze your Shopify store: the five things to check, in order, how it differs from a speed test, and how to run the full check free.",
     bodyHtml: `
-<p class="lede">A <strong>Shopify store analyzer</strong> scans your storefront and ranks what's costing you sales — trust, speed, product-page and checkout friction — instead of only scoring page speed. It matters because 70.22% of carts are abandoned (Baymard, 2025). Our own <a href="/">Shopify store analyzer</a> scores your store and ranks fixes in about a minute.</p>
+<p class="lede">To <strong>analyze your Shopify store</strong>, check five things in order: what a visitor sees above the fold, trust signals, the product page, speed and mobile, and checkout friction. Fix the first one that's broken, then check again. It matters because 70.22% of carts are abandoned (Baymard, 2025), and the leaks usually sit in those five places. A speed test covers only one of them.</p>
+<p>You can do the whole check by hand in an afternoon, and the sections below give you the order and the question to ask at each step. If you would rather run it in one pass, the last section shows how.</p>
 
-<h2>What does a Shopify store analyzer actually do?</h2>
-<p>It looks at your store the way a first-time visitor would, then turns what it sees into a short, ordered to-do list. The point is not a vanity score. It is knowing which single change is worth your next hour, so you stop guessing and stop redesigning pages that were never the problem.</p>
+<h2>How do you analyze your Shopify store, step by step?</h2>
+<p>Look at your store the way a first-time visitor would, then turn what you see into a short, ordered to-do list. The point is not a vanity score. It is knowing which single change is worth your next hour, so you stop guessing and stop redesigning pages that were never the problem.</p>
 
 <figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
 <div class="text-sm font-semibold text-white">How a store analyzer works</div>
@@ -1163,7 +1165,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <figcaption class="mt-3 text-xs text-white/35">A generic flow; tools differ in what they capture and score.</figcaption>
 </figure>
 
-<h2>What should it check?</h2>
+<h2>What should you check, in order?</h2>
 <p>Five areas decide most first visits. A useful analyzer covers all of them, and tells you which one is hurting you most:</p>
 
 <figure class="my-8">
@@ -1199,10 +1201,10 @@ export const BLOG_POSTS: BlogPost[] = [
 <figcaption class="mt-3 text-xs text-white/35">Source: <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">Baymard Institute</a> (updated September 2025). Respondents could pick more than one reason.</figcaption>
 </figure>
 
-<h2>How do you run one in 60 seconds?</h2>
-<p>EliteVault’s free audit works from a screenshot of your live storefront, so it judges what a shopper sees, not your analytics or your checkout flow.</p>
+<h2>How do you run the whole check in 60 seconds?</h2>
+<p>A tool that runs all five checks in one pass is a <a href="/">Shopify store analyzer</a>. EliteVault’s free audit works from a screenshot of your live storefront, so it judges what a shopper sees, not your analytics or your checkout flow.</p>
 <ol>
-<li>Paste your store URL into the analyzer.</li>
+<li>Paste your store URL into the tool.</li>
 <li>Wait about a minute for the scan and read the ranked list.</li>
 <li>Fix the top-ranked issue first, then re-run to confirm it moved.</li>
 </ol>
@@ -1229,31 +1231,45 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     slug: "store-analyzer-vs-shopify-analytics",
-    title: "Store Analyzer vs Shopify Analytics: Why Data Isn't Enough",
-    h1: "Shopify tracks everything — so why do store owners still pay someone to read the data?",
+    title: "How to Read Shopify Analytics (and What the Numbers Won't Tell You)",
+    h1: "Shopify tracks everything — so how do you actually read the numbers?",
     description:
-      "Shopify tracks your store's data, yet owners still pay someone to read it. Why a store analyzer and interpretation beat raw numbers, and what each one does.",
-    keyword: "store analyzer",
+      "How to read Shopify analytics: which reports matter, what conversion and drop-off numbers mean, and the one thing the data can't tell you about your store.",
+    keyword: "how to read shopify analytics",
     keywords: [
-      "store analyzer",
-      "shopify analytics interpretation",
-      "why is my shopify store not converting",
-      "ecommerce store analyzer",
+      "how to read shopify analytics",
+      "shopify analytics explained",
+      "shopify analytics reports",
       "shopify data analysis",
     ],
     date: "2026-10-05",
-    updated: "2026-10-05",
+    updated: "2026-10-11",
     author: "Ariel Jiménez",
     readingMinutes: 3,
     excerpt:
-      "Shopify counts what happened. Why owners still pay for someone to explain it, and where a store analyzer fits.",
+      "How to read Shopify analytics: the reports to open first, what the numbers mean, and why owners still pay for someone to explain the why.",
     bodyHtml: `
-<p class="lede">A <strong>store analyzer</strong> explains why a store isn't converting — the part Shopify's own reports leave to you. Shopify counts what happened; reading it is a separate job. That's why owners still pay for interpretation: 70.22% of carts are abandoned (Baymard, 2025), and a dashboard shows that as one number. Our own <a href="/">store analyzer</a> is built for that gap.</p>
+<p class="lede">To <strong>read Shopify analytics</strong>, start with three questions: where do sessions come from, which pages do they land on, and where does conversion drop? Shopify's reports answer those. They count what happened; they can't say why. 70.22% of carts are abandoned (Baymard, 2025), and a report shows that as one number. That is where interpretation starts, and it is why owners still pay for it.</p>
+<p>Below: the reports worth opening first, what the numbers can and can't tell you, and where analysis picks up once the data runs out.</p>
 
 ${teaserVideo}
 
 <h2>Doesn't Shopify already track everything?</h2>
 <p>It tracks a lot, and keeps adding more: the <a href="https://www.shopify.com/editions/winter2026" rel="nofollow">Winter '26 Edition</a> brought heatmaps and bot filtering to its analytics. That is better measurement. Measurement still isn't diagnosis. A report can say conversion fell. It can't say your price vanished above the fold on a phone.</p>
+
+<h2>The Shopify reports to read first</h2>
+<p>Shopify groups its default reports into categories. For traffic and conversion, two matter most: <em>Acquisition reports</em> and <em>Behaviour reports</em> (spelled that way in Shopify's help center). Open these first, in this order:</p>
+<ol>
+<li><strong>Sessions over time</strong> (Acquisition). Visitor and session counts across a date range. Is traffic up, flat or down, and when did it change?</li>
+<li><strong>Sessions by referrer</strong> (Acquisition). Whether visitors arrive directly, through search or through a referral. It tells you which channel to question.</li>
+<li><strong>Sessions by landing page</strong> (Behaviour). Which pages sessions start on. Your top landing pages do most of the selling, so check those first.</li>
+<li><strong>Sessions by device</strong> (Behaviour). The devices people use. If most are phones, judge your store on a phone.</li>
+<li><strong>Conversion rate over time</strong> (Behaviour). The share of online store visitors who buy over a period. It shows whether conversion moved, and when.</li>
+<li><strong>Conversion rate breakdown</strong> (Behaviour). The path visitors take through your store and checkout, shown as a funnel by default. It shows where people drop off.</li>
+<li><strong>Web performance reports</strong> (Behaviour). Loading speed, interactivity and visual stability, measured as Core Web Vitals.</li>
+</ol>
+<p>Read them in that order: traffic, where it lands, how it converts, where it leaks. Report names and availability can change, and which reports you see depends on your Shopify plan, so check the labels in your own admin. Source: Shopify Help Center, <a href="https://help.shopify.com/en/manual/reports-and-analytics/shopify-reports/report-types/default-reports/acquisition-reports" rel="nofollow">Acquisition reports</a> and <a href="https://help.shopify.com/en/manual/reports-and-analytics/shopify-reports/report-types/default-reports/behaviour-reports" rel="nofollow">Behaviour reports</a>.</p>
+<p>Every one of these answers <em>what</em>. None answers <em>why</em>: the funnel shows people leaving checkout, but not that the shipping cost surprised them. That gap is the rest of this post.</p>
 
 <figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
 <div class="text-sm font-semibold text-white">From data to decision</div>
@@ -1288,7 +1304,7 @@ ${teaserVideo}
 <li><strong>Someone to do it.</strong> Advice is cheap; implementation is the expensive part.</li>
 </ol>
 
-<h2>Where does a store analyzer fit?</h2>
+<h2>Where does analysis fit between the data and the fix?</h2>
 <p>Between the two. It covers the first two jobs quickly, and it can't replace someone who knows your business or makes the changes.</p>
 
 <figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
@@ -1307,7 +1323,7 @@ ${teaserVideo}
 </figure>
 
 <h2>How do you start?</h2>
-<p>Keep your dashboard for counting. Add an outside read for the why. EliteVault's free audit works from a screenshot of your live storefront, so it judges what a shopper sees, not your analytics. Full disclosure, EliteVault is our tool.</p>
+<p>Keep your dashboard for counting. Add an outside read for the why. EliteVault's <a href="/">free Shopify store audit</a> works from a screenshot of your live storefront, so it judges what a shopper sees, not your analytics. Full disclosure, EliteVault is our tool.</p>
 <p><a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=store-analyzer">Analyze your store free →</a> To see what a good analyzer covers, read <a href="/blog/shopify-store-analyzer">what a Shopify store analyzer checks</a>; for the human option, <a href="/blog/ecommerce-store-audit-vs-consultant">audit vs consultant</a>.</p>
 `.trim(),
     faqs: [
@@ -1331,26 +1347,28 @@ ${teaserVideo}
   },
   {
     slug: "store-audit-review-my-store-feedback",
-    title: "Store Audit: What \"Review My Store\" Threads Keep Saying",
-    h1: "What do \"review my store\" threads keep saying? A store audit built from the feedback",
+    title: "Review My Shopify Store: What Feedback Threads Keep Saying",
+    h1: "Asked strangers to review your Shopify store? Here's what the feedback keeps repeating",
     description:
-      "A store audit built from the notes 'review my store' threads keep repeating: unclear hero, buried trust, slow mobile, surprise costs. What to fix first.",
-    keyword: "store audit",
+      "What \"review my Shopify store\" threads keep repeating: unclear hero, buried trust, slow mobile, surprise costs — and which fix to make first.",
+    keyword: "review my shopify store",
     keywords: [
-      "store audit",
-      "free store audit",
-      "shopify store audit",
       "review my shopify store",
+      "shopify store feedback",
+      "rate my shopify store",
       "r/reviewmyshopify",
+      "shopify store review checklist",
     ],
     date: "2026-10-07",
-    updated: "2026-10-07",
+    updated: "2026-10-11",
     author: "Ariel Jiménez",
     readingMinutes: 3,
     excerpt:
-      "The same notes keep showing up in 'review my store' threads. What they mean, a quick check for each, and how a store audit ranks the fixes.",
+      "The same notes keep showing up when owners ask for a review of their Shopify store. What they mean, a quick check for each, and which fix to make first.",
     bodyHtml: `
-<p class="lede">A <strong>store audit</strong> is a structured review of what stops visitors from buying. Read enough "review my store" threads and the same notes repeat: an unclear hero, buried trust, slow mobile, thin product pages, surprise costs. Fix those first. 70.22% of carts are abandoned (Baymard, 2025), so a free <a href="/free-website-audit">store audit</a> pays off fast.</p>
+<p class="lede">If you ask strangers to <strong>review your Shopify store</strong>, you will mostly get the same five notes back: an unclear hero, buried trust, thin product pages, slow mobile and surprise costs at the cart. Fix those first and the feedback you get afterwards gets sharper. This is an editorial reading of public threads, not a measured count. The one hard number here comes from Baymard: 70.22% of carts are abandoned (2025).</p>
+<p>Requests like this show up on subreddits such as r/reviewmyshopify and in the Shopify Community. Some communities restrict store-review posts to limit self-promotion, so read the rules before you post. The better your request, the better the answers: say what you sell, where your traffic comes from, what you've already tried, and ask one specific question.</p>
+<p>The rest of this post translates the shorthand reviewers use into what it usually means, gives you a quick check for each note, and shows how to run the same review on yourself before you ask anyone.</p>
 
 ${teaserVideo}
 
@@ -1406,7 +1424,7 @@ ${teaserVideo}
 <figcaption class="mt-3 text-xs text-white/35">Source: <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">Baymard Institute</a> (updated September 2025). The 42% weren't ready to buy, and no design change can win them.</figcaption>
 </figure>
 
-<h2>Thread, checklist or store audit?</h2>
+<h2>Thread, checklist or automated review?</h2>
 <p>Threads give outside eyes but vary in quality. A checklist is consistent but you're still grading yourself.</p>
 
 <figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
@@ -1415,17 +1433,17 @@ ${teaserVideo}
 <figcaption class="mt-3 text-xs text-white/35">Typical coverage; threads vary and some give excellent detail.</figcaption>
 </figure>
 
-<h2>How do you run a store audit before you post?</h2>
+<h2>How do you review your own store before you post?</h2>
 <ol>
 <li>Run the five quick checks above on your own store.</li>
 <li>Run an automated check to rank what you found, so you know which fix comes first.</li>
 <li>Post with your niche, traffic source and one specific question.</li>
 </ol>
-<p><a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=store-audit">Run a free store audit →</a> EliteVault's audit works from a screenshot of your live storefront, so it judges what a shopper sees. Full disclosure, EliteVault is our tool. Next: <a href="/blog/why-your-shopify-store-isnt-converting">why your Shopify store isn't converting</a>, or <a href="/blog/shopify-store-analyzer">what a Shopify store analyzer checks</a>.</p>
+<p><a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=store-audit">Run a free store audit →</a> EliteVault's <a href="/">free Shopify store audit</a> works from a screenshot of your live storefront, so it judges what a shopper sees. Full disclosure, EliteVault is our tool. Next: <a href="/blog/why-your-shopify-store-isnt-converting">why your Shopify store isn't converting</a>, or <a href="/blog/shopify-store-analyzer">what a Shopify store analyzer checks</a>.</p>
 `.trim(),
     faqs: [
       {
-        q: "What is a store audit?",
+        q: "What should a review of my Shopify store cover?",
         a: "A structured review of your storefront that finds what stops visitors from buying, such as an unclear hero, buried trust signals, slow mobile pages and checkout friction, and puts the fixes in order.",
       },
       {

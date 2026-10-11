@@ -26,18 +26,16 @@ export const metadata: Metadata = {
     "analyze shopify store",
     "store audit",
     "free store audit",
-    // Core bottom-funnel keywords that already rank — kept intact.
-    "free website audit",
+    // Core bottom-funnel keywords that already rank. Terms that now belong to
+    // other pages (free website audit, website analyzer, winning shopify
+    // stores, buyer persona simulator, meta ads forecast) were removed — see
+    // docs/seo-cannibalization-fix.md.
     "free shopify store audit",
     "ai store audit",
     "ecommerce conversion analyzer",
     "shopify store audit",
     "cro audit tool",
-    "winning shopify stores",
-    "buyer persona simulator",
-    "meta ads forecast",
     "dtc conversion optimization",
-    "website analyzer",
     // Design/desire cluster (buyer-persona SEO layer) — added, not replacing.
     "shopify store design audit",
     "does my store look trustworthy",
