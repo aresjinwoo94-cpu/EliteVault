@@ -3,7 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  createSupabaseServerClient,
+  createSupabaseServiceClient,
+} from "@/lib/supabase/server";
 import { inngest } from "@/inngest/client";
 import { normalizeUrl } from "@/lib/utils";
 import { BuyerPersonaSchema } from "@/ai/schemas";
@@ -135,14 +138,19 @@ export async function createAnalysis(
   }
 
   // Deduct credit BEFORE queueing; refunded by Inngest on failure.
-  const { error: decErr } = await supabase
+  // Credits are server-owned (migration 0039 blocks the user's own session from
+  // writing them), so the debit goes through the service client.
+  const service = createSupabaseServiceClient();
+  const { error: decErr } = await service
     .from("profiles")
     .update({ credits: profile.credits - 1 })
     .eq("id", user.id);
   if (decErr) return { ok: false, error: decErr.message };
 
   // Create row
-  const { data: row, error: insErr } = await supabase
+  // (service client: migration 0039 removed the client INSERT policy — a user
+  // row with a forged credits_charged would otherwise farm refunds.)
+  const { data: row, error: insErr } = await service
     .from("analyses")
     .insert({
       user_id: user.id,
@@ -156,7 +164,7 @@ export async function createAnalysis(
     .single();
   if (insErr || !row) {
     // Refund on failure
-    await supabase
+    await service
       .from("profiles")
       .update({ credits: profile.credits })
       .eq("id", user.id);
