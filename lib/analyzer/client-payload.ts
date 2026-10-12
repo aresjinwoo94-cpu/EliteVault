@@ -38,8 +38,9 @@
  *    impact / effort and `locked: true` (same shape as `gateFixes` for Fix
  *    Tracks). Titles stay visible because knowing WHAT is locked is what makes
  *    the lock worth opening; `why` / `evidence` / `theme_slug` are the fix.
- *  • `annotations[].fix` — emptied + `fix_locked: true`; the pin, its position
- *    and the problem text (`message`) stay visible to everyone.
+ *  • `annotations[].fix` — #2+ emptied + `fix_locked: true` (the first one
+ *    stays open, like fix #1); pins, positions and the problem text
+ *    (`message`) stay visible to everyone.
  *  • `buyer_persona_response` — `null` plus `persona_locked: true`; the UI
  *    blurs a static placeholder instead.
  *
@@ -65,8 +66,9 @@ export function gateResult<R extends Record<string, unknown>>(
     // the "how" (`fix`) is the paid part.
     ...(Array.isArray(result.annotations)
       ? {
-          annotations: (result.annotations as Array<Record<string, unknown>>).map((a) =>
-            a && typeof a === "object" ? { ...a, fix: "", fix_locked: true } : a,
+          annotations: (result.annotations as Array<Record<string, unknown>>).map((a, i) =>
+            // The first pin matches fix #1, which is free in the list — keep it open.
+            i === 0 || !a || typeof a !== "object" ? a : { ...a, fix: "", fix_locked: true },
           ),
         }
       : {}),

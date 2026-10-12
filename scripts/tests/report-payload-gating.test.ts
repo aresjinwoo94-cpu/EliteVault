@@ -14,7 +14,9 @@ const RESULT = {
     { title: "Fix three", impact: "low", effort: "L", why: `${SECRET} three` },
   ],
   annotations: [
-    { type: "circle", x: 0.2, y: 0.3, severity: "high", message: "Problem text stays", fix: `${SECRET} annotation fix` },
+    { type: "circle", x: 0.2, y: 0.3, severity: "high", message: "Problem text stays", fix: "ANN-FIX-ONE" },
+    { type: "arrow", x: 0.5, y: 0.6, severity: "medium", message: "Second problem stays", fix: "ANN-FIX-TWO" },
+    { type: "label", x: 0.7, y: 0.1, severity: "low", message: "Third problem stays", fix: "ANN-FIX-THREE" },
   ],
   buyer_persona_response: { headline: `${SECRET} headline`, quotes: [`${SECRET} q1`, "q2"], would_buy: false, reasons: [SECRET] },
 };
@@ -40,12 +42,17 @@ test("without the full report: fix #1 whole, #2+ title/impact/effort only, perso
   assert.equal(out.top_fixes.length, 3, "count is preserved for the 'N more fixes' counter");
 });
 
-test("annotations: pin, position and problem text stay; the fix text is withheld", () => {
+test("annotations: #1 keeps its fix (matches free fix #1); #2+ lose it, everything else stays", () => {
   const out = gateResult(RESULT, false) as Record<string, any>;
-  assert.deepEqual(out.annotations[0], { type: "circle", x: 0.2, y: 0.3, severity: "high", message: "Problem text stays", fix: "", fix_locked: true });
+  assert.deepEqual(out.annotations[0], RESULT.annotations[0]);
+  assert.equal(out.annotations[0].fix_locked, undefined);
+  assert.deepEqual(out.annotations[1], { type: "arrow", x: 0.5, y: 0.6, severity: "medium", message: "Second problem stays", fix: "", fix_locked: true });
+  assert.deepEqual(out.annotations[2], { type: "label", x: 0.7, y: 0.1, severity: "low", message: "Third problem stays", fix: "", fix_locked: true });
   const full = gateResult(RESULT, true) as Record<string, any>;
-  assert.equal(full.annotations[0].fix, `${SECRET} annotation fix`);
-  assert.ok(!JSON.stringify(toClientAnalysis(ROW, { canSeeOptimizer: false, hasFullReport: false })).includes("annotation fix"));
+  assert.equal(full.annotations[1].fix, "ANN-FIX-TWO");
+  const json = JSON.stringify(toClientAnalysis(ROW, { canSeeOptimizer: false, hasFullReport: false }));
+  assert.ok(json.includes("ANN-FIX-ONE"));
+  assert.ok(!json.includes("ANN-FIX-TWO") && !json.includes("ANN-FIX-THREE"));
 });
 
 test("the serialized client payload contains no locked text", () => {
