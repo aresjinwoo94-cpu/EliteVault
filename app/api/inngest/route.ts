@@ -3,6 +3,7 @@ import { inngest } from "@/inngest/client";
 import { analyzeWebsite } from "@/inngest/functions/analyze-website";
 import { runMetaSimulationFn } from "@/inngest/functions/run-meta-simulation";
 import { refreshLibrary } from "@/inngest/functions/refresh-library";
+import { fillLibraryImages } from "@/inngest/functions/fill-library-images";
 import { activationFollowup } from "@/inngest/functions/activation-followup";
 import { checkoutRecovery } from "@/inngest/functions/checkout-recovery";
 import { resolveInngestServeHost } from "@/lib/inngest-serve-host";
@@ -33,6 +34,7 @@ export const { GET, POST, PUT } = serve({
     analyzeWebsite,
     runMetaSimulationFn,
     refreshLibrary,
+    fillLibraryImages,
     activationFollowup,
     checkoutRecovery,
   ],

@@ -33,6 +33,7 @@ import {
 } from "./_shared.mts";
 import { normalizeDomain, canonicalUrl, faviconUrl } from "../../lib/library/domain.ts";
 import { judgeStore } from "../../lib/library/quality.ts";
+import { isRealThumbnail } from "../../lib/library/thumbnail.ts";
 
 interface Row {
   id: string;
@@ -129,7 +130,7 @@ const outcome = await mapSettled(
       title: row.title,
       niche: row.niche,
       isLive: isLive && !confirmedDead,
-      hasImage: Boolean(row.thumbnail_url || row.favicon_url || domain),
+      thumbnailUrl: row.thumbnail_url,
       activeAdsCount: activeAds,
       internalScore: internal,
     });
@@ -139,6 +140,12 @@ const outcome = await mapSettled(
       is_live: isLive && !confirmedDead,
       last_verified_at: new Date().toISOString(),
       status: verdict.status,
+      review_reason:
+        verdict.status === "published"
+          ? null
+          : !isRealThumbnail(row.thumbnail_url)
+            ? "no_image"
+            : (verdict.reasons[0] ?? null),
     };
     if (!row.favicon_url) patch.favicon_url = faviconUrl(domain);
     if (activeAds !== null && row.active_ads_count === null)

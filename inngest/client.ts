@@ -56,6 +56,11 @@ type Events = {
       maxChunks?: number;
     };
   };
+  // Library — manual trigger for the low-priority image job (same function
+  // also runs on a cron). Optional `limit` = stores to attempt this run.
+  "library/images.requested": {
+    data: { limit?: number };
+  };
   // Phase 5 — fired the first time a user gets a successful audit. Kicks off
   // the delayed activation follow-up email.
   "activation/first-value": {
