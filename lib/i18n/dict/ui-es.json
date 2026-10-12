@@ -769,7 +769,8 @@
     "issueAria": "Problema {n}: {msg}",
     "fixNum": "Corrección n.º {n}",
     "lowSev": "Baja",
-    "defaultAlt": "Captura de la auditoría"
+    "defaultAlt": "Captura de la auditoría",
+    "fixLocked": "Desbloquea la solución"
   },
   "position": {
     "title": "Dónde estás",

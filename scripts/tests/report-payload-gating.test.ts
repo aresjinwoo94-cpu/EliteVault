@@ -13,6 +13,9 @@ const RESULT = {
     { title: "Fix two", impact: "medium", effort: "M", why: `${SECRET} two`, evidence: "ev2", theme_slug: "x" },
     { title: "Fix three", impact: "low", effort: "L", why: `${SECRET} three` },
   ],
+  annotations: [
+    { type: "circle", x: 0.2, y: 0.3, severity: "high", message: "Problem text stays", fix: `${SECRET} annotation fix` },
+  ],
   buyer_persona_response: { headline: `${SECRET} headline`, quotes: [`${SECRET} q1`, "q2"], would_buy: false, reasons: [SECRET] },
 };
 const ROW = { id: "a1", status: "succeeded", result: RESULT, niche_winners: { w: 1 }, fix_tracks: { t: 1 }, meta_ads: null };
@@ -35,6 +38,14 @@ test("without the full report: fix #1 whole, #2+ title/impact/effort only, perso
   assert.equal(out.persona_locked, true);
   assert.equal(out.summary, "diagnosis stays");
   assert.equal(out.top_fixes.length, 3, "count is preserved for the 'N more fixes' counter");
+});
+
+test("annotations: pin, position and problem text stay; the fix text is withheld", () => {
+  const out = gateResult(RESULT, false) as Record<string, any>;
+  assert.deepEqual(out.annotations[0], { type: "circle", x: 0.2, y: 0.3, severity: "high", message: "Problem text stays", fix: "", fix_locked: true });
+  const full = gateResult(RESULT, true) as Record<string, any>;
+  assert.equal(full.annotations[0].fix, `${SECRET} annotation fix`);
+  assert.ok(!JSON.stringify(toClientAnalysis(ROW, { canSeeOptimizer: false, hasFullReport: false })).includes("annotation fix"));
 });
 
 test("the serialized client payload contains no locked text", () => {

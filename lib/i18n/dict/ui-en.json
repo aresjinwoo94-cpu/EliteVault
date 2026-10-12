@@ -769,7 +769,8 @@
     "issueAria": "Issue {n}: {msg}",
     "fixNum": "Fix #{n}",
     "lowSev": "Low",
-    "defaultAlt": "Audit screenshot"
+    "defaultAlt": "Audit screenshot",
+    "fixLocked": "Unlock the fix"
   },
   "position": {
     "title": "Where you stand",

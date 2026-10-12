@@ -424,8 +424,8 @@ export function AnnotationsOverlay({
                       </p>
                       <div className="mt-2 flex items-start gap-1.5 rounded-lg bg-white/[0.03] px-2 py-1.5">
                         <Wrench className="mt-0.5 size-3 shrink-0 text-champagne-300" />
-                        <p className="text-[11px] text-white/65 leading-relaxed">
-                          {a.fix}
+                        <p className={cn("text-[11px] leading-relaxed", a.fix_locked ? "text-champagne-300/80" : "text-white/65")}>
+                          {a.fix_locked ? t("annotations.fixLocked") : a.fix}
                         </p>
                       </div>
                     </div>
@@ -492,7 +492,7 @@ export function AnnotationsOverlay({
                       className="mt-1.5 text-xs text-white/55 leading-relaxed overflow-hidden"
                     >
                       <span className="text-champagne-400 font-medium">{t("annotations.fix")}</span>{" "}
-                      {a.fix}
+                      {a.fix_locked ? t("annotations.fixLocked") : a.fix}
                     </motion.p>
                   )}
                 </AnimatePresence>
