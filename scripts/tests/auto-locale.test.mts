@@ -144,13 +144,14 @@ test("the dead i18n copy and cookie constants are gone", () => {
   assert.doesNotMatch(code("lib/i18n/config.ts"), /LOCALE_COOKIE_MAX_AGE|"NEXT_LOCALE"/);
 });
 
-test("middleware turns ?lang=en|es into the session QA cookie, and nothing else", () => {
+test("middleware turns ?lang=en|es into a 1-year QA cookie (#82), and nothing else", () => {
   const mw = code("middleware.ts");
   assert.match(mw, /searchParams\.get\("lang"\)/);
   assert.match(mw, /isLocale\(lang\)/);
   assert.match(mw, /QA_LOCALE_COOKIE/);
-  // session cookie: no maxAge/expires
-  assert.doesNotMatch(mw, /maxAge|expires/);
+  // #82: the override persists for a year (it used to be a session cookie)
+  assert.match(mw, /maxAge:\s*60 \* 60 \* 24 \* 365/);
+  assert.doesNotMatch(mw, /expires/);
 });
 
 test("the root layout reflects the locale in <html lang> and adds no hreflang", () => {
