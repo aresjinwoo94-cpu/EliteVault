@@ -217,3 +217,19 @@ This section is the process that keeps it that way.
   allowlist de `tg_protect_analyses_columns`. No se arregla ahora.
 - **Cuenta de pruebas `test-pro@elitevault.local`** (perfil `dc38b1a8…`): plan pro sin cliente
   Stripe ni suscripción; la usa `scripts/e2e/plan-matrix.mts`. Pendiente de decisión del dueño.
+
+### Decisiones y pendientes (WP-1 → WP-2)
+
+- **Community se queda como está (decisión consciente, a revisar).** `community/[slug]` y
+  `community/compare` muestran fixes y respuesta de persona completos de tiendas AJENAS publicadas a
+  cualquier usuario con sesión, también free. Es contenido que otro usuario eligió publicar y sirve de
+  incentivo para publicar; no es el reporte del viewer. Revisar si el desbloqueo de $7 cambia esta
+  lectura (hoy un free puede leer fixes+persona completos ajenos).
+- **WP-2 — no perder:** en `app/(app)/app/analyzer/[id]/page.tsx` derivar `isPaid`/la UI de bloqueo de
+  `hasFullReport({ plan, unlocked })`, y en `app/api/analyses/[id]/growth-map/route.ts` pasar
+  `hasFullReport` (no `plan !== "free"`) a `gateForViewer`. Si no, un reporte desbloqueado recibiría el
+  payload completo pero la UI de bloqueo. Cuidado: el unlock NO debe dar las capacidades de Pro
+  (`canPublish`, Optimizer, auditorías nuevas): separar "ve el reporte completo" de "es de pago".
+- **`annotations[].fix`** (WP-1): se retira del payload para viewers sin reporte completo; el pin, la
+  posición y el texto del problema (`message`) siguen visibles. En WP-4 el placeholder "Desbloquea la
+  solución" del overlay debe abrir el modal de desbloqueo.
