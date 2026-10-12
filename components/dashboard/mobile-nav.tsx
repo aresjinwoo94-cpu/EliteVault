@@ -18,7 +18,7 @@ type Profile = Database["public"]["Tables"]["profiles"]["Row"] | null;
 /**
  * Mobile-only nav for the logged-in app shell. The desktop sidebar is
  * `hidden md:flex`, so on phones this hamburger + drawer is the ONLY way to
- * reach Overview / Analyzer / Trends / Library / Community / Billing / Settings.
+ * reach Overview / Analyzer / Library / Community / Billing / Settings.
  * Mounted on the left of the topbar (`md:hidden`).
  */
 export function AppMobileNav({ profile }: { profile: Profile }) {

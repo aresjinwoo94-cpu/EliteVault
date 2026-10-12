@@ -543,7 +543,6 @@ const en: Dict = {
   sidebar: {
     navOverview: "Overview",
     navAnalyzer: "Analyzer",
-    navTrends: "Trends",
     navLibrary: "Library",
     navCommunity: "Community",
     navApiKeys: "API keys",
@@ -1501,7 +1500,6 @@ const es: Dict = {
   sidebar: {
     navOverview: "Resumen",
     navAnalyzer: "Analizador",
-    navTrends: "Tendencias",
     navLibrary: "Biblioteca",
     navCommunity: "Comunidad",
     navApiKeys: "Claves API",

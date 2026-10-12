@@ -200,3 +200,20 @@ discard it deliberately; don't leave it sitting there.
 
 The working tree was clean when this branch was cut, so nothing was at risk.
 This section is the process that keeps it that way.
+
+## Oct 2026 — deuda anotada (brief unlock/trends/library/landing)
+
+- **Tablas de Trends huérfanas (§T).** Se quitó la feature (página, cron `refresh-trends`,
+  acciones, nav, i18n, cuota `trackedNiches`) pero **no se borraron** `niches`, `trend_signals`
+  (migración 0011) ni `tracked_niches` si existe: borrar es irreversible y no aporta al usuario.
+  Antes de un borrado futuro, grep de que la Library / niche pages no usan `niches`
+  (hoy usan `lib/library/niches.ts`). En Inngest, comprobar que `refresh-trends` desapareció
+  tras el deploy (no debe quedar un cron huérfano).
+- **P3 — `share_slug` lo elige el cliente.** `app/actions/share.ts` escribe `share_slug` con el
+  cliente del usuario (es una de las dos columnas que la migración 0039 deja escribir a
+  `authenticated`), así que alguien con la anon key puede fijar un slug arbitrario en su propia
+  auditoría (squatting / slug adivinable; el índice único limita el daño). Arreglo futuro:
+  generar el slug en el servidor con el service client y quitar `share_slug`/`shared_at` de la
+  allowlist de `tg_protect_analyses_columns`. No se arregla ahora.
+- **Cuenta de pruebas `test-pro@elitevault.local`** (perfil `dc38b1a8…`): plan pro sin cliente
+  Stripe ni suscripción; la usa `scripts/e2e/plan-matrix.mts`. Pendiente de decisión del dueño.

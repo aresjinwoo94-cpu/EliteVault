@@ -127,9 +127,6 @@ export default async function SupportPage() {
                       <th className="py-2 px-2 font-medium text-right">
                         {t("supportPage.auditsMo")}
                       </th>
-                      <th className="py-2 pl-2 font-medium text-right">
-                        {t("supportPage.trackedNiches")}
-                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -147,9 +144,6 @@ export default async function SupportPage() {
                           </td>
                           <td className="py-2 px-2 text-right tabular-nums text-white/70">
                             {p.quotas.analysesPerMonth}
-                          </td>
-                          <td className="py-2 pl-2 text-right tabular-nums text-white/70">
-                            {p.quotas.trackedNiches}
                           </td>
                         </tr>
                       );

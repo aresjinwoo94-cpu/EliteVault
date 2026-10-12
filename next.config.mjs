@@ -12,6 +12,10 @@ const config = {
       bodySizeLimit: "10mb", // screenshots
     },
   },
+  // Trends was removed (brief oct-2026 §T); keep old bookmarks alive.
+  async redirects() {
+    return [{ source: "/app/trends", destination: "/app", permanent: true }];
+  },
   // Allow long-running streamed responses for the analyzer.
   // Fluid Compute on Vercel handles up to 300s for hobby/pro.
   serverExternalPackages: ["@anthropic-ai/sdk"],

@@ -11,7 +11,7 @@ import type { PlanTier } from "@/lib/supabase/types";
 export type MeterContext = {
   userId?: string | null;
   plan?: PlanTier | null;
-  /** Feature label, e.g. 'analyzer' | 'meta_ads' | 'trend_refresh'. */
+  /** Feature label, e.g. 'analyzer' | 'meta_ads'. */
   eventType: string;
   /** Extra context merged into usage_events.meta (e.g. { analysisId }). */
   meta?: Record<string, unknown>;

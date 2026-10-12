@@ -210,7 +210,7 @@ function Header({
         </p>
       </div>
       <Badge variant="default" className="shrink-0">
-        {nicheLabel?.trim() || t("trendsPage.yourNiche")}
+        {nicheLabel?.trim() || t("nicheWinners.yourNiche")}
       </Badge>
     </div>
   );
