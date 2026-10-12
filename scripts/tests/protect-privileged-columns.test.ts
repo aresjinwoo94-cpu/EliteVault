@@ -52,14 +52,18 @@ test("triggers key off current_user (unspoofable) and are installed", () => {
     "profiles_protect_columns",
     "analyses_protect_columns",
     "analyses_protect_insert",
+    "meta_simulations_protect_update",
+    "meta_simulations_protect_insert",
+    "api_keys_protect_update",
   ]) {
     assert.match(sql, new RegExp(`create trigger ${t} before (update|insert)`));
   }
+  assert.match(sql, /drop policy if exists "analyses: insert own"/);
 });
 
-test("the credit debit/refund in createAnalysis uses the service client", () => {
+test("createAnalysis writes profiles + analyses with the service client", () => {
   const src = readFileSync(resolve(ROOT, "app/actions/analyzer.ts"), "utf8");
-  const writes = [...src.matchAll(/(\w+)\s*\.from\("profiles"\)\s*\.update\(/g)];
-  assert.ok(writes.length >= 2);
-  for (const w of writes) assert.equal(w[1], "service", "credits are server-owned");
+  const writes = [...src.matchAll(/(\w+)\s*\.from\("(profiles|analyses)"\)\s*\.(update|insert)\(/g)];
+  assert.ok(writes.length >= 3);
+  for (const w of writes) assert.equal(w[1], "service", "credits/audits are server-owned");
 });

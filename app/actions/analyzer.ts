@@ -148,7 +148,9 @@ export async function createAnalysis(
   if (decErr) return { ok: false, error: decErr.message };
 
   // Create row
-  const { data: row, error: insErr } = await supabase
+  // (service client: migration 0039 removed the client INSERT policy — a user
+  // row with a forged credits_charged would otherwise farm refunds.)
+  const { data: row, error: insErr } = await service
     .from("analyses")
     .insert({
       user_id: user.id,
