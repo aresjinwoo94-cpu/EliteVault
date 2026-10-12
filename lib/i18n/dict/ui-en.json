@@ -90,7 +90,7 @@
     "analyzerPlan": "The Analyzer isn't available on your plan. Upgrade to start auditing your store.",
     "verifyEmail": "Verify your email to claim your free audit. Check your inbox for the confirmation link, then try again.",
     "alreadySignedIn": "You're already signed in — running this in your account.",
-    "anonLimit": "You've used your free audit for today. Create a free account to run more — no card needed.",
+    "anonLimit": "You've already run your audit without an account. Create an account to save your report and run one more audit.",
     "apiScale": "API access is a Scale-plan feature. Upgrade at /app/billing.",
     "validEmail": "Please enter a valid email.",
     "passwordShort": "Password must be at least 8 characters.",

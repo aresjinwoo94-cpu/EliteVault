@@ -90,7 +90,7 @@
     "analyzerPlan": "El Analyzer no está disponible en tu plan. Mejora tu plan para empezar a auditar tu tienda.",
     "verifyEmail": "Verifica tu correo para reclamar tu auditoría gratis. Revisa tu bandeja de entrada, confirma el enlace y vuelve a intentarlo.",
     "alreadySignedIn": "Ya iniciaste sesión: lo ejecutamos en tu cuenta.",
-    "anonLimit": "Ya usaste tu auditoría gratis de hoy. Crea una cuenta gratis para hacer más, sin tarjeta.",
+    "anonLimit": "Ya hiciste tu auditoría sin cuenta. Crea tu cuenta para guardar tu reporte y hacer una auditoría más.",
     "apiScale": "El acceso a la API es una función del plan Scale. Mejora tu plan en /app/billing.",
     "validEmail": "Introduce un correo válido.",
     "passwordShort": "La contraseña debe tener al menos 8 caracteres.",
