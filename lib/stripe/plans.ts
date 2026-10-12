@@ -35,8 +35,6 @@ export interface Plan {
      *  Analyzer keeps its existing behaviour — this number must equal the
      *  effective credit grant (Free = 1 lifetime welcome credit). */
     analysesPerMonth: number;
-    /** Niches the user can track for weekly Trend alerts (Phase 2/3). */
-    trackedNiches: number;
     /**
      * Meta block runs (Campaign Scenario Modeler + Ads Optimizer, counted as
      * one unit) per billing period. Backed by a row count in meta_simulations.
@@ -72,7 +70,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     unlocksScale: false,
     canPublish: false,
     libraryFullMetricsCap: 3,
-    quotas: { analysesPerMonth: 1, trackedNiches: 1, metaRunsPerMonth: 0 },
+    quotas: { analysesPerMonth: 1, metaRunsPerMonth: 0 },
     features: [
       { text: "1 free audit: score + annotated screenshot", included: true, highlight: true },
       { text: "You choose one type of fixes — unlocked & actionable", included: true, highlight: true },
@@ -100,7 +98,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     unlocksScale: false,
     canPublish: true,
     libraryFullMetricsCap: null,
-    quotas: { analysesPerMonth: 40, trackedNiches: 5, metaRunsPerMonth: 1 },
+    quotas: { analysesPerMonth: 40, metaRunsPerMonth: 1 },
     badge: "Most popular",
     highlight: true,
     features: [
@@ -143,7 +141,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     unlocksScale: true,
     canPublish: true,
     libraryFullMetricsCap: null,
-    quotas: { analysesPerMonth: 200, trackedNiches: 20, metaRunsPerMonth: null },
+    quotas: { analysesPerMonth: 200, metaRunsPerMonth: null },
     badge: "For teams",
     features: [
       { text: "Everything in Pro", included: true },

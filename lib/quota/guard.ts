@@ -13,7 +13,6 @@ import type { PlanTier } from "@/lib/supabase/types";
  *                             as before; credits stay the source of truth).
  *   - 'metaRun'             → row count in meta_simulations within the current
  *                             calendar month (Meta block runs; Pro = 1/mo).
- *   - 'trackedNiche'        → row count in tracked_niches  (Phase 2/3).
  *
  * On the month window (WP-6 correction): this used to say `profiles` was
  * missing `current_period_start` because migration 0001 "was never applied".
@@ -28,7 +27,7 @@ import type { PlanTier } from "@/lib/supabase/types";
  * regardless: it's the doc's primary reset spec. Verify the live schema against
  * the migrations at any time with `npm run db:doctor`.
  */
-export type QuotaKind = "analysis" | "metaRun" | "trackedNiche";
+export type QuotaKind = "analysis" | "metaRun";
 
 /** Stable error code the API/action returns when the Meta quota is spent. */
 export const META_QUOTA_EXCEEDED = "META_QUOTA_EXCEEDED";
@@ -101,10 +100,6 @@ export async function assertQuota(
       }
       return { ok: true, remaining: limit - used };
     }
-
-    // Enforcement wired in a later phase (table not created yet).
-    case "trackedNiche":
-      return { ok: true, remaining: quotas.trackedNiches };
   }
 }
 

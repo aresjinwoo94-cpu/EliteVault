@@ -25,7 +25,6 @@ EliteVault is operated by ${COMPANY.legalEntity} (${COMPANY.country}). Scores, p
 - Buyer-persona simulation of how a target shopper reacts to the store.
 - Meta Ads 7-day, 3-scenario campaign modeler (included on Pro at 1 projection/month, unlimited on Scale).
 - Library of vetted high-performing ecommerce stores with metrics.
-- Weekly niche Trends across high-signal ecommerce categories.
 - REST API with bearer tokens (Scale plan).
 
 ## Pricing

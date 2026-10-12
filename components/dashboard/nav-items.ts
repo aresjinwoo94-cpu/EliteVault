@@ -6,7 +6,6 @@ import {
   Library,
   Scan,
   Settings,
-  TrendingUp,
 } from "lucide-react";
 
 export type NavItem = {
@@ -25,7 +24,6 @@ export type NavItem = {
 export const BASE_NAV: NavItem[] = [
   { key: "sidebar.navOverview", href: "/app", icon: Compass },
   { key: "sidebar.navAnalyzer", href: "/app/analyzer", icon: Scan, highlight: true },
-  { key: "sidebar.navTrends", href: "/app/trends", icon: TrendingUp },
   { key: "sidebar.navLibrary", href: "/app/library", icon: Library },
   { key: "sidebar.navCommunity", href: "/app/community", icon: Globe },
   { key: "sidebar.navApiKeys", href: "/app/settings/api-keys", icon: KeyRound, scaleOnly: true },
