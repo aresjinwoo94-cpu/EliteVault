@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { getOwner } from "@/lib/admin/guard";
+import { imageSavePatch, type MissingImageRow } from "@/lib/library/images";
 
 const BUCKET = "screenshots";
 const PREFIX = "library";
@@ -44,7 +45,9 @@ export async function uploadLibraryImage(
     // Confirm the store exists + grab any prior self-hosted object to clean up.
     const { data: site } = await svc
       .from("winning_sites")
-      .select("id, thumbnail_url")
+      .select(
+        "id, url, domain, title, niche, status, is_live, thumbnail_url, review_reason, active_ads_count, internal_score",
+      )
       .eq("id", siteId)
       .maybeSingle();
     if (!site) return { ok: false, error: "Store not found" };
@@ -60,9 +63,18 @@ export async function uploadLibraryImage(
       data: { publicUrl },
     } = svc.storage.from(BUCKET).getPublicUrl(path);
 
+    // The owner's upload is PROTECTED ('owner' source): no job or script can
+    // overwrite or clear it (migration 0040 trigger). If the store was parked
+    // only for lack of an image and now passes the gate, it publishes.
+    const { patch } = imageSavePatch(site as unknown as MissingImageRow, publicUrl, "owner");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error: updErr } = await (svc.from("winning_sites") as any)
-      .update({ thumbnail_url: publicUrl })
+      .update({
+        ...patch,
+        thumbnail_source: "owner",
+        thumbnail_attempts: 0,
+        thumbnail_checked_at: new Date().toISOString(),
+      })
       .eq("id", siteId);
     if (updErr) return { ok: false, error: `Save failed: ${updErr.message}` };
 

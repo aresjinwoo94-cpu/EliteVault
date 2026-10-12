@@ -3,6 +3,7 @@ import { withMeasurement } from "@/lib/library/ad-signal";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { normalizeDomain, canonicalUrl, faviconUrl } from "@/lib/library/domain";
 import { judgeStore, momentumScore, estRevenueRange } from "@/lib/library/quality";
+import { isRealThumbnail, REVIEW_REASON } from "@/lib/library/thumbnail";
 import { countActiveAds, metaApiConfigured } from "@/lib/library/meta-ad-library";
 
 /**
@@ -76,6 +77,7 @@ interface VerifyRow {
   niche: string | null;
   thumbnail_url: string | null;
   favicon_url: string | null;
+  review_reason: string | null;
   status: string;
   is_live: boolean;
   active_ads_count: number | null;
@@ -100,7 +102,7 @@ export async function verifyBatch(limit = 25): Promise<VerifyResult> {
   const { data, error } = await svc
     .from("winning_sites")
     .select(
-      "id, url, domain, title, niche, thumbnail_url, favicon_url, status, is_live, active_ads_count, internal_score, ad_signals",
+      "id, url, domain, title, niche, thumbnail_url, favicon_url, review_reason, status, is_live, active_ads_count, internal_score, ad_signals",
     )
     .order("last_verified_at", { ascending: true, nullsFirst: true })
     .limit(limit);
@@ -149,7 +151,7 @@ export async function verifyBatch(limit = 25): Promise<VerifyResult> {
         title: row.title,
         niche: row.niche,
         isLive: isLive && !confirmedDead,
-        hasImage: Boolean(row.thumbnail_url || row.favicon_url || domain),
+        thumbnailUrl: row.thumbnail_url,
         activeAdsCount: activeAds,
         internalScore: internal,
       });
@@ -159,6 +161,13 @@ export async function verifyBatch(limit = 25): Promise<VerifyResult> {
         is_live: isLive && !confirmedDead,
         last_verified_at: new Date().toISOString(),
         status: verdict.status,
+        // Why a row is parked (shown in the owner monitor); cleared on publish.
+        review_reason:
+          verdict.status === "published"
+            ? null
+            : !isRealThumbnail(row.thumbnail_url)
+              ? REVIEW_REASON.noImage
+              : (row.review_reason ?? verdict.reasons[0] ?? null),
       };
       if (!row.favicon_url) patch.favicon_url = faviconUrl(domain);
       if (activeAds !== null && row.active_ads_count === null)

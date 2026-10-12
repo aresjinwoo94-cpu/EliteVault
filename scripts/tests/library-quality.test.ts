@@ -64,7 +64,7 @@ const good: StoreFacts = {
   title: "Foo",
   niche: "skincare",
   isLive: true,
-  hasImage: true,
+  thumbnailUrl: "https://x.supabase.co/storage/v1/object/public/screenshots/library/a.jpg",
   activeAdsCount: 40,
   internalScore: null,
 };
@@ -81,7 +81,9 @@ test("anything missing parks the row in review, with the reason", () => {
     [{ niche: null }, "no niche assigned"],
     [{ title: "  " }, "missing title"],
     [{ domain: "junk", url: "junk" }, "unresolvable domain"],
-    [{ hasImage: false }, "no thumbnail or favicon"],
+    [{ thumbnailUrl: null }, "no real image"],
+    [{ thumbnailUrl: "" }, "no real image"],
+    [{ thumbnailUrl: "https://s.wordpress.com/mshots/v1/https%3A%2F%2Ffoo.com?w=800&h=560" }, "no real image"],
     [{ activeAdsCount: null, internalScore: null }, "no signal (no active ads, no internal score)"],
   ];
   for (const [patch, reason] of cases) {

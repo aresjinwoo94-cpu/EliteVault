@@ -11,6 +11,7 @@
  */
 
 import { normalizeDomain } from "@/lib/library/domain";
+import { isRealThumbnail } from "@/lib/library/thumbnail";
 
 export type LibraryStatus = "draft" | "review" | "published";
 
@@ -22,8 +23,12 @@ export interface StoreFacts {
   niche: string | null | undefined;
   /** Site answered 2xx/3xx on the last liveness probe. */
   isLive: boolean;
-  /** We have a thumbnail or a favicon to render the row with. */
-  hasImage: boolean;
+  /**
+   * The row's `thumbnail_url`. Must be a REAL image: null, '' and live mshots
+   * URLs fail the gate (brief oct-2026 §L.3). A favicon or the domain name is
+   * NOT an image — that fallback let 28 letter-tile stores publish.
+   */
+  thumbnailUrl: string | null | undefined;
   /** Cached Meta active-ads count, if any. */
   activeAdsCount?: number | null;
   /** Our internal quality/momentum score, if any. */
@@ -53,7 +58,7 @@ function filled(s: unknown): boolean {
  *   3. the site is live
  *   4. a niche assigned
  *   5. at least ONE signal (active ads, or an internal score)
- *   6. an image (thumbnail or favicon)
+ *   6. a REAL thumbnail (not null / '' / mshots)
  */
 export function judgeStore(facts: StoreFacts): Verdict {
   const reasons: string[] = [];
@@ -65,7 +70,7 @@ export function judgeStore(facts: StoreFacts): Verdict {
   if (!positive(facts.activeAdsCount) && !positive(facts.internalScore)) {
     reasons.push("no signal (no active ads, no internal score)");
   }
-  if (!facts.hasImage) reasons.push("no thumbnail or favicon");
+  if (!isRealThumbnail(facts.thumbnailUrl)) reasons.push("no real image");
 
   return { status: reasons.length === 0 ? "published" : "review", reasons };
 }

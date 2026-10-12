@@ -563,7 +563,7 @@ async function captureWithMicrolink(
  * — is loaded. Deliberately NOT full-page: a viewport shot is small and fast,
  * and the discovery step already supplies the below-fold text.
  */
-async function captureWithThumIo(
+export async function captureWithThumIo(
   url: string,
   budgetMs = 20_000,
 ): Promise<{ base64: string; mediaType: "image/png" | "image/jpeg" }> {

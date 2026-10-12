@@ -164,7 +164,7 @@ function isSelfHosted(url: string | null): boolean {
 
 const { data: rows, error } = await svc
   .from("winning_sites")
-  .select("id, url, domain, thumbnail_url")
+  .select("id, url, domain, thumbnail_url, thumbnail_source")
   .order("domain");
 
 if (error) {
@@ -172,12 +172,14 @@ if (error) {
   process.exit(1);
 }
 
-const sites = (rows ?? []) as {
+// Owner-uploaded images are SACRED (brief oct-2026 §L.3 #3): never touched, not even with --force.
+const sites = ((rows ?? []) as {
   id: string;
   url: string;
   domain: string;
   thumbnail_url: string | null;
-}[];
+  thumbnail_source?: string | null;
+}[]).filter((s) => s.thumbnail_source !== "owner");
 
 // Count BEFORE applying --limit, otherwise the "already self-hosted" tally
 // silently absorbs the rows the limit skipped.
@@ -236,7 +238,7 @@ for (const [i, site] of todo.entries()) {
 
     const { error: updErr } = await svc
       .from("winning_sites")
-      .update({ thumbnail_url: publicUrl })
+      .update({ thumbnail_url: publicUrl, thumbnail_source: "capture", thumbnail_checked_at: new Date().toISOString() })
       .eq("id", site.id);
     if (updErr) throw new Error(`update: ${updErr.message}`);
 

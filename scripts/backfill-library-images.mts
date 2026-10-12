@@ -198,6 +198,7 @@ async function uploadAndSet(
   buf: Buffer,
   ext: string,
   contentType: string,
+  source: "capture" | "og_image" = "capture",
 ): Promise<string> {
   const path = `${PREFIX}/${site.id}-${Date.now()}.${ext}`;
   const { error: upErr } = await svc.storage
@@ -209,7 +210,7 @@ async function uploadAndSet(
   } = svc.storage.from(BUCKET).getPublicUrl(path);
   const { error: updErr } = await svc
     .from("winning_sites")
-    .update({ thumbnail_url: publicUrl })
+    .update({ thumbnail_url: publicUrl, thumbnail_source: source, thumbnail_checked_at: new Date().toISOString() })
     .eq("id", site.id);
   if (updErr) throw new Error(`update: ${updErr.message}`);
   // Remove a superseded self-hosted object (mshots URLs aren't ours → skip).
@@ -242,11 +243,15 @@ async function toCard(buf: Buffer): Promise<{ buf: Buffer; ext: string; contentT
   return { buf: out, ext: "jpg", contentType: "image/jpeg" };
 }
 
-/** No real image available → set thumbnail_url to '' so the card renders the
- *  branded placeholder, and delete the superseded (e.g. blank) storage object. */
+/** No real image available → thumbnail_url = NULL (never '' / mshots: a row without a
+ *  real image is not publishable, migration 0040) and delete the superseded (e.g.
+ *  blank) storage object. Owner-uploaded images never reach here (filtered in the
+ *  run below, and the DB trigger refuses it anyway). */
 async function clearImage(site: { id: string; thumbnail_url: string | null }): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (svc.from("winning_sites") as any).update({ thumbnail_url: "" }).eq("id", site.id);
+  await (svc.from("winning_sites") as any)
+    .update({ thumbnail_url: null, thumbnail_source: null, status: "review", review_reason: "no_image" })
+    .eq("id", site.id);
   if (isSelfHosted(site.thumbnail_url)) {
     const oldPath = site.thumbnail_url!.split(`/storage/v1/object/public/${BUCKET}/`)[1];
     if (oldPath) await svc.storage.from(BUCKET).remove([decodeURIComponent(oldPath)]).catch(() => {});
@@ -316,14 +321,18 @@ async function screenshot(url: string): Promise<{ buf: Buffer; ext: string; cont
 // ── Run ─────────────────────────────────────────────────────────────────────
 const { data: rows, error } = await svc
   .from("winning_sites")
-  .select("id, url, domain, thumbnail_url")
+  .select("id, url, domain, thumbnail_url, thumbnail_source")
   .order("niche");
 if (error) {
   console.error("Failed to read winning_sites:", error.message);
   process.exit(1);
 }
-type Site = { id: string; url: string; domain: string; thumbnail_url: string | null };
-const sites = (rows ?? []) as Site[];
+type Site = { id: string; url: string; domain: string; thumbnail_url: string | null; thumbnail_source?: string | null };
+// Owner-uploaded images are SACRED (brief oct-2026 §L.3 #3): never re-processed,
+// never replaced, never cleared — not even with --force.
+const allSites = (rows ?? []) as Site[];
+const sites = allSites.filter((s) => s.thumbnail_source !== "owner");
+if (allSites.length !== sites.length) console.log(`Skipping ${allSites.length - sites.length} owner-protected image(s).`);
 const scoped = only ? sites.filter((s) => only.has(s.domain.toLowerCase())) : sites;
 const pending = force ? scoped : scoped.filter((s) => !isSelfHosted(s.thumbnail_url));
 const todo = pending.slice(0, limit);
@@ -390,7 +399,7 @@ for (const [i, site] of todo.entries()) {
         console.error(`${label} ✗ no og:image, no screenshot — needs manual upload`);
       }
     } else {
-      const publicUrl = await uploadAndSet(site, img.buf, img.ext, img.contentType);
+      const publicUrl = await uploadAndSet(site, img.buf, img.ext, img.contentType, via === "screenshot" ? "capture" : "og_image");
       console.log(`${label} ✓ (${via}, ${Math.round(img.buf.length / 1024)}KB) ${publicUrl.slice(-40)}`);
       ok++;
     }
