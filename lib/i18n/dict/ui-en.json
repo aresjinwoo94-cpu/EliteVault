@@ -769,7 +769,8 @@
     "issueAria": "Issue {n}: {msg}",
     "fixNum": "Fix #{n}",
     "lowSev": "Low",
-    "defaultAlt": "Audit screenshot"
+    "defaultAlt": "Audit screenshot",
+    "fixLocked": "Unlock the fix"
   },
   "position": {
     "title": "Where you stand",
@@ -794,7 +795,8 @@
     "effortS": "<1h",
     "effortL": ">4h",
     "moreOne": "+{n} more fix — unlock with Pro",
-    "moreMany": "+{n} more fixes — unlock with Pro"
+    "moreMany": "+{n} more fixes — unlock with Pro",
+    "lockedWhy": "A step-by-step change tailored to this page: what to move, what to rewrite and why it recovers sales on your store."
   },
   "rewrite": {
     "title": "Auto-Rewrite",
@@ -884,7 +886,11 @@
   },
   "lockedCure": {
     "title": "Unlock your fixes with Pro",
-    "body": "Your diagnosis is free. Pro reveals the prioritized cure for this audit — instantly, no re-analysis — plus unlimited audits."
+    "body": "Your diagnosis is free. Pro reveals the prioritized cure for this audit — instantly, no re-analysis — plus unlimited audits.",
+    "personaHeadline": "I like the product, but I'm not sure I can trust this store yet.",
+    "personaQuote1": "Where are the reviews? I can't tell if other people bought this.",
+    "personaQuote2": "I'd need to see shipping and returns before I add anything to the cart.",
+    "personaReason": "Trust signals are too far down the page to reassure a first-time visitor."
   },
   "personaResponse": {
     "title": "Buyer-persona response",

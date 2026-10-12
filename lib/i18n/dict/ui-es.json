@@ -769,7 +769,8 @@
     "issueAria": "Problema {n}: {msg}",
     "fixNum": "Corrección n.º {n}",
     "lowSev": "Baja",
-    "defaultAlt": "Captura de la auditoría"
+    "defaultAlt": "Captura de la auditoría",
+    "fixLocked": "Desbloquea la solución"
   },
   "position": {
     "title": "Dónde estás",
@@ -794,7 +795,8 @@
     "effortS": "<1 h",
     "effortL": ">4 h",
     "moreOne": "+{n} corrección más: desbloquéala con Pro",
-    "moreMany": "+{n} correcciones más: desbloquéalas con Pro"
+    "moreMany": "+{n} correcciones más: desbloquéalas con Pro",
+    "lockedWhy": "Un cambio paso a paso adaptado a esta página: qué mover, qué reescribir y por qué recupera ventas en tu tienda."
   },
   "rewrite": {
     "title": "Reescritura automática",
@@ -884,7 +886,11 @@
   },
   "lockedCure": {
     "title": "Desbloquea tus correcciones con Pro",
-    "body": "Tu diagnóstico es gratis. Pro revela la cura priorizada de esta auditoría al instante, sin volver a analizar, además de auditorías ilimitadas."
+    "body": "Tu diagnóstico es gratis. Pro revela la cura priorizada de esta auditoría al instante, sin volver a analizar, además de auditorías ilimitadas.",
+    "personaHeadline": "Me gusta el producto, pero todavía no estoy seguro de poder confiar en esta tienda.",
+    "personaQuote1": "¿Dónde están las reseñas? No sé si otras personas han comprado esto.",
+    "personaQuote2": "Necesitaría ver envíos y devoluciones antes de añadir nada al carrito.",
+    "personaReason": "Las señales de confianza están demasiado abajo para tranquilizar a un visitante nuevo."
   },
   "personaResponse": {
     "title": "Respuesta del buyer persona",
