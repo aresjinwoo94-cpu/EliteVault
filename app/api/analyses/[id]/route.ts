@@ -3,7 +3,8 @@ import {
   createSupabaseServerClient,
   createSupabaseServiceClient,
 } from "@/lib/supabase/server";
-import { gateMetaAds } from "@/lib/analyzer/client-payload";
+import { gateMetaAds, gateRowResult } from "@/lib/analyzer/client-payload";
+import { hasFullReport } from "@/lib/unlocks/report-unlock";
 import { PLANS } from "@/lib/stripe/plans";
 import type { PlanTier } from "@/lib/supabase/types";
 import { getT } from "@/lib/i18n/server";
@@ -119,8 +120,9 @@ export async function GET(
   // The Meta Ads Optimizer payload only goes to Scale viewers (see
   // lib/analyzer/client-payload.ts). Only look the plan up when there is
   // something to withhold — almost every poll has meta_ads = null.
+  // WP-1: a finished `result` also needs the plan (its paid cure is gated).
   let payload: typeof row = row;
-  if (row.meta_ads != null) {
+  if (row.meta_ads != null || row.result != null) {
     const { data: prof } = await supabase
       .from("profiles")
       .select("plan")
@@ -129,6 +131,8 @@ export async function GET(
     const planKey = (prof as { plan?: string } | null)?.plan;
     const plan = planKey && planKey in PLANS ? PLANS[planKey as PlanTier] : null;
     payload = gateMetaAds(row, plan != null && plan.unlocksScale);
+    // Fails closed: an unresolved plan is treated as "no full report".
+    payload = gateRowResult(payload, hasFullReport({ plan: planKey }));
   }
 
   // Stale-job detection

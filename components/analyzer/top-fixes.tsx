@@ -24,6 +24,8 @@ interface Fix {
   evidence?: string | null;
   /** Fix Tracks (theme_colors) — slug from lib/analyzer/shopify-themes.ts. */
   theme_slug?: string | null;
+  /** WP-1 — set by the server for fixes #2+ of a viewer without the full report. */
+  locked?: boolean;
 }
 
 /**
@@ -122,7 +124,7 @@ export function TopFixes({
                     <ExternalLink className="size-3" />
                   </a>
                 )}
-                {f.why?.trim() && (
+                {(f.why?.trim() || locked) && (
                   <p
                     className={cn(
                       "mt-1.5 text-xs leading-relaxed text-white/55",
@@ -130,7 +132,9 @@ export function TopFixes({
                     )}
                     aria-hidden={locked || undefined}
                   >
-                    {f.why}
+                    {/* Locked rows carry no real `why` (WP-1): a static placeholder
+                        keeps the blurred-card look without shipping the answer. */}
+                    {locked ? t("topFixes.lockedWhy") : f.why}
                   </p>
                 )}
                 <div

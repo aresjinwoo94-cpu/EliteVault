@@ -980,8 +980,17 @@ export function AnalysisView({
                   title={t("analysisView.personaSim")}
                   tagline="Hear exactly how your target buyer reacts to your store — what makes them hesitate, and whether they'd buy."
                 >
+                  {/* WP-1: the real response never reaches a viewer without the
+                      full report — the card blurs a static placeholder. */}
                   <PersonaResponse
-                    response={data.result.buyer_persona_response}
+                    response={
+                      data.result.buyer_persona_response ?? {
+                        headline: t("lockedCure.personaHeadline"),
+                        quotes: [t("lockedCure.personaQuote1"), t("lockedCure.personaQuote2")],
+                        would_buy: false,
+                        reasons: [t("lockedCure.personaReason")],
+                      }
+                    }
                   />
                 </FreeLockedCure>
               )}
