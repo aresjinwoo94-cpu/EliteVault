@@ -1,6 +1,6 @@
 import "server-only";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
-import { captureViaOgImage, captureWithThumIo } from "@/lib/screenshot-core";
+import { captureViaOgImage } from "@/lib/screenshot-core";
 import { judgeStore } from "@/lib/library/quality";
 import {
   isProtectedThumbnail,
@@ -16,11 +16,14 @@ import {
  * image and passes the publication gate, publishes it again on its own.
  *
  * Isolation from the Analyzer — this job must never compete with user audits
- * or spend their provider quota:
- *   • it calls ONLY the free, keyless providers directly (thum.io viewport shot,
- *     then the page's og:image). It never goes through `captureScreenshot`, so
- *     the paid ScreenshotOne key (the Analyzer's scarce quota), Microlink's
- *     per-IP daily cap and mshots are never touched;
+ *     or spend their provider quota:
+ *   • it fetches ONLY the store's own og:image (a plain request to the store's
+ *     site). It never goes through `captureScreenshot` and touches NONE of the
+ *     Analyzer's capture providers: ScreenshotOne (paid, scarce quota), thum.io
+ *     (the Analyzer's keyless first free fallback — a shared per-IP limit),
+ *     Microlink (per-IP daily cap) or mshots. Hero VIEWPORT captures for stores
+ *     whose og:image fails are left to a manual/off-Vercel run — see the WP-L1
+ *     notes; do not add thum.io here without checking the Analyzer's headroom;
  *   • the Inngest function runs with concurrency 1, a few stores per run, on a
  *     slow cron, one store per step, with a pause between stores.
  *
@@ -78,16 +81,10 @@ export async function pickMissingImageRows(limit: number): Promise<MissingImageR
   return rows.sort((a, b) => rank(a.status) - rank(b.status)).slice(0, limit);
 }
 
-/** hero (viewport) capture first, then og:image. Free providers only. */
+/** The store's own og:image — the only source the automatic job uses (see header). */
 export async function fetchHeroImage(
   url: string,
 ): Promise<{ buf: Buffer; mediaType: "image/png" | "image/jpeg"; source: ThumbnailSource } | null> {
-  try {
-    const shot = await captureWithThumIo(url, 25_000);
-    return { buf: Buffer.from(shot.base64, "base64"), mediaType: shot.mediaType, source: "capture" };
-  } catch {
-    /* fall through to og:image */
-  }
   try {
     const og = await captureViaOgImage(url, 15_000);
     return { buf: Buffer.from(og.base64, "base64"), mediaType: og.mediaType, source: "og_image" };

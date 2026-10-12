@@ -7,9 +7,9 @@ import { pickMissingImageRows, fillOneImage, type FillOutcome } from "@/lib/libr
  * lets the ones that then pass the publication gate publish themselves.
  *
  * Isolation: concurrency 1 (never parallel with itself), a handful of stores
- * per run, one store per step, a pause between stores, and ONLY the free
- * keyless providers (see lib/library/images.ts) — it cannot consume the
- * Analyzer's ScreenshotOne quota or Microlink's per-IP cap.
+ * per run, one store per step, a pause between stores, and ONLY the
+ * store's own og:image (see lib/library/images.ts) — it shares no limit with the
+ * Analyzer (ScreenshotOne quota, thum.io, Microlink).
  *
  * Cadence: every 4 hours is plenty — rows only appear in weekly batches and
  * most runs find nothing to do (and cost nothing).

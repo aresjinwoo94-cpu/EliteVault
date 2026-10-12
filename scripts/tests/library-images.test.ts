@@ -87,9 +87,8 @@ test("the owner's manual upload marks the image 'owner'", () => {
 
 test("the image job is isolated: free providers only, concurrency 1, registered", () => {
   const lib = read("lib/library/images.ts");
-  assert.match(lib, /captureWithThumIo/);
   assert.match(lib, /captureViaOgImage/);
-  assert.doesNotMatch(lib.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, ""), /captureScreenshot\(|captureWithScreenshotOne|Microlink/i);
+  assert.doesNotMatch(lib.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, ""), /captureScreenshot\(|captureWithScreenshotOne|captureWithThumIo|thum.io|Microlink/i);
   const fn = read("inngest/functions/fill-library-images.ts");
   assert.match(fn, /concurrency:\s*\{\s*limit:\s*1\s*\}/);
   assert.match(read("app/api/inngest/route.ts"), /fillLibraryImages/);
