@@ -142,11 +142,11 @@ export function AnonAuditBox({
           router.push(`/app/analyzer?url=${encodeURIComponent(value)}`);
           return;
         }
-        // Over the daily limit → nudge to a free account, don't just error.
+        // Over the anonymous limit → nudge to an account, don't just error.
         if (res.limited) {
           toast(res.error, {
             action: {
-              label: t("anonGate.ctaPrimary"),
+              label: t("anonGate.ctaLimit"),
               onClick: () => router.push("/sign-up?next=/app/analyzer"),
             },
           });

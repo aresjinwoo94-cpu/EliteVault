@@ -99,6 +99,8 @@ const en: Dict = {
       "Create your free account to unlock your #1 priority fix and save this report — no card needed.",
     ctaPrimary: "Create free account",
     ctaSecondary: "Maybe later",
+    // Label of the "you already ran your anonymous audit" toast (no "free").
+    ctaLimit: "Create account",
     banner:
       "This is your free audit. Create a free account to save it, run another and browse the winning-stores Library.",
     bannerCta: "Create free account",
@@ -1059,6 +1061,7 @@ const es: Dict = {
       "Crea tu cuenta gratis para desbloquear tu fix #1 y guardar este informe — sin tarjeta.",
     ctaPrimary: "Crear cuenta gratis",
     ctaSecondary: "Quizá luego",
+    ctaLimit: "Crear cuenta",
     banner:
       "Esta es tu auditoría gratis. Crea una cuenta gratis para guardarla, hacer otra y explorar la Library de tiendas ganadoras.",
     bannerCta: "Crear cuenta gratis",
