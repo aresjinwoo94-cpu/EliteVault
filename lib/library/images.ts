@@ -160,26 +160,35 @@ export async function fillOneImage(
   row: MissingImageRow,
   opts: { hold?: boolean } = {},
 ): Promise<FillOutcome> {
+  return saveHeroImage(row, await fetchHeroImage(row.url), opts);
+}
+
+/**
+ * Validate (acceptance check) and store a fetched hero image for a row. Shared by the Inngest
+ * job (og:image) and the local capture script (viewport screenshot). `hero = null` records a
+ * failed attempt.
+ */
+export async function saveHeroImage(
+  row: MissingImageRow,
+  hero: { buf: Buffer; mediaType: "image/png" | "image/jpeg"; source: ThumbnailSource } | null,
+  opts: { hold?: boolean; failNote?: string; countAttempt?: boolean } = {},
+): Promise<FillOutcome> {
   const svc = createSupabaseServiceClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const sites = svc.from("winning_sites") as any;
   const stamp = { thumbnail_checked_at: new Date().toISOString() };
+  const attempt = opts.countAttempt === false ? {} : { thumbnail_attempts: (row.thumbnail_attempts ?? 0) + 1 };
 
-  const hero = await fetchHeroImage(row.url);
   if (!hero) {
-    await sites
-      .update({ ...stamp, thumbnail_attempts: (row.thumbnail_attempts ?? 0) + 1 })
-      .eq("id", row.id);
-    return { id: row.id, domain: row.domain, ok: false, note: "no capture and no og:image" };
+    await sites.update({ ...stamp, ...attempt }).eq("id", row.id);
+    return { id: row.id, domain: row.domain, ok: false, note: opts.failNote ?? "no capture and no og:image" };
   }
 
   // Acceptance: a logo on a flat background or a tiny/odd crop is NOT a store hero —
   // reject it and leave the row for a manual upload (see image-quality.ts).
   const quality = await assessHeroImage(hero.buf);
   if (!quality.ok) {
-    await sites
-      .update({ ...stamp, thumbnail_attempts: (row.thumbnail_attempts ?? 0) + 1 })
-      .eq("id", row.id);
+    await sites.update({ ...stamp, ...attempt }).eq("id", row.id);
     return { id: row.id, domain: row.domain, ok: false, note: `rejected: ${quality.reason}` };
   }
 
@@ -189,9 +198,7 @@ export async function fillOneImage(
     .from(BUCKET)
     .upload(path, hero.buf, { contentType: hero.mediaType, upsert: true });
   if (upErr) {
-    await sites
-      .update({ ...stamp, thumbnail_attempts: (row.thumbnail_attempts ?? 0) + 1 })
-      .eq("id", row.id);
+    await sites.update({ ...stamp, ...attempt }).eq("id", row.id);
     return { id: row.id, domain: row.domain, ok: false, note: `upload: ${upErr.message}` };
   }
   const {
