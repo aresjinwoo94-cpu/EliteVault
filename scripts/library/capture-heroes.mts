@@ -180,6 +180,16 @@ try {
             const header = r.top <= 2 && r.height <= 170; // sticky header / announcement bar
             if (!header && frac >= (modal ? 0.08 : 0.12)) found.push(`${el.tagName.toLowerCase()}#${el.id || ""}.${String(el.className).slice(0, 30)} ${(frac * 100) | 0}%`);
           }
+          // slide-in cart / menu drawers are often position:absolute or transformed (skinfix.com opened its
+          // cart on load): catch any visible element that LOOKS like a drawer and covers ≥ 12 % of the screen
+          for (const el of Array.from(document.querySelectorAll("[id*='cart' i],[class*='cart-drawer' i],[class*='drawer' i],[class*='minicart' i],[class*='mini-cart' i]"))) {
+            const s = getComputedStyle(el as HTMLElement);
+            if (s.display === "none" || s.visibility === "hidden" || Number(s.opacity) === 0) continue;
+            const r = (el as HTMLElement).getBoundingClientRect();
+            const w = Math.max(0, Math.min(r.right, vw) - Math.max(r.left, 0));
+            const h = Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0));
+            if ((w * h) / (vw * vh) >= 0.12 && r.height > vh * 0.5) found.push(`drawer#${el.id}.${String(el.className).slice(0, 30)} ${(((w * h) / (vw * vh)) * 100) | 0}%`);
+          }
           return found.slice(0, 3);
         },
         W,

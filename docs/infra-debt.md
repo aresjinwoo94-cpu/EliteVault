@@ -276,3 +276,7 @@ piden, mover el mismo código a **A**. En ambos casos: concurrencia 1, pausa ent
 aceptación (`lib/library/image-quality.ts` + overlays), `--hold` por defecto (la publicación la decide el filtro de L2),
 y nunca `captureScreenshot` ni los proveedores del Analyzer. Las tiendas que sigan bloqueando (403/anti-bot) se
 quedan en "Sin imagen" para subida manual. Decisión del dueño antes de implementar.
+
+**Decisión (2026-10-13): B aprobado como plan** (GitHub Actions semanal). Los runners de GitHub también son IPs de
+datacenter: esperar los mismos 403 anti-bot que Vercel. Esas tiendas **pasan a subida manual (lista "Sin imagen" del
+monitor) y NO se reintentan en bucle**: un fallo por 403/anti-bot cuenta como intento agotado, no como error transitorio.
