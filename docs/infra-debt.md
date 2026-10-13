@@ -254,3 +254,25 @@ This section is the process that keeps it that way.
   criterio rechaza logos sobre fondo plano. Las que no se recuperan quedan en la lista "Sin imagen" del monitor
   para subida manual. Alternativa pendiente de decidir: capturas de viewport del hero desde una máquina local
   (otra IP) con `scripts/library/fill-images.mts`-style, o un proveedor propio.
+
+### WP-L4 — captura de heros para tiendas nuevas SIN depender de la máquina del dueño (propuesta, NO implementada)
+
+**Problema.** El job automático (`fill-library-images`) solo puede usar el `og:image` de la tienda (~16 % de éxito:
+muchas devuelven 403 o un logo), porque thum.io / Microlink / ScreenshotOne son del Analyzer y comparten sus límites.
+Las capturas buenas hoy salen de `scripts/library/capture-heroes.mts` (Chrome local). L4 necesita un navegador propio,
+gratis o casi, que no pase por ningún proveedor del Analyzer ni por Vercel Hobby (60 s por step, sin Chromium).
+
+Volumen real: ~25–40 altas/semana ⇒ ~40 capturas/semana, ~15–25 s cada una, secuenciales. Es una carga minúscula.
+
+| Opción | Coste | Esfuerzo | Pros | Contras |
+|---|---|---|---|---|
+| **A. Cloud Run job con Chromium** (recomendada) | $0 (free tier: 180 000 vCPU-s/mes; esto usa ~1 000) | Medio: imagen Docker con Playwright (la misma que ya sirve la app Shopify) + Cloud Scheduler/Inngest que lo dispara | Ya tenemos GCP y un Cloud Run a $0; escala a cero; sin mantener una VM; secretos en Secret Manager | Una imagen más que mantener; IP de datacenter (algunas tiendas la bloquean igual que a Vercel) |
+| **B. GitHub Actions programado** | $0 (2 000 min/mes en privado; usa ~15) | Bajo: un workflow semanal con `playwright install chromium` + el mismo código de `capture-heroes.mts`, secretos de Supabase en GitHub | Cero infraestructura, runners con Chrome, logs y reintentos a mano | IP de datacenter; el dueño debe guardar la service key como secreto de GitHub; no es "bajo demanda" (cron + `workflow_dispatch`) |
+| **C. VM gratuita (Oracle Cloud Always Free ARM)** | $0 | Alto: mantener SO, Chromium, systemd/cron, parches | Control total; IP propia fija | Mantenimiento permanente, capacidad ARM a veces agotada, un punto único de fallo |
+| **D. Cloudflare Browser Rendering** | $0 en el plan gratis (minutos/día limitados) | Medio: un Worker | Sin servidor propio | Cuota diaria baja y cambiante; ata el Library a otro proveedor |
+
+**Recomendación.** Empezar por **B** (una tarde, $0, reutiliza el script ya probado) y, si el volumen o la fiabilidad lo
+piden, mover el mismo código a **A**. En ambos casos: concurrencia 1, pausa entre tiendas, el mismo criterio de
+aceptación (`lib/library/image-quality.ts` + overlays), `--hold` por defecto (la publicación la decide el filtro de L2),
+y nunca `captureScreenshot` ni los proveedores del Analyzer. Las tiendas que sigan bloqueando (403/anti-bot) se
+quedan en "Sin imagen" para subida manual. Decisión del dueño antes de implementar.
