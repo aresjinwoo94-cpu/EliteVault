@@ -29,6 +29,8 @@ export interface WinningSiteCard {
   ai_reason?: string;
   metrics_locked?: boolean;
   teardown?: import("@/lib/supabase/types").Teardown | null;
+  /** The home was read and shows Shopify signals (store_checks). Only drives a badge — never a gate. */
+  shopify_verified?: boolean | null;
 }
 
 /**
@@ -122,7 +124,7 @@ export async function searchLibrary(opts: {
   let q = supabase
     .from("winning_sites")
     .select(
-      "id, url, domain, title, niche, thumbnail_url, metrics, description, is_featured, is_preselected, ad_signals, teardown",
+      "id, url, domain, title, niche, thumbnail_url, metrics, description, is_featured, is_preselected, ad_signals, teardown, shopify_verified",
     )
     // Only stores that passed the publication gate AND are alive (owner decision 2026-10-09;
     // the RLS policy enforces the same — see migration 0037).

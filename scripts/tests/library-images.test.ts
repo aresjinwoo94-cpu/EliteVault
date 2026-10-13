@@ -4,6 +4,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { resolve, join } from "node:path";
 import { isRealThumbnail, isProtectedThumbnail } from "../../lib/library/thumbnail";
 import { judgeStore, type StoreFacts } from "../../lib/library/quality";
+import { GOOD_EVIDENCE } from "./helpers/evidence";
 import { imageSavePatch } from "../../lib/library/images";
 
 /** WP-L1 (brief oct-2026 §L.3): a store without a REAL image is never published, owner images are sacred. */
@@ -21,7 +22,7 @@ test("only a real http(s) image counts: null, '', mshots, junk do not", () => {
   assert.equal(isProtectedThumbnail({}), false);
 });
 
-const good: StoreFacts = { url: "https://foo.com", domain: "foo.com", title: "Foo", niche: "skincare", isLive: true, thumbnailUrl: OWN, activeAdsCount: 40, internalScore: null };
+const good: StoreFacts = { url: "https://foo.com", domain: "foo.com", title: "Foo", niche: "skincare", isLive: true, thumbnailUrl: OWN, evidence: GOOD_EVIDENCE, activeAdsCount: null, internalScore: null };
 
 test("the publication gate never publishes a store without a real image", () => {
   assert.equal(judgeStore(good).status, "published");
@@ -32,7 +33,7 @@ test("the publication gate never publishes a store without a real image", () => 
   }
 });
 
-const parked = { url: "https://foo.com", domain: "foo.com", title: "Foo", niche: "skincare", status: "review", is_live: true, review_reason: "no_image", active_ads_count: 40, internal_score: null };
+const parked = { url: "https://foo.com", domain: "foo.com", title: "Foo", niche: "skincare", status: "review", is_live: true, review_reason: "no_image", active_ads_count: null, internal_score: null, store_checks: GOOD_EVIDENCE };
 
 test("a row parked for lack of image republishes itself once it has one and passes the gate", () => {
   const { patch, publish } = imageSavePatch(parked, OWN, "capture");

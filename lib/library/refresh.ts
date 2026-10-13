@@ -1,5 +1,6 @@
 import "server-only";
-import { withMeasurement } from "@/lib/library/ad-signal";
+import { withMeasurement, measuredActiveAds } from "@/lib/library/ad-signal";
+import { evidenceIsFresh, fetchHome, analyzeHome, type StoreEvidence } from "@/lib/library/store-check";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { normalizeDomain, canonicalUrl, faviconUrl } from "@/lib/library/domain";
 import { judgeStore, momentumScore, estRevenueRange } from "@/lib/library/quality";
@@ -83,6 +84,8 @@ interface VerifyRow {
   active_ads_count: number | null;
   internal_score: number | null;
   ad_signals: { active_ads?: number; activity_score?: number } | null;
+  store_checks: StoreEvidence | null;
+  curated_override: boolean | null;
 }
 
 export interface VerifyResult {
@@ -102,7 +105,7 @@ export async function verifyBatch(limit = 25): Promise<VerifyResult> {
   const { data, error } = await svc
     .from("winning_sites")
     .select(
-      "id, url, domain, title, niche, thumbnail_url, favicon_url, review_reason, status, is_live, active_ads_count, internal_score, ad_signals",
+      "id, url, domain, title, niche, thumbnail_url, favicon_url, review_reason, status, is_live, active_ads_count, internal_score, ad_signals, store_checks, curated_override",
     )
     .order("last_verified_at", { ascending: true, nullsFirst: true })
     .limit(limit);
@@ -129,8 +132,10 @@ export async function verifyBatch(limit = 25): Promise<VerifyResult> {
       const live = await probeLive(url);
       if (!live) result.offline++;
       // Never demote a healthy published row on a single failed probe.
-      const isLive = live || (row.status === "published" && row.is_live);
-      const confirmedDead = !live && row.is_live === false;
+      // A store that refuses OUR probe (bot wall) but whose home we have already read recently is alive.
+      const recentlyRead = Boolean(row.store_checks?.reachable) && evidenceIsFresh(row.store_checks);
+      const isLive = live || recentlyRead || (row.status === "published" && row.is_live);
+      const confirmedDead = !live && !recentlyRead && row.is_live === false;
 
       const activeAds =
         typeof row.active_ads_count === "number"
@@ -145,6 +150,22 @@ export async function verifyBatch(limit = 25): Promise<VerifyResult> {
             ? row.ad_signals.activity_score
             : null;
 
+      // Store evidence (Shopify / brand / catalogue / niche). Read the home only when we have none or it
+      // is stale; a store that merely refuses OUR request (403, timeout) KEEPS the evidence it has —
+      // being blocked by a bot wall is not evidence against the store.
+      let evidence = row.store_checks;
+      let evidencePatch: Record<string, unknown> = {};
+      if (!evidenceIsFresh(evidence) && live) {
+        const home = await fetchHome(url);
+        if (home.ok) {
+          evidence = analyzeHome(home, { title: row.title, domain, niche: row.niche });
+          evidencePatch = { store_checks: evidence, store_checked_at: evidence.checkedAt };
+        } else if (!evidence) {
+          evidence = analyzeHome(home, { title: row.title, domain, niche: row.niche });
+          evidencePatch = { store_checks: evidence, store_checked_at: evidence.checkedAt };
+        }
+      }
+
       const verdict = judgeStore({
         url,
         domain,
@@ -152,6 +173,8 @@ export async function verifyBatch(limit = 25): Promise<VerifyResult> {
         niche: row.niche,
         isLive: isLive && !confirmedDead,
         thumbnailUrl: row.thumbnail_url,
+        evidence,
+        ownerCurated: row.curated_override === true,
         activeAdsCount: activeAds,
         internalScore: internal,
       });
@@ -160,14 +183,21 @@ export async function verifyBatch(limit = 25): Promise<VerifyResult> {
         domain_key: domain,
         is_live: isLive && !confirmedDead,
         last_verified_at: new Date().toISOString(),
-        status: verdict.status,
+        ...evidencePatch,
+        // A row held for the owner's review of its image (image_pending_review) is NEVER auto-published.
+        status:
+          verdict.status === "published" && row.review_reason === "image_pending_review"
+            ? row.status
+            : verdict.status,
         // Why a row is parked (shown in the owner monitor); cleared on publish.
         review_reason:
           verdict.status === "published"
-            ? null
+            ? row.review_reason === "image_pending_review"
+              ? row.review_reason
+              : null
             : !isRealThumbnail(row.thumbnail_url)
               ? REVIEW_REASON.noImage
-              : (row.review_reason ?? verdict.reasons[0] ?? null),
+              : (verdict.reasons[0] ?? row.review_reason ?? null),
       };
       if (!row.favicon_url) patch.favicon_url = faviconUrl(domain);
       if (activeAds !== null && row.active_ads_count === null)
@@ -177,7 +207,7 @@ export async function verifyBatch(limit = 25): Promise<VerifyResult> {
 
       await updateSite(svc, row.id, patch);
       result.processed++;
-      if (verdict.status === "published") result.published++;
+      if (verdict.status === "published" && row.review_reason !== "image_pending_review") result.published++;
       else result.review++;
     }),
   );
@@ -253,7 +283,12 @@ export async function momentumBatch(limit = 20): Promise<MomentumResult> {
       const traffic =
         typeof row.metrics?.traffic_est === "number" ? row.metrics.traffic_est : null;
       const revenue = estRevenueRange(row.niche, conv, traffic);
-      const momentum = momentumScore({
+      // Only a MEASURED ad count may drive the score (and so the ordering): an AI-estimated count must
+      // never rank a store above a measured one. Not measured ⇒ null ⇒ sorted last (nullsFirst:false).
+      const measured =
+        measuredSignals !== null ||
+        measuredActiveAds({ active_ads_count: activeAds, ad_signals: row.ad_signals }) !== null;
+      const momentum = !measured ? null : momentumScore({
         activeAdsCount: activeAds,
         convRate: conv,
         trafficEst: traffic,
