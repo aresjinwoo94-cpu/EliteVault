@@ -173,7 +173,7 @@ function reasonCode(f: string | undefined): string | null {
   if (/unreachable/.test(f)) return "unreachable";
   if (/match the brand/.test(f)) return "wrong_domain";
   if (/catalogue/.test(f)) return "no_catalogue";
-  if (/app / service/.test(f)) return "not_a_store";
+  if (/app \/ service/.test(f)) return "not_a_store";
   if (/fit the niche/.test(f)) return "niche_mismatch";
   if (/not verified yet/.test(f)) return "unverified";
   return f.slice(0, 60);
@@ -195,7 +195,8 @@ const plans: Plan[] = rows.map((r) => {
     domain: dom(r),
     title: r.title,
     niche,
-    isLive: !!r.is_live,
+    // the stored probe runs from Vercel and is wrong for bot-walled stores: a successful read counts as alive
+    isLive: !!r.is_live || e.reachable,
     thumbnailUrl: r.thumbnail_url,
     evidence: e,
   });

@@ -141,26 +141,46 @@ export function matchBrand(
   savedName: string | null | undefined,
   domain: string | null | undefined,
 ): { match: boolean; detail: string } {
-  const key = brandKey(savedName);
   const dom = String(domain ?? "").toLowerCase().replace(/^www\./, "").split(".")[0].replace(/[^a-z0-9]/g, "");
-  if (key.length < 3) return { match: false, detail: "no usable brand name saved" };
-  const haystacks = [pageTitle(html), metaContent(html, "og:site_name"), metaContent(html, "og:title"), metaContent(html, "application-name")]
-    .map((s) => s.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]/g, ""))
+  const first = String(savedName ?? "").split(/\s[|\-–—:]\s|\|/)[0];
+  // "Athletic Greens (AG1)" is known by either name: try the full name without the parenthesis, and the parenthesis.
+  const names = [first.replace(/\(.*?\)/g, " "), ...[...first.matchAll(/\(([^)]+)\)/g)].map((m) => m[1])]
+    .map((n) => n.trim())
     .filter(Boolean);
-  const hit = haystacks.find((h) => h.includes(key) || (key.length >= 6 && h.length >= 5 && key.includes(h)));
-  if (hit) return { match: true, detail: `brand "${key}" found in page title/site name` };
-  // The domain label IS the brand (kendrascott.com / "Kendra Scott") and the page didn't contradict it
-  // with a different, long site name.
-  if (dom && (dom === key || dom.includes(key) || key.includes(dom)) && !haystacks.some((h) => h.length >= 12 && !h.includes(dom) && !h.includes(key))) {
-    return { match: true, detail: "domain label matches the brand" };
+  const titles = [pageTitle(html), metaContent(html, "og:site_name"), metaContent(html, "og:title"), metaContent(html, "application-name")];
+  const haystacks = titles.map((t) => t.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]/g, "")).filter(Boolean);
+  const pageWords = new Set(titles.join(" ").toLowerCase().replace(/&/g, " and ").split(/[^a-z0-9]+/).filter(Boolean));
+  let tried = false;
+  for (const name of names) {
+    const key = brandKey(name);
+    if (key.length < 3) continue;
+    tried = true;
+    // every word of the brand appears in the page title ("Sundays for Dogs" ⊂ "Sundays Food for Dogs")
+    const words = name.toLowerCase().replace(/&/g, " and ").split(/[^a-z0-9]+/).filter((w) => w.length > 1);
+    if (words.length >= 2 && words.every((w) => pageWords.has(w))) return { match: true, detail: "all brand words in the page title" };
+    if (haystacks.find((h) => h.includes(key) || (key.length >= 6 && h.length >= 5 && key.includes(h)))) {
+      return { match: true, detail: `brand "${key}" found in page title/site name` };
+    }
+    // The domain label IS the brand (kendrascott.com / "Kendra Scott") and the page did not contradict it
+    // with a different, long site name.
+    if (dom && (dom === key || dom.includes(key) || key.includes(dom)) && !haystacks.some((h) => h.length >= 12 && !h.includes(dom) && !h.includes(key))) {
+      return { match: true, detail: "domain label matches the brand" };
+    }
   }
-  return { match: false, detail: `page says "${(pageTitle(html) || metaContent(html, "og:site_name") || "?").slice(0, 60)}", saved brand is "${String(savedName).slice(0, 40)}"` };
+  if (!tried) return { match: false, detail: "no usable brand name saved" };
+  return {
+    match: false,
+    detail: `page says "${(pageTitle(html) || metaContent(html, "og:site_name") || "?").slice(0, 60)}", saved brand is "${String(savedName).slice(0, 40)}"`,
+  };
 }
 
 export function countProductLinks(html: string): number {
   const set = new Set<string>();
-  for (const m of html.matchAll(/href=["']([^"']*\/(?:products|collections)\/[^"'#?\s]+)/gi)) set.add(m[1]);
-  return set.size;
+  // Shopify (/products/, /collections/) and the usual non-Shopify catalogue paths (/product/, /shop/, /p/, /pdp/)
+  for (const m of html.matchAll(/href=["']([^"']*\/(?:products?|collections|shop|pdp|p|eyeglasses|sunglasses|mattresses|bedding)\/[^"'#?\s]+)/gi)) set.add(m[1]);
+  // …or a storefront that adds to cart / bag straight from the home
+  const atc = (html.match(/add[- _]to[- _](?:cart|bag|basket)/gi) ?? []).length;
+  return Math.max(set.size, atc >= 3 ? atc : 0);
 }
 
 /** Keywords that appear on the home of a store in each niche (lowercase, matched on the page text). */
@@ -174,9 +194,9 @@ export const NICHE_KEYWORDS: Record<string, string[]> = {
   accessories: ["bag", "watch", "jewelry", "jewellery", "necklace", "bracelet", "backpack", "wallet", "sunglasses", "accessor"],
   home: ["home", "furniture", "bedding", "rug", "decor", "kitchen", "candle", "mattress", "sofa", "linen"],
   beverage: ["drink", "coffee", "tea", "beverage", "water", "soda", "juice", "wine", "beer", "kombucha", "spirit", "non-alcoholic", "cocktail", "sparkling", "brew"],
-  food: ["snack", "cereal", "sauce", "pantry", "olive oil", "chili", "granola", "chocolate", "jerky", "pasta", "honey", "spice", "protein bar", "recipe", "meal", "groceries", "organic food"],
+  food: ["snack", "cereal", "sauce", "pantry", "olive oil", "extra virgin", "squeeze", "cooking", "chili", "granola", "chocolate", "jerky", "pasta", "honey", "spice", "protein bar", "recipe", "meal", "groceries", "organic food"],
   eyewear: ["glasses", "eyewear", "frames", "lenses", "sunglasses", "optical"],
-  baby: ["baby", "infant", "toddler", "nursery", "diaper", "newborn", "kids", "children", "mama", "mom"],
+  baby: ["baby", "infant", "toddler", "nursery", "diaper", "newborn", "kids", "children", "mama", "mom", "stroller", "car seat", "crib"],
   pet: ["dog", "cat", "pet", "puppy", "treats", "kibble", "paw"],
   grooming: ["shave", "razor", "beard", "grooming", "hair", "cologne", "fragrance", "deodorant", "men"],
 };

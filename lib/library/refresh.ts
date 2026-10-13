@@ -131,8 +131,10 @@ export async function verifyBatch(limit = 25): Promise<VerifyResult> {
       const live = await probeLive(url);
       if (!live) result.offline++;
       // Never demote a healthy published row on a single failed probe.
-      const isLive = live || (row.status === "published" && row.is_live);
-      const confirmedDead = !live && row.is_live === false;
+      // A store that refuses OUR probe (bot wall) but whose home we have already read recently is alive.
+      const recentlyRead = Boolean(row.store_checks?.reachable) && evidenceIsFresh(row.store_checks);
+      const isLive = live || recentlyRead || (row.status === "published" && row.is_live);
+      const confirmedDead = !live && !recentlyRead && row.is_live === false;
 
       const activeAds =
         typeof row.active_ads_count === "number"
