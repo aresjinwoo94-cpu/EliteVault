@@ -114,14 +114,25 @@ export function brandKey(name: string | null | undefined): string {
   return first.toLowerCase().replace(/^the\s+/, "").replace(/&/g, "and").replace(/[^a-z0-9]/g, "");
 }
 
+/** Titles/meta arrive HTML-escaped ("Rothy&#39;s | Shoes &amp; Bags"). */
+export function decodeEntities(s: string): string {
+  return s
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;|&rsquo;|&lsquo;/g, "'")
+    .replace(/&nbsp;/g, " ");
+}
+
 function metaContent(html: string, key: string): string {
   const re1 = new RegExp(`<meta[^>]+(?:property|name)=["']${key}["'][^>]*content=["']([^"']*)["']`, "i");
   const re2 = new RegExp(`<meta[^>]+content=["']([^"']*)["'][^>]*(?:property|name)=["']${key}["']`, "i");
-  return (html.match(re1)?.[1] ?? html.match(re2)?.[1] ?? "").trim();
+  return decodeEntities(html.match(re1)?.[1] ?? html.match(re2)?.[1] ?? "").trim();
 }
 
 export function pageTitle(html: string): string {
-  return (html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? "").replace(/\s+/g, " ").trim();
+  return decodeEntities(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? "").replace(/\s+/g, " ").trim();
 }
 
 /** Does the home belong to the brand we saved? Compares the brand to title / og:site_name / og:title / domain. */

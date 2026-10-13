@@ -56,9 +56,13 @@ await Promise.all(
 
 // ── 2) bot-walled / unreachable → real Chrome, one at a time ──────────────────────────────
 const via = new Map<string, "fetch" | "browser">();
+// Anything the plain fetch could not fully verify gets a second look in a real browser (JS-rendered
+// catalogues, bot walls): unreachable OR missing Shopify / catalogue / brand evidence.
 const retry = rows.filter((r) => {
   const h = homes.get(r.id)!;
-  return !h.ok || h.html.length < 500;
+  if (!h.ok || h.html.length < 500) return true;
+  const ev = analyzeHome(h, { title: r.title, domain: r.domain_key ?? r.domain, niche: r.niche });
+  return !ev.shopify || !ev.productStore || !ev.brandMatch;
 });
 if (useBrowser && retry.length) {
   console.log(`${retry.length} unreachable by plain fetch → local Chrome`);
@@ -80,8 +84,18 @@ if (useBrowser && retry.length) {
         await page.waitForNetworkIdle({ idleTime: 1000, timeout: 6000 }).catch(() => {});
         const html = (await page.content()).slice(0, 600_000);
         const cartJson = await page.evaluate("fetch('/cart.js').then(r=>r.ok?r.json():null).then(j=>!!j&&'items' in j).catch(()=>false)") as boolean;
-        homes.set(r.id, { ok: (resp?.status() ?? 0) < 400, status: resp?.status() ?? 0, finalUrl: page.url(), html, headers: {}, cartJson });
-        via.set(r.id, "browser");
+        const b: Home = { ok: (resp?.status() ?? 0) < 400, status: resp?.status() ?? 0, finalUrl: page.url(), html, headers: {}, cartJson };
+        // keep whichever read gives the BETTER evidence (the browser is not always better)
+        const rowKey = { title: r.title, domain: r.domain_key ?? r.domain, niche: r.niche };
+        const prev = homes.get(r.id)!;
+        const score = (h: Home) => {
+          const e = analyzeHome(h, rowKey);
+          return [e.reachable, e.shopify, e.productStore, e.brandMatch, e.nicheFit].filter(Boolean).length;
+        };
+        if (b.ok && (!prev.ok || score(b) >= score(prev))) {
+          homes.set(r.id, b);
+          via.set(r.id, "browser");
+        }
       } catch (e) {
         homes.set(r.id, { ok: false, status: 0, finalUrl: r.url, html: "", headers: {}, error: (e as Error).message.split("\n")[0] });
       } finally {

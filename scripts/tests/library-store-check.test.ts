@@ -63,3 +63,9 @@ test("unreachable home fails closed; evidence freshness", () => {
   assert.equal(evidenceIsFresh(ev), true);
   assert.equal(evidenceIsFresh({ ...ev, checkedAt: "2020-01-01T00:00:00Z" }), false);
 });
+
+test("escaped titles still match the brand (Rothy&#39;s, Harry&#x27;s, Fable &amp; Mane)", () => {
+  assert.equal(matchBrand(`<title>Rothy&#39;s | Washable Shoes &amp; Bags</title>${pad}`, "Rothy's", "rothys.com").match, true);
+  assert.equal(matchBrand(`<title>Harry&#x27;s | Quality Shaving</title>${pad}`, "Harry's", "harrys.com").match, true);
+  assert.equal(matchBrand(`<title>Fable &amp; Mane | Hair</title>${pad}`, "Fable & Mane", "fableandmane.com").match, true);
+});
