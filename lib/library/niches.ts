@@ -17,6 +17,8 @@ export const NICHE_LABELS: Record<string, { label: string; plural: string }> = {
   home: { label: "Home & Living", plural: "home & living brands" },
   apparel: { label: "Apparel", plural: "apparel brands" },
   beverage: { label: "Beverage", plural: "beverage brands" },
+  // WP-L2: food brands (snacks, cereal, pantry) used to be filed under "beverage". `beverage` and its URL are untouched.
+  food: { label: "Food", plural: "food brands" },
   skincare: { label: "Skincare", plural: "skincare brands" },
   accessories: { label: "Accessories", plural: "accessories brands" },
   beauty: { label: "Beauty", plural: "beauty brands" },

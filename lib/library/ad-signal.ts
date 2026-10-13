@@ -76,3 +76,24 @@ export function stripMeasurementProof<T extends Record<string, unknown> | null |
   void _m;
   return rest as T;
 }
+
+/**
+ * How "winning" a row is PROVEN to be (WP-L2, owner decision 2026-10-13). It only labels and ORDERS;
+ * it never blocks a verified store from publishing:
+ *   • "measured" — a fresh Meta Ad Library count (measuredActiveAds), the only real ad signal;
+ *   • "curated"  — hand-picked by the owner (the row was not seeded by the discovery agent);
+ *   • "none"     — everything else, incl. AI-estimated counts. Shown WITHOUT any ad number and never
+ *                  ranked above a measured or curated store.
+ * When the Meta token is configured, `momentumBatch` writes the proof and rows move to "measured" by
+ * themselves — nothing else has to change.
+ */
+export type SignalTier = "measured" | "curated" | "none";
+
+export function signalTier(
+  row: { active_ads_count?: unknown; ad_signals?: AdSignalsLike | null; added_by_ai?: boolean | null },
+  now: number = Date.now(),
+): SignalTier {
+  if (measuredActiveAds(row, now)) return "measured";
+  if (row.added_by_ai === false) return "curated";
+  return "none";
+}

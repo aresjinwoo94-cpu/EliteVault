@@ -3,6 +3,7 @@ import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { captureViaOgImage } from "@/lib/screenshot-core";
 import { judgeStore } from "@/lib/library/quality";
 import { assessHeroImage } from "@/lib/library/image-quality";
+import type { StoreEvidence } from "@/lib/library/store-check";
 import {
   isProtectedThumbnail,
   isRealThumbnail,
@@ -56,10 +57,11 @@ export interface MissingImageRow {
   review_reason: string | null;
   active_ads_count: number | null;
   internal_score: number | null;
+  store_checks: StoreEvidence | null;
 }
 
 const COLUMNS =
-  "id, url, domain, title, niche, status, is_live, thumbnail_url, thumbnail_source, thumbnail_attempts, thumbnail_checked_at, review_reason, active_ads_count, internal_score";
+  "id, url, domain, title, niche, status, is_live, thumbnail_url, thumbnail_source, thumbnail_attempts, thumbnail_checked_at, review_reason, active_ads_count, internal_score, store_checks";
 
 /** Next rows to work on: published first (they're visible), then drafts/review. */
 export async function pickMissingImageRows(limit: number): Promise<MissingImageRow[]> {
@@ -105,7 +107,7 @@ export async function fetchHeroImage(
 export function imageSavePatch(
   row: Pick<
     MissingImageRow,
-    "url" | "domain" | "title" | "niche" | "status" | "is_live" | "review_reason" | "active_ads_count" | "internal_score"
+    "url" | "domain" | "title" | "niche" | "status" | "is_live" | "review_reason" | "active_ads_count" | "internal_score" | "store_checks"
   >,
   publicUrl: string,
   source: ThumbnailSource,
@@ -118,6 +120,7 @@ export function imageSavePatch(
     niche: row.niche,
     isLive: row.is_live,
     thumbnailUrl: publicUrl,
+    evidence: row.store_checks,
     activeAdsCount: row.active_ads_count,
     internalScore: row.internal_score,
   });

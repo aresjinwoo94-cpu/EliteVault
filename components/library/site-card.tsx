@@ -140,6 +140,11 @@ export function SiteCard({
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-obsidian-950/80 via-obsidian-950/20 to-transparent" />
         <div className="absolute bottom-3 left-3 flex gap-1.5">
+          {site.shopify_verified && (
+            <Badge variant="default" className="bg-obsidian-950/70 shadow-card">
+              Shopify
+            </Badge>
+          )}
           {site.is_featured && (
             <Badge
               variant="gold"

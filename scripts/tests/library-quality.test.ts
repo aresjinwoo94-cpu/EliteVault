@@ -58,6 +58,9 @@ test("metaAdLibraryUrl builds a public, active-only search link", () => {
 
 // ── Publication gate ──────────────────────────────────────────────────────
 
+import { signalTier } from "../../lib/library/ad-signal";
+import { GOOD_EVIDENCE } from "./helpers/evidence";
+
 const good: StoreFacts = {
   url: "https://foo.com",
   domain: "foo.com",
@@ -65,11 +68,12 @@ const good: StoreFacts = {
   niche: "skincare",
   isLive: true,
   thumbnailUrl: "https://x.supabase.co/storage/v1/object/public/screenshots/library/a.jpg",
-  activeAdsCount: 40,
+  evidence: GOOD_EVIDENCE,
+  activeAdsCount: null,
   internalScore: null,
 };
 
-test("a complete, live, signal-backed store publishes", () => {
+test("a complete, live, VERIFIED store publishes — with no ad signal at all", () => {
   const v = judgeStore(good);
   assert.equal(v.status, "published");
   assert.deepEqual(v.reasons, []);
@@ -84,7 +88,12 @@ test("anything missing parks the row in review, with the reason", () => {
     [{ thumbnailUrl: null }, "no real image"],
     [{ thumbnailUrl: "" }, "no real image"],
     [{ thumbnailUrl: "https://s.wordpress.com/mshots/v1/https%3A%2F%2Ffoo.com?w=800&h=560" }, "no real image"],
-    [{ activeAdsCount: null, internalScore: null }, "no signal (no active ads, no internal score)"],
+    [{ evidence: null }, "store not verified yet"],
+    [{ evidence: { ...GOOD_EVIDENCE, brandMatch: false, brandDetail: "page says X" } }, "domain does not match the brand (page says X)"],
+    [{ evidence: { ...GOOD_EVIDENCE, productStore: false } }, "no product catalogue found (/products, /collections)"],
+    [{ evidence: { ...GOOD_EVIDENCE, appLike: true } }, "looks like an app / service, not a store"],
+    [{ evidence: { ...GOOD_EVIDENCE, nicheFit: false } }, "home content does not fit the niche"],
+    [{ evidence: { ...GOOD_EVIDENCE, reachable: false, status: 0 } }, "home unreachable (HTTP error)"],
   ];
   for (const [patch, reason] of cases) {
     const v = judgeStore({ ...good, ...patch });
@@ -93,11 +102,22 @@ test("anything missing parks the row in review, with the reason", () => {
   }
 });
 
-test("an internal score alone is signal enough", () => {
-  assert.equal(
-    judgeStore({ ...good, activeAdsCount: null, internalScore: 72 }).status,
-    "published",
-  );
+test("'not Shopify' is a WARNING: it never blocks publication", () => {
+  const v = judgeStore({ ...good, evidence: { ...GOOD_EVIDENCE, shopify: false, shopifySignals: [] } });
+  assert.equal(v.status, "published");
+  assert.deepEqual(v.reasons, []);
+});
+
+test("AI-estimated ad counts are NOT a signal and never rank above measured ones", () => {
+  const nowIso = new Date().toISOString();
+  const measured = { active_ads_count: 40, ad_signals: { source: "meta_ad_library", measured_at: nowIso, estimated: false }, added_by_ai: true };
+  const estimated = { active_ads_count: 900, ad_signals: { estimated: true, active_ads: 900 }, added_by_ai: true };
+  const owner = { active_ads_count: 120, ad_signals: null, added_by_ai: false };
+  assert.equal(signalTier(measured), "measured");
+  assert.equal(signalTier(estimated), "none");
+  assert.equal(signalTier(owner), "curated");
+  // a "seed" can fake source/measured_at but not estimated:false … it stays "none" when marked estimated
+  assert.equal(signalTier({ ...estimated, ad_signals: { ...estimated.ad_signals, source: "meta_ad_library", measured_at: nowIso } }), "none");
 });
 
 // ── Momentum ──────────────────────────────────────────────────────────────

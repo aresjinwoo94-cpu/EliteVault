@@ -12,6 +12,7 @@
 
 import { normalizeDomain } from "@/lib/library/domain";
 import { isRealThumbnail } from "@/lib/library/thumbnail";
+import { hardEvidenceFailures, type StoreEvidence } from "@/lib/library/store-check";
 
 export type LibraryStatus = "draft" | "review" | "published";
 
@@ -29,9 +30,19 @@ export interface StoreFacts {
    * NOT an image — that fallback let 28 letter-tile stores publish.
    */
   thumbnailUrl: string | null | undefined;
-  /** Cached Meta active-ads count, if any. */
+  /**
+   * Evidence read from the store's home (lib/library/store-check.ts). Without it the store has
+   * never been verified and cannot publish; WITH it, the hard checks are: reachable, domain = brand,
+   * sells products, not an app/service, content fits the niche. "Shopify" is only a WARNING (the
+   * card shows a badge when verified) and never blocks publication.
+   */
+  evidence?: StoreEvidence | null;
+  /**
+   * No longer gating (WP-L2, owner decision 2026-10-13): AI-estimated ad counts are not a signal.
+   * A store is "winning" by MEASUREMENT (Meta Ad Library) or by the owner's curation — see
+   * signalTier() in ad-signal.ts, which only ORDERS and labels; it never blocks a verified store.
+   */
   activeAdsCount?: number | null;
-  /** Our internal quality/momentum score, if any. */
   internalScore?: number | null;
 }
 
@@ -57,8 +68,8 @@ function filled(s: unknown): boolean {
  *   2. a title we can print
  *   3. the site is live
  *   4. a niche assigned
- *   5. at least ONE signal (active ads, or an internal score)
- *   6. a REAL thumbnail (not null / '' / mshots)
+ *   5. a REAL thumbnail (not null / '' / mshots)
+ *   6. verified evidence from the store's home (see `evidence` above)
  */
 export function judgeStore(facts: StoreFacts): Verdict {
   const reasons: string[] = [];
@@ -67,10 +78,8 @@ export function judgeStore(facts: StoreFacts): Verdict {
   if (!filled(facts.title)) reasons.push("missing title");
   if (!facts.isLive) reasons.push("site not live");
   if (!filled(facts.niche)) reasons.push("no niche assigned");
-  if (!positive(facts.activeAdsCount) && !positive(facts.internalScore)) {
-    reasons.push("no signal (no active ads, no internal score)");
-  }
   if (!isRealThumbnail(facts.thumbnailUrl)) reasons.push("no real image");
+  reasons.push(...hardEvidenceFailures(facts.evidence));
 
   return { status: reasons.length === 0 ? "published" : "review", reasons };
 }
@@ -135,6 +144,7 @@ export const NICHE_AOV: Record<string, number> = {
   grooming: 40,
   pet: 55,
   beverage: 35,
+  food: 45,
   baby: 60,
 };
 export const DEFAULT_AOV = 60;

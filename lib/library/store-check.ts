@@ -166,16 +166,17 @@ export function countProductLinks(html: string): number {
 /** Keywords that appear on the home of a store in each niche (lowercase, matched on the page text). */
 export const NICHE_KEYWORDS: Record<string, string[]> = {
   skincare: ["skin", "serum", "moisturi", "cleanser", "spf", "sunscreen", "retinol", "cream", "face"],
-  beauty: ["makeup", "beauty", "lip", "foundation", "mascara", "eyeshadow", "blush", "cosmetic", "skin"],
+  beauty: ["makeup", "beauty", "lip", "foundation", "mascara", "eyeshadow", "blush", "cosmetic", "skin", "body", "deodorant", "wash", "hair", "nails"],
   fitness: ["workout", "gym", "training", "activewear", "fitness", "yoga", "protein", "running", "athlet"],
-  wellness: ["supplement", "vitamin", "probiotic", "wellness", "sleep", "gut", "health", "nutrition", "capsule", "tea", "mushroom"],
+  wellness: ["supplement", "vitamin", "probiotic", "wellness", "sleep", "gut", "health", "nutrition", "capsule", "mushroom", "toothbrush", "oral", "dental", "mindful"],
   footwear: ["shoe", "sneaker", "boot", "sandal", "footwear", "loafer", "running"],
   apparel: ["clothing", "shirt", "dress", "jeans", "hoodie", "apparel", "jacket", "pants", "tee", "women", "men"],
   accessories: ["bag", "watch", "jewelry", "jewellery", "necklace", "bracelet", "backpack", "wallet", "sunglasses", "accessor"],
   home: ["home", "furniture", "bedding", "rug", "decor", "kitchen", "candle", "mattress", "sofa", "linen"],
-  beverage: ["drink", "coffee", "tea", "beverage", "water", "soda", "juice", "wine", "beer", "kombucha"],
+  beverage: ["drink", "coffee", "tea", "beverage", "water", "soda", "juice", "wine", "beer", "kombucha", "spirit", "non-alcoholic", "cocktail", "sparkling", "brew"],
+  food: ["snack", "cereal", "sauce", "pantry", "olive oil", "chili", "granola", "chocolate", "jerky", "pasta", "honey", "spice", "protein bar", "recipe", "meal", "groceries", "organic food"],
   eyewear: ["glasses", "eyewear", "frames", "lenses", "sunglasses", "optical"],
-  baby: ["baby", "infant", "toddler", "nursery", "diaper", "newborn", "kids"],
+  baby: ["baby", "infant", "toddler", "nursery", "diaper", "newborn", "kids", "children", "mama", "mom"],
   pet: ["dog", "cat", "pet", "puppy", "treats", "kibble", "paw"],
   grooming: ["shave", "razor", "beard", "grooming", "hair", "cologne", "fragrance", "deodorant", "men"],
 };
@@ -229,6 +230,28 @@ export function analyzeHome(
 export function evidenceIsFresh(e: StoreEvidence | null | undefined, now: number = Date.now()): boolean {
   if (!e || e.v !== STORE_CHECK_VERSION || !e.checkedAt) return false;
   return now - Date.parse(e.checkedAt) <= STORE_CHECK_MAX_AGE_DAYS * 86_400_000;
+}
+
+/**
+ * The failures that BLOCK publication. "Not verified as Shopify" is deliberately absent: it is a
+ * warning (owner decision 2026-10-13) — the card only shows a "Shopify" badge when verified.
+ */
+export function hardEvidenceFailures(e: StoreEvidence | null | undefined): string[] {
+  return evidenceFailures(e).filter((f) => f !== "not verified as a Shopify store");
+}
+
+/**
+ * Best-fitting niche for a home: the niche with the most distinct keyword hits (≥ 2). Used to RE-ASSIGN
+ * a store whose current niche does not fit (e.g. Magic Spoon filed under "beverage" → "food").
+ * Returns null when nothing fits.
+ */
+export function suggestNiche(html: string): { niche: string; hits: string[] } | null {
+  let best: { niche: string; hits: string[] } | null = null;
+  for (const niche of Object.keys(NICHE_KEYWORDS)) {
+    const m = matchNiche(html, niche);
+    if (m.fit && (!best || m.hits.length > best.hits.length)) best = { niche, hits: m.hits };
+  }
+  return best;
 }
 
 /** Reasons (in plain words) a piece of evidence fails the "real Shopify store" bar. Empty = passes. */
