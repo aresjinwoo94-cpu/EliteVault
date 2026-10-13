@@ -2,6 +2,7 @@ import "server-only";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { captureViaOgImage } from "@/lib/screenshot-core";
 import { judgeStore } from "@/lib/library/quality";
+import { assessHeroImage } from "@/lib/library/image-quality";
 import {
   isProtectedThumbnail,
   isRealThumbnail,
@@ -35,6 +36,8 @@ const BUCKET = "screenshots";
 const PREFIX = "library";
 /** After this many failed attempts a row waits for a manual upload. */
 export const MAX_IMAGE_ATTEMPTS = 3;
+/** Image fetched but held back from publishing until a human has looked at it (manual runs only). */
+export const HELD_REASON = "image_pending_review";
 /** Don't retry the same row sooner than this. */
 const RETRY_COOLDOWN_MS = 20 * 3600_000;
 
@@ -106,6 +109,7 @@ export function imageSavePatch(
   >,
   publicUrl: string,
   source: ThumbnailSource,
+  opts: { hold?: boolean } = {},
 ): { patch: Record<string, unknown>; publish: boolean } {
   const verdict = judgeStore({
     url: row.url,
@@ -120,7 +124,7 @@ export function imageSavePatch(
   const wasParkedForImage =
     row.status !== "published" &&
     (row.review_reason === REVIEW_REASON.noImage || row.review_reason == null);
-  const publish = verdict.status === "published" && wasParkedForImage;
+  const publish = verdict.status === "published" && wasParkedForImage && !opts.hold;
   return {
     publish,
     patch: {
@@ -128,6 +132,8 @@ export function imageSavePatch(
       thumbnail_source: source,
       ...(publish
         ? { status: "published", review_reason: null }
+        : opts.hold && verdict.status === "published" && wasParkedForImage
+          ? { review_reason: HELD_REASON }
         : row.review_reason === REVIEW_REASON.noImage
           ? { review_reason: verdict.reasons[0] ?? null }
           : {}),
@@ -145,7 +151,10 @@ export interface FillOutcome {
 }
 
 /** Process one row: fetch, upload, save, and re-publish when it passes the gate. */
-export async function fillOneImage(row: MissingImageRow): Promise<FillOutcome> {
+export async function fillOneImage(
+  row: MissingImageRow,
+  opts: { hold?: boolean } = {},
+): Promise<FillOutcome> {
   const svc = createSupabaseServiceClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const sites = svc.from("winning_sites") as any;
@@ -157,6 +166,16 @@ export async function fillOneImage(row: MissingImageRow): Promise<FillOutcome> {
       .update({ ...stamp, thumbnail_attempts: (row.thumbnail_attempts ?? 0) + 1 })
       .eq("id", row.id);
     return { id: row.id, domain: row.domain, ok: false, note: "no capture and no og:image" };
+  }
+
+  // Acceptance: a logo on a flat background or a tiny/odd crop is NOT a store hero —
+  // reject it and leave the row for a manual upload (see image-quality.ts).
+  const quality = await assessHeroImage(hero.buf);
+  if (!quality.ok) {
+    await sites
+      .update({ ...stamp, thumbnail_attempts: (row.thumbnail_attempts ?? 0) + 1 })
+      .eq("id", row.id);
+    return { id: row.id, domain: row.domain, ok: false, note: `rejected: ${quality.reason}` };
   }
 
   const ext = hero.mediaType === "image/png" ? "png" : "jpg";
@@ -174,7 +193,7 @@ export async function fillOneImage(row: MissingImageRow): Promise<FillOutcome> {
     data: { publicUrl },
   } = svc.storage.from(BUCKET).getPublicUrl(path);
 
-  const { patch, publish } = imageSavePatch(row, publicUrl, hero.source);
+  const { patch, publish } = imageSavePatch(row, publicUrl, hero.source, opts);
   const { error: updErr } = await sites
     .update({ ...patch, ...stamp, thumbnail_attempts: 0 })
     .eq("id", row.id);
