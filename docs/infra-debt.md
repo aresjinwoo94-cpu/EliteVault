@@ -233,3 +233,24 @@ This section is the process that keeps it that way.
 - **`annotations[].fix`** (WP-1): se retira del payload para viewers sin reporte completo; el pin, la
   posición y el texto del problema (`message`) siguen visibles. En WP-4 el placeholder "Desbloquea la
   solución" del overlay debe abrir el modal de desbloqueo.
+
+### Plan WP-L2 (gate de calidad) — requisitos anotados en WP-L1
+
+- **(a) `active_ads_count` estimado por IA no es señal real.** Las 46 tiendas añadidas el 2026-10-10 llevan
+  conteos redondos inventados por el agente (210, 180, 320…) y `judgeStore` los aceptó como "señal". El
+  filtro solo debe contar como señal un conteo medido (`ads_last_checked_at` + `ad_signals.measured`, ver #101)
+  o un `internal_score` real; y la UI no puede mostrar un conteo estimado como medición.
+- **(b) "Shopify verificado" (brief §L.5).** Revisar si `onepeloton.com` y similares (Peloton, Lululemon,
+  Gymshark, Crocs, Vans, Hoka… marcas grandes) son tiendas Shopify; muchas no lo son (plataformas propias).
+  Aplicar el criterio (cdn.shopify.com / `Shopify.theme` / `/cart.js`) antes de publicar.
+- **(c) Dominio ≠ marca.** `bala.com` es una web universitaria, no la marca de fitness Bala (`shopbala.com`);
+  `athleticgreens.com` también. El og:image lo delató. Comprobar que el título/og:site_name de la home coincide
+  con el nombre guardado. Marcada hoy con `review_reason = 'wrong_domain'`.
+
+### WP-L1 — límites conocidos del job de imágenes
+
+- El job automático usa solo el `og:image` de la tienda (thum.io, Microlink y ScreenshotOne son del Analyzer y
+  comparten sus límites). Rinde poco (~16 % en el primer ciclo: muchas tiendas devuelven 403/anti-bot) y el
+  criterio rechaza logos sobre fondo plano. Las que no se recuperan quedan en la lista "Sin imagen" del monitor
+  para subida manual. Alternativa pendiente de decidir: capturas de viewport del hero desde una máquina local
+  (otra IP) con `scripts/library/fill-images.mts`-style, o un proveedor propio.
