@@ -37,6 +37,8 @@ export interface StoreFacts {
    * card shows a badge when verified) and never blocks publication.
    */
   evidence?: StoreEvidence | null;
+  /** The owner vouches for this store (winning_sites.curated_override): skips ONLY the catalogue check. */
+  ownerCurated?: boolean;
   /**
    * No longer gating (WP-L2, owner decision 2026-10-13): AI-estimated ad counts are not a signal.
    * A store is "winning" by MEASUREMENT (Meta Ad Library) or by the owner's curation — see
@@ -79,7 +81,11 @@ export function judgeStore(facts: StoreFacts): Verdict {
   if (!facts.isLive) reasons.push("site not live");
   if (!filled(facts.niche)) reasons.push("no niche assigned");
   if (!isRealThumbnail(facts.thumbnailUrl)) reasons.push("no real image");
-  reasons.push(...hardEvidenceFailures(facts.evidence));
+  reasons.push(
+    ...hardEvidenceFailures(facts.evidence).filter(
+      (f) => !(facts.ownerCurated && f.startsWith("no product catalogue")),
+    ),
+  );
 
   return { status: reasons.length === 0 ? "published" : "review", reasons };
 }

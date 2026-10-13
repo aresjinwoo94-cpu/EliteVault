@@ -85,6 +85,7 @@ interface VerifyRow {
   internal_score: number | null;
   ad_signals: { active_ads?: number; activity_score?: number } | null;
   store_checks: StoreEvidence | null;
+  curated_override: boolean | null;
 }
 
 export interface VerifyResult {
@@ -104,7 +105,7 @@ export async function verifyBatch(limit = 25): Promise<VerifyResult> {
   const { data, error } = await svc
     .from("winning_sites")
     .select(
-      "id, url, domain, title, niche, thumbnail_url, favicon_url, review_reason, status, is_live, active_ads_count, internal_score, ad_signals, store_checks",
+      "id, url, domain, title, niche, thumbnail_url, favicon_url, review_reason, status, is_live, active_ads_count, internal_score, ad_signals, store_checks, curated_override",
     )
     .order("last_verified_at", { ascending: true, nullsFirst: true })
     .limit(limit);
@@ -173,6 +174,7 @@ export async function verifyBatch(limit = 25): Promise<VerifyResult> {
         isLive: isLive && !confirmedDead,
         thumbnailUrl: row.thumbnail_url,
         evidence,
+        ownerCurated: row.curated_override === true,
         activeAdsCount: activeAds,
         internalScore: internal,
       });

@@ -58,10 +58,11 @@ export interface MissingImageRow {
   active_ads_count: number | null;
   internal_score: number | null;
   store_checks: StoreEvidence | null;
+  curated_override?: boolean | null;
 }
 
 const COLUMNS =
-  "id, url, domain, title, niche, status, is_live, thumbnail_url, thumbnail_source, thumbnail_attempts, thumbnail_checked_at, review_reason, active_ads_count, internal_score, store_checks";
+  "id, url, domain, title, niche, status, is_live, thumbnail_url, thumbnail_source, thumbnail_attempts, thumbnail_checked_at, review_reason, active_ads_count, internal_score, store_checks, curated_override";
 
 /** Next rows to work on: published first (they're visible), then drafts/review. */
 export async function pickMissingImageRows(limit: number): Promise<MissingImageRow[]> {
@@ -107,7 +108,7 @@ export async function fetchHeroImage(
 export function imageSavePatch(
   row: Pick<
     MissingImageRow,
-    "url" | "domain" | "title" | "niche" | "status" | "is_live" | "review_reason" | "active_ads_count" | "internal_score" | "store_checks"
+    "url" | "domain" | "title" | "niche" | "status" | "is_live" | "review_reason" | "active_ads_count" | "internal_score" | "store_checks" | "curated_override"
   >,
   publicUrl: string,
   source: ThumbnailSource,
@@ -121,6 +122,7 @@ export function imageSavePatch(
     isLive: row.is_live,
     thumbnailUrl: publicUrl,
     evidence: row.store_checks,
+    ownerCurated: row.curated_override === true,
     activeAdsCount: row.active_ads_count,
     internalScore: row.internal_score,
   });

@@ -40,7 +40,7 @@ type Evidence = import("../../lib/library/store-check").StoreEvidence;
 const svc = createSupabaseServiceClient();
 const { data, error } = await svc
   .from("winning_sites")
-  .select("id, url, domain, domain_key, title, niche, status, review_reason, is_live, thumbnail_url, thumbnail_source, added_by_ai, source, active_ads_count, internal_score, ad_signals, momentum_score")
+  .select("id, url, domain, domain_key, title, niche, status, review_reason, is_live, thumbnail_url, thumbnail_source, added_by_ai, source, active_ads_count, internal_score, ad_signals, momentum_score, curated_override")
   .order("niche")
   .order("domain");
 if (error) throw new Error(error.message);
@@ -199,6 +199,7 @@ const plans: Plan[] = rows.map((r) => {
     isLive: !!r.is_live || e.reachable,
     thumbnailUrl: r.thumbnail_url,
     evidence: e,
+    ownerCurated: r.curated_override === true,
   });
   const fails = [...verdict.reasons];
   const held = r.review_reason === "image_pending_review";

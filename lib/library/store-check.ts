@@ -174,6 +174,16 @@ export function matchBrand(
   };
 }
 
+const CATEGORY_SEGMENTS = new Set(["jewelry", "jewellery", "rings", "diamonds", "engagement-rings", "wedding-bands", "necklaces", "earrings", "bracelets", "watches", "shoes", "sneakers", "boots", "clothing", "women", "womens", "men", "mens", "kids", "shop-all", "shop-now", "bestsellers", "best-sellers", "new-arrivals", "new", "sale", "accessories", "bags", "skincare", "makeup", "hair", "body", "furniture", "bedding", "decor"]);
+/** Catalogue navigation on sites whose product URLs aren't /products/ (custom storefronts). */
+export function countCategoryLinks(html: string): number {
+  const set = new Set<string>();
+  for (const m of html.matchAll(/href=["'](?:https?:\/\/[^"'\/]+)?\/([a-z0-9-]+)(?:\/[^"'#?\s]*)?["']/gi)) {
+    if (CATEGORY_SEGMENTS.has(m[1].toLowerCase())) set.add(m[0].toLowerCase());
+  }
+  return set.size;
+}
+
 export function countProductLinks(html: string): number {
   const set = new Set<string>();
   // Shopify (/products/, /collections/) and the usual non-Shopify catalogue paths (/product/, /shop/, /p/, /pdp/)
@@ -238,7 +248,7 @@ export function analyzeHome(
     shopifySignals: shop.signals,
     brandMatch: reachable && brand.match,
     brandDetail: reachable ? brand.detail : f.error ?? `HTTP ${f.status}`,
-    productStore: reachable && productLinks >= 3,
+    productStore: reachable && (productLinks >= 3 || countCategoryLinks(f.html) >= 5),
     productLinks,
     nicheFit: reachable && niche.fit,
     nicheHits: niche.hits,

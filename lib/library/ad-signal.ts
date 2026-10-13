@@ -90,10 +90,10 @@ export function stripMeasurementProof<T extends Record<string, unknown> | null |
 export type SignalTier = "measured" | "curated" | "none";
 
 export function signalTier(
-  row: { active_ads_count?: unknown; ad_signals?: AdSignalsLike | null; added_by_ai?: boolean | null },
+  row: { active_ads_count?: unknown; ad_signals?: AdSignalsLike | null; added_by_ai?: boolean | null; curated_override?: boolean | null },
   now: number = Date.now(),
 ): SignalTier {
   if (measuredActiveAds(row, now)) return "measured";
-  if (row.added_by_ai === false) return "curated";
+  if (row.added_by_ai === false || row.curated_override === true) return "curated";
   return "none";
 }
