@@ -4,6 +4,7 @@ import {
   createSupabaseServiceClient,
 } from "@/lib/supabase/server";
 import { gateMetaAds, gateRowResult } from "@/lib/analyzer/client-payload";
+import { refundAnalysis } from "@/lib/credits";
 import { hasFullReport } from "@/lib/unlocks/report-unlock";
 import { PLANS } from "@/lib/stripe/plans";
 import type { PlanTier } from "@/lib/supabase/types";
@@ -141,28 +142,11 @@ export async function GET(
     const age = Date.now() - new Date(startedRef).getTime();
     if (age > STALE_THRESHOLD_MS) {
       const service = createSupabaseServiceClient();
-      await service
-        .from("analyses")
-        .update({
-          status: "refunded",
-          error:
-            t("actionErr.analysisTimedOut"),
-          finished_at: new Date().toISOString(),
-        })
-        .eq("id", id);
-
-      // refund the credit
-      const { data: prof } = await service
-        .from("profiles")
-        .select("credits")
-        .eq("id", user.id)
-        .single();
-      if (prof) {
-        await service
-          .from("profiles")
-          .update({ credits: prof.credits + (row.credits_charged ?? 1) })
-          .eq("id", user.id);
-      }
+      // Exactly-once refund (migration 0042): if Inngest's onFailure, another poll or anything else
+      // already refunded this audit, this is a no-op instead of a second credit.
+      await refundAnalysis(service, id, t("actionErr.analysisTimedOut")).catch((e) =>
+        console.warn("[analyses] stale refund failed:", (e as Error).message),
+      );
 
       return NextResponse.json(
         {

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireApiKey } from "@/lib/api-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { assertQuota } from "@/lib/quota/guard";
+import { chargeAndCreateAnalysis, refundAnalysis } from "@/lib/credits";
 import { inngest } from "@/inngest/client";
 import { normalizeUrl } from "@/lib/utils";
 import { findReusableAnalysis } from "@/lib/analysis/reuse";
@@ -75,33 +76,23 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  await service
-    .from("profiles")
-    .update({ credits: profile.credits - 1 })
-    .eq("id", auth.userId);
-
-  const { data: row, error } = await service
-    .from("analyses")
-    .insert({
-      user_id: auth.userId,
+  // Atomic charge + create (migration 0042) — no read-modify-write on credits.
+  let analysisId: string | null;
+  try {
+    analysisId = await chargeAndCreateAnalysis(service, {
+      userId: auth.userId,
       url,
-      buyer_persona: parsed.data.persona ?? null,
-      status: "queued",
-      credits_charged: 1,
-    })
-    .select("id")
-    .single();
-  if (error || !row) {
-    await service
-      .from("profiles")
-      .update({ credits: profile.credits })
-      .eq("id", auth.userId);
-    return NextResponse.json(
-      { error: "insert_failed", detail: error?.message },
-      { status: 500 },
-    );
+      persona: parsed.data.persona ?? null,
+    });
+  } catch (e) {
+    return NextResponse.json({ error: "insert_failed", detail: (e as Error).message }, { status: 500 });
   }
+  if (!analysisId) {
+    return NextResponse.json({ error: "out_of_credits", detail: "No credits left." }, { status: 402 });
+  }
+  const row = { id: analysisId };
 
+  try {
   await inngest.send({
     name: "analysis/requested",
     data: {
@@ -113,6 +104,10 @@ export async function POST(req: NextRequest) {
       runRewrite: parsed.data.run_rewrite,
     },
   });
+  } catch (e) {
+    await refundAnalysis(service, row.id, "Could not queue the audit").catch(() => {});
+    return NextResponse.json({ error: "queue_failed", detail: (e as Error).message }, { status: 502 });
+  }
 
   return NextResponse.json(
     {

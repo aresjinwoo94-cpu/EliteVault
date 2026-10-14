@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { phCapture } from "@/lib/analytics/posthog";
 import { createAnalysis } from "@/app/actions/analyzer";
+import { trackAuditStarted } from "@/lib/analytics/audit-events";
 import type { PlanTier } from "@/lib/supabase/types";
 import { useT } from "@/components/i18n/locale-provider";
 
@@ -69,6 +70,8 @@ export function AnalyzerLauncher({
       if (res.reused) {
         toast.success(t("launcher.openRecent"));
       }
+      // Funnel (§7.1): a REUSED audit is not a new audit.
+      if (!res.reused) trackAuditStarted({ analysisId: res.id, anonymous: false });
       // PostHog: the activation event. Funnel = signup → analyzer_run →
       // checkout_started → plan_upgraded. The first three answer the
       // question "do users get value before being asked to pay?"

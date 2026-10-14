@@ -9,6 +9,7 @@ import { phCapture } from "@/lib/analytics/posthog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useT } from "@/components/i18n/locale-provider";
+import { trackAuditStarted } from "@/lib/analytics/audit-events";
 import { createAnonAnalysis } from "@/app/actions/anon-analyzer";
 import { cn } from "@/lib/utils";
 
@@ -155,6 +156,7 @@ export function AnonAuditBox({
         }
         return;
       }
+      trackAuditStarted({ analysisId: res.id, anonymous: true });
       router.push(`/audit/${res.id}`);
     });
   }
