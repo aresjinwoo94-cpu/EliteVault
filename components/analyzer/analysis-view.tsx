@@ -26,6 +26,7 @@ import { ConversionGauges } from "./conversion-gauges";
 import { CategoryRadar } from "./category-radar";
 import { AnnotationsOverlay } from "./annotations-overlay";
 import { PersonaResponse } from "./persona-response";
+import { trackAuditTerminal } from "@/lib/analytics/audit-events";
 import { TopFixes } from "./top-fixes";
 import { FixTracks } from "./fix-tracks";
 import type { Track } from "@/lib/analyzer/fix-track-ids";
@@ -243,6 +244,7 @@ export function AnalysisView({
           next.status !== "queued" && next.status !== "running";
         setData(next);
         if (wasRunning && becameTerminal) {
+          trackAuditTerminal({ analysisId: next.id, status: next.status, error: next.error, anonymous: false });
           // re-fetch server data (credit counts, sidebar) when job finishes
           router.refresh();
         }

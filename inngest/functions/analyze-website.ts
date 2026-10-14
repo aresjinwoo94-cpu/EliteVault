@@ -1,5 +1,6 @@
 import { inngest } from "../client";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { refundAnalysis } from "@/lib/credits";
 import { enterMeter, runWithMeter } from "@/lib/usage/context";
 import {
   buildAnalysisTimings,
@@ -132,42 +133,11 @@ export const analyzeWebsite = inngest.createFunction(
       // Surface a useful — but bounded — error to the user
       const friendly = humanizeError(error);
 
-      // Never demote an audit the user is already looking at. `save-result`
-      // writes `succeeded`, but steps AFTER it (the niche enrichment, and the
-      // un-caught `step.sendEvent` for activation) can still fail the run and
-      // land here — which without this guard would flip a finished audit to
-      // `refunded` and hand out a free credit. The total-budget ceiling routes
-      // more traffic through this handler, so the guard earns its place now.
-      const { data: demoted } = await service
-        .from("analyses")
-        .update({
-          status: "refunded",
-          error: friendly,
-          finished_at: new Date().toISOString(),
-        })
-        .eq("id", data.analysisId)
-        .neq("status", "succeeded")
-        .select("id");
-
-      // Nothing was updated → the audit had already succeeded. Do not refund.
-      if (Array.isArray(demoted) && demoted.length === 0) return;
-
-      // Credit refund only applies to OWNED audits. An anonymous audit
-      // (userId null) charged no credit, so there's nothing to refund and no
-      // profile to read.
-      if (data.userId) {
-        const { data: profile } = await service
-          .from("profiles")
-          .select("credits")
-          .eq("id", data.userId)
-          .single();
-        if (profile) {
-          await service
-            .from("profiles")
-            .update({ credits: profile.credits + 1 })
-            .eq("id", data.userId);
-        }
-      }
+      // refund_analysis (migration 0042) does ALL of it atomically and idempotently:
+      //  • never demotes a finished audit (only queued|running|failed can become refunded);
+      //  • a no-op if the 8-minute poller (or a previous attempt) already refunded it;
+      //  • credits back only what the ledger shows was charged (anonymous / claimed-anonymous audits: nothing).
+      await refundAnalysis(service, data.analysisId, friendly);
     },
   },
   { event: "analysis/requested" },

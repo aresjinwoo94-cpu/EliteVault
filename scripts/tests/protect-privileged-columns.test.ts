@@ -64,6 +64,7 @@ test("triggers key off current_user (unspoofable) and are installed", () => {
 test("createAnalysis writes profiles + analyses with the service client", () => {
   const src = readFileSync(resolve(ROOT, "app/actions/analyzer.ts"), "utf8");
   const writes = [...src.matchAll(/(\w+)\s*\.from\("(profiles|analyses)"\)\s*\.(update|insert)\(/g)];
-  assert.ok(writes.length >= 3);
+  // §R P0: charge + audit creation is ONE service-role RPC (migration 0042); no direct writes remain
+  assert.match(src, /chargeAndCreateAnalysis\(service,/);
   for (const w of writes) assert.equal(w[1], "service", "credits/audits are server-owned");
 });

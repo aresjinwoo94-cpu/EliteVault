@@ -11,6 +11,7 @@ import { inngest } from "@/inngest/client";
 import { normalizeUrl } from "@/lib/utils";
 import { BuyerPersonaSchema } from "@/ai/schemas";
 import { PLANS } from "@/lib/stripe/plans";
+import { chargeAndCreateAnalysis } from "@/lib/credits";
 import { assertQuota } from "@/lib/quota/guard";
 import { findReusableAnalysis } from "@/lib/analysis/reuse";
 import { validatePublicStoreUrl } from "@/lib/security/url-guard";
@@ -137,39 +138,27 @@ export async function createAnalysis(
     return { ok: false, error: quota.reason };
   }
 
-  // Deduct credit BEFORE queueing; refunded by Inngest on failure.
-  // Credits are server-owned (migration 0039 blocks the user's own session from
-  // writing them), so the debit goes through the service client.
+  // Charge + create the audit in ONE atomic step (migration 0042): one credit is debited only if the
+  // user still has one, and the audit exists only if the debit happened. A failure later is refunded
+  // exactly once by refund_analysis (Inngest onFailure / the stale-run poller).
   const service = createSupabaseServiceClient();
-  const { error: decErr } = await service
-    .from("profiles")
-    .update({ credits: profile.credits - 1 })
-    .eq("id", user.id);
-  if (decErr) return { ok: false, error: decErr.message };
-
-  // Create row
-  // (service client: migration 0039 removed the client INSERT policy — a user
-  // row with a forged credits_charged would otherwise farm refunds.)
-  const { data: row, error: insErr } = await service
-    .from("analyses")
-    .insert({
-      user_id: user.id,
-      url,
-      screenshot_url: parsed.data.screenshotUrl ?? null,
-      buyer_persona: parsed.data.persona ?? null,
-      status: "queued",
-      credits_charged: 1,
-    })
-    .select("id")
-    .single();
-  if (insErr || !row) {
-    // Refund on failure
-    await service
-      .from("profiles")
-      .update({ credits: profile.credits })
-      .eq("id", user.id);
-    return { ok: false, error: insErr?.message ?? t("actionErr.createFailed") };
+  let analysisId: string | null;
+  try {
+    analysisId = await chargeAndCreateAnalysis(service, {
+      userId: user.id,
+      url: url ?? null,
+      screenshotUrl: parsed.data.screenshotUrl ?? null,
+      persona: parsed.data.persona ?? null,
+    });
+  } catch (e) {
+    return { ok: false, error: (e as Error).message || t("actionErr.createFailed") };
   }
+  if (!analysisId) {
+    // Lost a race for the last credit (assertQuota passed a moment ago): same message as the quota gate.
+    const again = await assertQuota(user.id, "analysis");
+    return { ok: false, error: again.ok ? t("actionErr.createFailed") : again.reason };
+  }
+  const row = { id: analysisId };
 
   // Kick the Inngest pipeline
   await inngest.send({

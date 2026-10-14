@@ -61,14 +61,15 @@
     "posthog-js": "^1.376.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "sonner": "^1.7.1",
     "sharp": "^0.34.5",
+    "sonner": "^1.7.1",
     "stripe": "^17.5.0",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.9",
     "@resvg/resvg-js": "^2.6.2",
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.2",
