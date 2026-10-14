@@ -180,7 +180,7 @@ export function TopFixes({
                 {locked && (
                   <div className="mt-1 flex items-center gap-1.5 text-[10px] text-champagne-300/80">
                     <Lock className="size-3" />
-                    {t("topFixes.unlockHow")}
+                    {unlock.enabled ? t("unlock.rowHow") : t("topFixes.unlockHow")}
                   </div>
                 )}
               </div>

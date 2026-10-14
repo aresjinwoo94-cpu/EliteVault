@@ -24,7 +24,7 @@ import { fill } from "@/lib/i18n/lookup";
  * Anonymous visitors: the CTA goes to sign-up first (`next=/app/unlock/<id>`; the anonymous audit is claimed
  * on sign-in) — never two modals at once, and never a price before an account exists.
  */
-export type UnlockSource = "card" | "fix" | "persona" | "track" | "simulator" | "annotation";
+export type UnlockSource = "card" | "fix" | "persona" | "track" | "simulator" | "annotation" | "winners";
 
 interface UnlockOfferCtx {
   enabled: boolean;

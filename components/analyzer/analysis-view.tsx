@@ -352,7 +352,13 @@ export function AnalysisView({
   // is still canRunMeta, and the data they receive is gated server-side.
   // Under v2 the stepper's diamond icon owns simulator discovery, so the promo
   // teaser/rail/bottom-bar stand down to avoid two competing indexes.
-  const metaPromo = !v2 && (viewer.metaPromo ?? false);
+  // WP-4 — the one-time unlock offer: only for a viewer without the full report, on a finished audit whose
+  // capture was real, with REPORT_UNLOCK on. Everything else renders exactly as before.
+  const fullReportNow = viewer.fullReport ?? viewer.isPaid;
+  const unlockOn = (viewer.unlockOffer ?? false) && !fullReportNow && isDone && !captureBlocked.blocked;
+  const lockedFixCount = Math.max(0, (data.result?.top_fixes?.length ?? 0) - 1);
+  // With the unlock offer on, the Pro-first promo bar/rail stands down: one offer at a time.
+  const metaPromo = !v2 && !unlockOn && (viewer.metaPromo ?? false);
   const promoTier = metaPromoTier({
     isAnon,
     isPaid: viewer.isPaid,
@@ -509,11 +515,6 @@ export function AnalysisView({
     </div>
   );
 
-  // WP-4 — the one-time unlock offer: only for a viewer without the full report, on a finished audit whose
-  // capture was real, with REPORT_UNLOCK on. Everything else renders exactly as before.
-  const fullReportNow = viewer.fullReport ?? viewer.isPaid;
-  const unlockOn = (viewer.unlockOffer ?? false) && !fullReportNow && isDone && !captureBlocked.blocked;
-  const lockedFixCount = Math.max(0, (data.result?.top_fixes?.length ?? 0) - 1);
 
   return (
     <UnlockOfferProvider enabled={unlockOn} analysisId={data.id} isAnon={isAnon} lockedFixes={lockedFixCount}>

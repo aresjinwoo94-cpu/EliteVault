@@ -1043,6 +1043,7 @@
     "bannerUnlocked": "Report unlocked ✓ — every fix, the buyer persona, all 3 fix tracks and 1 Meta projection are open for this audit.",
     "bannerCanceled": "The checkout was canceled — nothing was charged.",
     "simIncluded": "1 projection included in this report",
-    "simUsed": "You've used the projection included in this report"
+    "simUsed": "You've used the projection included in this report",
+    "rowHow": "Unlock the how-to"
   }
 }

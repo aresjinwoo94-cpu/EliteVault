@@ -1043,6 +1043,7 @@
     "bannerUnlocked": "Reporte desbloqueado ✓ — todos los fixes, el buyer persona, los 3 fix tracks y 1 proyección de Meta están abiertos para esta auditoría.",
     "bannerCanceled": "El pago se canceló — no se cobró nada.",
     "simIncluded": "1 proyección incluida en este reporte",
-    "simUsed": "Ya usaste la proyección incluida en este reporte"
+    "simUsed": "Ya usaste la proyección incluida en este reporte",
+    "rowHow": "Desbloquea el cómo hacerlo"
   }
 }
