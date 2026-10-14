@@ -150,3 +150,19 @@ test("only the service role may call the money functions", async () => {
   ).rows[0];
   assert.deepEqual(c, { anon: false, auth: false });
 });
+
+test("a refunded audit that a retried step moved to 'running' and then succeeds is still flagged", async () => {
+  await db.exec(`update profiles set credits = 1 where id='${U}'`);
+  const id = (await charge())!;
+  await refund(id, "poller: stale");
+  await db.exec(`update analyses set status='running' where id='${id}'`);
+  assert.equal(await refund(id, "late onFailure"), false, "refunded_at blocks a second refund even while 'running'");
+  await db.exec(`update analyses set status='succeeded' where id='${id}'`);
+  assert.equal((await db.query<{ f: boolean }>(`select succeeded_after_refund f from analyses where id='${id}'`)).rows[0].f, true);
+  assert.equal(await credits(), 1);
+});
+
+test("a non-positive cost is rejected (no free audits, no minted credits)", async () => {
+  await assert.rejects(db.query(`select public.create_charged_analysis('${U}','https://x.com',null,null,0)`), /p_cost/);
+  await assert.rejects(db.query(`select public.create_charged_analysis('${U}','https://x.com',null,null,-5)`), /p_cost/);
+});

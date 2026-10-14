@@ -200,7 +200,10 @@ export const analyzeWebsite = inngest.createFunction(
       await service
         .from("analyses")
         .update({ status: "running", started_at: startedAt.toISOString() })
-        .eq("id", analysisId);
+        .eq("id", analysisId)
+        // A run the stale-poller already refunded keeps its `refunded` status while it finishes (§R P0):
+        // flipping it back to 'running' would hide that it was refunded and let it be refunded again.
+        .neq("status", "refunded");
       return startedAt.getTime();
     });
 

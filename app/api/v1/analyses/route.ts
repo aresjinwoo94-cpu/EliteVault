@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireApiKey } from "@/lib/api-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { assertQuota } from "@/lib/quota/guard";
-import { chargeAndCreateAnalysis } from "@/lib/credits";
+import { chargeAndCreateAnalysis, refundAnalysis } from "@/lib/credits";
 import { inngest } from "@/inngest/client";
 import { normalizeUrl } from "@/lib/utils";
 import { findReusableAnalysis } from "@/lib/analysis/reuse";
@@ -92,6 +92,7 @@ export async function POST(req: NextRequest) {
   }
   const row = { id: analysisId };
 
+  try {
   await inngest.send({
     name: "analysis/requested",
     data: {
@@ -103,6 +104,10 @@ export async function POST(req: NextRequest) {
       runRewrite: parsed.data.run_rewrite,
     },
   });
+  } catch (e) {
+    await refundAnalysis(service, row.id, "Could not queue the audit").catch(() => {});
+    return NextResponse.json({ error: "queue_failed", detail: (e as Error).message }, { status: 502 });
+  }
 
   return NextResponse.json(
     {

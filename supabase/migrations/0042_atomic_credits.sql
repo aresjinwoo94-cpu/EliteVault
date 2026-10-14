@@ -62,6 +62,9 @@ declare
   v_credits int;
   v_id uuid;
 begin
+  if p_cost is null or p_cost < 1 then
+    raise exception 'create_charged_analysis: p_cost must be >= 1';
+  end if;
   update public.profiles
      set credits = credits - p_cost
    where id = p_user and credits >= p_cost
@@ -126,7 +129,8 @@ returns trigger
 language plpgsql
 as $$
 begin
-  if old.status = 'refunded' and new.status = 'succeeded' then
+  -- keyed on refunded_at (not only on the old status): a retried step may have moved the row refunded → running
+  if old.refunded_at is not null and old.status <> 'succeeded' and new.status = 'succeeded' then
     new.succeeded_after_refund := true;
     if old.user_id is not null then
       insert into public.credit_events (user_id, analysis_id, kind, delta, reason)

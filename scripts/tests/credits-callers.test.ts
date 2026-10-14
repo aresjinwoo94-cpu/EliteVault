@@ -38,3 +38,13 @@ test("onFailure no longer demotes/refunds by hand (it used to refund even an alr
   assert.doesNotMatch(onFailure, /status:\s*"refunded"/);
   assert.match(onFailure, /refundAnalysis\(service, data\.analysisId/);
 });
+
+test("a charged audit that cannot be queued is refunded right away (createAnalysis and API v1)", () => {
+  for (const p of ["app/actions/analyzer.ts", "app/api/v1/analyses/route.ts"]) {
+    const src = read(p);
+    const afterCharge = src.slice(src.indexOf("chargeAndCreateAnalysis("));
+    assert.match(afterCharge, /try \{\s*await inngest\.send/, `${p}: send inside try`);
+    assert.match(afterCharge, /catch \(e\)[\s\S]*refundAnalysis\(service, row\.id/, `${p}: refund on send failure`);
+  }
+  assert.match(read("inngest/functions/analyze-website.ts"), /\.neq\("status", "refunded"\)/, "mark-running never overwrites 'refunded'");
+});

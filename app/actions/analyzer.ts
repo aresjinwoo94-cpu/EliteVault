@@ -11,7 +11,7 @@ import { inngest } from "@/inngest/client";
 import { normalizeUrl } from "@/lib/utils";
 import { BuyerPersonaSchema } from "@/ai/schemas";
 import { PLANS } from "@/lib/stripe/plans";
-import { chargeAndCreateAnalysis } from "@/lib/credits";
+import { chargeAndCreateAnalysis, refundAnalysis } from "@/lib/credits";
 import { assertQuota } from "@/lib/quota/guard";
 import { findReusableAnalysis } from "@/lib/analysis/reuse";
 import { validatePublicStoreUrl } from "@/lib/security/url-guard";
@@ -161,6 +161,7 @@ export async function createAnalysis(
   const row = { id: analysisId };
 
   // Kick the Inngest pipeline
+  try {
   await inngest.send({
     name: "analysis/requested",
     data: {
@@ -179,6 +180,11 @@ export async function createAnalysis(
       fast: isFree,
     },
   });
+  } catch (e) {
+    // The audit was charged but never queued: refund it now (exactly once) instead of waiting for a poll that may never come.
+    await refundAnalysis(service, row.id, t("actionErr.createFailed")).catch(() => {});
+    return { ok: false, error: (e as Error).message || t("actionErr.createFailed") };
+  }
 
   revalidatePath("/app");
   return { ok: true, id: row.id };
