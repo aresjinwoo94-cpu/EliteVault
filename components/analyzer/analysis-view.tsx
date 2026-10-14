@@ -134,6 +134,8 @@ interface ViewerCtx {
    * simulation) is rendered blurred behind a Pro upgrade CTA.
    */
   isPaid: boolean;
+  /** Full cure of THIS audit (paid plan or one-time unlock). Defaults to `isPaid`. */
+  fullReport?: boolean;
   /**
    * P1-7 — whether this plan can run the Meta Campaign Scenario Modeler.
    * Pro (1/mo) and Scale (unlimited) can; Free cannot. `metaLimit` is the
@@ -764,7 +766,7 @@ export function AnalysisView({
                   analysisId={data.id}
                   result={data.result}
                   url={data.url}
-                  isPaid={viewer.isPaid}
+                  isPaid={viewer.fullReport ?? viewer.isPaid}
                   mapSpine={viewer.mapSpine ?? false}
                   storedPageKind={data.discovery_signals?.pageKind}
                 />
@@ -892,7 +894,7 @@ export function AnalysisView({
                     <FixTracks
                       analysisId={data.id}
                       urgentFixes={data.result.top_fixes}
-                      isPaid={viewer.isPaid}
+                      isPaid={viewer.fullReport ?? viewer.isPaid}
                       isAnon={isAnon}
                       initialChoice={viewer.fixTracks.choice}
                       competitorAvailable={viewer.fixTracks.competitorAvailable}
@@ -900,7 +902,7 @@ export function AnalysisView({
                   ) : (
                     <TopFixes
                       fixes={data.result.top_fixes}
-                      unlockedCount={viewer.isPaid ? undefined : 1}
+                      unlockedCount={(viewer.fullReport ?? viewer.isPaid) ? undefined : 1}
                     />
                   );
                 return winnersCard ? (
@@ -975,7 +977,7 @@ export function AnalysisView({
               behind a Pro upgrade CTA (their real computed response).
             */}
             <div id="section-persona" className={anchorOffset}>
-              {viewer.isPaid ? (
+              {(viewer.fullReport ?? viewer.isPaid) ? (
                 <PersonaResponse response={data.result.buyer_persona_response} />
               ) : (
                 <FreeLockedCure
@@ -1042,7 +1044,7 @@ export function AnalysisView({
               instead, so the pre-login experience stays a serious tool with one
               gentle prompt — the inline "$19/mo" locks still carry the Pro push.
             */}
-            {!viewer.isPaid &&
+            {!(viewer.fullReport ?? viewer.isPaid) &&
               !isAnon &&
               (() => {
                 const lockedFixes = Math.max(

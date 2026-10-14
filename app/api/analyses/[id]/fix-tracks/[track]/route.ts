@@ -6,6 +6,7 @@ import { analyzerFixTracksEnabled } from "@/lib/flags";
 import type { AnalysisResult } from "@/lib/supabase/types";
 import { resolveCompetitor } from "@/lib/analyzer/fix-tracks-data";
 import { runFixTrack, type CompetitorContext } from "@/ai/agents/fix-track-agent";
+import { resolveFullReport } from "@/lib/unlocks/entitlement";
 import {
   decideAccess,
   gateFixes,
@@ -114,7 +115,9 @@ export async function GET(
   let viewer: Viewer = "anon";
   if (user) {
     const { data: prof } = await service.from("profiles").select("plan").eq("id", user.id).maybeSingle();
-    viewer = ((prof as unknown as { plan?: string } | null)?.plan ?? "free") === "free" ? "free" : "paid";
+    const plan = (prof as unknown as { plan?: string } | null)?.plan ?? "free";
+    // WP-2: a one-time unlock of THIS audit counts as paid for its fix tracks
+    viewer = (await resolveFullReport({ analysisId: id, userId: user.id, plan })) ? "paid" : "free";
   }
 
   // ── gate (server-side, before any work) ────────────────────────────────

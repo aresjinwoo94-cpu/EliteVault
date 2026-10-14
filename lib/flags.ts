@@ -185,3 +185,12 @@ export function autoLocaleEnabled(): boolean {
 export function analyzerFixTracksEnabled(): boolean {
   return enabled("ANALYZER_FIX_TRACKS", true);
 }
+
+/**
+ * One-time "unlock this report" purchase ($7, brief oct-2026 §10). DEFAULT OFF in code: while off, nothing in
+ * the product offers or honours an unlock and the report is exactly what a Free/Pro/Scale viewer saw before.
+ * The owner flips the default here (a code change), not in Vercel, after testing in Stripe test mode.
+ */
+export function reportUnlockEnabled(): boolean {
+  return enabled("REPORT_UNLOCK", false);
+}

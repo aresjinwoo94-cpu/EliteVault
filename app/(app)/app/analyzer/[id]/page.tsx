@@ -13,7 +13,7 @@ import {
 import { parseState } from "@/lib/analyzer/fix-tracks";
 import { resolveCompetitor } from "@/lib/analyzer/fix-tracks-data";
 import { toClientAnalysis } from "@/lib/analyzer/client-payload";
-import { hasFullReport } from "@/lib/unlocks/report-unlock";
+import { resolveFullReport } from "@/lib/unlocks/entitlement";
 
 export const dynamic = "force-dynamic";
 
@@ -117,13 +117,18 @@ export default async function AnalysisPage({
   // resolves to null on ANY failure (no niche, empty Library, DB error) so the
   // report always renders without it. Free viewers get `locked` and a row
   // count — the real stores never enter this page's payload.
+  // WP-2: "sees the full report of THIS audit" = paid plan OR a one-time unlock (REPORT_UNLOCK flag).
+  // It drives the report's locks/cure; plan-only capabilities (publish, Optimizer, new audits) stay plan-based.
+  const fullReport = await resolveFullReport({ analysisId: id, userId: user.id, plan: profile?.plan ?? "free" });
+  // `isPaid` stays plan-based (Meta panel, promo tier…): a one-time unlock does NOT make a Free user a Pro.
   const isPaid = (profile?.plan ?? "free") !== "free";
   const analysisResult = analysis.result as { summary?: string } | null;
   const nicheWinners = await loadNicheWinnersModule({
     status: analysis.status,
     url: analysis.url,
     summary: analysisResult?.summary ?? null,
-    isPaid,
+    // D1 (brief §9): the unlock includes Winners in your niche for THIS audit.
+    isPaid: fullReport,
     // Preferred: the real, variable-match winners the pipeline computed from
     // THIS store's screenshot (migration 0022). Falls back to the live path
     // for audits created before it existed.
@@ -141,7 +146,7 @@ export default async function AnalysisPage({
       // Server-side gate: the stored niche winners never leave the server, and
       // the Meta Ads Optimizer payload only reaches plans that can run Meta
       // (the only viewers the report renders it for).
-      initial={toClientAnalysis(analysis, { canSeeOptimizer: plan.unlocksScale, hasFullReport: hasFullReport({ plan: profile?.plan ?? "free" }) }) as never}
+      initial={toClientAnalysis(analysis, { canSeeOptimizer: plan.unlocksScale, hasFullReport: fullReport }) as never}
       viewer={{
         canPublish: plan.canPublish,
         publishedSlug,
@@ -149,6 +154,9 @@ export default async function AnalysisPage({
         isScale: plan.unlocksScale,
         // P0.2 — Pro/Scale see the full "cure"; Free sees it blurred.
         isPaid,
+        // WP-2: sees the full cure of THIS audit (paid plan OR one-time unlock) — drives the fixes, persona,
+        // fix tracks and growth-map locks. Plan-only capabilities keep reading `isPaid`.
+        fullReport,
         // P1-7 — Meta block access + monthly quota (null limit = unlimited).
         canRunMeta,
         metaLimit: metaUsage.limit,

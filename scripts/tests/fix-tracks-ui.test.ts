@@ -61,7 +61,7 @@ test("competitor button is disabled with the coming-soon copy when the niche has
 test("flag off ⇒ AnalysisView renders the classic TopFixes (FixTracks only when viewer.fixTracks is set)", () => {
   const src = read("components/analyzer/analysis-view.tsx");
   assert.match(src, /viewer\.fixTracks && !captureBlocked\.blocked \? \(\s*<FixTracks/);
-  assert.match(src, /\) : \(\s*<TopFixes\s+fixes=\{data\.result\.top_fixes\}\s+unlockedCount=\{viewer\.isPaid \? undefined : 1\}/);
+  assert.match(src, /\) : \(\s*<TopFixes\s+fixes=\{data\.result\.top_fixes\}\s+unlockedCount=\{\(viewer\.fullReport \?\? viewer\.isPaid\) \? undefined : 1\}/);
   for (const page of ["app/(app)/app/analyzer/[id]/page.tsx", "app/audit/[id]/page.tsx"]) {
     assert.match(read(page), /fixTracks: analyzerFixTracksEnabled\(\)/, page);
   }
