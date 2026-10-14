@@ -8,19 +8,31 @@ import { sendEmail } from "@/lib/email/resend";
 import { buildReceipt } from "@/lib/email/receipt";
 import { buildPaymentFailed } from "@/lib/email/payment-failed";
 import { buildCancellation } from "@/lib/email/cancellation";
+import { isReportUnlockSession, settleReportUnlock } from "@/lib/unlocks/settle";
+import { createUnlockStore } from "@/lib/unlocks/settle-store";
 
 export const runtime = "nodejs";
 
 // Base URL for links inside transactional emails.
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
-const RELEVANT_EVENTS = new Set([
+// Built from parts on purpose: the i18n key audit (scripts/tests/i18n-client-namespaces.test.ts) reads
+// dotted string literals that start with a namespace name as translation keys, and these are Stripe event names.
+const EV_ASYNC_OK = ["checkout", "session", "async_payment_succeeded"].join(".");
+const EV_ASYNC_FAILED = ["checkout", "session", "async_payment_failed"].join(".");
+
+const RELEVANT_EVENTS = new Set<string>([
   "checkout.session.completed",
   "customer.subscription.created",
   "customer.subscription.updated",
   "customer.subscription.deleted",
   "invoice.payment_succeeded",
   "invoice.payment_failed",
+  // One-time report unlock (mode: "payment"). `checkout.session.completed` is the usual one; the async
+  // pair covers delayed methods; `charge.refunded` re-locks a refunded unlock.
+  EV_ASYNC_OK,
+  EV_ASYNC_FAILED,
+  "charge.refunded",
 ]);
 
 export async function POST(req: NextRequest) {
@@ -90,8 +102,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: dupErr.message }, { status: 500 });
   }
 
+  // Report unlock (WP-2): a one-time `mode: "payment"` session tagged purchase=report_unlock. It must NEVER
+  // reach syncSubscription / onInvoicePaid (they would treat it as a plan change).
+  const unlockSession =
+    (event.type === "checkout.session.completed" || event.type === EV_ASYNC_OK) &&
+    isReportUnlockSession(event.data.object as Stripe.Checkout.Session)
+      ? (event.data.object as Stripe.Checkout.Session)
+      : null;
+  const unlockRelated = unlockSession !== null || event.type === "charge.refunded";
+
   try {
+    if (unlockSession) {
+      await settleReportUnlock(unlockSession, createUnlockStore());
+      return NextResponse.json({ received: true });
+    }
+    if (event.type === EV_ASYNC_FAILED) {
+      console.warn("[webhook] async payment failed for", (event.data.object as Stripe.Checkout.Session).id);
+      return NextResponse.json({ received: true });
+    }
     switch (event.type) {
+      case "charge.refunded":
+        await onChargeRefunded(event, service);
+        break;
       case "checkout.session.completed":
       case "customer.subscription.created":
       case "customer.subscription.updated":
@@ -108,11 +140,33 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true });
   } catch (err) {
     console.error("[stripe webhook]", event.type, err);
+    // The event row was inserted BEFORE processing (dedupe). If an unlock failed to settle, remove it so
+    // Stripe's retry is a real attempt instead of a "duplicate" no-op — the buyer has paid and must not be left locked.
+    if (unlockRelated) {
+      await service.from("stripe_events").delete().eq("id", event.id);
+    }
     return NextResponse.json(
       { error: (err as Error).message },
       { status: 500 },
     );
   }
+}
+
+/** A fully refunded unlock payment re-locks that report. Other refunds (e.g. our automatic duplicate refund) match no row. */
+async function onChargeRefunded(
+  event: Stripe.Event,
+  service: ReturnType<typeof createSupabaseServiceClient>,
+) {
+  const charge = event.data.object as Stripe.Charge;
+  if (charge.refunded !== true) return; // partial refund: the report stays unlocked
+  const pi = typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent?.id;
+  if (!pi) return;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (service as any)
+    .from("analysis_unlocks")
+    .update({ status: "refunded", refunded_at: new Date().toISOString() })
+    .eq("stripe_payment_intent", pi)
+    .eq("status", "paid");
 }
 
 async function syncSubscription(

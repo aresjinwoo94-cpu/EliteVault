@@ -5,7 +5,7 @@ import {
 } from "@/lib/supabase/server";
 import { gateMetaAds, gateRowResult } from "@/lib/analyzer/client-payload";
 import { refundAnalysis } from "@/lib/credits";
-import { hasFullReport } from "@/lib/unlocks/report-unlock";
+import { resolveFullReport } from "@/lib/unlocks/entitlement";
 import { PLANS } from "@/lib/stripe/plans";
 import type { PlanTier } from "@/lib/supabase/types";
 import { getT } from "@/lib/i18n/server";
@@ -133,7 +133,7 @@ export async function GET(
     const plan = planKey && planKey in PLANS ? PLANS[planKey as PlanTier] : null;
     payload = gateMetaAds(row, plan != null && plan.unlocksScale);
     // Fails closed: an unresolved plan is treated as "no full report".
-    payload = gateRowResult(payload, hasFullReport({ plan: planKey }));
+    payload = gateRowResult(payload, await resolveFullReport({ analysisId: id, userId: user.id, plan: planKey }));
   }
 
   // Stale-job detection

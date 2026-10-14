@@ -13,7 +13,7 @@ import {
 import { parseState } from "@/lib/analyzer/fix-tracks";
 import { resolveCompetitor } from "@/lib/analyzer/fix-tracks-data";
 import { toClientAnalysis } from "@/lib/analyzer/client-payload";
-import { hasFullReport } from "@/lib/unlocks/report-unlock";
+import { resolveFullReport } from "@/lib/unlocks/entitlement";
 
 export const dynamic = "force-dynamic";
 
@@ -117,7 +117,10 @@ export default async function AnalysisPage({
   // resolves to null on ANY failure (no niche, empty Library, DB error) so the
   // report always renders without it. Free viewers get `locked` and a row
   // count — the real stores never enter this page's payload.
-  const isPaid = (profile?.plan ?? "free") !== "free";
+  // WP-2: "sees the full report of THIS audit" = paid plan OR a one-time unlock (REPORT_UNLOCK flag).
+  // It drives the report's locks/cure; plan-only capabilities (publish, Optimizer, new audits) stay plan-based.
+  const fullReport = await resolveFullReport({ analysisId: id, userId: user.id, plan: profile?.plan ?? "free" });
+  const isPaid = fullReport;
   const analysisResult = analysis.result as { summary?: string } | null;
   const nicheWinners = await loadNicheWinnersModule({
     status: analysis.status,
@@ -141,7 +144,7 @@ export default async function AnalysisPage({
       // Server-side gate: the stored niche winners never leave the server, and
       // the Meta Ads Optimizer payload only reaches plans that can run Meta
       // (the only viewers the report renders it for).
-      initial={toClientAnalysis(analysis, { canSeeOptimizer: plan.unlocksScale, hasFullReport: hasFullReport({ plan: profile?.plan ?? "free" }) }) as never}
+      initial={toClientAnalysis(analysis, { canSeeOptimizer: plan.unlocksScale, hasFullReport: fullReport }) as never}
       viewer={{
         canPublish: plan.canPublish,
         publishedSlug,

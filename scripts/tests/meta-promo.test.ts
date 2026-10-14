@@ -118,7 +118,7 @@ test("every page and endpoint that hands an analysis to the client goes through 
   // before); what matters is that the gate is what gets passed.
   assert.match(
     owned,
-    /initial=\{toClientAnalysis\(analysis,\s*\{\s*canSeeOptimizer:\s*plan\.unlocksScale,\s*hasFullReport:\s*hasFullReport\(\{[^}]*\}\)\s*\}\)(\s+as\s+\w+)?\}/,
+    /initial=\{toClientAnalysis\(analysis,\s*\{\s*canSeeOptimizer:\s*plan\.unlocksScale,\s*hasFullReport:\s*fullReport\s*\}\)(\s+as\s+\w+)?\}/,
   );
   const anon = code("app/audit/[id]/page.tsx");
   assert.match(anon, /initial=\{toClientAnalysis\(row,\s*\{\s*canSeeOptimizer:\s*false,\s*hasFullReport:\s*false\s*\}\)(\s+as\s+\w+)?\}/);
