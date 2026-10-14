@@ -143,7 +143,8 @@ export async function POST(req: NextRequest) {
     // The event row was inserted BEFORE processing (dedupe). If an unlock failed to settle, remove it so
     // Stripe's retry is a real attempt instead of a "duplicate" no-op — the buyer has paid and must not be left locked.
     if (unlockRelated) {
-      await service.from("stripe_events").delete().eq("id", event.id);
+      const { error: delErr } = await service.from("stripe_events").delete().eq("id", event.id);
+      if (delErr) console.error("[stripe webhook] could not un-dedupe event", event.id, delErr.message);
     }
     return NextResponse.json(
       { error: (err as Error).message },
@@ -162,11 +163,13 @@ async function onChargeRefunded(
   const pi = typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent?.id;
   if (!pi) return;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (service as any)
+  const { error } = await (service as any)
     .from("analysis_unlocks")
     .update({ status: "refunded", refunded_at: new Date().toISOString() })
     .eq("stripe_payment_intent", pi)
     .eq("status", "paid");
+  // Never swallow it: a failed re-lock must surface (500) so Stripe retries instead of leaving a refunded unlock open.
+  if (error) throw new Error(`onChargeRefunded: ${error.message}`);
 }
 
 async function syncSubscription(

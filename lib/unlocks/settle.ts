@@ -25,6 +25,10 @@ export interface UnlockStore {
   getAnalysisOwner(analysisId: string): Promise<string | null>;
   /** The existing unlock of an audit, if any. */
   getUnlock(analysisId: string): Promise<{ stripe_session_id: string; status: string } | null>;
+  /** The unlock created by a Checkout Session, if any (replay / same session conflicting on another key). */
+  getUnlockBySession(sessionId: string): Promise<{ analysis_id: string; stripe_session_id: string; status: string } | null>;
+  /** Re-activate a REFUNDED unlock with a new payment. Returns true when a refunded row was replaced. */
+  reactivateRefundedUnlock(row: UnlockRow): Promise<boolean>;
   /** `insert … on conflict (analysis_id) do nothing`. */
   insertUnlock(row: UnlockRow): Promise<"inserted" | "conflict">;
   /** Refund a PaymentIntent in full. `key` is the Stripe idempotency key. */
@@ -81,6 +85,10 @@ export async function settleReportUnlock(session: Stripe.Checkout.Session, store
 
   const existing = await store.getUnlock(analysisId);
   if (existing?.stripe_session_id === session.id) return { kind: "already_unlocked" };
+  // The same session already settled (the conflict was on stripe_session_id): a replay, not a duplicate.
+  if (!existing && (await store.getUnlockBySession(session.id))) return { kind: "already_unlocked" };
+  // The audit's earlier unlock was refunded (manual refund / dispute): this new payment re-buys it.
+  if (existing?.status === "refunded" && (await store.reactivateRefundedUnlock(row))) return { kind: "unlocked" };
 
   // Another session already unlocked this audit (two tabs paid before either settled): never charge twice.
   if (pi) await store.refundPaymentIntent(pi, `unlock-duplicate-${session.id}`);

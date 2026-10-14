@@ -25,6 +25,15 @@ class FakeStore implements UnlockStore {
     this.unlocks.set(row.analysis_id, { ...row, status: "paid" });
     return "inserted" as const;
   }
+  async getUnlockBySession(sid: string) {
+    return [...this.unlocks.values()].find((u) => u.stripe_session_id === sid) ?? null;
+  }
+  async reactivateRefundedUnlock(row: UnlockRow) {
+    const cur = this.unlocks.get(row.analysis_id);
+    if (!cur || cur.status !== "refunded") return false;
+    this.unlocks.set(row.analysis_id, { ...row, status: "paid" });
+    return true;
+  }
   async refundPaymentIntent(pi: string, key: string) {
     if (!this.refunds.some((r) => r.key === key)) this.refunds.push({ pi, key });
   }
@@ -72,6 +81,36 @@ test("two tabs pay two sessions for the same audit: the second is refunded autom
   assert.equal(s.refunds.length, 1);
 });
 
+test("a REFUNDED unlock can be bought again: the new payment re-opens the audit and is NOT auto-refunded", async () => {
+  const s = new FakeStore();
+  await settleReportUnlock(session({ id: "cs_1", payment_intent: "pi_1" }), s);
+  s.unlocks.get("A1")!.status = "refunded"; // charge.refunded re-locked it
+  assert.deepEqual(await settleReportUnlock(session({ id: "cs_9", payment_intent: "pi_9" }), s), { kind: "unlocked" });
+  assert.equal(s.unlocks.get("A1")!.status, "paid");
+  assert.equal(s.unlocks.get("A1")!.stripe_session_id, "cs_9");
+  assert.equal(s.refunds.length, 0);
+});
+
+test("a transient read error never refunds a paying customer (it throws → webhook 500 → Stripe retries)", async () => {
+  const s = new FakeStore();
+  s.getAnalysisOwner = async () => {
+    throw new Error("getAnalysisOwner: connection reset");
+  };
+  await assert.rejects(settleReportUnlock(session(), s), /connection reset/);
+  assert.equal(s.refunds.length, 0);
+  assert.equal(s.unlocks.size, 0);
+  const src = read("lib/unlocks/settle-store.ts");
+  for (const fn of ["getAnalysisOwner", "getUnlock", "getUnlockBySession"]) assert.ok(src.includes("throw new Error(`" + fn + ":"), fn);
+});
+
+test("a same-session conflict on another key is a replay, not a duplicate", async () => {
+  const s = new FakeStore();
+  await settleReportUnlock(session({ id: "cs_1" }), s);
+  s.getUnlock = async () => null; // the unlock is not found by audit this time, only by session
+  assert.deepEqual(await settleReportUnlock(session({ id: "cs_1" }), s), { kind: "already_unlocked" });
+  assert.equal(s.refunds.length, 0);
+});
+
 test("foreign metadata: the audit belongs to someone else → no entitlement, payment refunded", async () => {
   const s = new FakeStore();
   const r = await settleReportUnlock(session({ metadata: { purchase: "report_unlock", supabase_user_id: "U1", analysis_id: "A2" } }), s);
@@ -111,7 +150,7 @@ test("the webhook sends unlock sessions to settlement, never to subscription syn
   // the unlock branch comes BEFORE the switch that calls syncSubscription
   assert.ok(src.indexOf("settleReportUnlock(unlockSession") < src.indexOf("await syncSubscription(event, service)"));
   for (const ev of ["EV_ASYNC_OK", "EV_ASYNC_FAILED", "charge.refunded"]) assert.match(src.slice(src.indexOf("const RELEVANT_EVENTS")), new RegExp(ev));
-  assert.match(src, /if \(unlockRelated\) \{\s*await service\.from\("stripe_events"\)\.delete\(\)\.eq\("id", event\.id\)/);
+  assert.match(src, /if \(unlockRelated\) \{\s*const \{ error: delErr \} = await service\.from\("stripe_events"\)\.delete\(\)\.eq\("id", event\.id\)/);
   // plan code untouched
   assert.match(src, /async function onInvoicePaid/);
 });
@@ -131,7 +170,10 @@ test("REPORT_UNLOCK is OFF by default and the entitlement is only consulted when
 });
 
 test("isPaid / viewer are derived from the full-report decision on every path that serves the report", () => {
-  assert.match(read("app/(app)/app/analyzer/[id]/page.tsx"), /const isPaid = fullReport;/);
+  // isPaid stays PLAN-based (an unlocked Free user is not a Pro); the cure follows fullReport
+  assert.ok(read("app/(app)/app/analyzer/[id]/page.tsx").includes('const isPaid = (profile?.plan ?? "free") !== "free";'));
+  assert.match(read("app/(app)/app/analyzer/[id]/page.tsx"), /\r?\n\s+fullReport,\r?\n/);
+  assert.ok(read("components/analyzer/analysis-view.tsx").includes("unlockedCount={(viewer.fullReport ?? viewer.isPaid) ? undefined : 1}"));
   assert.match(read("app/(app)/app/analyzer/[id]/page.tsx"), /hasFullReport: fullReport/);
   assert.match(read("app/api/analyses/[id]/route.ts"), /resolveFullReport\(\{ analysisId: id/);
   assert.match(read("app/api/analyses/[id]/growth-map/route.ts"), /const isPaid = await resolveFullReport/);
