@@ -1006,5 +1006,26 @@
     "themeFree": "free",
     "openStore": "Open",
     "comingSoon": "Coming soon for your niche"
+  },
+  "unlock": {
+    "submit": "One-time payment. Unlocks the full report for {domain}. No subscription.",
+    "backToReport": "Back to my report",
+    "secure": "Secure checkout",
+    "eyebrow": "Unlock the full report",
+    "includesTitle": "What you get for this audit",
+    "i1": "Every top fix, ranked, with the how-to",
+    "i2": "The buyer-persona simulation",
+    "i3": "All 3 fix tracks, generated for your store",
+    "i4": "1 Meta campaign projection for this audit",
+    "i5": "Winners in your niche, with links to each store",
+    "oneTime": "One-time payment · no subscription · no card on file",
+    "proNote": "Auditing several stores? Pro starts at $19/mo.",
+    "preparing": "Preparing secure checkout…",
+    "activating": "Payment received — activating your report…",
+    "activatingSub": "This usually takes a few seconds. You can keep this page open.",
+    "activatingSlow": "It's taking longer than usual. Your payment is safe — refresh in a minute or contact support.",
+    "openReport": "Open my report",
+    "canceledTitle": "No charge was made",
+    "canceledBody": "The checkout was canceled, so nothing was charged. Your report is still here."
   }
 }

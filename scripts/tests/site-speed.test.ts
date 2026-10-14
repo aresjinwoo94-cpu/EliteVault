@@ -97,6 +97,7 @@ test("checkout: Stripe preconnects live on checkout + billing only, never site-w
   assert.deepEqual(offenders, [
     "app/(app)/app/billing/page.tsx",
     "app/(app)/app/checkout/page.tsx",
+    "app/(app)/app/unlock/[analysisId]/page.tsx", // the one-time unlock checkout (WP-3) is a checkout too
   ]);
 });
 

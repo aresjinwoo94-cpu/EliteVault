@@ -23,7 +23,7 @@ import type { Locale } from "@/lib/i18n/config";
  * API does accept it on that version (verified against a test-mode session,
  * which echoed these exact colours back).
  */
-const DARK_CHECKOUT_BRANDING = {
+export const DARK_CHECKOUT_BRANDING = {
   branding_settings: {
     background_color: "#0A0A0F", // obsidian-900 — the page's own surface
     button_color: "#2DD4BF", // champagne-400, the brand teal
@@ -32,7 +32,7 @@ const DARK_CHECKOUT_BRANDING = {
 } as object;
 
 /** A rejection of the branding parameter itself, not a real payment failure. */
-function isBrandingRejection(err: unknown): boolean {
+export function isBrandingRejection(err: unknown): boolean {
   const e = err as { type?: string; param?: string; message?: string };
   if (e?.param?.startsWith("branding_settings")) return true;
   return (

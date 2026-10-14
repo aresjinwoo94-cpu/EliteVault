@@ -67,7 +67,14 @@ test("the Stripe session is created with exactly the shared list, and nothing el
     .flatMap(sourceFiles)
     .filter((f) => f !== "lib/stripe/checkout-session.ts")
     .filter((f) => /payment_method_types/.test(code(f)));
-  assert.deepEqual(others, [], "only checkout-session.ts may set payment_method_types");
+  // The one-time report-unlock session (WP-3) builds its params in its own pure module; it must pass the SAME constant.
+  assert.deepEqual(others, ["lib/stripe/report-unlock-params.ts"], "only the two Checkout builders may set payment_method_types");
+  const unlock = code("lib/stripe/report-unlock-params.ts");
+  assert.deepEqual(
+    [...unlock.matchAll(/["']?payment_method_types["']?\s*:\s*([^,\n]+)/g)].map((m) => m[1].trim()),
+    ["[...CHECKOUT_PAYMENT_METHOD_TYPES]"],
+    "report-unlock-params.ts must pass the shared constant, not its own literal",
+  );
 });
 
 // ─── The badge end ──────────────────────────────────────────────────────────
