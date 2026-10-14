@@ -5,6 +5,7 @@ import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { inngest } from "@/inngest/client";
 import { assertQuota } from "@/lib/quota/guard";
+import { keepRunWithinAllowance, unlockedProjectionAllowed } from "@/lib/unlocks/simulation";
 import { getT } from "@/lib/i18n/server";
 
 /**
@@ -90,8 +91,12 @@ export async function triggerSimulation(
   // Plan gating — server-enforced Meta quota (Free 0 / Pro 1 / Scale ∞).
   // The 2nd Pro run fails right here, not just in the UI.
   const quota = await assertQuota(user.id, "metaRun");
+  // WP-4: a Free viewer who unlocked THIS report may run ONE projection for it (REPORT_UNLOCK on). Plan quotas
+  // are untouched: paid plans never take this branch.
+  let viaUnlock = false;
   if (!quota.ok) {
-    return { ok: false, error: quota.reason, code: quota.code };
+    viaUnlock = await unlockedProjectionAllowed(user.id, parsed.data.analysisId);
+    if (!viaUnlock) return { ok: false, error: quota.reason, code: quota.code };
   }
 
   // Plan tier still needed for the Inngest event (the agent calibrates a
@@ -161,6 +166,11 @@ export async function triggerSimulation(
       ok: false,
       error: insErr?.message ?? t("actionErr.queueFailed"),
     };
+  }
+
+  // Two clicks racing past the pre-check must not both keep a run (the allowance is ONE per unlocked report).
+  if (viaUnlock && !(await keepRunWithinAllowance(user.id, parsed.data.analysisId, row.id))) {
+    return { ok: false, error: t("unlock.simUsed"), code: "unlock_projection_used" };
   }
 
   await inngest.send({

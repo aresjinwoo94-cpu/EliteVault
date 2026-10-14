@@ -15,6 +15,7 @@ import {
 import { parseState } from "@/lib/analyzer/fix-tracks";
 import { resolveCompetitor } from "@/lib/analyzer/fix-tracks-data";
 import { toClientAnalysis } from "@/lib/analyzer/client-payload";
+import { reportUnlockEnabled } from "@/lib/flags";
 import type { DiscoverySignals } from "@/lib/analyzer/discovery-signals";
 
 /**
@@ -133,6 +134,8 @@ async function AnonAuditPageInner({
         fullName: null,
         isScale: false,
         isPaid: false,
+        // WP-4: anonymous visitors see the unlock offer too (the CTA goes through sign-up first)
+        unlockOffer: reportUnlockEnabled(),
         canRunMeta: false,
         metaLimit: 0,
         metaUsed: 0,

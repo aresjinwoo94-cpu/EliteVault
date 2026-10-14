@@ -6,6 +6,7 @@ import { AnalysisView } from "@/components/analyzer/analysis-view";
 import { loadNicheWinnersModule } from "@/lib/library/niche-winners";
 import { analyzerMapSpineEnabled, analyzerMetaPromoEnabled } from "@/lib/flags";
 import { toClientAnalysis } from "@/lib/analyzer/client-payload";
+import { reportUnlockEnabled } from "@/lib/flags";
 
 /**
  * Design preview of the anonymous audit reveal — the real (identical-to-free)
@@ -89,6 +90,7 @@ async function AnonRevealPreviewPageInner({
         fullName: null,
         isScale: false,
         isPaid: false,
+        unlockOffer: reportUnlockEnabled(),
         canRunMeta: false,
         metaLimit: 0,
         metaUsed: 0,

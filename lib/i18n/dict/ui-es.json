@@ -1026,6 +1026,23 @@
     "activatingSlow": "Está tardando más de lo normal. Tu pago está seguro: recarga en un minuto o contacta a soporte.",
     "openReport": "Abrir mi reporte",
     "canceledTitle": "No se hizo ningún cobro",
-    "canceledBody": "El pago se canceló, así que no se cobró nada. Tu reporte sigue aquí."
+    "canceledBody": "El pago se canceló, así que no se cobró nada. Tu reporte sigue aquí.",
+    "cardTitleOne": "Desbloquea el fix restante de este reporte",
+    "cardTitleMany": "Desbloquea los {n} fixes restantes de este reporte",
+    "cardPrice": "US$7 · pago único · sin suscripción",
+    "cardCta": "Desbloquear por US$7",
+    "cardCtaAnon": "Crea tu cuenta para desbloquear",
+    "modalTitle": "Desbloquea el reporte completo",
+    "modalBody": "Un solo pago abre todo de esta auditoría. Sin suscripción.",
+    "modalCta": "Desbloquear por US$7",
+    "modalCtaAnon": "Crea tu cuenta para continuar",
+    "notNow": "Ahora no",
+    "proLink": "¿Varias tiendas? Pro desde $19/mes",
+    "lockedTitle": "Desbloquea el reporte completo",
+    "lockedBody": "Tu diagnóstico es gratis. Un solo pago abre la reacción del buyer persona, todos los fixes y el cómo hacerlo de esta auditoría.",
+    "bannerUnlocked": "Reporte desbloqueado ✓ — todos los fixes, el buyer persona, los 3 fix tracks y 1 proyección de Meta están abiertos para esta auditoría.",
+    "bannerCanceled": "El pago se canceló — no se cobró nada.",
+    "simIncluded": "1 proyección incluida en este reporte",
+    "simUsed": "Ya usaste la proyección incluida en este reporte"
   }
 }
