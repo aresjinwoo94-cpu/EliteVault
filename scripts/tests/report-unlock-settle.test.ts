@@ -231,3 +231,9 @@ test("a discounted 100%-off or discounted total does not confuse the check: the 
   const s = new FakeStore();
   assert.deepEqual(await settleReportUnlock(session({ amount_subtotal: 700, amount_total: 350 } as never), s), { kind: "unlocked" });
 });
+
+test("the webhook settles a session re-read with the pinned API version, not the raw event body", () => {
+  const w = read("app/api/stripe/webhook/route.ts");
+  assert.match(w, /stripe\.checkout\.sessions\.retrieve\(unlockSession\.id\)/);
+  assert.match(w, /settleReportUnlock\(fresh, createUnlockStore\(\)\)/);
+});
