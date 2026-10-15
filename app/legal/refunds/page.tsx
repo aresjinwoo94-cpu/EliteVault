@@ -50,7 +50,7 @@ export default function RefundsPage() {
         <p>
           Because EliteVault is a digital service delivered immediately,{" "}
           <strong>
-            subscription payments are non-refundable and all sales are final
+            {unlock ? "subscription payments are" : "payments are"} non-refundable and all sales are final
           </strong>
           , including for partial or unused portions of a billing period. When you
           cancel, you are not charged again, but we do not refund the period

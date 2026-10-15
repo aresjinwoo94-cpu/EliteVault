@@ -90,7 +90,7 @@ test("WP-6: the unlock appears in legal/FAQ/llms.txt only while it is on sale, a
   assert.match(refunds, /\{unlock && \(/);
   assert.match(refunds, /within 7 days/);
   assert.match(refunds, /locks again/);
-  assert.match(refunds, /subscription payments are non-refundable/, "the blanket no-refund rule is scoped to subscriptions");
+  assert.match(refunds, /"subscription payments are" : "payments are"/, "the wording changes only while the unlock is on sale");
   assert.match(read("app/legal/terms/page.tsx"), /reportUnlockEnabled\(\) && \(/);
   assert.match(read("app/llms.txt/route.ts"), /reportUnlockEnabled\(\) \?/);
   assert.match(read("lib/content/faq.ts"), /Can I pay for just one report\?/);
