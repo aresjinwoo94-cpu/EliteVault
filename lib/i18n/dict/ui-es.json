@@ -1006,5 +1006,26 @@
     "themeFree": "gratis",
     "openStore": "Abrir",
     "comingSoon": "Pronto en tu nicho"
+  },
+  "unlock": {
+    "submit": "Pago único. Desbloquea el reporte completo de {domain}. Sin suscripción.",
+    "backToReport": "Volver a mi reporte",
+    "secure": "Pago seguro",
+    "eyebrow": "Desbloquea el reporte completo",
+    "includesTitle": "Qué obtienes de esta auditoría",
+    "i1": "Todos los fixes priorizados, con el cómo hacerlo",
+    "i2": "La simulación del buyer persona",
+    "i3": "Los 3 fix tracks generados para tu tienda",
+    "i4": "1 proyección de campaña de Meta para esta auditoría",
+    "i5": "Ganadoras de tu nicho, con enlace a cada tienda",
+    "oneTime": "Pago único · sin suscripción · sin guardar tu tarjeta",
+    "proNote": "¿Auditas varias tiendas? Pro desde $19/mes.",
+    "preparing": "Preparando el pago seguro…",
+    "activating": "Pago recibido — activando tu reporte…",
+    "activatingSub": "Suele tardar unos segundos. Puedes dejar esta página abierta.",
+    "activatingSlow": "Está tardando más de lo normal. Tu pago está seguro: recarga en un minuto o contacta a soporte.",
+    "openReport": "Abrir mi reporte",
+    "canceledTitle": "No se hizo ningún cobro",
+    "canceledBody": "El pago se canceló, así que no se cobró nada. Tu reporte sigue aquí."
   }
 }

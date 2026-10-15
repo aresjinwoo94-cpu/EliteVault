@@ -10,6 +10,7 @@ import { Loader2 } from "lucide-react";
 import { phCapture } from "@/lib/analytics/posthog";
 import { getStripePromise } from "@/lib/stripe/client";
 import type { CheckoutSessionResult } from "@/lib/stripe/checkout-session";
+import type { UnlockSessionResult } from "@/lib/stripe/report-unlock-session";
 import { useT } from "@/components/i18n/locale-provider";
 
 /**
@@ -73,6 +74,27 @@ export function EmbeddedCheckoutForm({
   return (
     <Suspense fallback={<CheckoutLoading />}>
       <CheckoutFrame sessionPromise={sessionPromise} />
+    </Suspense>
+  );
+}
+
+/**
+ * The one-time report-unlock checkout (WP-3): the same Stripe frame, but its own funnel event
+ * (`unlock_checkout_viewed`, brief §7.1) — it must NOT fire the plan funnel's `checkout_started`.
+ */
+export function EmbeddedUnlockCheckoutForm({
+  analysisId,
+  sessionPromise,
+}: {
+  analysisId: string;
+  sessionPromise: Promise<UnlockSessionResult>;
+}) {
+  useEffect(() => {
+    phCapture("unlock_checkout_viewed", { analysis_id: analysisId });
+  }, [analysisId]);
+  return (
+    <Suspense fallback={<CheckoutLoading />}>
+      <CheckoutFrame sessionPromise={sessionPromise as Promise<CheckoutSessionResult>} />
     </Suspense>
   );
 }
