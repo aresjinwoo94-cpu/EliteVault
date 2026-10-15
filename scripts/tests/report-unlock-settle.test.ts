@@ -191,3 +191,43 @@ test("the unlock is not a plan: PLANS, /pricing and the landing pricing never me
     assert.doesNotMatch(src, /report[_ -]?unlock|REPORT_UNLOCK/i, f);
   }
 });
+
+// Amount check: the session must be the $7 unlock, judged in the ORIGINAL USD amount (never the buyer's local currency).
+test("a $30 session (stripe CLI fixture) never unlocks: refunded, nothing written", async () => {
+  const s = new FakeStore();
+  const r = await settleReportUnlock(session({ amount_total: 3000, amount_subtotal: 3000 } as never), s);
+  assert.deepEqual(r, { kind: "amount_mismatch", refunded: true });
+  assert.equal(s.unlocks.size, 0);
+  assert.deepEqual(s.refunds, [{ pi: "pi_1", key: "unlock-amount-cs_1" }]);
+});
+
+test("Adaptive Pricing: a EUR payment of the USD 7.00 unlock is accepted by its source amount, not the local amount", async () => {
+  const s = new FakeStore();
+  const eur = session({
+    currency: "eur",
+    amount_total: 645,
+    amount_subtotal: 645,
+    currency_conversion: { amount_subtotal: 700, amount_total: 700, fx_rate: "0.92", source_currency: "usd" },
+  } as never);
+  assert.deepEqual(await settleReportUnlock(eur, s), { kind: "unlocked" });
+  assert.equal(s.refunds.length, 0);
+});
+
+test("Adaptive Pricing with a wrong source amount, or a non-USD source, is refunded", async () => {
+  for (const cc of [
+    { amount_subtotal: 3000, amount_total: 3000, fx_rate: "0.92", source_currency: "usd" },
+    { amount_subtotal: 700, amount_total: 700, fx_rate: "1", source_currency: "eur" },
+  ]) {
+    const s = new FakeStore();
+    const r = await settleReportUnlock(session({ currency: "eur", amount_total: 645, currency_conversion: cc } as never), s);
+    assert.equal(r.kind, "amount_mismatch");
+    assert.equal(s.unlocks.size, 0);
+  }
+  const s = new FakeStore();
+  assert.equal((await settleReportUnlock(session({ currency: "eur", amount_total: 700 } as never), s)).kind, "amount_mismatch", "EUR 7.00 without conversion data is not USD 7.00");
+});
+
+test("a discounted 100%-off or discounted total does not confuse the check: the subtotal (list price) decides", async () => {
+  const s = new FakeStore();
+  assert.deepEqual(await settleReportUnlock(session({ amount_subtotal: 700, amount_total: 350 } as never), s), { kind: "unlocked" });
+});
