@@ -146,7 +146,7 @@ test("hasFullReport: a paid plan or an unlock, nothing else; free/unknown is clo
 test("the webhook sends unlock sessions to settlement, never to subscription sync; failures un-dedupe the event", () => {
   const src = read("app/api/stripe/webhook/route.ts");
   assert.match(src, /isReportUnlockSession\(event\.data\.object/);
-  assert.match(src, /if \(unlockSession\) \{\s*await settleReportUnlock\(unlockSession, createUnlockStore\(\)\);\s*return NextResponse\.json/);
+  assert.match(src, /if \(unlockSession\) \{[\s\S]*?await settleReportUnlock\(fresh, createUnlockStore\(\)\);\s*return NextResponse\.json/);
   // the unlock branch comes BEFORE the switch that calls syncSubscription
   assert.ok(src.indexOf("settleReportUnlock(fresh") < src.indexOf("await syncSubscription(event, service)"));
   for (const ev of ["EV_ASYNC_OK", "EV_ASYNC_FAILED", "charge.refunded"]) assert.match(src.slice(src.indexOf("const RELEVANT_EVENTS")), new RegExp(ev));
