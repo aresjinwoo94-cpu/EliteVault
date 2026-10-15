@@ -34,7 +34,6 @@ export const metadata: Metadata = {
     "ai store audit",
     "ecommerce conversion analyzer",
     "shopify store audit",
-    "cro audit tool",
     "dtc conversion optimization",
     // Design/desire cluster (buyer-persona SEO layer) — added, not replacing.
     "shopify store design audit",
