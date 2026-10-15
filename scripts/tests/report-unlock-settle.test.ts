@@ -148,7 +148,7 @@ test("the webhook sends unlock sessions to settlement, never to subscription syn
   assert.match(src, /isReportUnlockSession\(event\.data\.object/);
   assert.match(src, /if \(unlockSession\) \{\s*await settleReportUnlock\(unlockSession, createUnlockStore\(\)\);\s*return NextResponse\.json/);
   // the unlock branch comes BEFORE the switch that calls syncSubscription
-  assert.ok(src.indexOf("settleReportUnlock(unlockSession") < src.indexOf("await syncSubscription(event, service)"));
+  assert.ok(src.indexOf("settleReportUnlock(fresh") < src.indexOf("await syncSubscription(event, service)"));
   for (const ev of ["EV_ASYNC_OK", "EV_ASYNC_FAILED", "charge.refunded"]) assert.match(src.slice(src.indexOf("const RELEVANT_EVENTS")), new RegExp(ev));
   assert.match(src, /if \(unlockRelated\) \{\s*const \{ error: delErr \} = await service\.from\("stripe_events"\)\.delete\(\)\.eq\("id", event\.id\)/);
   // plan code untouched
