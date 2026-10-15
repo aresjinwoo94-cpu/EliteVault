@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { reportUnlockEnabled } from "@/lib/flags";
 
 export const metadata: Metadata = {
   title: "Refund & Cancellation Policy",
@@ -11,6 +12,8 @@ const LAST_UPDATED = "June 2026";
 const CONTACT = "support@elitevaultapp.com";
 
 export default function RefundsPage() {
+  // The one-time report unlock (US$7) is only described while it is on sale (REPORT_UNLOCK).
+  const unlock = reportUnlockEnabled();
   return (
     <>
       {/* TODO: revisión legal profesional antes de producción */}
@@ -47,12 +50,44 @@ export default function RefundsPage() {
         <p>
           Because EliteVault is a digital service delivered immediately,{" "}
           <strong>
-            payments are non-refundable and all sales are final
+            subscription payments are non-refundable and all sales are final
           </strong>
           , including for partial or unused portions of a billing period. When you
           cancel, you are not charged again, but we do not refund the period
           already in progress.
         </p>
+
+        {unlock && (
+          <>
+            <h2>One-time report unlock</h2>
+            <p>
+              You can unlock the full report of a single audit for a one-time payment of{" "}
+              <strong>US$7</strong> (no subscription, nothing renews). This purchase is the
+              exception to the rule above:{" "}
+              <strong>
+                you can ask for a refund by email within 7 days of the payment
+              </strong>
+              , no questions asked. Write to <a href={`mailto:${CONTACT}`}>{CONTACT}</a> from
+              the account that paid, with the website audited. We refund the full amount to the
+              original payment method through Stripe.
+            </p>
+            <ul>
+              <li>
+                When the refund is issued, that report <strong>locks again</strong>: the unlocked
+                content (all fixes, the buyer-persona simulation, the fix tracks and the extra
+                projection) is no longer available for that audit.
+              </li>
+              <li>
+                The unlock applies to that one audit only. It is not a plan: it does not include new
+                audits, publishing, the Optimizer or the full Library.
+              </li>
+              <li>
+                Refunds requested after 7 days are at our discretion. Nothing here limits any
+                non-waivable consumer right you may have.
+              </li>
+            </ul>
+          </>
+        )}
 
         <h2>Changing plans (proration)</h2>
         <p>

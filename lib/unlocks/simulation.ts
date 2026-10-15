@@ -1,6 +1,6 @@
 import "server-only";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
-import { reportUnlockEnabled } from "@/lib/flags";
+import { reportUnlockEnabledFor } from "@/lib/flags";
 import { isAnalysisUnlocked } from "@/lib/unlocks/entitlement";
 
 /**
@@ -25,8 +25,8 @@ async function countProjections(analysisId: string, userId: string): Promise<num
 }
 
 /** May this viewer start a projection for THIS audit through the unlock allowance? Fails closed. */
-export async function unlockedProjectionAllowed(userId: string, analysisId: string): Promise<boolean> {
-  if (!reportUnlockEnabled()) return false;
+export async function unlockedProjectionAllowed(userId: string, analysisId: string, email?: string | null): Promise<boolean> {
+  if (!reportUnlockEnabledFor(email)) return false;
   try {
     if (!(await isAnalysisUnlocked(analysisId, userId))) return false;
     return (await countProjections(analysisId, userId)) < UNLOCK_PROJECTIONS_PER_REPORT;

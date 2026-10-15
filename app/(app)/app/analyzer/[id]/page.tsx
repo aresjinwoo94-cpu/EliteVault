@@ -14,7 +14,7 @@ import { parseState } from "@/lib/analyzer/fix-tracks";
 import { resolveCompetitor } from "@/lib/analyzer/fix-tracks-data";
 import { toClientAnalysis } from "@/lib/analyzer/client-payload";
 import { resolveFullReport } from "@/lib/unlocks/entitlement";
-import { reportUnlockEnabled } from "@/lib/flags";
+import { reportUnlockEnabledFor } from "@/lib/flags";
 
 export const dynamic = "force-dynamic";
 
@@ -88,7 +88,7 @@ export default async function AnalysisPage({
   const plan = PLANS[profile?.plan ?? "free"];
   // WP-2: "sees the full report of THIS audit" = paid plan OR a one-time unlock (REPORT_UNLOCK flag).
   // It drives the report's locks/cure; plan-only capabilities (publish, Optimizer, new audits) stay plan-based.
-  const fullReport = await resolveFullReport({ analysisId: id, userId: user.id, plan: profile?.plan ?? "free" });
+  const fullReport = await resolveFullReport({ analysisId: id, userId: user.id, plan: profile?.plan ?? "free", email: user.email });
   // WP-4: a Free viewer who unlocked THIS report gets exactly ONE Meta projection for it (not a Pro quota).
   const unlockedFree = fullReport && (profile?.plan ?? "free") === "free";
   // P1-7 — the Campaign Scenario Modeler is now available to Pro (1/mo) AND
@@ -171,7 +171,7 @@ export default async function AnalysisPage({
         // fix tracks and growth-map locks. Plan-only capabilities keep reading `isPaid`.
         fullReport,
         // WP-4 — offer the one-time unlock (REPORT_UNLOCK flag; the view still requires "no full report").
-        unlockOffer: reportUnlockEnabled(),
+        unlockOffer: reportUnlockEnabledFor(user.email),
         // P1-7 — Meta block access + monthly quota (null limit = unlimited).
         canRunMeta,
         metaLimit: metaUsage.limit,

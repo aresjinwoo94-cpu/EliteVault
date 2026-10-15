@@ -72,7 +72,7 @@ test("the modal is click-only: no timers, scroll or exit-intent triggers in the 
 });
 
 test("the offer exists only behind the flag, and only for viewers without the full report", () => {
-  assert.match(read("app/(app)/app/analyzer/[id]/page.tsx"), /unlockOffer: reportUnlockEnabled\(\)/);
+  assert.match(read("app/(app)/app/analyzer/[id]/page.tsx"), /unlockOffer: reportUnlockEnabledFor\(user\.email\)/);
   assert.match(read("app/audit/[id]/page.tsx"), /unlockOffer: reportUnlockEnabled\(\)/);
   assert.match(read("components/analyzer/analysis-view.tsx"), /UnlockOfferProvider enabled=\{unlockOn\}/);
 });
@@ -90,7 +90,7 @@ test("the unlocked Free viewer gets ONE projection per report, enforced on the s
   assert.match(sim, /UNLOCK_PROJECTIONS_PER_REPORT = 1/);
   assert.match(sim, /\.in\("status", \["queued", "running", "succeeded"\]\)/, "a failed run does not burn it");
   const act = read("app/actions/meta-simulator.ts");
-  assert.match(act, /unlockedProjectionAllowed\(user\.id, parsed\.data\.analysisId\)/);
+  assert.match(act, /unlockedProjectionAllowed\(user\.id, parsed\.data\.analysisId, user\.email\)/);
   assert.match(act, /keepRunWithinAllowance\(/);
   assert.doesNotMatch(read("lib/quota/guard.ts"), /unlock/i, "assertQuota (plan quotas) is untouched");
   assert.match(read("app/(app)/app/analyzer/[id]/page.tsx"), /const canRunMeta = \(plan\.quotas\.metaRunsPerMonth \?\? 1\) !== 0 \|\| unlockedFree;/);

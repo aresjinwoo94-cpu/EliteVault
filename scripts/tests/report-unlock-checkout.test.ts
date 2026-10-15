@@ -64,7 +64,7 @@ test("the shared payment-method list, a dedicated return URL, and a customer OR 
 
 test("the checkout page guards on the server and exists only while the flag is on", () => {
   const page = read("app/(app)/app/unlock/[analysisId]/page.tsx");
-  assert.match(page, /if \(!reportUnlockEnabled\(\)\) notFound\(\);/);
+  assert.match(page, /if \(!reportUnlockEnabledFor\(user\.email\)\) notFound\(\);/);
   assert.match(page, /redirect\(`\/sign-in\?next=/);
   assert.match(page, /eligibility\.kind === "not_found"\) notFound\(\)/);
   assert.match(page, /eligibility\.kind !== "ok"\) redirect\(`\/app\/analyzer\//);

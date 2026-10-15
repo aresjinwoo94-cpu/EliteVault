@@ -64,7 +64,7 @@ export async function GET(
   }
 
   // WP-2: full report = paid plan OR a one-time unlock of this audit
-  const isPaid = await resolveFullReport({ analysisId: id, userId: user.id, plan: profile?.plan ?? "free" });
+  const isPaid = await resolveFullReport({ analysisId: id, userId: user.id, plan: profile?.plan ?? "free", email: user.email });
 
   try {
     const result = analysis.result as AnalysisResult;
