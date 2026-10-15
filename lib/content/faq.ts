@@ -5,7 +5,9 @@
  */
 export type FaqItem = { q: string; a: string };
 
-export const FAQ_ITEMS: FaqItem[] = [
+import { reportUnlockEnabled } from "@/lib/flags";
+
+const BASE_FAQ_ITEMS: FaqItem[] = [
   {
     q: "How is this different from a heatmap or session-replay tool?",
     a: "Hotjar and Clarity show what users do — EliteVault explains why. We don't need traffic to give you an audit. Our AI reads design fundamentals (color, hierarchy, copy, CRO heuristics) and benchmarks them against stores actually scaling on paid social today.",
@@ -48,3 +50,11 @@ export function faqPageJsonLd(items: FaqItem[] = FAQ_ITEMS) {
     })),
   };
 }
+
+/** The one-time unlock is listed only while it is on sale (REPORT_UNLOCK) and never in the plan table. */
+const UNLOCK_FAQ: FaqItem = {
+  q: "Can I pay for just one report?",
+  a: "Yes. On the Free plan you can unlock the full report of a single audit for a one-time US$7: every fix with its how-to, the buyer-persona simulation, all the fix tracks, one Meta campaign projection for that audit and the winning stores in your niche. No subscription and no card on file. It covers that audit only; new audits, publishing, the Optimizer and the full Library stay with Pro and Scale. If you change your mind, email us within 7 days and we refund it — the report then locks again.",
+};
+
+export const FAQ_ITEMS: FaqItem[] = reportUnlockEnabled() ? [...BASE_FAQ_ITEMS, UNLOCK_FAQ] : BASE_FAQ_ITEMS;

@@ -1,6 +1,6 @@
 import "server-only";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
-import { reportUnlockEnabled } from "@/lib/flags";
+import { reportUnlockEnabledFor } from "@/lib/flags";
 import { hasFullReport } from "@/lib/unlocks/report-unlock";
 
 /**
@@ -37,8 +37,10 @@ export async function resolveFullReport(p: {
   analysisId: string;
   userId: string;
   plan: string | null | undefined;
+  /** Viewer email: lets the production test list (REPORT_UNLOCK_TEST_EMAILS) see the unlock while the flag is off. */
+  email?: string | null;
 }): Promise<boolean> {
   if (hasFullReport({ plan: p.plan })) return true;
-  if (!reportUnlockEnabled()) return false;
+  if (!reportUnlockEnabledFor(p.email)) return false;
   return hasFullReport({ plan: p.plan, unlocked: await isAnalysisUnlocked(p.analysisId, p.userId) });
 }

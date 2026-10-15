@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, Check, Lock } from "lucide-react";
 import { getUserResult } from "@/lib/supabase/server";
 import { getLocale, getT } from "@/lib/i18n/server";
-import { reportUnlockEnabled } from "@/lib/flags";
+import { reportUnlockEnabledFor } from "@/lib/flags";
 import { checkUnlockEligibility } from "@/lib/unlocks/guard";
 import { createReportUnlockSession } from "@/lib/stripe/report-unlock-session";
 import { EmbeddedUnlockCheckoutForm } from "@/components/billing/embedded-checkout";
@@ -18,7 +18,6 @@ export const dynamic = "force-dynamic";
  * next to it is what the Sep 2026 checkout fix removed.
  */
 export default async function UnlockPage({ params }: { params: Promise<{ analysisId: string }> }) {
-  if (!reportUnlockEnabled()) notFound();
   const { analysisId } = await params;
   const [
     {
@@ -28,6 +27,8 @@ export default async function UnlockPage({ params }: { params: Promise<{ analysi
     { t },
   ] = await Promise.all([getUserResult(), getLocale(), getT()]);
   if (!user) redirect(`/sign-in?next=${encodeURIComponent(`/app/unlock/${analysisId}`)}`);
+  // 404 unless the flag is on for THIS viewer (global flag, or the production test list).
+  if (!reportUnlockEnabledFor(user.email)) notFound();
 
   const eligibility = await checkUnlockEligibility(analysisId, user.id);
   if (eligibility.kind === "not_found") notFound();

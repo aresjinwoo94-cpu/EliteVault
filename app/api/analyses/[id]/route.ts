@@ -133,7 +133,7 @@ export async function GET(
     const plan = planKey && planKey in PLANS ? PLANS[planKey as PlanTier] : null;
     payload = gateMetaAds(row, plan != null && plan.unlocksScale);
     // Fails closed: an unresolved plan is treated as "no full report".
-    payload = gateRowResult(payload, await resolveFullReport({ analysisId: id, userId: user.id, plan: planKey }));
+    payload = gateRowResult(payload, await resolveFullReport({ analysisId: id, userId: user.id, plan: planKey, email: user.email }));
   }
 
   // Stale-job detection

@@ -139,6 +139,10 @@ export function OwnerMonitor() {
       ($("evm-ord") as HTMLElement).textContent = fmtNum(k.orders);
       ($("evm-aov") as HTMLElement).textContent = fmtMoney2(k.revenuePerSub);
       ($("evm-conv") as HTMLElement).textContent = (Number(k.conversionRate) || 0).toFixed(2) + "%";
+      const un = k.unlocks || { count: 0, refunded: 0, revenue: 0, checkouts: 0, completed: 0 };
+      ($("evm-unl") as HTMLElement).textContent = fmtNum(un.count);
+      ($("evm-unl-sub") as HTMLElement).textContent = fmtMoney(un.revenue) + " · " + fmtNum(un.refunded) + " reembolsados · " + fmtNum(un.completed) + "/" + fmtNum(un.checkouts) + " checkouts";
+      setDelta("evm-unl-d", k.deltas.unlocks);
       setDelta("evm-rev-d", k.deltas.revenue); setDelta("evm-ord-d", k.deltas.orders); setDelta("evm-aov-d", k.deltas.revenuePerSub); setDelta("evm-conv-d", k.deltas.conversionRate);
       const s = await api("revenue-series", { range: currentRange });
       drawSpark("evm-spark-rev", s.map((p: any) => p.revenue), t.accent);
@@ -430,6 +434,7 @@ export function OwnerMonitor() {
         <div className="card kpi"><span className="label">Ingresos (USD, Stripe)</span><span className="value" id="evm-rev">—</span><span className="delta" id="evm-rev-d" /><canvas className="spark" id="evm-spark-rev" width={100} height={42} /></div>
         <div className="card kpi"><span className="label">Nuevas suscripciones</span><span className="value" id="evm-ord">—</span><span className="delta" id="evm-ord-d" /><canvas className="spark" id="evm-spark-ord" width={100} height={42} /></div>
         <div className="card kpi"><span className="label">Ingreso por nueva suscripción</span><span className="value" id="evm-aov">—</span><span className="delta" id="evm-aov-d" /><canvas className="spark" id="evm-spark-aov" width={100} height={42} /></div>
+        <div className="card kpi"><span className="label">Desbloqueos ($7, pago único)</span><span className="value" id="evm-unl">—</span><span className="delta" id="evm-unl-d" /><span className="label" id="evm-unl-sub" style={{ fontSize: 11 }} /></div>
         <div className="card kpi"><span className="label">Conversión registro → pago</span><span className="value" id="evm-conv">—</span><span className="delta" id="evm-conv-d" /><canvas className="spark" id="evm-spark-conv" width={100} height={42} /></div>
       </div>
 

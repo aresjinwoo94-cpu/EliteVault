@@ -95,7 +95,7 @@ export async function triggerSimulation(
   // are untouched: paid plans never take this branch.
   let viaUnlock = false;
   if (!quota.ok) {
-    viaUnlock = await unlockedProjectionAllowed(user.id, parsed.data.analysisId);
+    viaUnlock = await unlockedProjectionAllowed(user.id, parsed.data.analysisId, user.email);
     if (!viaUnlock) return { ok: false, error: quota.reason, code: quota.code };
   }
 

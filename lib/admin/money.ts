@@ -78,3 +78,27 @@ export function abandonedAmountUsd(
 export function isValidSubStatus(status: string): boolean {
   return status === "active" || status === "trialing" || status === "past_due";
 }
+
+/* ---------------------- One-time report unlocks (WP-5, brief oct-2026 §7.2) ---------------------- */
+
+/** A Checkout Session of the $7 one-time unlock (NOT a plan): `metadata.purchase === "report_unlock"`. */
+export function isUnlockSession(s: { metadata?: Record<string, string> | null }): boolean {
+  return s.metadata?.purchase === "report_unlock";
+}
+
+/**
+ * Unlock figures from `analysis_unlocks` rows created in a window. The price is a fixed USD amount in code, so
+ * revenue is count × price (the balance-transaction total, which already includes these charges, is untouched).
+ * `gross` = every charge made; `net` = after manual refunds.
+ */
+export function summarizeUnlocks(rows: { status: string }[], priceCents: number) {
+  const charged = rows.length;
+  const refunded = rows.filter((r) => r.status === "refunded").length;
+  return {
+    charged,
+    refunded,
+    paid: charged - refunded,
+    grossUsd: (charged * priceCents) / 100,
+    netUsd: ((charged - refunded) * priceCents) / 100,
+  };
+}

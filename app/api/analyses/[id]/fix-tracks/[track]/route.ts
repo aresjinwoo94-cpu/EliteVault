@@ -117,7 +117,7 @@ export async function GET(
     const { data: prof } = await service.from("profiles").select("plan").eq("id", user.id).maybeSingle();
     const plan = (prof as unknown as { plan?: string } | null)?.plan ?? "free";
     // WP-2: a one-time unlock of THIS audit counts as paid for its fix tracks
-    viewer = (await resolveFullReport({ analysisId: id, userId: user.id, plan })) ? "paid" : "free";
+    viewer = (await resolveFullReport({ analysisId: id, userId: user.id, plan, email: user.email })) ? "paid" : "free";
   }
 
   // ── gate (server-side, before any work) ────────────────────────────────

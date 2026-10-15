@@ -1,5 +1,6 @@
 import { PLANS } from "@/lib/stripe/plans";
 import { COMPANY } from "@/lib/company";
+import { reportUnlockEnabled } from "@/lib/flags";
 
 export const dynamic = "force-static";
 export const revalidate = 86400; // 1 day
@@ -30,7 +31,7 @@ EliteVault is operated by ${COMPANY.legalEntity} (${COMPANY.country}). Scores, p
 ## Pricing
 - Free: one audit of your own store (score, annotated screenshot, one set of fixes of your choice unlocked, modeled ROAS range) + 3 winning stores with full metrics. No card required.
 - Pro: $${PLANS.pro.price.month}/mo (or $${PLANS.pro.price.year}/yr) — full Analyzer, unlimited audits, buyer-persona simulations, 1 Meta campaign projection/month.
-- Scale: $${PLANS.scale.price.month}/mo (or $${PLANS.scale.price.year}/yr) — unlimited Meta Ads scenario projections + optimizer targets + REST API.
+- Scale: $${PLANS.scale.price.month}/mo (or $${PLANS.scale.price.year}/yr) — unlimited Meta Ads scenario projections + optimizer targets + REST API.${reportUnlockEnabled() ? "\n- One-time report unlock (not a plan): US$7 unlocks the full report of a single audit; no subscription." : ""}
 
 ## Key pages
 - [Home](${base}/): what EliteVault does.

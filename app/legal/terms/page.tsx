@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { reportUnlockEnabled } from "@/lib/flags";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
@@ -51,6 +52,17 @@ export default function TermsPage() {
           <a href="/legal/refunds">Refund &amp; Cancellation Policy</a> for how
           cancellation, access periods, and refunds work.
         </p>
+
+        {reportUnlockEnabled() && (
+          <p>
+            <strong>One-time report unlock.</strong> Free-plan users may also buy the full report of a
+            single audit for a one-time price of US$7, charged once through Stripe. It is not a
+            subscription and does not renew; it unlocks that audit only and does not include new
+            audits, publishing, the Optimizer or the full Library. See the{" "}
+            <a href="/legal/refunds">Refund &amp; Cancellation Policy</a> for the 7-day refund on
+            this purchase.
+          </p>
+        )}
 
         <h2>4. AI output is an estimate, not a guarantee</h2>
         <p>
