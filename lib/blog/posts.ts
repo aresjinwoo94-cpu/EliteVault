@@ -46,13 +46,33 @@ export type BlogPost = {
  */
 const TEASER_ID = "lH4O5UE4CPY";
 const TEASER_TITLE = "EliteVault Explained: Analyze Your Ecommerce Store for Free";
-const teaserVideo = `<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
-<div class="text-sm font-semibold text-white">Watch: ${TEASER_TITLE}</div>
+function videoFacade(id: string, title: string, caption: string): string {
+  return `<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">Watch: ${title}</div>
 <div class="mt-4 overflow-hidden rounded-xl border border-white/[0.06]" style="aspect-ratio:16/9">
-<iframe class="h-full w-full" style="border:0" loading="lazy" title="${TEASER_TITLE}" src="https://www.youtube-nocookie.com/embed/${TEASER_ID}" srcdoc="&lt;style&gt;*{padding:0;margin:0;overflow:hidden}html,body{height:100%}img,span{position:absolute;width:100%;top:0;bottom:0;margin:auto}span{height:1.5em;text-align:center;font:48px/1.5 sans-serif;color:white;text-shadow:0 0 .5em black}&lt;/style&gt;&lt;a href=https://www.youtube-nocookie.com/embed/${TEASER_ID}?autoplay=1&gt;&lt;img src=https://img.youtube.com/vi/${TEASER_ID}/hqdefault.jpg alt=&quot;&quot;&gt;&lt;span&gt;&#9654;&lt;/span&gt;&lt;/a&gt;" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<iframe class="h-full w-full" style="border:0" loading="lazy" title="${title}" src="https://www.youtube-nocookie.com/embed/${id}" srcdoc="&lt;style&gt;*{padding:0;margin:0;overflow:hidden}html,body{height:100%}img,span{position:absolute;width:100%;top:0;bottom:0;margin:auto}span{height:1.5em;text-align:center;font:48px/1.5 sans-serif;color:white;text-shadow:0 0 .5em black}&lt;/style&gt;&lt;a href=https://www.youtube-nocookie.com/embed/${id}?autoplay=1&gt;&lt;img src=https://img.youtube.com/vi/${id}/hqdefault.jpg alt=&quot;&quot;&gt;&lt;span&gt;&#9654;&lt;/span&gt;&lt;/a&gt;" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 </div>
-<figcaption class="mt-3 text-xs text-white/35"><a href="https://youtu.be/${TEASER_ID}" rel="noopener">Watch on YouTube</a> · a short teaser from our own channel.</figcaption>
+<figcaption class="mt-3 text-xs text-white/35"><a href="https://youtu.be/${id}" rel="noopener">Watch on YouTube</a> · ${caption}</figcaption>
 </figure>`;
+}
+
+const teaserVideo = videoFacade(TEASER_ID, TEASER_TITLE, "a short teaser from our own channel.");
+
+/** Featured video for the first-sale posts (uploadDate verified on the YouTube page, 2026-10-14). */
+const FINAL_VIDEO_ID = "43CfVNIds7Q";
+const FINAL_VIDEO_TITLE = "Let's make your Shopify store unbeatable";
+const FINAL_VIDEO_META = {
+  id: FINAL_VIDEO_ID,
+  title: FINAL_VIDEO_TITLE,
+  description:
+    "A real Shopify store with a weak return on ad spend, compared side by side with a top store in its niche, to show what separates the two.",
+  uploadDate: "2026-10-13T23:32:09-07:00",
+};
+const finalVideo = videoFacade(
+  FINAL_VIDEO_ID,
+  FINAL_VIDEO_TITLE,
+  "From our channel: how to make your store the one shoppers pick in your niche.",
+);
 
 export const BLOG_POSTS: BlogPost[] = [
   {
@@ -252,27 +272,27 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     slug: "ecommerce-store-audit-vs-consultant",
-    title: "Shopify CRO Audit Cost: What $2,000 Buys (+ a Free Option)",
-    h1: "How much does a Shopify CRO audit cost — and what do you actually get for $2,000?",
+    title: "CRO Audit Cost: What $2,000 Buys (+ a 60-Second Option)",
+    h1: "How much does a CRO audit cost — and what do you actually get for $2,000?",
     description:
-      "A consultant CRO audit runs $1,500–$2,000 per store. What that price covers, the framework they use, and how to run the same checks free in about a minute.",
-    keyword: "shopify cro audit",
+      "CRO audit cost: a consultant audit runs $1,500–$2,000 per store. What that price covers, the framework they use, and how to run the same checks yourself in about a minute.",
+    keyword: "cro audit cost",
     keywords: [
-      "shopify cro audit",
-      "shopify cro audit report",
-      "cro website audit",
+      "cro audit cost",
+      "how much does a cro audit cost",
+      "cro consultant cost",
+      "cro agency pricing",
       "cro audit vs consultant",
-      "ecommerce cro audit",
     ],
     date: "2026-06-17",
-    updated: "2026-10-11",
+    updated: "2026-10-14",
     author: "Ariel Jiménez",
     readingMinutes: 8,
     excerpt:
       "Consultants charge $1,500–$2,000 to audit your store. The framework was never secret — just slow and manual. Here it is, in the open.",
     bodyHtml: `
-<p class="lede">A Shopify CRO audit from a consultant typically costs $1,500–$2,000 per store, and for that money you get a diagnosis, evidence and a prioritized punch-list. The uncomfortable truth they'd rather you didn't notice: the entire diagnosis fits on one page — and a machine can now run it in 60 seconds.</p>
-<p>The price depends on scope, on how many pages or steps they review, and on whether implementation is included. The audit itself is usually one store, one moment in time, and about 5–10 business days of turnaround. This post breaks down what that price covers, the framework behind it, and how to run the same checks yourself for free.</p>
+<p class="lede">CRO audit cost from a consultant is typically $1,500–$2,000 per store, and for that money you get a diagnosis, evidence and a prioritized punch-list. The uncomfortable truth they'd rather you didn't notice: the entire diagnosis fits on one page — and a machine can now run it in 60 seconds.</p>
+<p>The price depends on scope, on how many pages or steps they review, and on whether implementation is included. The audit itself is usually one store, one moment in time, and about 5–10 business days of turnaround. This post breaks down what that price covers, the framework behind it, and how to run the same checks yourself. If you want the do-it-yourself version first, start with the <a href="/blog/shopify-cro-audit">Shopify CRO audit checklist</a>.</p>
 <p>I'm not anti-consultant. The best ones are worth every dollar for implementation and strategy. But the <em>audit</em> — the part where someone looks at your store and tells you what's broken and in what order to fix it — has been quietly commoditized. The framework was never secret. It was just slow and manual, which is exactly what made it billable.</p>
 <p>So here's the whole thing, in the open: what a CRO audit costs, what it contains, and how to run it on your own store this afternoon.</p>
 <h2>What you're actually paying $2,000 for</h2>
