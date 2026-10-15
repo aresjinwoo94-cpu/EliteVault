@@ -96,6 +96,19 @@ export default async function BlogPostPage({
         }
       : null;
 
+  const videoJsonLd = post.video
+    ? {
+        "@context": "https://schema.org",
+        "@type": "VideoObject",
+        name: post.video.title,
+        description: post.video.description,
+        thumbnailUrl: `https://i.ytimg.com/vi/${post.video.id}/hqdefault.jpg`,
+        uploadDate: post.video.uploadDate,
+        embedUrl: `https://www.youtube.com/embed/${post.video.id}`,
+        contentUrl: `https://www.youtube.com/watch?v=${post.video.id}`,
+      }
+    : null;
+
   return (
     <>
       <script
