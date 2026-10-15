@@ -123,10 +123,10 @@ ${finalVideo}
 <rect x="0" y="90" width="210" height="28" rx="6" fill="#2DD4BF" fill-opacity="0.65"/><text x="12" y="110" font-size="15" font-weight="600" fill="#04302c">70</text>
 <text x="0" y="144" font-size="14" fill="rgba(255,255,255,0.75)">Example: 30 of them left an email</text>
 <rect x="0" y="152" width="90" height="28" rx="6" fill="#2DD4BF" fill-opacity="0.45"/><text x="12" y="172" font-size="15" font-weight="600" fill="#04302c">30</text>
-<text x="100" y="171" font-size="13" fill="rgba(255,255,255,0.7)">← only these can be emailed</text>
+<text x="100" y="171" font-size="14" fill="rgba(255,255,255,0.7)">← only these can be emailed</text>
 <text x="0" y="206" font-size="14" fill="rgba(255,255,255,0.75)">Example: 5 come back and buy</text>
-<rect x="0" y="214" width="15" height="28" rx="4" fill="#2DD4BF"/><text x="25" y="233" font-size="13" fill="rgba(255,255,255,0.7)">recovered</text>
-<text x="0" y="270" font-size="13" fill="rgba(255,255,255,0.5)">Illustrative numbers, not a benchmark.</text></svg>
+<rect x="0" y="214" width="15" height="28" rx="4" fill="#2DD4BF"/><text x="25" y="233" font-size="14" fill="rgba(255,255,255,0.7)">recovered</text>
+<text x="0" y="270" font-size="14" fill="rgba(255,255,255,0.5)">Illustrative numbers, not a benchmark.</text></svg>
 <figcaption class="mt-3 text-xs text-white/35">Illustrative example. The 70% is Baymard's average abandonment rate (<a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">source</a>); the 30 and 5 are invented round numbers to show the shape of the funnel.</figcaption>
 </figure>
 <p>The takeaway is the shape, not the numbers: recovery works only on the narrow band that left contact details. Everything to the left of that band is a design and trust problem, which no email can fix.</p>
@@ -138,12 +138,12 @@ ${finalVideo}
 <svg viewBox="0 0 300 335" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="a2-title a2-desc"><title id="a2-title">A three-message abandoned cart recovery timeline</title><desc id="a2-desc">Message 1, an email reminder one to four hours after the shopper leaves, with no discount. Message 2, about 24 hours later, answers the likely doubt. Message 3, about 48 hours later, is a last nudge with an optional incentive. An optional SMS can sit around the 24 hour mark if the shopper consented.</desc>
 <line x1="14" y1="24" x2="14" y2="270" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
 <circle cx="14" cy="24" r="8" fill="#2DD4BF"/><circle cx="14" cy="104" r="8" fill="#2DD4BF"/><circle cx="14" cy="184" r="8" fill="#2DD4BF"/><circle cx="14" cy="264" r="8" fill="none" stroke="#2DD4BF" stroke-width="2" stroke-dasharray="3 3"/>
-<text x="36" y="22" font-size="15" font-weight="600" fill="#ffffff">Message 1 · email</text><text x="36" y="40" font-size="13" fill="#2DD4BF">1–4 hours after they leave</text><text x="36" y="58" font-size="13" fill="rgba(255,255,255,0.65)">Reminder. Show the cart. No discount.</text>
-<text x="36" y="102" font-size="15" font-weight="600" fill="#ffffff">Message 2 · email</text><text x="36" y="120" font-size="13" fill="#2DD4BF">About 24 hours</text><text x="36" y="138" font-size="13" fill="rgba(255,255,255,0.65)">Answer the doubt: shipping, returns,</text><text x="36" y="154" font-size="13" fill="rgba(255,255,255,0.65)">reviews, sizing.</text>
-<text x="36" y="182" font-size="15" font-weight="600" fill="#ffffff">Message 3 · email</text><text x="36" y="200" font-size="13" fill="#2DD4BF">About 48 hours</text><text x="36" y="218" font-size="13" fill="rgba(255,255,255,0.65)">Last nudge. Optional incentive for</text><text x="36" y="234" font-size="13" fill="rgba(255,255,255,0.65)">higher-value carts.</text>
-<text x="36" y="262" font-size="15" font-weight="600" fill="#ffffff">Optional · SMS</text><text x="36" y="280" font-size="13" fill="#2DD4BF">Around 24 hours, with consent</text><text x="36" y="298" font-size="13" fill="rgba(255,255,255,0.65)">One short text with the cart link.</text>
-<text x="0" y="326" font-size="13" fill="rgba(255,255,255,0.5)">Typical timings, not a rule. Test yours.</text></svg>
-<figcaption class="mt-3 text-xs text-white/35">Timings follow the common sequence described in <a href="https://www.klaviyo.com/blog/abandoned-cart-benchmarks" rel="nofollow">Klaviyo's 2026 benchmarks</a>; many stores send the first email earlier. Test your own.</figcaption>
+<text x="36" y="22" font-size="15" font-weight="600" fill="#ffffff">Message 1 · email</text><text x="36" y="40" font-size="14" fill="#2DD4BF">2–4 hours after they leave</text><text x="36" y="58" font-size="14" fill="rgba(255,255,255,0.65)">Reminder. Show the cart. No discount.</text>
+<text x="36" y="102" font-size="15" font-weight="600" fill="#ffffff">Message 2 · email</text><text x="36" y="120" font-size="14" fill="#2DD4BF">About 24 hours</text><text x="36" y="138" font-size="14" fill="rgba(255,255,255,0.65)">Answer the doubt: shipping, returns,</text><text x="36" y="154" font-size="14" fill="rgba(255,255,255,0.65)">reviews, sizing.</text>
+<text x="36" y="182" font-size="15" font-weight="600" fill="#ffffff">Message 3 · email</text><text x="36" y="200" font-size="14" fill="#2DD4BF">About 48 hours</text><text x="36" y="218" font-size="14" fill="rgba(255,255,255,0.65)">Last nudge. Optional incentive for</text><text x="36" y="234" font-size="14" fill="rgba(255,255,255,0.65)">higher-value carts.</text>
+<text x="36" y="262" font-size="15" font-weight="600" fill="#ffffff">Optional · SMS</text><text x="36" y="280" font-size="14" fill="#2DD4BF">Around 24 hours, with consent</text><text x="36" y="298" font-size="14" fill="rgba(255,255,255,0.65)">One short text with the cart link.</text>
+<text x="0" y="326" font-size="14" fill="rgba(255,255,255,0.5)">Typical timings, not a rule. Test yours.</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Timings are loosely based on the sequence in <a href="https://www.klaviyo.com/blog/abandoned-cart-benchmarks" rel="nofollow">Klaviyo's 2026 benchmarks</a> (first message after 2–4 hours, then 24 and 48 hours). What each message says is our recommendation, not Klaviyo's; many stores send the first email earlier, so test yours.</figcaption>
 </figure>
 <p>As for how well such flows perform, the same Klaviyo report gives averages and top-10% figures. For email, abandoned cart flows average <strong>$6.77 in revenue per recipient</strong> (top 10%: $13.70) and a <strong>6.0% click rate</strong> (top 10%: 11.3%). For text messages, the averages are $4.48 per recipient (top 10%: $8.69) and a 10.3% click rate (top 10%: 18.5%). Use those as a yardstick for your own flow rather than as a promise.</p>
 <p>Three rules matter more than any single line of copy:</p>
@@ -164,18 +164,18 @@ ${finalVideo}
 <p>Keep the layout simple: a short subject line, the product image, one button. Send yourself each message and open it on a phone before the flow goes live, and check that the button lands on a working cart. A broken link in message one quietly wastes the whole sequence.</p>
 
 <h2>Shopify's built-in emails vs a recovery app</h2>
-<p>You don't need a paid app to start. Shopify can send abandoned checkout emails automatically once the setting is on; where that setting lives depends on your admin version (older stores find it under Settings → Checkout, newer ones under automations), so check yours. A dedicated email and SMS platform adds sequences, segmentation and reporting. Here is a neutral comparison with no prices — each vendor's pricing page is the source for that.</p>
+<p>You don't need a paid app to start. Shopify can send abandoned checkout emails automatically once the setting is on; its help page points to the Messaging automations in your admin (Apps → Messaging → Automations → Abandoned checkout emails), and the exact path can differ by admin version, so check yours. A dedicated email and SMS platform adds sequences, segmentation and reporting. Here is a neutral comparison with no prices — each vendor's pricing page is the source for that.</p>
 <table><thead><tr><th></th><th>Shopify built-in</th><th>Klaviyo</th><th>Omnisend and others</th></tr></thead><tbody>
 <tr><td>Who it can reach</td><td>Abandoned checkouts with an email address</td><td>Per Klaviyo's article: email and text flows</td><td>Compare on your own</td></tr>
 <tr><td>Sequence</td><td>Set who receives it and a delay (Shopify's page doesn't list the options)</td><td>Multi-message sequences; Klaviyo describes a three-message example</td><td>Check each vendor's flow builder</td></tr>
 <tr><td>Best for</td><td>Getting a first reminder live today</td><td>Stores that want benchmarks, segments and SMS in one place</td><td>Check channels, triggers and limits before choosing</td></tr>
-<tr><td>Cost</td><td>Included with Shopify</td><td>See Klaviyo's pricing page</td><td>See the vendor's pricing page</td></tr>
+<tr><td>Cost</td><td>Check your Shopify plan</td><td>See Klaviyo's pricing page</td><td>See the vendor's pricing page</td></tr>
 </tbody></table>
 <p>My advice: turn on the built-in reminder first, measure it for a few weeks, and move to a dedicated tool only when you can name what the built-in one can't do.</p>
 
 <h2>Why recovery alone has a ceiling</h2>
 <p>Look at why people leave. Baymard's list (<a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">same source, September 2025</a>) has extra costs that were too high at 40%, slow delivery at 20%, not trusting the site with card details at 19%, a forced account at 18%, and a checkout that was too long or complicated at 17%. These are stated reasons for leaving, and the shopper had them before any email existed.</p>
-<p>A reminder can restate your shipping policy, but it can't change the fact that the total jumped at checkout. It can add a review, but it can't make an untrusted page feel safe at the moment the card came out. That's why the stores that recover the most are usually the ones that needed recovery least: the leak is patched upstream, on the product page and in the cart.</p>
+<p>A reminder can restate your shipping policy, but it can't change the fact that the total jumped at checkout. It can add a review, but it can't make an untrusted page feel safe at the moment the card came out. That's why patching the leak upstream, on the product page and in the cart, is worth doing before you polish the email.</p>
 <p>We unpack each of those reasons, and how to spot them on your own store, in <a href="/blog/why-customers-abandon-cart-2026">why customers abandon cart</a>. For the page where the doubt usually starts, see our guide to the <a href="/blog/shopify-product-page">Shopify product page</a>.</p>
 
 <h2>Your abandoned cart recovery checklist</h2>
@@ -206,7 +206,7 @@ ${finalVideo}
       },
       {
         q: "Does Shopify send abandoned cart emails automatically?",
-        a: "Shopify can send abandoned checkout emails automatically once you enable them, but only to customers who entered an email address at checkout and left for more than ten minutes. Items left in a cart without contact details can't be emailed. The setting's location depends on your admin version.",
+        a: "Shopify can send abandoned checkout emails automatically once you enable them, but only to customers who entered an email address at checkout and left for more than ten minutes. Items left in a cart without contact details can't be emailed. Shopify's help page points to the Messaging automations in the admin, and the path can vary by admin version.",
       },
       {
         q: "What is a good abandoned cart recovery rate?",
@@ -223,7 +223,7 @@ ${finalVideo}
     title: "Shopify Product Page: 12 Elements That Make It Sell (2026)",
     h1: "The Shopify product page that sells: 12 elements, in the order shoppers see them",
     description:
-      "What a Shopify product page needs to convert: 12 elements above and below the fold, mobile rules, common mistakes — and how to change yours without breaking the theme.",
+      "What a Shopify product page needs to convert: 12 elements, mobile rules, common mistakes — and how to edit yours without breaking the theme.",
     keyword: "shopify product page",
     keywords: [
       "shopify product page",
@@ -240,7 +240,7 @@ ${finalVideo}
     excerpt:
       "Twelve elements, in the order a shopper meets them, plus the mobile rules, the common mistakes and a safe way to edit your theme without breaking it.",
     bodyHtml: `
-<p class="lede">A Shopify product page has one job: answer five questions before the shopper leaves — what is this, is it for me, what will it cost me in total, can I trust this store, and when will it arrive. Twelve elements do that work, six above the fold and six below, and most stores are missing at least two.</p>
+<p class="lede">A Shopify product page has one job: answer five questions before the shopper leaves — what is this, is it for me, what will it cost me in total, can I trust this store, and when will it arrive. Twelve elements do that work, six above the fold and six below, and each one answers a specific doubt.</p>
 ${finalVideo}
 <p>This guide walks through the page in the order a shopper experiences it. For each element: what it is, why it matters, and the mistake we see most. Then the mobile rules, and a safe way to change the page without breaking your theme.</p>
 
@@ -253,54 +253,54 @@ ${finalVideo}
 <li><strong>Can I trust this store?</strong> Reviews, a returns promise, recognisable payment marks.</li>
 <li><strong>When does it arrive?</strong> A delivery estimate where the decision happens.</li>
 </ol>
-<p>Most pages are weaker at this than store owners assume. In <a href="https://baymard.com/blog/current-state-ecommerce-product-page-ux" rel="nofollow">Baymard Institute's 2026 product page benchmark</a> of more than 155 US and European sites, 52% of desktop experiences rated "mediocre or worse", and so did 62% of mobile web experiences. If large retailers miss the basics, a small store certainly can.</p>
+<p>Most pages are weaker at this than store owners assume. In <a href="https://baymard.com/blog/current-state-ecommerce-product-page-ux" rel="nofollow">Baymard Institute's product page benchmark</a> (updated March 2026) of more than 155 US and European sites, 52% of desktop experiences rated "mediocre or worse", and so did 62% of mobile web experiences. If large retailers miss the basics, a small store certainly can.</p>
 <figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
 <svg viewBox="0 0 300 575" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="b1-title b1-desc"><title id="b1-title">The 12 elements of a Shopify product page</title><desc id="b1-desc">A wireframe of a desktop product page. Above the fold: 1 image gallery, 2 title, price and review stars, 3 variant selector, 4 add to cart button, 5 delivery and returns line, 6 trust icons. Below the fold: 7 benefits, 8 details and specs, 9 comparison table, 10 full reviews, 11 FAQ, 12 related products.</desc>
-<text x="0" y="13" font-size="13" fill="rgba(255,255,255,0.55)">ABOVE THE FOLD</text>
+<text x="0" y="13" font-size="14" fill="rgba(255,255,255,0.55)">ABOVE THE FOLD</text>
 <g transform="translate(0,22)">
 <rect x="0.5" y="0.5" width="299" height="190" rx="10" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.15)"/>
 <rect x="10" y="12" width="120" height="130" rx="6" fill="rgba(255,255,255,0.08)"/>
 <rect x="10" y="150" width="36" height="30" rx="4" fill="rgba(255,255,255,0.08)"/><rect x="52" y="150" width="36" height="30" rx="4" fill="rgba(255,255,255,0.08)"/><rect x="94" y="150" width="36" height="30" rx="4" fill="rgba(255,255,255,0.08)"/>
 <rect x="146" y="14" width="110" height="10" rx="3" fill="rgba(255,255,255,0.35)"/><rect x="146" y="30" width="50" height="10" rx="3" fill="rgba(255,255,255,0.55)"/><rect x="146" y="46" width="70" height="8" rx="3" fill="#2DD4BF" fill-opacity="0.5"/>
 <rect x="146" y="68" width="28" height="22" rx="4" fill="none" stroke="rgba(255,255,255,0.4)"/><rect x="180" y="68" width="28" height="22" rx="4" fill="none" stroke="rgba(255,255,255,0.4)"/><rect x="214" y="68" width="28" height="22" rx="4" fill="none" stroke="rgba(255,255,255,0.4)"/>
-<rect x="146" y="102" width="144" height="26" rx="6" fill="#2DD4BF"/><text x="218" y="120" text-anchor="middle" font-size="13" font-weight="600" fill="#04302c">Add to cart</text>
+<rect x="146" y="102" width="144" height="26" rx="6" fill="#2DD4BF"/><text x="218" y="120" text-anchor="middle" font-size="14" font-weight="600" fill="#04302c">Add to cart</text>
 <rect x="146" y="138" width="110" height="8" rx="3" fill="rgba(255,255,255,0.3)"/>
 <circle cx="154" cy="166" r="7" fill="none" stroke="rgba(255,255,255,0.4)"/><circle cx="176" cy="166" r="7" fill="none" stroke="rgba(255,255,255,0.4)"/><circle cx="198" cy="166" r="7" fill="none" stroke="rgba(255,255,255,0.4)"/>
-<circle cx="24" cy="26" r="10" fill="#2DD4BF"/><text x="24" y="31" text-anchor="middle" font-size="13" font-weight="700" fill="#04302c">1</text>
-<circle cx="278" cy="19" r="10" fill="#2DD4BF"/><text x="278" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#04302c">2</text>
-<circle cx="270" cy="79" r="10" fill="#2DD4BF"/><text x="270" y="84" text-anchor="middle" font-size="13" font-weight="700" fill="#04302c">3</text>
-<circle cx="280" cy="102" r="10" fill="#2DD4BF"/><text x="280" y="107" text-anchor="middle" font-size="13" font-weight="700" fill="#04302c">4</text>
-<circle cx="278" cy="142" r="10" fill="#2DD4BF"/><text x="278" y="147" text-anchor="middle" font-size="13" font-weight="700" fill="#04302c">5</text>
-<circle cx="270" cy="166" r="10" fill="#2DD4BF"/><text x="270" y="171" text-anchor="middle" font-size="13" font-weight="700" fill="#04302c">6</text>
+<circle cx="24" cy="26" r="10" fill="#2DD4BF"/><text x="24" y="31" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">1</text>
+<circle cx="278" cy="19" r="10" fill="#2DD4BF"/><text x="278" y="24" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">2</text>
+<circle cx="270" cy="79" r="10" fill="#2DD4BF"/><text x="270" y="84" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">3</text>
+<circle cx="146" cy="115" r="10" fill="#2DD4BF"/><text x="146" y="120" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">4</text>
+<circle cx="278" cy="142" r="10" fill="#2DD4BF"/><text x="278" y="147" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">5</text>
+<circle cx="270" cy="166" r="10" fill="#2DD4BF"/><text x="270" y="171" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">6</text>
 </g>
-<text x="0" y="238" font-size="13" fill="rgba(255,255,255,0.8)"><tspan fill="#2DD4BF" font-weight="600">1</tspan><tspan dx="10">Image gallery</tspan></text>
-<text x="0" y="256" font-size="13" fill="rgba(255,255,255,0.8)"><tspan fill="#2DD4BF" font-weight="600">2</tspan><tspan dx="10">Title, price and review stars</tspan></text>
-<text x="0" y="274" font-size="13" fill="rgba(255,255,255,0.8)"><tspan fill="#2DD4BF" font-weight="600">3</tspan><tspan dx="10">Variant selector</tspan></text>
-<text x="0" y="292" font-size="13" fill="rgba(255,255,255,0.8)"><tspan fill="#2DD4BF" font-weight="600">4</tspan><tspan dx="10">Add to cart button</tspan></text>
-<text x="0" y="310" font-size="13" fill="rgba(255,255,255,0.8)"><tspan fill="#2DD4BF" font-weight="600">5</tspan><tspan dx="10">Delivery and returns line</tspan></text>
-<text x="0" y="328" font-size="13" fill="rgba(255,255,255,0.8)"><tspan fill="#2DD4BF" font-weight="600">6</tspan><tspan dx="10">Trust icons near the button</tspan></text>
-<text x="0" y="360" font-size="13" fill="rgba(255,255,255,0.55)">BELOW THE FOLD</text>
-<rect x="0.5" y="368.5" width="299" height="26" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)"/><circle cx="16" cy="381.5" r="10" fill="#2DD4BF"/><text x="16" y="386.5" text-anchor="middle" font-size="13" font-weight="700" fill="#04302c">7</text><text x="36" y="386" font-size="13" fill="rgba(255,255,255,0.85)">Benefits, not just features</text>
-<rect x="0.5" y="402.5" width="299" height="26" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)"/><circle cx="16" cy="415.5" r="10" fill="#2DD4BF"/><text x="16" y="420.5" text-anchor="middle" font-size="13" font-weight="700" fill="#04302c">8</text><text x="36" y="420" font-size="13" fill="rgba(255,255,255,0.85)">Details, specs and care</text>
-<rect x="0.5" y="436.5" width="299" height="26" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)"/><circle cx="16" cy="449.5" r="10" fill="#2DD4BF"/><text x="16" y="454.5" text-anchor="middle" font-size="13" font-weight="700" fill="#04302c">9</text><text x="36" y="454" font-size="13" fill="rgba(255,255,255,0.85)">Comparison table</text>
-<rect x="0.5" y="470.5" width="299" height="26" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)"/><circle cx="16" cy="483.5" r="10" fill="#2DD4BF"/><text x="16" y="488.5" text-anchor="middle" font-size="12" font-weight="700" fill="#04302c">10</text><text x="36" y="488" font-size="13" fill="rgba(255,255,255,0.85)">Full reviews, with photos</text>
-<rect x="0.5" y="504.5" width="299" height="26" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)"/><circle cx="16" cy="517.5" r="10" fill="#2DD4BF"/><text x="16" y="522.5" text-anchor="middle" font-size="12" font-weight="700" fill="#04302c">11</text><text x="36" y="522" font-size="13" fill="rgba(255,255,255,0.85)">FAQ</text>
-<rect x="0.5" y="538.5" width="299" height="26" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)"/><circle cx="16" cy="551.5" r="10" fill="#2DD4BF"/><text x="16" y="556.5" text-anchor="middle" font-size="12" font-weight="700" fill="#04302c">12</text><text x="36" y="556" font-size="13" fill="rgba(255,255,255,0.85)">Related products</text></svg>
+<text x="0" y="238" font-size="14" fill="rgba(255,255,255,0.8)"><tspan fill="#2DD4BF" font-weight="600">1</tspan><tspan dx="10">Image gallery</tspan></text>
+<text x="0" y="256" font-size="14" fill="rgba(255,255,255,0.8)"><tspan fill="#2DD4BF" font-weight="600">2</tspan><tspan dx="10">Title, price and review stars</tspan></text>
+<text x="0" y="274" font-size="14" fill="rgba(255,255,255,0.8)"><tspan fill="#2DD4BF" font-weight="600">3</tspan><tspan dx="10">Variant selector</tspan></text>
+<text x="0" y="292" font-size="14" fill="rgba(255,255,255,0.8)"><tspan fill="#2DD4BF" font-weight="600">4</tspan><tspan dx="10">Add to cart button</tspan></text>
+<text x="0" y="310" font-size="14" fill="rgba(255,255,255,0.8)"><tspan fill="#2DD4BF" font-weight="600">5</tspan><tspan dx="10">Delivery and returns line</tspan></text>
+<text x="0" y="328" font-size="14" fill="rgba(255,255,255,0.8)"><tspan fill="#2DD4BF" font-weight="600">6</tspan><tspan dx="10">Trust icons near the button</tspan></text>
+<text x="0" y="360" font-size="14" fill="rgba(255,255,255,0.55)">BELOW THE FOLD</text>
+<rect x="0.5" y="368.5" width="299" height="26" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)"/><circle cx="16" cy="381.5" r="10" fill="#2DD4BF"/><text x="16" y="386.5" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">7</text><text x="36" y="386" font-size="14" fill="rgba(255,255,255,0.85)">Benefits, not just features</text>
+<rect x="0.5" y="402.5" width="299" height="26" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)"/><circle cx="16" cy="415.5" r="10" fill="#2DD4BF"/><text x="16" y="420.5" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">8</text><text x="36" y="420" font-size="14" fill="rgba(255,255,255,0.85)">Details, specs and care</text>
+<rect x="0.5" y="436.5" width="299" height="26" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)"/><circle cx="16" cy="449.5" r="10" fill="#2DD4BF"/><text x="16" y="454.5" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">9</text><text x="36" y="454" font-size="14" fill="rgba(255,255,255,0.85)">Comparison table</text>
+<rect x="0.5" y="470.5" width="299" height="26" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)"/><circle cx="16" cy="483.5" r="12" fill="#2DD4BF"/><text x="16" y="488.5" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">10</text><text x="36" y="488" font-size="14" fill="rgba(255,255,255,0.85)">Full reviews, with photos</text>
+<rect x="0.5" y="504.5" width="299" height="26" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)"/><circle cx="16" cy="517.5" r="12" fill="#2DD4BF"/><text x="16" y="522.5" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">11</text><text x="36" y="522" font-size="14" fill="rgba(255,255,255,0.85)">FAQ</text>
+<rect x="0.5" y="538.5" width="299" height="26" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)"/><circle cx="16" cy="551.5" r="12" fill="#2DD4BF"/><text x="16" y="556.5" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">12</text><text x="36" y="556" font-size="14" fill="rgba(255,255,255,0.85)">Related products</text></svg>
 <figcaption class="mt-3 text-xs text-white/35">A desktop product page, annotated. Wireframe for illustration, not a design template.</figcaption>
 </figure>
 <p>Want to see which of the twelve your page is missing? <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-product-page">Run the audit on your store →</a></p>
 
 <h2>Above the fold: elements 1–6</h2>
 <h3>1. Image gallery</h3>
-<p>Shoppers can't touch the product, so the images do the work. Show it from several angles, in use, and — where size matters — in scale next to something familiar. Baymard found that 37% of sites lacked an in-scale image, while 42% of users try to judge size from images. The classic mistake: a single glossy shot on white, and nothing showing real size or texture.</p>
+<p>Shoppers can't touch the product, so the images do the work. Show it from several angles, in use, and — where size matters — in scale next to something familiar. <a href="https://baymard.com/blog/current-state-ecommerce-product-page-ux" rel="nofollow">Baymard</a> found that 37% of sites lacked an in-scale image, while 42% of users try to judge size from images. The classic mistake: a single glossy shot on white, and nothing showing real size or texture.</p>
 <h3>2. Title, price and review stars</h3>
 <p>Say what the product is in plain words, show the price in a stable spot, and put a star rating with a review count right beside them. Together they answer "what is this" and "do other people like it" in one glance. The mistake is a clever product name that doesn't say what the thing is, or stars buried far below the button.</p>
 <h3>3. Variant selector</h3>
-<p>Size and colour choices should be visible, tappable and obvious about stock. Baymard reports that 57% of sites don't use button-style size selectors. A dropdown hides the options and adds a tap. The mistake is making the shopper discover that their size is unavailable only after choosing it.</p>
+<p>Size and colour choices should be visible, tappable and obvious about stock. <a href="https://baymard.com/blog/current-state-ecommerce-product-page-ux" rel="nofollow">Baymard</a> reports that 57% of sites don't use button-style size selectors. A dropdown hides the options and adds a tap. The mistake is making the shopper discover that their size is unavailable only after choosing it.</p>
 <h3>4. Add to cart button</h3>
 <p>One clear primary action, high contrast, with a label that says what happens. It should be the most visible element in the buy column. The usual error is competing buttons (wishlist, "buy now", "notify me") that make the main one look optional.</p>
 <h3>5. Delivery and returns line</h3>
-<p>This is where the cost and arrival questions get answered: shipping cost or threshold, a delivery estimate, and a one-line return promise. According to Baymard, 67% of sites don't show an estimated total near the buy section, and 44% don't link or display the return policy on the product page, even though 60% of respondents in its survey look for it there. The mistake is leaving all of this for checkout.</p>
+<p>This is where the cost and arrival questions get answered: shipping cost or threshold, a delivery estimate, and a one-line return promise. According to <a href="https://baymard.com/blog/current-state-ecommerce-product-page-ux" rel="nofollow">Baymard</a>, 67% of sites don't show an estimated total near the buy section, and 44% don't link or display the return policy on the product page, even though 60% of respondents in its survey look for it there. The mistake is leaving all of this for checkout.</p>
 <h3>6. Trust icons</h3>
 <p>Small, recognisable cues near the button: accepted payment marks, a guarantee, secure checkout. They reduce the "is this store legitimate" worry at the exact moment of commitment. Keep them honest and few. A wall of generic badges looks like decoration, and invented ones erode trust.</p>
 
@@ -312,7 +312,7 @@ ${finalVideo}
 <h3>9. Comparison table</h3>
 <p>If you sell several versions or compete on a known alternative, a small table does the persuading. Show the differences honestly. The mistake is a table where every row is a tick for you and a cross for everyone else; shoppers notice.</p>
 <h3>10. Full reviews, with photos</h3>
-<p>Stars are the summary; the full reviews are the evidence. Real detail, customer photos and a way to filter beat a column of one-line praise. Baymard notes 63% of sites don't let users move through reviewer images across reviews. The mistake is only showing five-star reviews, which reads as curated.</p>
+<p>Stars are the summary; the full reviews are the evidence. Real detail, customer photos and a way to filter beat a column of one-line praise. <a href="https://baymard.com/blog/current-state-ecommerce-product-page-ux" rel="nofollow">Baymard</a> notes 63% of sites don't let users move through reviewer images across reviews. The mistake is only showing five-star reviews, which reads as curated.</p>
 <h3>11. FAQ</h3>
 <p>Answer the questions your support inbox gets: sizing, shipping time, materials, care, returns. It's cheaper than answering them one email at a time, and it catches shoppers who would otherwise leave to search. The mistake is a generic store-wide FAQ instead of product-specific answers.</p>
 <h3>12. Related products</h3>
@@ -329,16 +329,16 @@ ${finalVideo}
 <rect x="176.5" y="26.5" width="104" height="150" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.15)"/>
 <rect x="184" y="34" width="88" height="50" rx="4" fill="rgba(255,255,255,0.08)"/><circle cx="218" cy="92" r="2.5" fill="#2DD4BF"/><circle cx="228" cy="92" r="2.5" fill="rgba(255,255,255,0.3)"/><circle cx="238" cy="92" r="2.5" fill="rgba(255,255,255,0.3)"/>
 <rect x="184" y="102" width="70" height="8" rx="2" fill="rgba(255,255,255,0.35)"/><rect x="184" y="116" width="36" height="8" rx="2" fill="rgba(255,255,255,0.55)"/><rect x="184" y="130" width="80" height="6" rx="2" fill="rgba(255,255,255,0.3)"/>
-<rect x="177" y="150" width="103" height="26" rx="0" fill="#2DD4BF"/><text x="228" y="167" text-anchor="middle" font-size="13" font-weight="600" fill="#04302c">Add to cart</text>
-<text x="0" y="206" font-size="13" fill="rgba(255,255,255,0.8)">Gallery: thumbnails → swipe and dots</text>
-<text x="0" y="226" font-size="13" fill="rgba(255,255,255,0.8)">Add to cart: in the column → sticky bar</text>
-<text x="0" y="246" font-size="13" fill="rgba(255,255,255,0.8)">Delivery: beside the button → in view</text>
-<text x="0" y="266" font-size="13" fill="rgba(255,255,255,0.8)">Details: all visible → accordions</text>
-<text x="0" y="298" font-size="13" fill="rgba(255,255,255,0.5)">Wireframes, not a design template.</text></svg>
+<rect x="177" y="150" width="103" height="26" rx="0" fill="#2DD4BF"/><text x="228" y="167" text-anchor="middle" font-size="14" font-weight="600" fill="#04302c">Add to cart</text>
+<text x="0" y="206" font-size="14" fill="rgba(255,255,255,0.8)">Gallery: thumbnails → swipe and dots</text>
+<text x="0" y="226" font-size="14" fill="rgba(255,255,255,0.8)">Add to cart: in the column → sticky bar</text>
+<text x="0" y="246" font-size="14" fill="rgba(255,255,255,0.8)">Delivery: beside the button → in view</text>
+<text x="0" y="266" font-size="14" fill="rgba(255,255,255,0.8)">Details: all visible → accordions</text>
+<text x="0" y="298" font-size="14" fill="rgba(255,255,255,0.5)">Wireframes, not a design template.</text></svg>
 <figcaption class="mt-3 text-xs text-white/35">The same twelve elements, rearranged for thumbs. The sticky bar keeps the main action in reach while the shopper reads.</figcaption>
 </figure>
 <ul>
-<li><strong>Test on a real phone,</strong> not just a resized browser window. Baymard's benchmark rates mobile web lower than desktop (38% decent or better vs 48%).</li>
+<li><strong>Test on a real phone,</strong> not just a resized browser window. <a href="https://baymard.com/blog/current-state-ecommerce-product-page-ux" rel="nofollow">Baymard</a>'s benchmark rates mobile web lower than desktop (38% decent or better vs 48%).</li>
 <li><strong>Keep delivery and returns in view</strong> without a scroll, because those are the doubts that end mobile visits.</li>
 <li><strong>Use accordions</strong> for specs and FAQ so the page stays short, but don't hide the benefits.</li>
 <li><strong>Make tap targets generous.</strong> Variant buttons that are easy to hit are easier to trust.</li>
@@ -385,7 +385,7 @@ ${finalVideo}
       },
       {
         q: "Should the price show shipping on a Shopify product page?",
-        a: "Show the shipping cost, or the threshold for a lower cost, near the button. In Baymard's benchmark, 67% of sites don't show an estimated total near the buy section. Surprise costs are the most cited reason for leaving, so it is better to say it early than let checkout say it for you.",
+        a: "Show the shipping cost, or the threshold for a lower cost, near the button. In Baymard's benchmark, 67% of sites don't show an estimated total near the buy section. Extra costs are the most cited reason for abandonment in Baymard's list (40%), so it is better to say it early than let checkout say it for you.",
       },
       {
         q: "How do I A/B test a Shopify product page?",
@@ -398,7 +398,7 @@ ${finalVideo}
     title: "Shopify CRO Audit: The Step-by-Step Checklist (2026)",
     h1: "How to run a Shopify CRO audit: the step-by-step checklist (and what to fix first)",
     description:
-      "Run a Shopify CRO audit step by step: the data to pull, what to check on each page from home to checkout, how to prioritize fixes, and what a good audit report includes.",
+      "Run a Shopify CRO audit step by step: the data to pull, what to check from home to checkout, how to prioritize fixes, and what a good report includes.",
     keyword: "shopify cro audit",
     keywords: [
       "shopify cro audit",
@@ -442,20 +442,20 @@ ${finalVideo}
 <figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
 <svg viewBox="0 0 300 560" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="c1-title c1-desc"><title id="c1-title">The buyer journey: what to check at each stage</title><desc id="c1-desc">Five stages in order, each with three things to check. Home: offer clear in five seconds, one obvious primary button, trust cue above the fold. Collection: filters and sort work on mobile, price and rating on each card, fast load with no layout jumps. Product: it answers the five questions, delivery and returns visible, reviews with real detail. Cart: total with shipping shown, express payment options, easy path back to shopping. Checkout: guest checkout, only needed fields, payment methods that match your market.</desc>
 <g>
-<rect x="0.5" y="0.5" width="299" height="96" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.14)"/><circle cx="20" cy="20" r="10" fill="#2DD4BF"/><text x="20" y="25" text-anchor="middle" font-size="13" font-weight="700" fill="#04302c">1</text><text x="38" y="25" font-size="15" font-weight="600" fill="#ffffff">Home</text>
-<text x="14" y="50" font-size="13" fill="rgba(255,255,255,0.75)">✓ Offer clear in five seconds</text><text x="14" y="68" font-size="13" fill="rgba(255,255,255,0.75)">✓ One obvious primary button</text><text x="14" y="86" font-size="13" fill="rgba(255,255,255,0.75)">✓ Trust cue above the fold</text>
-<path d="M150 100 L142 108 L158 108 Z" fill="#2DD4BF"/>
-<rect x="0.5" y="112.5" width="299" height="96" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.14)"/><circle cx="20" cy="132" r="10" fill="#2DD4BF"/><text x="20" y="137" text-anchor="middle" font-size="13" font-weight="700" fill="#04302c">2</text><text x="38" y="137" font-size="15" font-weight="600" fill="#ffffff">Collection</text>
-<text x="14" y="162" font-size="13" fill="rgba(255,255,255,0.75)">✓ Filters and sort work on mobile</text><text x="14" y="180" font-size="13" fill="rgba(255,255,255,0.75)">✓ Price and rating on each card</text><text x="14" y="198" font-size="13" fill="rgba(255,255,255,0.75)">✓ Fast load, no layout jumps</text>
-<path d="M150 212 L142 220 L158 220 Z" fill="#2DD4BF"/>
-<rect x="0.5" y="224.5" width="299" height="96" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.14)"/><circle cx="20" cy="244" r="10" fill="#2DD4BF"/><text x="20" y="249" text-anchor="middle" font-size="13" font-weight="700" fill="#04302c">3</text><text x="38" y="249" font-size="15" font-weight="600" fill="#ffffff">Product</text>
-<text x="14" y="274" font-size="13" fill="rgba(255,255,255,0.75)">✓ Answers the five questions</text><text x="14" y="292" font-size="13" fill="rgba(255,255,255,0.75)">✓ Delivery and returns visible</text><text x="14" y="310" font-size="13" fill="rgba(255,255,255,0.75)">✓ Reviews with real detail</text>
-<path d="M150 324 L142 332 L158 332 Z" fill="#2DD4BF"/>
-<rect x="0.5" y="336.5" width="299" height="96" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.14)"/><circle cx="20" cy="356" r="10" fill="#2DD4BF"/><text x="20" y="361" text-anchor="middle" font-size="13" font-weight="700" fill="#04302c">4</text><text x="38" y="361" font-size="15" font-weight="600" fill="#ffffff">Cart</text>
-<text x="14" y="386" font-size="13" fill="rgba(255,255,255,0.75)">✓ Total with shipping shown</text><text x="14" y="404" font-size="13" fill="rgba(255,255,255,0.75)">✓ Express payment options</text><text x="14" y="422" font-size="13" fill="rgba(255,255,255,0.75)">✓ Easy path back to shopping</text>
-<path d="M150 436 L142 444 L158 444 Z" fill="#2DD4BF"/>
-<rect x="0.5" y="448.5" width="299" height="96" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.14)"/><circle cx="20" cy="468" r="10" fill="#2DD4BF"/><text x="20" y="473" text-anchor="middle" font-size="13" font-weight="700" fill="#04302c">5</text><text x="38" y="473" font-size="15" font-weight="600" fill="#ffffff">Checkout</text>
-<text x="14" y="498" font-size="13" fill="rgba(255,255,255,0.75)">✓ Guest checkout available</text><text x="14" y="516" font-size="13" fill="rgba(255,255,255,0.75)">✓ Only the fields you need</text><text x="14" y="534" font-size="13" fill="rgba(255,255,255,0.75)">✓ Payment methods fit your market</text>
+<rect x="0.5" y="0.5" width="299" height="96" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.14)"/><circle cx="20" cy="20" r="10" fill="#2DD4BF"/><text x="20" y="25" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">1</text><text x="38" y="25" font-size="15" font-weight="600" fill="#ffffff">Home</text>
+<text x="14" y="50" font-size="14" fill="rgba(255,255,255,0.75)">✓ Offer clear in five seconds</text><text x="14" y="68" font-size="14" fill="rgba(255,255,255,0.75)">✓ One obvious primary button</text><text x="14" y="86" font-size="14" fill="rgba(255,255,255,0.75)">✓ Trust cue above the fold</text>
+<path d="M142 100 L158 100 L150 108 Z" fill="#2DD4BF"/>
+<rect x="0.5" y="112.5" width="299" height="96" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.14)"/><circle cx="20" cy="132" r="10" fill="#2DD4BF"/><text x="20" y="137" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">2</text><text x="38" y="137" font-size="15" font-weight="600" fill="#ffffff">Collection</text>
+<text x="14" y="162" font-size="14" fill="rgba(255,255,255,0.75)">✓ Filters and sort work on mobile</text><text x="14" y="180" font-size="14" fill="rgba(255,255,255,0.75)">✓ Price and rating on each card</text><text x="14" y="198" font-size="14" fill="rgba(255,255,255,0.75)">✓ Fast load, no layout jumps</text>
+<path d="M142 212 L158 212 L150 220 Z" fill="#2DD4BF"/>
+<rect x="0.5" y="224.5" width="299" height="96" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.14)"/><circle cx="20" cy="244" r="10" fill="#2DD4BF"/><text x="20" y="249" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">3</text><text x="38" y="249" font-size="15" font-weight="600" fill="#ffffff">Product</text>
+<text x="14" y="274" font-size="14" fill="rgba(255,255,255,0.75)">✓ Answers the five questions</text><text x="14" y="292" font-size="14" fill="rgba(255,255,255,0.75)">✓ Delivery and returns visible</text><text x="14" y="310" font-size="14" fill="rgba(255,255,255,0.75)">✓ Reviews with real detail</text>
+<path d="M142 324 L158 324 L150 332 Z" fill="#2DD4BF"/>
+<rect x="0.5" y="336.5" width="299" height="96" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.14)"/><circle cx="20" cy="356" r="10" fill="#2DD4BF"/><text x="20" y="361" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">4</text><text x="38" y="361" font-size="15" font-weight="600" fill="#ffffff">Cart</text>
+<text x="14" y="386" font-size="14" fill="rgba(255,255,255,0.75)">✓ Total with shipping shown</text><text x="14" y="404" font-size="14" fill="rgba(255,255,255,0.75)">✓ Express payment options</text><text x="14" y="422" font-size="14" fill="rgba(255,255,255,0.75)">✓ Easy path back to shopping</text>
+<path d="M142 436 L158 436 L150 444 Z" fill="#2DD4BF"/>
+<rect x="0.5" y="448.5" width="299" height="96" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.14)"/><circle cx="20" cy="468" r="10" fill="#2DD4BF"/><text x="20" y="473" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">5</text><text x="38" y="473" font-size="15" font-weight="600" fill="#ffffff">Checkout</text>
+<text x="14" y="498" font-size="14" fill="rgba(255,255,255,0.75)">✓ Guest checkout available</text><text x="14" y="516" font-size="14" fill="rgba(255,255,255,0.75)">✓ Only the fields you need</text><text x="14" y="534" font-size="14" fill="rgba(255,255,255,0.75)">✓ Payment methods fit your market</text>
 </g></svg>
 <figcaption class="mt-3 text-xs text-white/35">Check each stage in order. A problem early in the journey hides everything behind it.</figcaption>
 </figure>
@@ -514,17 +514,17 @@ ${finalVideo}
 <p>A long list is only useful if it's ranked. Give every finding two scores: how much it should lift conversion (impact) and how hard it is to ship (effort). Then place it in a simple grid.</p>
 <figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
 <svg viewBox="0 0 300 370" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="c2-title c2-desc"><title id="c2-title">Impact versus effort matrix for prioritizing audit findings</title><desc id="c2-desc">A two by two grid. High impact and low effort: quick wins, such as showing shipping cost on the cart. High impact and high effort: big bets, such as rebuilding the product page layout. Low impact and low effort: fill-ins, such as tidying image alt text. Low impact and high effort: skip, such as rebuilding the whole theme for a tiny gain. Examples are illustrative.</desc>
-<text x="0" y="14" font-size="13" fill="rgba(255,255,255,0.55)">↑ IMPACT</text>
+<text x="0" y="14" font-size="14" fill="rgba(255,255,255,0.55)">↑ IMPACT</text>
 <rect x="0.5" y="24.5" width="148" height="150" rx="8" fill="#2DD4BF" fill-opacity="0.16" stroke="#2DD4BF"/>
-<text x="10" y="48" font-size="15" font-weight="600" fill="#ffffff">Quick wins</text><text x="10" y="70" font-size="13" fill="rgba(255,255,255,0.75)">Example: show</text><text x="10" y="87" font-size="13" fill="rgba(255,255,255,0.75)">shipping cost on</text><text x="10" y="104" font-size="13" fill="rgba(255,255,255,0.75)">the cart</text><text x="10" y="160" font-size="13" fill="#2DD4BF">Do first</text>
+<text x="10" y="48" font-size="15" font-weight="600" fill="#ffffff">Quick wins</text><text x="10" y="70" font-size="14" fill="rgba(255,255,255,0.75)">Example: show</text><text x="10" y="87" font-size="14" fill="rgba(255,255,255,0.75)">shipping cost on</text><text x="10" y="104" font-size="14" fill="rgba(255,255,255,0.75)">the cart</text><text x="10" y="160" font-size="14" fill="#2DD4BF">Do first</text>
 <rect x="152.5" y="24.5" width="147" height="150" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.18)"/>
-<text x="162" y="48" font-size="15" font-weight="600" fill="#ffffff">Big bets</text><text x="162" y="70" font-size="13" fill="rgba(255,255,255,0.75)">Example: rebuild</text><text x="162" y="87" font-size="13" fill="rgba(255,255,255,0.75)">the product page</text><text x="162" y="104" font-size="13" fill="rgba(255,255,255,0.75)">layout</text><text x="162" y="160" font-size="13" fill="rgba(255,255,255,0.55)">Plan next</text>
+<text x="162" y="48" font-size="15" font-weight="600" fill="#ffffff">Big bets</text><text x="162" y="70" font-size="14" fill="rgba(255,255,255,0.75)">Example: rebuild</text><text x="162" y="87" font-size="14" fill="rgba(255,255,255,0.75)">the product page</text><text x="162" y="104" font-size="14" fill="rgba(255,255,255,0.75)">layout</text><text x="162" y="160" font-size="14" fill="rgba(255,255,255,0.55)">Plan next</text>
 <rect x="0.5" y="178.5" width="148" height="150" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.18)"/>
-<text x="10" y="202" font-size="15" font-weight="600" fill="#ffffff">Fill-ins</text><text x="10" y="224" font-size="13" fill="rgba(255,255,255,0.75)">Example: tidy</text><text x="10" y="241" font-size="13" fill="rgba(255,255,255,0.75)">image alt text</text><text x="10" y="314" font-size="13" fill="rgba(255,255,255,0.55)">Batch later</text>
+<text x="10" y="202" font-size="15" font-weight="600" fill="#ffffff">Fill-ins</text><text x="10" y="224" font-size="14" fill="rgba(255,255,255,0.75)">Example: tidy</text><text x="10" y="241" font-size="14" fill="rgba(255,255,255,0.75)">image alt text</text><text x="10" y="314" font-size="14" fill="rgba(255,255,255,0.55)">Batch later</text>
 <rect x="152.5" y="178.5" width="147" height="150" rx="8" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.12)" stroke-dasharray="4 4"/>
-<text x="162" y="202" font-size="15" font-weight="600" fill="rgba(255,255,255,0.8)">Skip</text><text x="162" y="224" font-size="13" fill="rgba(255,255,255,0.65)">Example: rebuild</text><text x="162" y="241" font-size="13" fill="rgba(255,255,255,0.65)">the whole theme</text><text x="162" y="258" font-size="13" fill="rgba(255,255,255,0.65)">for a tiny gain</text><text x="162" y="314" font-size="13" fill="rgba(255,255,255,0.45)">Not worth it</text>
-<text x="0" y="350" font-size="13" fill="rgba(255,255,255,0.55)">EFFORT → (low on the left, high on the right)</text>
-<text x="0" y="366" font-size="13" fill="rgba(255,255,255,0.45)">Examples are illustrative.</text></svg>
+<text x="162" y="202" font-size="15" font-weight="600" fill="rgba(255,255,255,0.8)">Skip</text><text x="162" y="224" font-size="14" fill="rgba(255,255,255,0.65)">Example: rebuild</text><text x="162" y="241" font-size="14" fill="rgba(255,255,255,0.65)">the whole theme</text><text x="162" y="258" font-size="14" fill="rgba(255,255,255,0.65)">for a tiny gain</text><text x="162" y="314" font-size="14" fill="rgba(255,255,255,0.45)">Not worth it</text>
+<text x="0" y="350" font-size="14" fill="rgba(255,255,255,0.55)">EFFORT → (low on the left, high on the right)</text>
+<text x="0" y="366" font-size="14" fill="rgba(255,255,255,0.45)">Examples are illustrative.</text></svg>
 <figcaption class="mt-3 text-xs text-white/35">Do the top-left first, plan the top-right, batch the bottom-left, and drop the bottom-right.</figcaption>
 </figure>
 <p>Be honest about impact: base it on evidence, such as where the Conversion rate breakdown shows the biggest drop, not on what's fun to change. And re-score after each fix, because the order changes once the biggest leak is patched.</p>
