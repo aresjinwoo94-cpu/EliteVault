@@ -17,6 +17,7 @@ import { formatCompact } from "@/lib/utils";
 import type { NicheWinner } from "@/lib/library/niche-winners";
 import { useT } from "@/components/i18n/locale-provider";
 import { fill } from "@/lib/i18n/lookup";
+import { useUnlockOffer } from "@/components/analyzer/unlock-offer";
 
 /**
  * "🔥 Winners in your niche — live" (FASE B).
@@ -223,6 +224,7 @@ function Header({
  */
 function LockedRows({ count }: { count: number }) {
   const { t } = useT();
+  const unlock = useUnlockOffer();
   const rows = usable(count) ? Math.min(3, Math.round(count)) : 3;
   return (
     <div className="relative">
@@ -246,13 +248,21 @@ function LockedRows({ count }: { count: number }) {
           <p className="mt-1 max-w-[16rem] text-xs leading-relaxed text-white/55">
             {t("nicheWinners.unlockBody")}
           </p>
-          <Link href="/app/checkout?plan=pro&interval=month" className="mt-3">
-            <Button variant="primary" size="sm">
+          {unlock.enabled ? (
+            // WP-4 / D1: the winners of THIS audit are part of the one-time unlock — the CTA opens the modal.
+            <Button variant="primary" size="sm" className="mt-3" onClick={() => unlock.open("winners")}>
               <Sparkles className="size-3.5" />
-              {t("nicheWinners.goPro")}
-              <ArrowRight className="size-3.5" />
+              {t("unlock.cardCta")}
             </Button>
-          </Link>
+          ) : (
+            <Link href="/app/checkout?plan=pro&interval=month" className="mt-3">
+              <Button variant="primary" size="sm">
+                <Sparkles className="size-3.5" />
+                {t("nicheWinners.goPro")}
+                <ArrowRight className="size-3.5" />
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </div>

@@ -10,6 +10,7 @@ import { linkIssues } from "@/lib/analyzer/link-issues";
 import type { Annotation, AnalysisResult } from "@/lib/supabase/types";
 import { useT } from "@/components/i18n/locale-provider";
 import { fill } from "@/lib/i18n/lookup";
+import { useUnlockOffer } from "@/components/analyzer/unlock-offer";
 
 /**
  * Severity → solid pin color. high=red, medium=orange, low=green.
@@ -87,6 +88,7 @@ export function AnnotationsOverlay({
   result?: AnalysisResult | null;
 }) {
   const { t } = useT();
+  const unlock = useUnlockOffer();
   const annotations = normalizeCoords(raw);
 
   // Brief §3(c) — map annotation index → roadmap fix number, when the linker
@@ -424,9 +426,16 @@ export function AnnotationsOverlay({
                       </p>
                       <div className="mt-2 flex items-start gap-1.5 rounded-lg bg-white/[0.03] px-2 py-1.5">
                         <Wrench className="mt-0.5 size-3 shrink-0 text-champagne-300" />
-                        <p className={cn("text-[11px] leading-relaxed", a.fix_locked ? "text-champagne-300/80" : "text-white/65")}>
-                          {a.fix_locked ? t("annotations.fixLocked") : a.fix}
-                        </p>
+                        {a.fix_locked && unlock.enabled ? (
+                          // WP-4: the placeholder opens the unlock modal (click only)
+                          <button type="button" onClick={() => unlock.open("annotation")} className="text-left text-[11px] leading-relaxed text-champagne-300/80 underline-offset-2 hover:underline">
+                            {t("annotations.fixLocked")}
+                          </button>
+                        ) : (
+                          <p className={cn("text-[11px] leading-relaxed", a.fix_locked ? "text-champagne-300/80" : "text-white/65")}>
+                            {a.fix_locked ? t("annotations.fixLocked") : a.fix}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </motion.div>
@@ -492,7 +501,15 @@ export function AnnotationsOverlay({
                       className="mt-1.5 text-xs text-white/55 leading-relaxed overflow-hidden"
                     >
                       <span className="text-champagne-400 font-medium">{t("annotations.fix")}</span>{" "}
-                      {a.fix_locked ? t("annotations.fixLocked") : a.fix}
+                      {a.fix_locked && unlock.enabled ? (
+                        <button type="button" onClick={() => unlock.open("annotation")} className="underline-offset-2 hover:underline text-champagne-300/90">
+                          {t("annotations.fixLocked")}
+                        </button>
+                      ) : a.fix_locked ? (
+                        t("annotations.fixLocked")
+                      ) : (
+                        a.fix
+                      )}
                     </motion.p>
                   )}
                 </AnimatePresence>

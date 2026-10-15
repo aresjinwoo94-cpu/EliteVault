@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ExternalLink, Loader2, Lock } from "lucide-react";
 import { TopFixes } from "@/components/analyzer/top-fixes";
+import { useUnlockOffer } from "@/components/analyzer/unlock-offer";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useT } from "@/components/i18n/locale-provider";
@@ -93,6 +94,7 @@ export function FixTracks({
   const [data, setData] = useState<Partial<Record<Track, TrackPayload>>>({});
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [locked, setLocked] = useState(false);
+  const unlock = useUnlockOffer();
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reqSeq = useRef(0);
   const mounted = useRef(true);
@@ -296,9 +298,17 @@ export function FixTracks({
               <Button size="sm" variant="secondary">{t("fixTracks.ctaSignup")}</Button>
             </Link>
           )}
-          <Link href={PRO_HREF}>
-            <Button size="sm" variant="primary">{t("fixTracks.ctaPro")}</Button>
-          </Link>
+          {unlock.enabled && !isAnon ? (
+            // WP-4: the main CTA opens the unlock modal (click only); Pro stays one tap away inside it.
+            <Button size="sm" variant="primary" onClick={() => unlock.open("track")}>{t("unlock.cardCta")}</Button>
+          ) : (
+            <Link href={PRO_HREF}>
+              <Button size="sm" variant="primary">{t("fixTracks.ctaPro")}</Button>
+            </Link>
+          )}
+          {unlock.enabled && isAnon && (
+            <Button size="sm" variant="primary" onClick={() => unlock.open("track")}>{t("unlock.cardCtaAnon")}</Button>
+          )}
         </div>
       </div>
     );

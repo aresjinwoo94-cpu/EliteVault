@@ -15,7 +15,12 @@ import { useT } from "@/components/i18n/locale-provider";
 import { fill } from "@/lib/i18n/lookup";
 
 /** Monthly Meta-run quota for this viewer (null limit = unlimited / Scale). */
-export type MetaQuota = { limit: number | null; used: number };
+export type MetaQuota = {
+  limit: number | null;
+  used: number;
+  /** One-time unlock (WP-4): the limit is per REPORT, not per month — labels change accordingly. */
+  perReport?: boolean;
+};
 
 /**
  * Top-level wrapper for the Meta Campaign Scenario Modeler section.
@@ -116,7 +121,7 @@ export function MetaCampaignSimulator({
 
   // Pro who has spent this month's run and has nothing to show → upsell only.
   if (exhausted && !hasResults) {
-    return <MetaQuotaUpsell used={usedNow} limit={finiteLimit as number} />;
+    return <MetaQuotaUpsell used={usedNow} limit={finiteLimit as number} perReport={quota?.perReport} />;
   }
 
   // CASE 1: no simulation yet OR user clicked "Re-run with new inputs"
@@ -207,7 +212,7 @@ export function MetaCampaignSimulator({
             <h3 className="font-medium text-white">{t("simulator.modelerTitle")}</h3>
             {finiteLimit !== null ? (
               <Badge variant="default">
-                {fill(t("simulator.usedOfMonth"), { used: usedNow, limit: finiteLimit })}
+                {quota?.perReport ? t("unlock.simIncluded") : fill(t("simulator.usedOfMonth"), { used: usedNow, limit: finiteLimit })}
               </Badge>
             ) : (
               <Badge variant="gold">
@@ -323,7 +328,7 @@ function MetaQuotaCounter({ used, limit }: { used: number; limit: number }) {
  * to display (e.g. the run failed). Honest counter + Scale upsell — no fake
  * urgency, no result promised.
  */
-function MetaQuotaUpsell({ used, limit }: { used: number; limit: number }) {
+function MetaQuotaUpsell({ used, limit, perReport }: { used: number; limit: number; perReport?: boolean }) {
   const { t } = useT();
   return (
     <Card className="relative overflow-hidden p-6 md:p-7 border-signal-500/20 bg-gradient-to-br from-signal-600/[0.06] to-champagne-400/[0.04]">
@@ -333,11 +338,11 @@ function MetaQuotaUpsell({ used, limit }: { used: number; limit: number }) {
           <TrendingUp className="size-4 text-signal-300" />
           <h3 className="font-medium text-white">{t("simulator.modelerTitle")}</h3>
           <Badge variant="default">
-            {fill(t("simulator.usedOfMonth"), { used, limit })}
+            {perReport ? t("unlock.simIncluded") : fill(t("simulator.usedOfMonth"), { used, limit })}
           </Badge>
         </div>
         <p className="mt-2 max-w-xl text-sm text-white/60 leading-relaxed">
-          {t("simulator.quotaUsedBody")}
+          {perReport ? t("unlock.simUsed") : t("simulator.quotaUsedBody")}
         </p>
         <Link href="/app/checkout?plan=scale&interval=month" className="mt-4 inline-block">
           <Button variant="primary">

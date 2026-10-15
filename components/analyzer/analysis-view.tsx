@@ -27,6 +27,7 @@ import { CategoryRadar } from "./category-radar";
 import { AnnotationsOverlay } from "./annotations-overlay";
 import { PersonaResponse } from "./persona-response";
 import { trackAuditTerminal } from "@/lib/analytics/audit-events";
+import { UnlockNotices, UnlockOfferProvider } from "@/components/analyzer/unlock-offer";
 import { TopFixes } from "./top-fixes";
 import { FixTracks } from "./fix-tracks";
 import type { Track } from "@/lib/analyzer/fix-track-ids";
@@ -137,6 +138,11 @@ interface ViewerCtx {
   /** Full cure of THIS audit (paid plan or one-time unlock). Defaults to `isPaid`. */
   fullReport?: boolean;
   /**
+   * WP-4 — offer the one-time unlock (flag REPORT_UNLOCK, resolved server-side). Only meaningful for a viewer
+   * WITHOUT the full report on a succeeded audit; absent/false ⇒ the report is byte-identical to before.
+   */
+  unlockOffer?: boolean;
+  /**
    * P1-7 — whether this plan can run the Meta Campaign Scenario Modeler.
    * Pro (1/mo) and Scale (unlimited) can; Free cannot. `metaLimit` is the
    * monthly cap (null = unlimited, Scale) and `metaUsed` is the count used
@@ -146,6 +152,8 @@ interface ViewerCtx {
   canRunMeta: boolean;
   metaLimit: number | null;
   metaUsed: number;
+  /** WP-4 — the single projection is included in an unlocked report (limit is per report, not per month). */
+  metaPerReport?: boolean;
   /**
    * Master brief §B/§C — "map as the spine" UI (flag ANALYZER_MAP_SPINE, resolved
    * server-side and threaded here since client components can't read the env
@@ -344,7 +352,13 @@ export function AnalysisView({
   // is still canRunMeta, and the data they receive is gated server-side.
   // Under v2 the stepper's diamond icon owns simulator discovery, so the promo
   // teaser/rail/bottom-bar stand down to avoid two competing indexes.
-  const metaPromo = !v2 && (viewer.metaPromo ?? false);
+  // WP-4 — the one-time unlock offer: only for a viewer without the full report, on a finished audit whose
+  // capture was real, with REPORT_UNLOCK on. Everything else renders exactly as before.
+  const fullReportNow = viewer.fullReport ?? viewer.isPaid;
+  const unlockOn = (viewer.unlockOffer ?? false) && !fullReportNow && isDone && !captureBlocked.blocked;
+  const lockedFixCount = Math.max(0, (data.result?.top_fixes?.length ?? 0) - 1);
+  // With the unlock offer on, the Pro-first promo bar/rail stands down: one offer at a time.
+  const metaPromo = !v2 && !unlockOn && (viewer.metaPromo ?? false);
   const promoTier = metaPromoTier({
     isAnon,
     isPaid: viewer.isPaid,
@@ -467,7 +481,7 @@ export function AnalysisView({
             <MetaCampaignSimulator
               analysisId={data.id}
               initial={initialSimulation ?? null}
-              quota={{ limit: viewer.metaLimit, used: viewer.metaUsed }}
+              quota={{ limit: viewer.metaLimit, used: viewer.metaUsed, perReport: viewer.metaPerReport }}
             />
           </div>
         ) : (
@@ -485,7 +499,7 @@ export function AnalysisView({
             <MetaCampaignSimulator
               analysisId={data.id}
               initial={initialSimulation ?? null}
-              quota={{ limit: viewer.metaLimit, used: viewer.metaUsed }}
+              quota={{ limit: viewer.metaLimit, used: viewer.metaUsed, perReport: viewer.metaPerReport }}
             />
           </>
         )
@@ -501,7 +515,10 @@ export function AnalysisView({
     </div>
   );
 
+
   return (
+    <UnlockOfferProvider enabled={unlockOn} analysisId={data.id} isAnon={isAnon} lockedFixes={lockedFixCount}>
+      <UnlockNotices unlocked={fullReportNow && !viewer.isPaid} offerEnabled={unlockOn} />
     <div
       className={`p-6 md:p-8 max-w-7xl mx-auto space-y-6${
         // WP-4 (C) — room for the bottom bar so it never covers the report
@@ -1046,6 +1063,7 @@ export function AnalysisView({
             */}
             {!(viewer.fullReport ?? viewer.isPaid) &&
               !isAnon &&
+              !unlockOn && // D2: with the unlock offer on, nothing pops up on its own
               (() => {
                 const lockedFixes = Math.max(
                   0,
@@ -1100,6 +1118,7 @@ export function AnalysisView({
         />
       )}
     </div>
+    </UnlockOfferProvider>
   );
 }
 

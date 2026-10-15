@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/components/i18n/locale-provider";
+import { useUnlockOffer } from "@/components/analyzer/unlock-offer";
 
 /**
  * Free→Pro "cure" gate (P0.2 — "give the diagnosis, charge for the cure").
@@ -45,6 +46,7 @@ export function FreeLockedCure({
   children: React.ReactNode;
 }) {
   const { t } = useT();
+  const unlock = useUnlockOffer();
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -94,25 +96,35 @@ export function FreeLockedCure({
                   <Lock className="size-5 text-champagne-300" />
                 </div>
                 <p className="mt-4 text-base font-medium text-white">
-                  {t("lockedCure.title")}
+                  {unlock.enabled ? t("unlock.lockedTitle") : t("lockedCure.title")}
                 </p>
                 <p className="mt-1 text-xs text-white/55 leading-relaxed">
-                  {t("lockedCure.body")}
+                  {unlock.enabled ? t("unlock.lockedBody") : t("lockedCure.body")}
                 </p>
-                <Link
-                  href="/app/checkout?plan=pro&interval=month"
-                  className="mt-4"
-                >
-                  <Button variant="primary" size="lg">
-                    <Sparkles className="size-4" />
-                    {t("topFixes.unlockPrice")}
-                    <ArrowRight className="size-4" />
-                  </Button>
-                </Link>
-                <p className="mt-2 text-[10px] text-white/35 inline-flex items-center gap-1">
-                  <Shield className="size-3" />
-                  {t("scaleLocked.cancel")}
-                </p>
+                {unlock.enabled ? (
+                  <>
+                    {/* WP-4: the main CTA opens the unlock modal (click only); Pro is the secondary line. */}
+                    <Button variant="primary" size="lg" className="mt-4" onClick={() => unlock.open("persona")}>
+                      <Sparkles className="size-4" />
+                      {t("unlock.cardCta")}
+                    </Button>
+                    <p className="mt-2 text-[10px] text-white/45">{t("unlock.cardPrice")}</p>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/app/checkout?plan=pro&interval=month" className="mt-4">
+                      <Button variant="primary" size="lg">
+                        <Sparkles className="size-4" />
+                        {t("topFixes.unlockPrice")}
+                        <ArrowRight className="size-4" />
+                      </Button>
+                    </Link>
+                    <p className="mt-2 text-[10px] text-white/35 inline-flex items-center gap-1">
+                      <Shield className="size-3" />
+                      {t("scaleLocked.cancel")}
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           </div>
