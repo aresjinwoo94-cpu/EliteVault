@@ -113,7 +113,10 @@ export async function POST(req: NextRequest) {
 
   try {
     if (unlockSession) {
-      await settleReportUnlock(unlockSession, createUnlockStore());
+      // Re-read the session with OUR pinned API version: the event body is rendered in the endpoint's version, which
+      // may not carry `currency_conversion` (Adaptive Pricing) — the amount check needs the source USD amount.
+      const fresh = await stripe.checkout.sessions.retrieve(unlockSession.id);
+      await settleReportUnlock(fresh, createUnlockStore());
       return NextResponse.json({ received: true });
     }
     if (event.type === EV_ASYNC_FAILED) {

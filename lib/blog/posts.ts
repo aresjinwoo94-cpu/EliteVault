@@ -35,6 +35,8 @@ export type BlogPost = {
   author?: string;
   /** Optional FAQ — rendered on-page and emitted as FAQPage JSON-LD. */
   faqs?: { q: string; a: string }[];
+  /** Optional featured video → emitted as VideoObject JSON-LD (needs a verified uploadDate). */
+  video?: { id: string; title: string; description: string; uploadDate: string };
 };
 
 /**
@@ -46,15 +48,533 @@ export type BlogPost = {
  */
 const TEASER_ID = "lH4O5UE4CPY";
 const TEASER_TITLE = "EliteVault Explained: Analyze Your Ecommerce Store for Free";
-const teaserVideo = `<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
-<div class="text-sm font-semibold text-white">Watch: ${TEASER_TITLE}</div>
+function videoFacade(id: string, title: string, caption: string): string {
+  return `<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<div class="text-sm font-semibold text-white">Watch: ${title}</div>
 <div class="mt-4 overflow-hidden rounded-xl border border-white/[0.06]" style="aspect-ratio:16/9">
-<iframe class="h-full w-full" style="border:0" loading="lazy" title="${TEASER_TITLE}" src="https://www.youtube-nocookie.com/embed/${TEASER_ID}" srcdoc="&lt;style&gt;*{padding:0;margin:0;overflow:hidden}html,body{height:100%}img,span{position:absolute;width:100%;top:0;bottom:0;margin:auto}span{height:1.5em;text-align:center;font:48px/1.5 sans-serif;color:white;text-shadow:0 0 .5em black}&lt;/style&gt;&lt;a href=https://www.youtube-nocookie.com/embed/${TEASER_ID}?autoplay=1&gt;&lt;img src=https://img.youtube.com/vi/${TEASER_ID}/hqdefault.jpg alt=&quot;&quot;&gt;&lt;span&gt;&#9654;&lt;/span&gt;&lt;/a&gt;" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<iframe class="h-full w-full" style="border:0" loading="lazy" title="${title}" src="https://www.youtube-nocookie.com/embed/${id}" srcdoc="&lt;style&gt;*{padding:0;margin:0;overflow:hidden}html,body{height:100%}img,span{position:absolute;width:100%;top:0;bottom:0;margin:auto}span{height:1.5em;text-align:center;font:48px/1.5 sans-serif;color:white;text-shadow:0 0 .5em black}&lt;/style&gt;&lt;a href=https://www.youtube-nocookie.com/embed/${id}?autoplay=1&gt;&lt;img src=https://img.youtube.com/vi/${id}/hqdefault.jpg alt=&quot;&quot;&gt;&lt;span&gt;&#9654;&lt;/span&gt;&lt;/a&gt;" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 </div>
-<figcaption class="mt-3 text-xs text-white/35"><a href="https://youtu.be/${TEASER_ID}" rel="noopener">Watch on YouTube</a> · a short teaser from our own channel.</figcaption>
+<figcaption class="mt-3 text-xs text-white/35"><a href="https://youtu.be/${id}" rel="noopener">Watch on YouTube</a> · ${caption}</figcaption>
 </figure>`;
+}
+
+const teaserVideo = videoFacade(TEASER_ID, TEASER_TITLE, "a short teaser from our own channel.");
+
+/** Featured video for the first-sale posts (uploadDate verified on the YouTube page, 2026-10-14). */
+const FINAL_VIDEO_ID = "43CfVNIds7Q";
+const FINAL_VIDEO_TITLE = "Let's make your Shopify store unbeatable";
+const FINAL_VIDEO_META = {
+  id: FINAL_VIDEO_ID,
+  title: FINAL_VIDEO_TITLE,
+  description:
+    "A real Shopify store with a weak return on ad spend, compared side by side with a top store in its niche, to show what separates the two.",
+  uploadDate: "2026-10-13T23:32:09-07:00",
+};
+const finalVideo = videoFacade(
+  FINAL_VIDEO_ID,
+  FINAL_VIDEO_TITLE,
+  "From our channel: how to make your store the one shoppers pick in your niche.",
+);
 
 export const BLOG_POSTS: BlogPost[] = [
+  {
+    slug: "abandoned-cart-recovery",
+    title: "Abandoned Cart Recovery: The 3-Message Flow That Works",
+    h1: "Abandoned cart recovery: how to win back shoppers who left — and stop the next ones leaving",
+    description:
+      "Abandoned cart recovery, step by step: the 3-message flow, timing, what to write in each, Shopify vs apps — and why fixing the page beats chasing the cart.",
+    keyword: "abandoned cart recovery",
+    keywords: [
+      "abandoned cart recovery",
+      "shopify abandoned cart recovery",
+      "abandoned cart email",
+      "abandoned cart email sequence",
+      "abandoned cart flow",
+      "cart recovery rate",
+    ],
+    date: "2026-10-14",
+    author: "Ariel Jiménez",
+    readingMinutes: 8,
+    video: FINAL_VIDEO_META,
+    excerpt:
+      "A three-message recovery flow, what to write in each message, what Shopify sends on its own — and why the cheapest recovered cart is the one that never left.",
+    bodyHtml: `
+<p class="lede">Abandoned cart recovery means contacting shoppers who left before paying, and the version that holds up is three short messages over about two days: a reminder, an answer to the likely doubt, and a last nudge. It is worth setting up, but it can only reach the shoppers who left an email address — so the bigger win is making fewer of them leave in the first place.</p>
+${finalVideo}
+<p>This guide covers the flow itself (timing, copy, tools) and then the part most recovery guides skip: why a recovery email has a ceiling, and where the leak actually starts.</p>
+
+<h2>What counts as an abandoned cart (and why Shopify only emails some of them)?</h2>
+<p>People use "abandoned cart" for two different events, and they behave differently:</p>
+<ul>
+<li><strong>Cart abandonment:</strong> someone adds a product to the cart and leaves. Often you know nothing about them — no name, no email.</li>
+<li><strong>Checkout abandonment:</strong> someone starts checkout, enters an email, and leaves before paying. This is the group you can contact.</li>
+</ul>
+<p>Shopify's own definition is narrow. Per its <a href="https://help.shopify.com/en/manual/orders/abandoned-checkouts" rel="nofollow">help page on recovering abandoned checkouts</a>, a checkout counts as abandoned when it stays incomplete for more than ten minutes after the customer gave their email. If the customer typed a phone number instead of an email, the email can't be sent. Recovery emails apply to the Online Store and Buy Button channels, not to Shopify POS or third-party channels. And the same page notes that items in the cart at the moment the checkout was abandoned aren't saved.</p>
+<p>In plain terms: the built-in emails only cover people who got as far as the contact step. Everyone who bounced from the cart page without typing anything is invisible to them.</p>
+
+<h2>How much revenue is sitting in abandoned carts?</h2>
+<p>Baymard Institute's running average, across 50 studies, is a <strong>70.22%</strong> cart abandonment rate (<a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">Baymard, updated September 22, 2025</a>). The same page reports that 42% of US shoppers had abandoned a cart because they were "just browsing" and weren't ready to buy — a share Baymard treats as largely unavoidable.</p>
+<p>So most of the lost volume was never going to convert that day, and only part of the remainder left an email. The funnel below uses made-up round numbers to show why recovery works on a thin slice:</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 282" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="a1-title a1-desc"><title id="a1-title">Where abandoned cart recovery can reach — illustrative funnel</title><desc id="a1-desc">Illustrative example: 100 shoppers add to cart, about 70 leave without paying, 30 of those left an email address, and 5 come back and buy. Recovery only works on the group that left an email.</desc>
+<text x="0" y="20" font-size="14" fill="rgba(255,255,255,0.75)">Example: 100 shoppers add to cart</text>
+<rect x="0" y="28" width="300" height="28" rx="6" fill="#2DD4BF"/><text x="12" y="48" font-size="15" font-weight="600" fill="#04302c">100</text>
+<text x="0" y="82" font-size="14" fill="rgba(255,255,255,0.75)">About 70 leave without paying</text>
+<rect x="0" y="90" width="210" height="28" rx="6" fill="#2DD4BF" fill-opacity="0.65"/><text x="12" y="110" font-size="15" font-weight="600" fill="#04302c">70</text>
+<text x="0" y="144" font-size="14" fill="rgba(255,255,255,0.75)">Example: 30 of them left an email</text>
+<rect x="0" y="152" width="90" height="28" rx="6" fill="#2DD4BF" fill-opacity="0.45"/><text x="12" y="172" font-size="15" font-weight="600" fill="#04302c">30</text>
+<text x="100" y="171" font-size="14" fill="rgba(255,255,255,0.7)">← only these can be emailed</text>
+<text x="0" y="206" font-size="14" fill="rgba(255,255,255,0.75)">Example: 5 come back and buy</text>
+<rect x="0" y="214" width="15" height="28" rx="4" fill="#2DD4BF"/><text x="25" y="233" font-size="14" fill="rgba(255,255,255,0.7)">recovered</text>
+<text x="0" y="270" font-size="14" fill="rgba(255,255,255,0.5)">Illustrative numbers, not a benchmark.</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Illustrative example. The 70% is Baymard's average abandonment rate (<a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">source</a>); the 30 and 5 are invented round numbers to show the shape of the funnel.</figcaption>
+</figure>
+<p>The takeaway is the shape, not the numbers: recovery works only on the narrow band that left contact details. Everything to the left of that band is a design and trust problem, which no email can fix.</p>
+<p>Want to see which part of your store loses people before the email step? <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=abandoned-cart-recovery">Run the audit on your store →</a></p>
+
+<h2>The recovery flow, step by step</h2>
+<p>Klaviyo's 2026 abandoned cart benchmarks (<a href="https://www.klaviyo.com/blog/abandoned-cart-benchmarks" rel="nofollow">Klaviyo, published October 2, 2026, based on more than 110,000 customers</a>) describe a common sequence of three messages: an email reminder after 2–4 hours, a text with a discount after 24 hours, and a final message after 48 hours. Klaviyo adds that the right number of messages depends on industry, product line and goals. Treat these timings as a starting point to test, not a law.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 335" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="a2-title a2-desc"><title id="a2-title">A three-message abandoned cart recovery timeline</title><desc id="a2-desc">Message 1, an email reminder one to four hours after the shopper leaves, with no discount. Message 2, about 24 hours later, answers the likely doubt. Message 3, about 48 hours later, is a last nudge with an optional incentive. An optional SMS can sit around the 24 hour mark if the shopper consented.</desc>
+<line x1="14" y1="24" x2="14" y2="270" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+<circle cx="14" cy="24" r="8" fill="#2DD4BF"/><circle cx="14" cy="104" r="8" fill="#2DD4BF"/><circle cx="14" cy="184" r="8" fill="#2DD4BF"/><circle cx="14" cy="264" r="8" fill="none" stroke="#2DD4BF" stroke-width="2" stroke-dasharray="3 3"/>
+<text x="36" y="22" font-size="15" font-weight="600" fill="#ffffff">Message 1 · email</text><text x="36" y="40" font-size="14" fill="#2DD4BF">2–4 hours after they leave</text><text x="36" y="58" font-size="14" fill="rgba(255,255,255,0.65)">Reminder. Show the cart. No discount.</text>
+<text x="36" y="102" font-size="15" font-weight="600" fill="#ffffff">Message 2 · email</text><text x="36" y="120" font-size="14" fill="#2DD4BF">About 24 hours</text><text x="36" y="138" font-size="14" fill="rgba(255,255,255,0.65)">Answer the doubt: shipping, returns,</text><text x="36" y="154" font-size="14" fill="rgba(255,255,255,0.65)">reviews, sizing.</text>
+<text x="36" y="182" font-size="15" font-weight="600" fill="#ffffff">Message 3 · email</text><text x="36" y="200" font-size="14" fill="#2DD4BF">About 48 hours</text><text x="36" y="218" font-size="14" fill="rgba(255,255,255,0.65)">Last nudge. Optional incentive for</text><text x="36" y="234" font-size="14" fill="rgba(255,255,255,0.65)">higher-value carts.</text>
+<text x="36" y="262" font-size="15" font-weight="600" fill="#ffffff">Optional · SMS</text><text x="36" y="280" font-size="14" fill="#2DD4BF">Around 24 hours, with consent</text><text x="36" y="298" font-size="14" fill="rgba(255,255,255,0.65)">One short text with the cart link.</text>
+<text x="0" y="326" font-size="14" fill="rgba(255,255,255,0.5)">Typical timings, not a rule. Test yours.</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Timings are loosely based on the sequence in <a href="https://www.klaviyo.com/blog/abandoned-cart-benchmarks" rel="nofollow">Klaviyo's 2026 benchmarks</a> (first message after 2–4 hours, then 24 and 48 hours). What each message says is our recommendation, not Klaviyo's; many stores send the first email earlier, so test yours.</figcaption>
+</figure>
+<p>As for how well such flows perform, the same Klaviyo report gives averages and top-10% figures. For email, abandoned cart flows average <strong>$6.77 in revenue per recipient</strong> (top 10%: $13.70) and a <strong>6.0% click rate</strong> (top 10%: 11.3%). For text messages, the averages are $4.48 per recipient (top 10%: $8.69) and a 10.3% click rate (top 10%: 18.5%). Use those as a yardstick for your own flow rather than as a promise.</p>
+<p>Three rules matter more than any single line of copy:</p>
+<ol>
+<li><strong>Stop the sequence the moment they buy.</strong> Getting a "you forgot something" email after paying is the fastest way to look careless.</li>
+<li><strong>Link to their cart, not your homepage.</strong> Every extra click between the email and the pay button loses people, especially on a phone.</li>
+<li><strong>Match the message to the cart.</strong> A reminder for a single low-priced item and one for a large basket shouldn't read, or incentivise, the same way.</li>
+</ol>
+
+<h2>What to write in each message</h2>
+<p>Each message has one job. If every email says "you forgot something", the second and third are wasted.</p>
+<table><thead><tr><th>Message</th><th>Goal</th><th>Example subject</th><th>Include</th><th>Common mistake</th></tr></thead><tbody>
+<tr><td>1 · reminder</td><td>Get them back to the exact cart</td><td>"Your cart is waiting"</td><td>Product image, name, size or variant, a one-click link back to checkout</td><td>Opening with a discount before they've had time to come back on their own</td></tr>
+<tr><td>2 · objection</td><td>Remove the most likely doubt</td><td>"Questions before you buy?"</td><td>Delivery time, returns in one line, one or two real reviews of the product</td><td>Generic brand copy that doesn't mention the product they left</td></tr>
+<tr><td>3 · last nudge</td><td>Give a reason to act now</td><td>"Still thinking it over?"</td><td>Cart link, a clear deadline or low-stock note only if true, an incentive if the cart value justifies it</td><td>Fake urgency, or a discount on every cart, which trains shoppers to abandon on purpose</td></tr>
+</tbody></table>
+<p>On discounts: Klaviyo's article says they are "not necessarily" required and suggests reserving incentives for high-value carts. That matches common sense — if the doubt is delivery time, a coupon doesn't answer it.</p>
+<p>Keep the layout simple: a short subject line, the product image, one button. Send yourself each message and open it on a phone before the flow goes live, and check that the button lands on a working cart. A broken link in message one quietly wastes the whole sequence.</p>
+
+<h2>Shopify's built-in emails vs a recovery app</h2>
+<p>You don't need a paid app to start. Shopify can send abandoned checkout emails automatically once the setting is on; its help page points to the Messaging automations in your admin (Apps → Messaging → Automations → Abandoned checkout emails), and the exact path can differ by admin version, so check yours. A dedicated email and SMS platform adds sequences, segmentation and reporting. Here is a neutral comparison with no prices — each vendor's pricing page is the source for that.</p>
+<table><thead><tr><th></th><th>Shopify built-in</th><th>Klaviyo</th><th>Omnisend and others</th></tr></thead><tbody>
+<tr><td>Who it can reach</td><td>Abandoned checkouts with an email address</td><td>Per Klaviyo's article: email and text flows</td><td>Compare on your own</td></tr>
+<tr><td>Sequence</td><td>Set who receives it and a delay (Shopify's page doesn't list the options)</td><td>Multi-message sequences; Klaviyo describes a three-message example</td><td>Check each vendor's flow builder</td></tr>
+<tr><td>Best for</td><td>Getting a first reminder live today</td><td>Stores that want benchmarks, segments and SMS in one place</td><td>Check channels, triggers and limits before choosing</td></tr>
+<tr><td>Cost</td><td>Check your Shopify plan</td><td>See Klaviyo's pricing page</td><td>See the vendor's pricing page</td></tr>
+</tbody></table>
+<p>My advice: turn on the built-in reminder first, measure it for a few weeks, and move to a dedicated tool only when you can name what the built-in one can't do.</p>
+
+<h2>Why recovery alone has a ceiling</h2>
+<p>Look at why people leave. Baymard's list (<a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">same source, September 2025</a>) has extra costs that were too high at 40%, slow delivery at 20%, not trusting the site with card details at 19%, a forced account at 18%, and a checkout that was too long or complicated at 17%. These are stated reasons for leaving, and the shopper had them before any email existed.</p>
+<p>A reminder can restate your shipping policy, but it can't change the fact that the total jumped at checkout. It can add a review, but it can't make an untrusted page feel safe at the moment the card came out. That's why patching the leak upstream, on the product page and in the cart, is worth doing before you polish the email.</p>
+<p>We unpack each of those reasons, and how to spot them on your own store, in <a href="/blog/why-customers-abandon-cart-2026">why customers abandon cart</a>. For the page where the doubt usually starts, see our guide to the <a href="/blog/shopify-product-page">Shopify product page</a>.</p>
+
+<h2>Your abandoned cart recovery checklist</h2>
+<ul>
+<li>Capture the email early in checkout, since that's what makes recovery possible at all.</li>
+<li>Turn on Shopify's abandoned checkout email and send yourself a test.</li>
+<li>Write message 1 as a plain reminder with the exact product and a one-click link back.</li>
+<li>Write message 2 around your most common doubt: delivery, returns or trust.</li>
+<li>Write message 3 as a last nudge; add an incentive only for higher-value carts.</li>
+<li>Add SMS only where you have clear consent, and keep it to one short text.</li>
+<li>Check that the link returns the shopper to a working checkout on mobile.</li>
+<li>Track revenue per recipient and click rate, and compare them with Klaviyo's benchmarks.</li>
+<li>Show shipping costs and your return policy before checkout, so the email has less to explain.</li>
+<li>Re-read the three messages once a quarter and cut anything that no longer matches your offer.</li>
+</ul>
+
+<h2>Win the cart before it's abandoned</h2>
+<p>Recovery is a safety net. The stores that win a niche tend to be the ones whose pages answer the buyer's doubts before the cart, so fewer carts need rescuing. That's the whole idea behind the video above: compare your store with the one shoppers actually pick, and close the gap. Our <a href="/blog/shopify-cro-audit">Shopify CRO audit checklist</a> walks through that comparison page by page, and you can see where your own store stands with a <a href="/">Shopify store audit</a> in about a minute (ours — full disclosure). <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=abandoned-cart-recovery">Run the audit on your store →</a></p>
+`.trim(),
+    faqs: [
+      {
+        q: "What is the best time to send the first abandoned cart email?",
+        a: "Klaviyo's 2026 benchmarks describe a common first email after 2–4 hours, and Shopify treats a checkout as abandoned after ten minutes without completion. There is no universal best time, so start in that window and test sooner or later send times against your own revenue per recipient.",
+      },
+      {
+        q: "Should I offer a discount in abandoned cart emails?",
+        a: "Not necessarily. Klaviyo's article says discounts aren't always required and suggests keeping incentives for high-value carts. If the shopper's doubt is delivery time or trust, a coupon doesn't answer it, and discounting every cart can teach shoppers to abandon on purpose.",
+      },
+      {
+        q: "Does Shopify send abandoned cart emails automatically?",
+        a: "Shopify can send abandoned checkout emails automatically once you enable them, but only to customers who entered an email address at checkout and left for more than ten minutes. Items left in a cart without contact details can't be emailed. Shopify's help page points to the Messaging automations in the admin, and the path can vary by admin version.",
+      },
+      {
+        q: "What is a good abandoned cart recovery rate?",
+        a: "There isn't a single trustworthy industry number, so be wary of any article that gives one without a source. Klaviyo publishes measurable benchmarks instead: in its 2026 data, email abandoned cart flows average $6.77 in revenue per recipient and a 6.0% click rate, with the top 10% at $13.70 and 11.3%.",
+      },
+      {
+        q: "Is abandoned cart recovery better by email or SMS?",
+        a: "It depends on the metric. In Klaviyo's 2026 data, text messages have the higher average click rate (10.3% vs 6.0% for email), while email has the higher average revenue per recipient ($6.77 vs $4.48). SMS also needs clear shopper consent, and the rules vary by country, so many stores run email first and add text for some carts.",
+      },
+    ],
+  },
+  {
+    slug: "shopify-product-page",
+    title: "Shopify Product Page: 12 Elements That Make It Sell (2026)",
+    h1: "The Shopify product page that sells: 12 elements, in the order shoppers see them",
+    description:
+      "What a Shopify product page needs to convert: 12 elements, mobile rules, common mistakes — and how to edit yours without breaking the theme.",
+    keyword: "shopify product page",
+    keywords: [
+      "shopify product page",
+      "shopify product page design",
+      "shopify product page best practices",
+      "shopify product page examples",
+      "optimize shopify product page",
+      "shopify product page layout",
+    ],
+    date: "2026-10-14",
+    author: "Ariel Jiménez",
+    readingMinutes: 8,
+    video: FINAL_VIDEO_META,
+    excerpt:
+      "Twelve elements, in the order a shopper meets them, plus the mobile rules, the common mistakes and a safe way to edit your theme without breaking it.",
+    bodyHtml: `
+<p class="lede">A Shopify product page has one job: answer five questions before the shopper leaves — what is this, is it for me, what will it cost me in total, can I trust this store, and when will it arrive. Twelve elements do that work, six above the fold and six below, and each one answers a specific doubt.</p>
+${finalVideo}
+<p>This guide walks through the page in the order a shopper experiences it. For each element: what it is, why it matters, and the mistake we see most. Then the mobile rules, and a safe way to change the page without breaking your theme.</p>
+
+<h2>What does a Shopify product page have to do?</h2>
+<p>Think of the product page as a short conversation with a stranger. The shopper arrives from an ad or a search, knowing little about you. Every question they can't answer in a few seconds is a reason to go back and try the next tab.</p>
+<ol>
+<li><strong>What is this?</strong> A clear name and images that show the product from the angles a buyer would want.</li>
+<li><strong>Is it for me?</strong> Variants, sizing, benefits and who it is meant for.</li>
+<li><strong>What will it really cost?</strong> Price, shipping and any extras, before checkout.</li>
+<li><strong>Can I trust this store?</strong> Reviews, a returns promise, recognisable payment marks.</li>
+<li><strong>When does it arrive?</strong> A delivery estimate where the decision happens.</li>
+</ol>
+<p>Most pages are weaker at this than store owners assume. In <a href="https://baymard.com/blog/current-state-ecommerce-product-page-ux" rel="nofollow">Baymard Institute's product page benchmark</a> (updated March 2026) of more than 155 US and European sites, 52% of desktop experiences rated "mediocre or worse", and so did 62% of mobile web experiences. If large retailers miss the basics, a small store certainly can.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 575" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="b1-title b1-desc"><title id="b1-title">The 12 elements of a Shopify product page</title><desc id="b1-desc">A wireframe of a desktop product page. Above the fold: 1 image gallery, 2 title, price and review stars, 3 variant selector, 4 add to cart button, 5 delivery and returns line, 6 trust icons. Below the fold: 7 benefits, 8 details and specs, 9 comparison table, 10 full reviews, 11 FAQ, 12 related products.</desc>
+<text x="0" y="13" font-size="14" fill="rgba(255,255,255,0.55)">ABOVE THE FOLD</text>
+<g transform="translate(0,22)">
+<rect x="0.5" y="0.5" width="299" height="190" rx="10" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.15)"/>
+<rect x="10" y="12" width="120" height="130" rx="6" fill="rgba(255,255,255,0.08)"/>
+<rect x="10" y="150" width="36" height="30" rx="4" fill="rgba(255,255,255,0.08)"/><rect x="52" y="150" width="36" height="30" rx="4" fill="rgba(255,255,255,0.08)"/><rect x="94" y="150" width="36" height="30" rx="4" fill="rgba(255,255,255,0.08)"/>
+<rect x="146" y="14" width="110" height="10" rx="3" fill="rgba(255,255,255,0.35)"/><rect x="146" y="30" width="50" height="10" rx="3" fill="rgba(255,255,255,0.55)"/><rect x="146" y="46" width="70" height="8" rx="3" fill="#2DD4BF" fill-opacity="0.5"/>
+<rect x="146" y="68" width="28" height="22" rx="4" fill="none" stroke="rgba(255,255,255,0.4)"/><rect x="180" y="68" width="28" height="22" rx="4" fill="none" stroke="rgba(255,255,255,0.4)"/><rect x="214" y="68" width="28" height="22" rx="4" fill="none" stroke="rgba(255,255,255,0.4)"/>
+<rect x="146" y="102" width="144" height="26" rx="6" fill="#2DD4BF"/><text x="218" y="120" text-anchor="middle" font-size="14" font-weight="600" fill="#04302c">Add to cart</text>
+<rect x="146" y="138" width="110" height="8" rx="3" fill="rgba(255,255,255,0.3)"/>
+<circle cx="154" cy="166" r="7" fill="none" stroke="rgba(255,255,255,0.4)"/><circle cx="176" cy="166" r="7" fill="none" stroke="rgba(255,255,255,0.4)"/><circle cx="198" cy="166" r="7" fill="none" stroke="rgba(255,255,255,0.4)"/>
+<circle cx="24" cy="26" r="10" fill="#2DD4BF"/><text x="24" y="31" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">1</text>
+<circle cx="278" cy="19" r="10" fill="#2DD4BF"/><text x="278" y="24" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">2</text>
+<circle cx="270" cy="79" r="10" fill="#2DD4BF"/><text x="270" y="84" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">3</text>
+<circle cx="146" cy="115" r="10" fill="#2DD4BF"/><text x="146" y="120" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">4</text>
+<circle cx="278" cy="142" r="10" fill="#2DD4BF"/><text x="278" y="147" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">5</text>
+<circle cx="270" cy="166" r="10" fill="#2DD4BF"/><text x="270" y="171" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">6</text>
+</g>
+<text x="0" y="238" font-size="14" fill="rgba(255,255,255,0.8)"><tspan fill="#2DD4BF" font-weight="600">1</tspan><tspan dx="10">Image gallery</tspan></text>
+<text x="0" y="256" font-size="14" fill="rgba(255,255,255,0.8)"><tspan fill="#2DD4BF" font-weight="600">2</tspan><tspan dx="10">Title, price and review stars</tspan></text>
+<text x="0" y="274" font-size="14" fill="rgba(255,255,255,0.8)"><tspan fill="#2DD4BF" font-weight="600">3</tspan><tspan dx="10">Variant selector</tspan></text>
+<text x="0" y="292" font-size="14" fill="rgba(255,255,255,0.8)"><tspan fill="#2DD4BF" font-weight="600">4</tspan><tspan dx="10">Add to cart button</tspan></text>
+<text x="0" y="310" font-size="14" fill="rgba(255,255,255,0.8)"><tspan fill="#2DD4BF" font-weight="600">5</tspan><tspan dx="10">Delivery and returns line</tspan></text>
+<text x="0" y="328" font-size="14" fill="rgba(255,255,255,0.8)"><tspan fill="#2DD4BF" font-weight="600">6</tspan><tspan dx="10">Trust icons near the button</tspan></text>
+<text x="0" y="360" font-size="14" fill="rgba(255,255,255,0.55)">BELOW THE FOLD</text>
+<rect x="0.5" y="368.5" width="299" height="26" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)"/><circle cx="16" cy="381.5" r="10" fill="#2DD4BF"/><text x="16" y="386.5" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">7</text><text x="36" y="386" font-size="14" fill="rgba(255,255,255,0.85)">Benefits, not just features</text>
+<rect x="0.5" y="402.5" width="299" height="26" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)"/><circle cx="16" cy="415.5" r="10" fill="#2DD4BF"/><text x="16" y="420.5" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">8</text><text x="36" y="420" font-size="14" fill="rgba(255,255,255,0.85)">Details, specs and care</text>
+<rect x="0.5" y="436.5" width="299" height="26" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)"/><circle cx="16" cy="449.5" r="10" fill="#2DD4BF"/><text x="16" y="454.5" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">9</text><text x="36" y="454" font-size="14" fill="rgba(255,255,255,0.85)">Comparison table</text>
+<rect x="0.5" y="470.5" width="299" height="26" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)"/><circle cx="16" cy="483.5" r="12" fill="#2DD4BF"/><text x="16" y="488.5" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">10</text><text x="36" y="488" font-size="14" fill="rgba(255,255,255,0.85)">Full reviews, with photos</text>
+<rect x="0.5" y="504.5" width="299" height="26" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)"/><circle cx="16" cy="517.5" r="12" fill="#2DD4BF"/><text x="16" y="522.5" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">11</text><text x="36" y="522" font-size="14" fill="rgba(255,255,255,0.85)">FAQ</text>
+<rect x="0.5" y="538.5" width="299" height="26" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)"/><circle cx="16" cy="551.5" r="12" fill="#2DD4BF"/><text x="16" y="556.5" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">12</text><text x="36" y="556" font-size="14" fill="rgba(255,255,255,0.85)">Related products</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">A desktop product page, annotated. Wireframe for illustration, not a design template.</figcaption>
+</figure>
+<p>Want to see which of the twelve your page is missing? <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-product-page">Run the audit on your store →</a></p>
+
+<h2>Above the fold: elements 1–6</h2>
+<h3>1. Image gallery</h3>
+<p>Shoppers can't touch the product, so the images do the work. Show it from several angles, in use, and — where size matters — in scale next to something familiar. <a href="https://baymard.com/blog/current-state-ecommerce-product-page-ux" rel="nofollow">Baymard</a> found that 37% of sites lacked an in-scale image, while 42% of users try to judge size from images. The classic mistake: a single glossy shot on white, and nothing showing real size or texture.</p>
+<h3>2. Title, price and review stars</h3>
+<p>Say what the product is in plain words, show the price in a stable spot, and put a star rating with a review count right beside them. Together they answer "what is this" and "do other people like it" in one glance. The mistake is a clever product name that doesn't say what the thing is, or stars buried far below the button.</p>
+<h3>3. Variant selector</h3>
+<p>Size and colour choices should be visible, tappable and obvious about stock. <a href="https://baymard.com/blog/current-state-ecommerce-product-page-ux" rel="nofollow">Baymard</a> reports that 57% of sites don't use button-style size selectors. A dropdown hides the options and adds a tap. The mistake is making the shopper discover that their size is unavailable only after choosing it.</p>
+<h3>4. Add to cart button</h3>
+<p>One clear primary action, high contrast, with a label that says what happens. It should be the most visible element in the buy column. The usual error is competing buttons (wishlist, "buy now", "notify me") that make the main one look optional.</p>
+<h3>5. Delivery and returns line</h3>
+<p>This is where the cost and arrival questions get answered: shipping cost or threshold, a delivery estimate, and a one-line return promise. According to <a href="https://baymard.com/blog/current-state-ecommerce-product-page-ux" rel="nofollow">Baymard</a>, 67% of sites don't show an estimated total near the buy section, and 44% don't link or display the return policy on the product page, even though 60% of respondents in its survey look for it there. The mistake is leaving all of this for checkout.</p>
+<h3>6. Trust icons</h3>
+<p>Small, recognisable cues near the button: accepted payment marks, a guarantee, secure checkout. They reduce the "is this store legitimate" worry at the exact moment of commitment. Keep them honest and few. A wall of generic badges looks like decoration, and invented ones erode trust.</p>
+
+<h2>Below the fold: elements 7–12</h2>
+<h3>7. Benefits, not just features</h3>
+<p>A feature says what the product has; a benefit says what it does for the buyer. Lead with the two or three that matter most, in short lines a thumb-scrolling shopper can skim. The mistake is a wall of manufacturer copy pasted from a supplier page.</p>
+<h3>8. Details, specs and care</h3>
+<p>For shoppers who are nearly sure, specs and materials remove the last "what exactly am I getting" doubt. Use a tidy list or accordion rather than a paragraph. The mistake is hiding the dimensions that cause returns.</p>
+<h3>9. Comparison table</h3>
+<p>If you sell several versions or compete on a known alternative, a small table does the persuading. Show the differences honestly. The mistake is a table where every row is a tick for you and a cross for everyone else; shoppers notice.</p>
+<h3>10. Full reviews, with photos</h3>
+<p>Stars are the summary; the full reviews are the evidence. Real detail, customer photos and a way to filter beat a column of one-line praise. <a href="https://baymard.com/blog/current-state-ecommerce-product-page-ux" rel="nofollow">Baymard</a> notes 63% of sites don't let users move through reviewer images across reviews. The mistake is only showing five-star reviews, which reads as curated.</p>
+<h3>11. FAQ</h3>
+<p>Answer the questions your support inbox gets: sizing, shipping time, materials, care, returns. It's cheaper than answering them one email at a time, and it catches shoppers who would otherwise leave to search. The mistake is a generic store-wide FAQ instead of product-specific answers.</p>
+<h3>12. Related products</h3>
+<p>Last, offer a next step for shoppers whose answer was "not this one", and complements for those who said yes. Keep it to a handful of relevant items. The mistake is a crowded carousel that pulls attention away from the product on the first screen; it belongs at the end.</p>
+
+<h2>What changes on mobile?</h2>
+<p>A large share of your visitors is probably on phones (Shopify's Sessions by device report shows how many), and the page has to rearrange for thumbs: one column, a swipeable gallery, and a buy button that doesn't disappear when the shopper scrolls to read.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 310" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="b2-title b2-desc"><title id="b2-title">Product page on desktop vs mobile</title><desc id="b2-desc">Two wireframes side by side. On desktop, the gallery sits left with thumbnails and the add to cart button is inside the buy column. On mobile, the gallery swipes with dots, delivery information is visible without scrolling, and a sticky add to cart bar stays at the bottom of the screen.</desc>
+<text x="0" y="16" font-size="14" font-weight="600" fill="#ffffff">Desktop</text><text x="176" y="16" font-size="14" font-weight="600" fill="#ffffff">Mobile</text>
+<rect x="0.5" y="26.5" width="159" height="150" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.15)"/>
+<rect x="8" y="36" width="66" height="84" rx="4" fill="rgba(255,255,255,0.08)"/><rect x="8" y="126" width="20" height="14" rx="2" fill="rgba(255,255,255,0.08)"/><rect x="32" y="126" width="20" height="14" rx="2" fill="rgba(255,255,255,0.08)"/><rect x="56" y="126" width="18" height="14" rx="2" fill="rgba(255,255,255,0.08)"/>
+<rect x="84" y="38" width="64" height="8" rx="2" fill="rgba(255,255,255,0.35)"/><rect x="84" y="52" width="36" height="8" rx="2" fill="rgba(255,255,255,0.55)"/><rect x="84" y="70" width="64" height="8" rx="2" fill="rgba(255,255,255,0.2)"/><rect x="84" y="96" width="64" height="20" rx="5" fill="#2DD4BF"/><rect x="84" y="124" width="56" height="6" rx="2" fill="rgba(255,255,255,0.3)"/>
+<rect x="176.5" y="26.5" width="104" height="150" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.15)"/>
+<rect x="184" y="34" width="88" height="50" rx="4" fill="rgba(255,255,255,0.08)"/><circle cx="218" cy="92" r="2.5" fill="#2DD4BF"/><circle cx="228" cy="92" r="2.5" fill="rgba(255,255,255,0.3)"/><circle cx="238" cy="92" r="2.5" fill="rgba(255,255,255,0.3)"/>
+<rect x="184" y="102" width="70" height="8" rx="2" fill="rgba(255,255,255,0.35)"/><rect x="184" y="116" width="36" height="8" rx="2" fill="rgba(255,255,255,0.55)"/><rect x="184" y="130" width="80" height="6" rx="2" fill="rgba(255,255,255,0.3)"/>
+<rect x="177" y="150" width="103" height="26" rx="0" fill="#2DD4BF"/><text x="228" y="167" text-anchor="middle" font-size="14" font-weight="600" fill="#04302c">Add to cart</text>
+<text x="0" y="206" font-size="14" fill="rgba(255,255,255,0.8)">Gallery: thumbnails → swipe and dots</text>
+<text x="0" y="226" font-size="14" fill="rgba(255,255,255,0.8)">Add to cart: in the column → sticky bar</text>
+<text x="0" y="246" font-size="14" fill="rgba(255,255,255,0.8)">Delivery: beside the button → in view</text>
+<text x="0" y="266" font-size="14" fill="rgba(255,255,255,0.8)">Details: all visible → accordions</text>
+<text x="0" y="298" font-size="14" fill="rgba(255,255,255,0.5)">Wireframes, not a design template.</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">The same twelve elements, rearranged for thumbs. The sticky bar keeps the main action in reach while the shopper reads.</figcaption>
+</figure>
+<ul>
+<li><strong>Test on a real phone,</strong> not just a resized browser window. <a href="https://baymard.com/blog/current-state-ecommerce-product-page-ux" rel="nofollow">Baymard</a>'s benchmark rates mobile web lower than desktop (38% decent or better vs 48%).</li>
+<li><strong>Keep delivery and returns in view</strong> without a scroll, because those are the doubts that end mobile visits.</li>
+<li><strong>Use accordions</strong> for specs and FAQ so the page stays short, but don't hide the benefits.</li>
+<li><strong>Make tap targets generous.</strong> Variant buttons that are easy to hit are easier to trust.</li>
+</ul>
+
+<h2>How do you change your product page without breaking your theme?</h2>
+<p>This is the fear that stops most owners: one wrong edit and the page is broken while ads are running. The safe routine is boring, and it works.</p>
+<ol>
+<li><strong>Duplicate the theme first.</strong> Per <a href="https://help.shopify.com/en/manual/online-store/themes/managing-themes/duplicating-themes" rel="nofollow">Shopify's help page on duplicating themes</a>, go to Online Store, open the menu on your theme and choose Duplicate. Shopify recommends editing the copy so you can fall back on the original. You can hold up to 20 themes.</li>
+<li><strong>Use the theme editor,</strong> not pasted code. Shopify describes <a href="https://help.shopify.com/en/manual/online-store/themes/theme-structure/sections-and-blocks" rel="nofollow">sections and blocks</a> as the building units of a theme page: sections are layout units, blocks are the modules inside them. In the editor you can add, reorder, hide or duplicate them, and each template can hold up to 25 sections. Which ones are available depends on your theme.</li>
+<li><strong>Change one thing at a time,</strong> so you know what moved the numbers.</li>
+<li><strong>Preview on mobile</strong> before you publish.</li>
+<li><strong>Be careful with pasted code.</strong> Snippets generated by AI or copied from forums can conflict with your theme. If you go that way, do it only in the duplicate. More on that in our post about the <a href="/blog/ai-shopify-designer">AI Shopify designer</a>.</li>
+</ol>
+
+<h2>Common Shopify product page mistakes</h2>
+<table><thead><tr><th>Mistake</th><th>What it costs</th><th>Fix</th></tr></thead><tbody>
+<tr><td>Shipping and returns only at checkout</td><td>Surprise at the last step; shoppers leave</td><td>Add a one-line delivery and returns note by the button</td></tr>
+<tr><td>One image, no scale or context</td><td>Shoppers can't judge size or quality</td><td>Add in-use, in-scale and detail shots</td></tr>
+<tr><td>Dropdown variants</td><td>Hidden options, extra taps</td><td>Use buttons or swatches, show stock</td></tr>
+<tr><td>Supplier copy pasted in</td><td>No reason to choose you over a competitor</td><td>Rewrite around benefits for your buyer</td></tr>
+<tr><td>Only perfect reviews</td><td>Looks curated, trust drops</td><td>Show the full range, with photos</td></tr>
+<tr><td>Competing buttons near Add to cart</td><td>Main action looks optional</td><td>One primary button, others secondary</td></tr>
+<tr><td>Same page for phone and desktop</td><td>Lower mobile conversion</td><td>Sticky add to cart, accordions, swipe gallery</td></tr>
+</tbody></table>
+<p>Many of these also show up in the carts people leave, which is why recovery emails only go so far; see our guide to <a href="/blog/abandoned-cart-recovery">abandoned cart recovery</a>.</p>
+
+<h2>How does your product page compare to the top store in your niche?</h2>
+<p>A checklist tells you what a good page contains. It doesn't tell you what the store beating you does differently, and that is what decides who a shopper picks. The video above makes that comparison: a real store with a weak return on ad spend, side by side with a stronger one.</p>
+<p>You can do a rough version by hand: open your best-selling product next to a leader in your niche, and answer the five questions on each, in ten seconds, as a stranger. Or let the analyzer do it. Our <a href="/">Shopify store audit</a> scores your pages and ranks what to fix first (ours — full disclosure). For a broader plan, see <a href="/blog/how-to-increase-shopify-conversion-rate">how to increase your Shopify conversion rate</a> and the <a href="/blog/shopify-cro-audit">Shopify CRO audit checklist</a>. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-product-page">Run the audit on your store →</a></p>
+`.trim(),
+    faqs: [
+      {
+        q: "What is the best layout for a Shopify product page?",
+        a: "Put the gallery and the buy column side by side on desktop, with title, price, review stars, variants, the Add to cart button and a delivery-and-returns line in the buy column. Put benefits, specs, reviews and FAQ below. On mobile, stack it in one column with a sticky Add to cart bar.",
+      },
+      {
+        q: "How many images should a Shopify product page have?",
+        a: "There is no magic number, so cover the jobs the images must do instead: the product from several angles, in use, in scale where size matters, and a close-up of detail or texture. Baymard found 37% of sites lacked an in-scale image, so that's a common gap.",
+      },
+      {
+        q: "Where should I put reviews on a Shopify product page?",
+        a: "Show the star rating and review count next to the title and price, then place the full reviews below the fold. Link the stars to the review section so a curious shopper can jump straight to the evidence. Include customer photos where you can.",
+      },
+      {
+        q: "Should the price show shipping on a Shopify product page?",
+        a: "Show the shipping cost, or the threshold for a lower cost, near the button. In Baymard's benchmark, 67% of sites don't show an estimated total near the buy section. Extra costs are the most cited reason for abandonment in Baymard's list (40%), so it is better to say it early than let checkout say it for you.",
+      },
+      {
+        q: "How do I A/B test a Shopify product page?",
+        a: "Change one element at a time and compare results for equal periods in Shopify's Conversion rate over time report. That tells you what happened but doesn't split traffic. For a true split test, use a dedicated testing tool and check its documentation, and edit a duplicate of your theme first.",
+      },
+    ],
+  },
+  {
+    slug: "shopify-cro-audit",
+    title: "Shopify CRO Audit: The Step-by-Step Checklist (2026)",
+    h1: "How to run a Shopify CRO audit: the step-by-step checklist (and what to fix first)",
+    description:
+      "Run a Shopify CRO audit step by step: the data to pull, what to check from home to checkout, how to prioritize fixes, and what a good report includes.",
+    keyword: "shopify cro audit",
+    keywords: [
+      "shopify cro audit",
+      "shopify cro audit checklist",
+      "shopify cro audit report",
+      "ecommerce cro audit",
+      "cro audit checklist",
+      "conversion audit shopify",
+    ],
+    date: "2026-10-14",
+    author: "Ariel Jiménez",
+    readingMinutes: 8,
+    video: FINAL_VIDEO_META,
+    excerpt:
+      "What to pull, what to check on every page from home to checkout, how to rank the fixes by impact and effort — and what a good audit report should contain.",
+    bodyHtml: `
+<p class="lede">A Shopify CRO audit is a structured review of your store that finds where shoppers drop off between landing and payment, and ranks the fixes by impact so you work on the right thing first. It differs from a speed or SEO audit: those ask "can people find and load this?", while a CRO audit asks "once they're here, why don't they buy?"</p>
+${finalVideo}
+<p>Below is the process we'd follow ourselves: the data to pull, a page-by-page checklist from home to checkout, a simple way to prioritise, and what a finished audit report should contain.</p>
+
+<h2>What is a Shopify CRO audit (and what it isn't)?</h2>
+<p>CRO stands for conversion rate optimisation. The audit is the diagnosis step: it doesn't redesign anything, it tells you where the store leaks and in what order to patch it. It sits next to two other audits that are often confused with it:</p>
+<table><thead><tr><th>Audit</th><th>Question it answers</th><th>Typical output</th></tr></thead><tbody>
+<tr><td>CRO audit</td><td>Why do visitors who arrive not buy?</td><td>Ranked list of friction points across the journey</td></tr>
+<tr><td>Speed audit</td><td>Does the store load and respond quickly?</td><td>Load and interaction metrics, heavy assets</td></tr>
+<tr><td>SEO audit</td><td>Can search engines find and understand the pages?</td><td>Crawl, indexing and content issues</td></tr>
+</tbody></table>
+<p>They overlap — a slow page hurts conversion — but a fast, well-indexed store can still convert badly because the offer is unclear or checkout is awkward. If you're comparing options, our guide to <a href="/blog/free-website-audit-tools">website audit tools</a> shows what each type of tool actually covers.</p>
+
+<h2>What data should you pull before you start?</h2>
+<p>Opinions are cheap; start with what your store already measured. Shopify's <a href="https://help.shopify.com/en/manual/reports-and-analytics/shopify-reports/report-types/default-reports/behaviour-reports" rel="nofollow">behavior reports</a> include several that matter for an audit:</p>
+<ul>
+<li><strong>Conversion rate breakdown:</strong> visualises the path visitors take through your store and checkout, so you can see which step loses the most people.</li>
+<li><strong>Conversion rate over time:</strong> the share of online store visitors who purchase, so you have a baseline before you change anything.</li>
+<li><strong>Sessions by device:</strong> shows which devices visitors use, which decides whether you audit mobile first.</li>
+<li><strong>Sessions by landing page:</strong> shows which pages visitors start on, so you audit what people actually see first rather than just the home page.</li>
+<li><strong>Searches with no results or no clicks:</strong> shows what shoppers wanted and couldn't find.</li>
+<li><strong>Speed reports</strong> (Largest Contentful Paint, Interaction to Next Paint, Cumulative Layout Shift): flag pages that load or shift in ways that frustrate shoppers.</li>
+</ul>
+<p>Save screenshots of the baseline numbers before you touch anything. If you want a plain-language guide to reading them, see <a href="/blog/store-analyzer-vs-shopify-analytics">how to read Shopify analytics</a>. (Wondering what a healthy number even looks like? See <a href="/blog/good-conversion-rate-for-shopify">what's a good conversion rate for Shopify</a>.) Then look at your store the way a stranger would: on a phone, from a cold start, from the page your ads or searches actually land on.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 560" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="c1-title c1-desc"><title id="c1-title">The buyer journey: what to check at each stage</title><desc id="c1-desc">Five stages in order, each with three things to check. Home: offer clear in five seconds, one obvious primary button, trust cue above the fold. Collection: filters and sort work on mobile, price and rating on each card, fast load with no layout jumps. Product: it answers the five questions, delivery and returns visible, reviews with real detail. Cart: total with shipping shown, express payment options, easy path back to shopping. Checkout: guest checkout, only needed fields, payment methods that match your market.</desc>
+<g>
+<rect x="0.5" y="0.5" width="299" height="96" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.14)"/><circle cx="20" cy="20" r="10" fill="#2DD4BF"/><text x="20" y="25" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">1</text><text x="38" y="25" font-size="15" font-weight="600" fill="#ffffff">Home</text>
+<text x="14" y="50" font-size="14" fill="rgba(255,255,255,0.75)">✓ Offer clear in five seconds</text><text x="14" y="68" font-size="14" fill="rgba(255,255,255,0.75)">✓ One obvious primary button</text><text x="14" y="86" font-size="14" fill="rgba(255,255,255,0.75)">✓ Trust cue above the fold</text>
+<path d="M142 100 L158 100 L150 108 Z" fill="#2DD4BF"/>
+<rect x="0.5" y="112.5" width="299" height="96" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.14)"/><circle cx="20" cy="132" r="10" fill="#2DD4BF"/><text x="20" y="137" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">2</text><text x="38" y="137" font-size="15" font-weight="600" fill="#ffffff">Collection</text>
+<text x="14" y="162" font-size="14" fill="rgba(255,255,255,0.75)">✓ Filters and sort work on mobile</text><text x="14" y="180" font-size="14" fill="rgba(255,255,255,0.75)">✓ Price and rating on each card</text><text x="14" y="198" font-size="14" fill="rgba(255,255,255,0.75)">✓ Fast load, no layout jumps</text>
+<path d="M142 212 L158 212 L150 220 Z" fill="#2DD4BF"/>
+<rect x="0.5" y="224.5" width="299" height="96" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.14)"/><circle cx="20" cy="244" r="10" fill="#2DD4BF"/><text x="20" y="249" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">3</text><text x="38" y="249" font-size="15" font-weight="600" fill="#ffffff">Product</text>
+<text x="14" y="274" font-size="14" fill="rgba(255,255,255,0.75)">✓ Answers the five questions</text><text x="14" y="292" font-size="14" fill="rgba(255,255,255,0.75)">✓ Delivery and returns visible</text><text x="14" y="310" font-size="14" fill="rgba(255,255,255,0.75)">✓ Reviews with real detail</text>
+<path d="M142 324 L158 324 L150 332 Z" fill="#2DD4BF"/>
+<rect x="0.5" y="336.5" width="299" height="96" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.14)"/><circle cx="20" cy="356" r="10" fill="#2DD4BF"/><text x="20" y="361" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">4</text><text x="38" y="361" font-size="15" font-weight="600" fill="#ffffff">Cart</text>
+<text x="14" y="386" font-size="14" fill="rgba(255,255,255,0.75)">✓ Total with shipping shown</text><text x="14" y="404" font-size="14" fill="rgba(255,255,255,0.75)">✓ Express payment options</text><text x="14" y="422" font-size="14" fill="rgba(255,255,255,0.75)">✓ Easy path back to shopping</text>
+<path d="M142 436 L158 436 L150 444 Z" fill="#2DD4BF"/>
+<rect x="0.5" y="448.5" width="299" height="96" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.14)"/><circle cx="20" cy="468" r="10" fill="#2DD4BF"/><text x="20" y="473" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">5</text><text x="38" y="473" font-size="15" font-weight="600" fill="#ffffff">Checkout</text>
+<text x="14" y="498" font-size="14" fill="rgba(255,255,255,0.75)">✓ Guest checkout available</text><text x="14" y="516" font-size="14" fill="rgba(255,255,255,0.75)">✓ Only the fields you need</text><text x="14" y="534" font-size="14" fill="rgba(255,255,255,0.75)">✓ Payment methods fit your market</text>
+</g></svg>
+<figcaption class="mt-3 text-xs text-white/35">Check each stage in order. A problem early in the journey hides everything behind it.</figcaption>
+</figure>
+<p>Not sure where to start? <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-cro-audit">Run the audit on your store →</a> and compare the result with your own notes.</p>
+
+<h2>The checklist, page by page</h2>
+<p>Work on a phone first, then on desktop. Write down what you see as a stranger would; don't fix anything yet.</p>
+<h3>Home</h3>
+<ul>
+<li>Can a new visitor say what you sell and who it's for within five seconds?</li>
+<li>Is there one obvious primary button, rather than six equal ones?</li>
+<li>Is there proof near the top: reviews, press, a guarantee, a recognisable number?</li>
+<li>Does the navigation use words your customers use?</li>
+<li>Do the images show the product in use, not only studio shots?</li>
+<li>Does the page work on a phone without sideways scrolling?</li>
+</ul>
+<h3>Collection pages</h3>
+<ul>
+<li>Do filters and sorting work well with a thumb?</li>
+<li>Do product cards show price, rating and a second image on hover or swipe?</li>
+<li>Are best-sellers and new arrivals easy to find?</li>
+<li>Does the page load quickly and without layout jumps?</li>
+<li>If a shopper filters to nothing, does the page help them recover?</li>
+<li>Is the on-site search forgiving: typos, synonyms and no-result pages?</li>
+</ul>
+<h3>Product pages</h3>
+<ul>
+<li>Does the page answer the five questions: what is it, is it for me, what will it cost in total, can I trust the store, when does it arrive?</li>
+<li>Are delivery and returns visible near the Add to cart button?</li>
+<li>Are variants easy to pick and clear about stock?</li>
+<li>Are reviews detailed, with photos, and not only five-star one-liners?</li>
+<li>Is there a sticky Add to cart on mobile?</li>
+<li>Is the copy about benefits for the buyer, not just supplier specs?</li>
+</ul>
+<p>This stage deserves its own deep dive: see our guide to the <a href="/blog/shopify-product-page">Shopify product page</a> and its twelve elements.</p>
+<h3>Cart</h3>
+<ul>
+<li>Is the total visible, with shipping and taxes estimated before checkout?</li>
+<li>Are express payment options offered?</li>
+<li>Can shoppers edit quantity and remove items easily?</li>
+<li>Is there a clear return path to keep shopping?</li>
+<li>Are trust cues (returns, secure payment) repeated here?</li>
+<li>Do any pop-ups or upsells interrupt the move to checkout?</li>
+</ul>
+<h3>Checkout</h3>
+<ul>
+<li>Is guest checkout available, so an account isn't required?</li>
+<li>How many fields does a first-time buyer have to complete? Baymard's 2024 analysis found the average checkout flow has <strong>11.3 form fields</strong>, and says most sites need only 8 (<a href="https://baymard.com/blog/checkout-flow-average-form-fields" rel="nofollow">Baymard, June 2024</a>). Count yours.</li>
+<li>Do payment methods match your market?</li>
+<li>Do error messages say what's wrong and where?</li>
+<li>Does the whole flow complete on a mid-range phone on mobile data?</li>
+<li>Do abandoned checkouts get a follow-up? See <a href="/blog/abandoned-cart-recovery">abandoned cart recovery</a>.</li>
+</ul>
+
+<h2>How do you decide what to fix first?</h2>
+<p>A long list is only useful if it's ranked. Give every finding two scores: how much it should lift conversion (impact) and how hard it is to ship (effort). Then place it in a simple grid.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 370" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="c2-title c2-desc"><title id="c2-title">Impact versus effort matrix for prioritizing audit findings</title><desc id="c2-desc">A two by two grid. High impact and low effort: quick wins, such as showing shipping cost on the cart. High impact and high effort: big bets, such as rebuilding the product page layout. Low impact and low effort: fill-ins, such as tidying image alt text. Low impact and high effort: skip, such as rebuilding the whole theme for a tiny gain. Examples are illustrative.</desc>
+<text x="0" y="14" font-size="14" fill="rgba(255,255,255,0.55)">↑ IMPACT</text>
+<rect x="0.5" y="24.5" width="148" height="150" rx="8" fill="#2DD4BF" fill-opacity="0.16" stroke="#2DD4BF"/>
+<text x="10" y="48" font-size="15" font-weight="600" fill="#ffffff">Quick wins</text><text x="10" y="70" font-size="14" fill="rgba(255,255,255,0.75)">Example: show</text><text x="10" y="87" font-size="14" fill="rgba(255,255,255,0.75)">shipping cost on</text><text x="10" y="104" font-size="14" fill="rgba(255,255,255,0.75)">the cart</text><text x="10" y="160" font-size="14" fill="#2DD4BF">Do first</text>
+<rect x="152.5" y="24.5" width="147" height="150" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.18)"/>
+<text x="162" y="48" font-size="15" font-weight="600" fill="#ffffff">Big bets</text><text x="162" y="70" font-size="14" fill="rgba(255,255,255,0.75)">Example: rebuild</text><text x="162" y="87" font-size="14" fill="rgba(255,255,255,0.75)">the product page</text><text x="162" y="104" font-size="14" fill="rgba(255,255,255,0.75)">layout</text><text x="162" y="160" font-size="14" fill="rgba(255,255,255,0.55)">Plan next</text>
+<rect x="0.5" y="178.5" width="148" height="150" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.18)"/>
+<text x="10" y="202" font-size="15" font-weight="600" fill="#ffffff">Fill-ins</text><text x="10" y="224" font-size="14" fill="rgba(255,255,255,0.75)">Example: tidy</text><text x="10" y="241" font-size="14" fill="rgba(255,255,255,0.75)">image alt text</text><text x="10" y="314" font-size="14" fill="rgba(255,255,255,0.55)">Batch later</text>
+<rect x="152.5" y="178.5" width="147" height="150" rx="8" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.12)" stroke-dasharray="4 4"/>
+<text x="162" y="202" font-size="15" font-weight="600" fill="rgba(255,255,255,0.8)">Skip</text><text x="162" y="224" font-size="14" fill="rgba(255,255,255,0.65)">Example: rebuild</text><text x="162" y="241" font-size="14" fill="rgba(255,255,255,0.65)">the whole theme</text><text x="162" y="258" font-size="14" fill="rgba(255,255,255,0.65)">for a tiny gain</text><text x="162" y="314" font-size="14" fill="rgba(255,255,255,0.45)">Not worth it</text>
+<text x="0" y="350" font-size="14" fill="rgba(255,255,255,0.55)">EFFORT → (low on the left, high on the right)</text>
+<text x="0" y="366" font-size="14" fill="rgba(255,255,255,0.45)">Examples are illustrative.</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Do the top-left first, plan the top-right, batch the bottom-left, and drop the bottom-right.</figcaption>
+</figure>
+<p>Be honest about impact: base it on evidence, such as where the Conversion rate breakdown shows the biggest drop, not on what's fun to change. And re-score after each fix, because the order changes once the biggest leak is patched.</p>
+<p>A practical way to score: give impact and effort a rating from 1 to 3, then sort. Anything that scores high on impact and low on effort goes into this week's work. Anything high on both gets a short plan and an owner. Everything else waits in the backlog, and it's fine for it to stay there — an audit's value comes from what you decide not to do as much as from what you fix.</p>
+
+<h2>What should a CRO audit report include?</h2>
+<p>Whether you write it yourself, buy it, or generate it, a useful report has the same four parts for every finding. If a report is just a list of opinions, it can't be acted on.</p>
+<table><thead><tr><th>Finding</th><th>Evidence</th><th>Priority</th><th>Proposed fix</th></tr></thead><tbody>
+<tr><td>Example: delivery time isn't shown on the product page</td><td>Screenshot of the page; the shopper questions it fails to answer</td><td>High impact, low effort</td><td>Add a delivery estimate and returns line beside the button</td></tr>
+<tr><td>Example: checkout asks for more fields than needed</td><td>Field count against Baymard's 8-field guide</td><td>High impact, medium effort</td><td>Remove optional fields, enable guest checkout</td></tr>
+<tr><td>Example: collection filters unusable on mobile</td><td>Recording or screenshots on a real phone</td><td>Medium impact, medium effort</td><td>Simplify filters, add a sticky filter button</td></tr>
+</tbody></table>
+<p>The rows above are illustrative examples of the format, not findings about your store. The evidence column is what separates an audit from a hunch.</p>
+<p>Good evidence comes in a few forms: a screenshot of the exact page and device, a number from your own analytics (for example the step where the Conversion rate breakdown shows the largest drop), a session recording or a live walkthrough on a real phone, or a customer message that names the problem in their own words. If a finding has none of these, mark it as a hypothesis and test it before you act on it.</p>
+
+<h2>DIY, consultant or AI audit?</h2>
+<ul>
+<li><strong>DIY:</strong> costs your time, and you know the business best. The risk is that you've seen your own store too many times to see it fresh, so you skip what a stranger would stumble on.</li>
+<li><strong>Consultant:</strong> brings experience and an outside view, and can help with implementation. It costs more and gives you one snapshot in time. The prices and what they cover are in our breakdown of <a href="/blog/ecommerce-store-audit-vs-consultant">CRO audit cost</a>.</li>
+<li><strong>AI audit:</strong> fast, repeatable after each change, and unbothered by familiarity. It doesn't replace someone who can implement, and it is only as good as the evidence it shows, so check its findings against your data.</li>
+</ul>
+<p>Most stores do best with a mix: an automated pass to find the obvious leaks, your own analytics to confirm them, and a specialist only for the large rebuilds.</p>
+
+<h2>Benchmark against the store that's beating you</h2>
+<p>A generic checklist tells you what good stores usually do. It can't tell you why a particular competitor is winning your customers. That's the idea in the video above: instead of auditing yourself against an abstract ideal, put your store next to the one shoppers pick in your niche and spot the gaps. Make yours the store that wins that comparison.</p>
+<p>Try it by hand with your best-selling product against a leader in your niche, or use the analyzer. Our <a href="/">Shopify store audit</a> scores your pages and ranks what to fix first (ours — full disclosure). <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-cro-audit">Run the audit on your store →</a></p>
+`.trim(),
+    faqs: [
+      {
+        q: "How long does a Shopify CRO audit take?",
+        a: "It depends on scope. Pulling the data and walking the journey from home to checkout on a phone and on desktop can be done in a focused session or two; going deep on every template, writing up evidence and ranking fixes takes longer. An automated audit returns a first pass in about a minute.",
+      },
+      {
+        q: "How often should I run a CRO audit?",
+        a: "Run a full one when you launch, when conversion falls without an obvious cause, or before you scale ad spend. Between full audits, re-check the page you just changed and the Conversion rate over time report so you can see whether a fix helped.",
+      },
+      {
+        q: "What tools do I need for a Shopify CRO audit?",
+        a: "Start with what Shopify already gives you: the Conversion rate breakdown, Conversion rate over time, Sessions by device and Sessions by landing page reports. Add a real phone for walkthroughs, a spreadsheet to track findings, and optionally an automated analyzer for a first pass.",
+      },
+      {
+        q: "What is a good conversion rate for a Shopify store?",
+        a: "It varies widely by niche, price point and traffic source, so a single number is misleading. We explain how to find a fair comparison in our guide to a good conversion rate for Shopify, and recommend tracking your own trend before comparing with anyone else's.",
+      },
+      {
+        q: "Can I run a CRO audit myself?",
+        a: "Yes. The checklist above is enough to find the most obvious leaks. The main limit is familiarity: you've seen your own store hundreds of times, so ask someone who hasn't, or use a tool that looks at it cold, to spot what you can't.",
+      },
+    ],
+  },
   {
     slug: "is-your-store-ready-for-meta-ads",
     title: "Is Your Store Ready for Meta Ads? A 6-Point Checklist",
@@ -252,27 +772,27 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     slug: "ecommerce-store-audit-vs-consultant",
-    title: "Shopify CRO Audit Cost: What $2,000 Buys (+ a Free Option)",
-    h1: "How much does a Shopify CRO audit cost — and what do you actually get for $2,000?",
+    title: "CRO Audit Cost: What $2,000 Buys (+ a 60-Second Option)",
+    h1: "How much does a CRO audit cost — and what do you actually get for $2,000?",
     description:
-      "A consultant CRO audit runs $1,500–$2,000 per store. What that price covers, the framework they use, and how to run the same checks free in about a minute.",
-    keyword: "shopify cro audit",
+      "CRO audit cost: a consultant audit runs $1,500–$2,000 per store. What that price covers, the framework they use, and how to run the same checks yourself in about a minute.",
+    keyword: "cro audit cost",
     keywords: [
-      "shopify cro audit",
-      "shopify cro audit report",
-      "cro website audit",
+      "cro audit cost",
+      "how much does a cro audit cost",
+      "cro consultant cost",
+      "cro agency pricing",
       "cro audit vs consultant",
-      "ecommerce cro audit",
     ],
     date: "2026-06-17",
-    updated: "2026-10-11",
+    updated: "2026-10-14",
     author: "Ariel Jiménez",
     readingMinutes: 8,
     excerpt:
       "Consultants charge $1,500–$2,000 to audit your store. The framework was never secret — just slow and manual. Here it is, in the open.",
     bodyHtml: `
-<p class="lede">A Shopify CRO audit from a consultant typically costs $1,500–$2,000 per store, and for that money you get a diagnosis, evidence and a prioritized punch-list. The uncomfortable truth they'd rather you didn't notice: the entire diagnosis fits on one page — and a machine can now run it in 60 seconds.</p>
-<p>The price depends on scope, on how many pages or steps they review, and on whether implementation is included. The audit itself is usually one store, one moment in time, and about 5–10 business days of turnaround. This post breaks down what that price covers, the framework behind it, and how to run the same checks yourself for free.</p>
+<p class="lede">CRO audit cost from a consultant is typically $1,500–$2,000 per store, and for that money you get a diagnosis, evidence and a prioritized punch-list. The uncomfortable truth they'd rather you didn't notice: the entire diagnosis fits on one page — and a machine can now run it in 60 seconds.</p>
+<p>The price depends on scope, on how many pages or steps they review, and on whether implementation is included. The audit itself is usually one store, one moment in time, and about 5–10 business days of turnaround. This post breaks down what that price covers, the framework behind it, and how to run the same checks yourself. If you want the do-it-yourself version first, start with the <a href="/blog/shopify-cro-audit">Shopify CRO audit checklist</a>.</p>
 <p>I'm not anti-consultant. The best ones are worth every dollar for implementation and strategy. But the <em>audit</em> — the part where someone looks at your store and tells you what's broken and in what order to fix it — has been quietly commoditized. The framework was never secret. It was just slow and manual, which is exactly what made it billable.</p>
 <p>So here's the whole thing, in the open: what a CRO audit costs, what it contains, and how to run it on your own store this afternoon.</p>
 <h2>What you're actually paying $2,000 for</h2>

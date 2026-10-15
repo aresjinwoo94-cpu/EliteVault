@@ -73,3 +73,34 @@ test("no post targets a keyword reserved for the homepage", () => {
     }
   }
 });
+
+test("first-sale posts exist with their exact keyword, the final video and at least 2 diagrams", () => {
+  const expected: [string, string][] = [
+    ["abandoned-cart-recovery", "abandoned cart recovery"],
+    ["shopify-product-page", "shopify product page"],
+    ["shopify-cro-audit", "shopify cro audit"],
+  ];
+  const posts = allPosts();
+  for (const [slug, keyword] of expected) {
+    const p = posts.find((x) => x.slug === slug);
+    assert.ok(p, `missing post ${slug}`);
+    assert.equal(p.keyword, keyword);
+    assert.ok(norm(p.title).startsWith(keyword), `${slug} title must start with the keyword`);
+    assert.ok(norm(p.h1).includes(keyword), `${slug} h1 must contain the keyword`);
+    assert.ok(norm(p.bodyHtml.replace(/<[^>]+>/g, " ")).includes(keyword), `${slug} body must contain the keyword`);
+    assert.ok(p.bodyHtml.includes("43CfVNIds7Q"), `${slug} must embed the final video`);
+    assert.ok((p.bodyHtml.match(/<svg/g) ?? []).length >= 2, `${slug} needs at least 2 inline diagrams`);
+    assert.equal(p.video?.id, "43CfVNIds7Q", `${slug} must declare the VideoObject`);
+    assert.ok(!/\bfree\b/i.test(p.title + " " + p.h1), `${slug} title/h1 must not say "free"`);
+    assert.ok(!/#d4af37|champagne|gold/i.test(p.bodyHtml), `${slug} diagrams must not use gold`);
+  }
+});
+
+test("the CRO audit cost post no longer chases the shopify cro audit family", () => {
+  const p = allPosts().find((x) => x.slug === "ecommerce-store-audit-vs-consultant");
+  assert.ok(p);
+  assert.equal(p.keyword, "cro audit cost");
+  for (const kw of p.keywords ?? []) {
+    assert.ok(!["shopify cro audit", "shopify cro audit report", "ecommerce cro audit"].includes(norm(kw)), `still lists "${kw}"`);
+  }
+});
