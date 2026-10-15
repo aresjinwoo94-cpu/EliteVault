@@ -1,5 +1,5 @@
 import type Stripe from "stripe";
-import { REPORT_UNLOCK_PURCHASE } from "@/lib/unlocks/report-unlock";
+import { REPORT_UNLOCK_PURCHASE, REPORT_UNLOCK_USD_CENTS } from "@/lib/unlocks/report-unlock";
 
 /**
  * Settlement of a paid "unlock this report" Checkout Session (WP-2, brief oct-2026 §4.3).
@@ -39,6 +39,7 @@ export type SettleResult =
   | { kind: "ignored" } // not an unlock session
   | { kind: "unpaid" } // async method still pending (or failed): nothing to grant yet
   | { kind: "owner_mismatch"; refunded: boolean }
+  | { kind: "amount_mismatch"; refunded: boolean } // the session is not for the unlock price (USD 7.00)
   | { kind: "already_unlocked" } // the same session was settled before (replay / webhook + return)
   | { kind: "unlocked" }
   | { kind: "duplicate_refunded" }; // a DIFFERENT session already unlocked this audit → this payment refunded
@@ -46,6 +47,18 @@ export type SettleResult =
 function paymentIntentId(session: Stripe.Checkout.Session): string | null {
   const pi = session.payment_intent;
   return typeof pi === "string" ? pi : (pi?.id ?? null);
+}
+
+/**
+ * What the buyer was charged, in the ORIGINAL currency and BEFORE discounts/tax (USD cents) — or null when the
+ * session was not priced in USD. With Adaptive Pricing the buyer pays in their own currency, so `amount_total`
+ * is not comparable; Stripe reports the source-currency figures under `currency_conversion` instead.
+ */
+export function sourceUsdAmount(session: Stripe.Checkout.Session): number | null {
+  const cc = session.currency_conversion;
+  if (cc) return cc.source_currency?.toLowerCase() === "usd" ? cc.amount_subtotal : null;
+  if (session.currency?.toLowerCase() !== "usd") return null;
+  return session.amount_subtotal ?? session.amount_total ?? null;
 }
 
 export function isReportUnlockSession(session: Pick<Stripe.Checkout.Session, "mode" | "metadata">): boolean {
@@ -64,6 +77,14 @@ export async function settleReportUnlock(session: Stripe.Checkout.Session, store
     if (pi) await store.refundPaymentIntent(pi, `unlock-nometa-${session.id}`);
     console.error("[unlock] paid session without metadata — refunded", session.id);
     return { kind: "owner_mismatch", refunded: Boolean(pi) };
+  }
+
+  // Never grant access for a session that is not the unlock price (a forged/misconfigured session or a price change).
+  const paidUsd = sourceUsdAmount(session);
+  if (paidUsd !== REPORT_UNLOCK_USD_CENTS) {
+    if (pi) await store.refundPaymentIntent(pi, `unlock-amount-${session.id}`);
+    console.error("[unlock] amount mismatch — refunded, NOT unlocked", { session: session.id, analysisId, paidUsd, expected: REPORT_UNLOCK_USD_CENTS });
+    return { kind: "amount_mismatch", refunded: Boolean(pi) };
   }
 
   const owner = await store.getAnalysisOwner(analysisId);
