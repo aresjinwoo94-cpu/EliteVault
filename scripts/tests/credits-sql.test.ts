@@ -166,3 +166,22 @@ test("a non-positive cost is rejected (no free audits, no minted credits)", asyn
   await assert.rejects(db.query(`select public.create_charged_analysis('${U}','https://x.com',null,null,0)`), /p_cost/);
   await assert.rejects(db.query(`select public.create_charged_analysis('${U}','https://x.com',null,null,-5)`), /p_cost/);
 });
+
+test("a free account whose audit FAILS in any way keeps its credit (every failure message/state ends refunded, +1 exactly once)", async () => {
+  for (const [state, msg] of [
+    ["queued", "We stopped this audit because it passed our time limit"],
+    ["running", "Analysis timed out — the worker likely crashed or restarted."],
+    ["running", "The site blocked our screenshot"],
+    ["running", null],
+  ] as const) {
+    await db.exec(`update profiles set credits = 1 where id='${U}'`);
+    const id = (await charge())!;
+    assert.equal(await credits(), 0, "the credit is held while the audit runs");
+    await db.exec(`update analyses set status='${state}' where id='${id}'`);
+    assert.equal(await refund(id, msg), true);
+    assert.equal(await credits(), 1, `credit back after: ${msg ?? "(no message)"}`);
+    assert.equal((await db.query<{ status: string }>(`select status from analyses where id='${id}'`)).rows[0].status, "refunded");
+    assert.equal(await refund(id, msg), false, "never twice");
+    assert.equal(await credits(), 1);
+  }
+});

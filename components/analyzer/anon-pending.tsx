@@ -113,6 +113,7 @@ export function AnonPending({
           previewSummary={initial.preview_summary}
           screenshotUrl={live.screenshotUrl}
           signals={live.signals}
+          anonymous
         />
       )}
 

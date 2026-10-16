@@ -668,6 +668,8 @@
     "refining": "Refining the full audit — annotations, persona & fixes…",
     "stillGoing": "Still going — the AI provider is busy right now, which is the usual reason a run takes longer. If it can't finish, your credit is refunded automatically.",
     "typical": "Typical analyses complete in 30-90 seconds. If anything fails, your credit is refunded automatically.",
+    "typicalAnon": "Typical analyses complete in 30-90 seconds. If it fails, it does not count as your free audit — you can try again right away.",
+    "stillGoingAnon": "Still going — the AI provider is busy right now, which is the usual reason a run takes longer. If it can't finish, it does not count as your free audit and you can try again.",
     "shotAlt": "Screenshot captured from your store, being analyzed",
     "captured": "Captured — reading the page now",
     "detected": "Detected so far",

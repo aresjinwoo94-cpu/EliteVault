@@ -22,10 +22,41 @@ export async function getClientIp(): Promise<string> {
   return h.get("x-real-ip") ?? "0.0.0.0";
 }
 
+/** An audit that is still running counts for this long (blocks parallel abuse); after that a stuck row stops counting. */
+export const ANON_IN_FLIGHT_MS = 15 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Does this anonymous audit use up the visitor's daily allowance? ONLY audits that finished (`succeeded`) do — a
+ * failed / timed-out / refunded / capture-blocked audit never costs the visitor their free try — plus audits that
+ * are running right now (so nobody can fire a dozen in parallel). Pure; mirrored by `anonLimitFilter`.
+ */
+export function countsTowardAnonLimit(
+  row: { status: string; created_at: string; result?: { capture_blocked?: { detected?: boolean | null } | null } | null },
+  now = Date.now(),
+): boolean {
+  const age = now - new Date(row.created_at).getTime();
+  // A "succeeded" run whose screenshot was an anti-bot wall (capture_blocked) produced no real audit: not a used try.
+  if (row.status === "succeeded") return age <= DAY_MS && row.result?.capture_blocked?.detected !== true;
+  if (row.status === "queued" || row.status === "running") return age <= ANON_IN_FLIGHT_MS;
+  return false;
+}
+
+/** PostgREST `or` filter equivalent to `countsTowardAnonLimit`. */
+export function anonLimitFilter(now = Date.now()): string {
+  const day = new Date(now - DAY_MS).toISOString();
+  const flight = new Date(now - ANON_IN_FLIGHT_MS).toISOString();
+  return (
+    `and(status.eq.succeeded,created_at.gte.${day},or(result->capture_blocked->>detected.is.null,result->capture_blocked->>detected.eq.false)),` +
+    `and(status.in.(queued,running),created_at.gte.${flight})`
+  );
+}
+
 export type RateCheck = { allowed: boolean; used: number; limit: number; ipHash: string };
 
 /**
- * Count how many anonymous audits this IP has started in the last 24h and
+ * Count how many anonymous audits of this IP use up the daily allowance (see
+ * `countsTowardAnonLimit`: finished-successfully in the last 24h, or running right now) and
  * decide whether another is allowed. We count rows in `analyses` (no extra
  * table) written with this IP's salted hash — the index
  * analyses_anon_ip_created_idx keeps it a cheap range scan.
@@ -37,7 +68,6 @@ export async function checkAnonAuditRate(): Promise<RateCheck> {
   const limit = anonAuditLimitPerDay();
   const ip = await getClientIp();
   const ipHash = hashIp(ip);
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
   try {
     const service = createSupabaseServiceClient();
@@ -45,7 +75,7 @@ export async function checkAnonAuditRate(): Promise<RateCheck> {
       .from("analyses")
       .select("id", { count: "exact", head: true })
       .eq("anon_ip_hash", ipHash)
-      .gte("created_at", since);
+      .or(anonLimitFilter());
     if (error) {
       console.warn("[anon rate-limit] count failed, allowing:", error.message);
       return { allowed: true, used: 0, limit, ipHash };
