@@ -668,6 +668,8 @@
     "refining": "Afinando la auditoría completa: anotaciones, persona y correcciones…",
     "stillGoing": "Sigue en marcha: el proveedor de IA está ocupado ahora mismo, que es el motivo habitual de que una ejecución tarde más. Si no puede terminar, tu crédito se devuelve automáticamente.",
     "typical": "Los análisis normales terminan en 30-90 segundos. Si algo falla, tu crédito se devuelve automáticamente.",
+    "typicalAnon": "Los análisis normales terminan en 30-90 segundos. Si falla, no cuenta como tu auditoría gratis: puedes volver a intentarlo enseguida.",
+    "stillGoingAnon": "Sigue en marcha: el proveedor de IA está ocupado ahora mismo, que es el motivo habitual de que una ejecución tarde más. Si no puede terminar, no cuenta como tu auditoría gratis y puedes volver a intentarlo.",
     "shotAlt": "Captura de tu tienda, en análisis",
     "captured": "Capturada: leyendo la página ahora",
     "detected": "Detectado hasta ahora",

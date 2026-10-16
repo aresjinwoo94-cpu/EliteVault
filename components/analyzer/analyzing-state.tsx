@@ -46,7 +46,10 @@ export function AnalyzingState({
   previewSummary,
   screenshotUrl,
   signals,
+  anonymous = false,
 }: {
+  /** Anonymous visitors have no credit: the reassurance copy must not talk about one. */
+  anonymous?: boolean;
   status: "queued" | "running";
   startedAt: string | null;
   // P1.2 — instant teaser: a fast preliminary score shown while the full
@@ -180,8 +183,8 @@ export function AnalyzingState({
         */}
         <p className="mt-8 text-xs text-white/30 max-w-md mx-auto">
           {secs >= SLOW_RUN_SECONDS
-            ? t("analyzing.stillGoing")
-            : t("analyzing.typical")}
+            ? t(anonymous ? "analyzing.stillGoingAnon" : "analyzing.stillGoing")
+            : t(anonymous ? "analyzing.typicalAnon" : "analyzing.typical")}
         </p>
 
         {/*
