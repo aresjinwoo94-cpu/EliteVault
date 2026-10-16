@@ -280,3 +280,14 @@ quedan en "Sin imagen" para subida manual. Decisión del dueño antes de impleme
 **Decisión (2026-10-13): B aprobado como plan** (GitHub Actions semanal). Los runners de GitHub también son IPs de
 datacenter: esperar los mismos 403 anti-bot que Vercel. Esas tiendas **pasan a subida manual (lista "Sin imagen" del
 monitor) y NO se reintentan en bucle**: un fallo por 403/anti-bot cuenta como intento agotado, no como error transitorio.
+
+## Desbloqueo de $7: disputas (contracargos) no re-bloquean el reporte (P3, anotado 2026-10-15)
+
+`charge.refunded` re-bloquea el reporte, pero un contracargo (`charge.dispute.created` / `charge.dispute.closed` con
+resultado perdido) **no** toca `analysis_unlocks`: el comprador conserva el reporte aunque Stripe le devuelva el dinero.
+Volumen esperado bajo (pago único de $7). Para después: suscribirse a `charge.dispute.*`, marcar la fila como `refunded`
+al perder la disputa y avisar al dueño por email (mismo canal que `lib/unlocks/alerts.ts`).
+
+Otros P3 de la revisión adversarial del 2026-10-15 (no bloquean): auditoría borrada entre pago y liquidación (FK 23503 →
+500 en bucle sin reembolso; debería reembolsar), `keepRunWithinAllowance` no comprueba el resultado del `update` a
+`failed`, y una página de retorno antigua tras un reembolso muestra "activando" hasta agotar el polling.

@@ -1023,6 +1023,8 @@
     "preparing": "Preparando el pago seguro…",
     "activating": "Pago recibido — activando tu reporte…",
     "activatingSub": "Suele tardar unos segundos. Puedes dejar esta página abierta.",
+    "pendingTitle": "Tu pago está en proceso",
+    "pendingSub": "Tu banco aún no lo ha confirmado. Tu reporte se desbloquea solo en cuanto se confirme el pago; puedes cerrar esta página.",
     "activatingSlow": "Está tardando más de lo normal. Tu pago está seguro: recarga en un minuto o contacta a soporte.",
     "openReport": "Abrir mi reporte",
     "canceledTitle": "No se hizo ningún cobro",

@@ -17,7 +17,7 @@ const POLL_MS = 1500;
  * never lost either way: settlement is idempotent and Stripe retries the webhook.
  * Fires `unlock_paid` exactly once per audit.
  */
-export function UnlockReturn({ analysisId, settled }: { analysisId: string; settled: boolean }) {
+export function UnlockReturn({ analysisId, settled, pending = false }: { analysisId: string; settled: boolean; pending?: boolean }) {
   const { t } = useT();
   const router = useRouter();
   const [attempts, setAttempts] = useState(0);
@@ -58,7 +58,9 @@ export function UnlockReturn({ analysisId, settled }: { analysisId: string; sett
     return () => clearTimeout(timer);
   }, [done, attempts, analysisId]);
 
-  const slow = !done && attempts >= MAX_POLLS;
+  // A delayed payment (not yet confirmed) is shown as "processing", never as slow/failed.
+  const slow = !done && !pending && attempts >= MAX_POLLS;
+  const waiting = pending && !done;
   return (
     <div className="flex min-h-screen items-center justify-center bg-obsidian-950 p-6">
       <div className="w-full max-w-md space-y-5 text-center">
@@ -71,8 +73,10 @@ export function UnlockReturn({ analysisId, settled }: { analysisId: string; sett
             <Loader2 className="size-7 animate-spin text-champagne-400" />
           )}
         </div>
-        <h1 className="font-serif text-2xl text-white">{slow ? t("unlock.activatingSlow") : t("unlock.activating")}</h1>
-        {!slow && <p className="text-sm text-white/55">{t("unlock.activatingSub")}</p>}
+        <h1 className="font-serif text-2xl text-white">
+          {waiting ? t("unlock.pendingTitle") : slow ? t("unlock.activatingSlow") : t("unlock.activating")}
+        </h1>
+        {waiting ? <p className="text-sm text-white/55">{t("unlock.pendingSub")}</p> : !slow && <p className="text-sm text-white/55">{t("unlock.activatingSub")}</p>}
         <Link href={`/app/analyzer/${analysisId}`} className="inline-block text-sm text-signal-300 hover:underline">
           {t("unlock.openReport")}
         </Link>
