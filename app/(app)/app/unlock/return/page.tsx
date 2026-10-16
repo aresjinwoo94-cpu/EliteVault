@@ -24,13 +24,18 @@ export default async function UnlockReturnPage({ searchParams }: { searchParams:
   let analysisId: string | null = null;
   let paid = false;
   let canceled = false;
+  let pending = false;
   let settled = false;
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
     if (!isReportUnlockSession(session) || session.metadata?.supabase_user_id !== user.id) redirect("/app");
     analysisId = session.metadata?.analysis_id ?? null;
-    if (session.status === "expired" || (session.status === "complete" && session.payment_status === "unpaid")) {
+    if (session.status === "expired") {
       canceled = true;
+    } else if (session.status === "complete" && session.payment_status === "unpaid") {
+      // A delayed payment method: the buyer finished checkout but the money has not arrived yet. NOT "nothing was
+      // charged" — the webhook (checkout.session.async_payment_succeeded) unlocks the report when it is confirmed.
+      pending = true;
     } else if (session.status === "complete" && session.payment_status === "paid") {
       paid = true;
       try {
@@ -49,6 +54,6 @@ export default async function UnlockReturnPage({ searchParams }: { searchParams:
 
   if (!analysisId) redirect("/app");
   // Canceled / expired: back to the report with a note that nothing was charged.
-  if (canceled || !paid) redirect(`/app/analyzer/${analysisId}?unlock=canceled`);
-  return <UnlockReturn analysisId={analysisId} settled={settled} />;
+  if (canceled || (!paid && !pending)) redirect(`/app/analyzer/${analysisId}?unlock=canceled`);
+  return <UnlockReturn analysisId={analysisId} settled={settled} pending={pending} />;
 }

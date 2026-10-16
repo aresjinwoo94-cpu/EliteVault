@@ -1025,6 +1025,8 @@
     "preparing": "Preparing secure checkout…",
     "activating": "Payment received — activating your report…",
     "activatingSub": "This usually takes a few seconds. You can keep this page open.",
+    "pendingTitle": "Your payment is processing",
+    "pendingSub": "Your bank has not confirmed it yet. Your report unlocks on its own as soon as the payment is confirmed — you can close this page.",
     "activatingSlow": "It's taking longer than usual. Your payment is safe — refresh in a minute or contact support.",
     "openReport": "Open my report",
     "canceledTitle": "No charge was made",

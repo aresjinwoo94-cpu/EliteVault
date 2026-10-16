@@ -143,21 +143,21 @@ test("hasFullReport: a paid plan or an unlock, nothing else; free/unknown is clo
   assert.equal(REPORT_UNLOCK_USD_CENTS, 700);
 });
 
-test("the webhook sends unlock sessions to settlement, never to subscription sync; failures un-dedupe the event", () => {
+test("the webhook sends unlock sessions to settlement (never to subscription sync); the event is recorded only after success", () => {
   const src = read("app/api/stripe/webhook/route.ts");
-  assert.match(src, /isReportUnlockSession\(event\.data\.object/);
-  assert.match(src, /if \(unlockSession\) \{[\s\S]*?await settleReportUnlock\(fresh, createUnlockStore\(\)\);\s*return NextResponse\.json/);
-  // the unlock branch comes BEFORE the switch that calls syncSubscription
-  assert.ok(src.indexOf("settleReportUnlock(fresh") < src.indexOf("await syncSubscription(event, service)"));
+  assert.match(src, /if \(isUnlockEvent\(event\)\) \{[\s\S]*?await processUnlockEvent\(event, \{/);
+  // the unlock path comes BEFORE the dedupe insert and the switch that calls syncSubscription
+  assert.ok(src.indexOf("processUnlockEvent(event") < src.indexOf("// ── Idempotency"));
+  assert.ok(src.indexOf("processUnlockEvent(event") < src.indexOf("await syncSubscription(event, service)"));
   for (const ev of ["EV_ASYNC_OK", "EV_ASYNC_FAILED", "charge.refunded"]) assert.match(src.slice(src.indexOf("const RELEVANT_EVENTS")), new RegExp(ev));
-  assert.match(src, /if \(unlockRelated\) \{\s*const \{ error: delErr \} = await service\.from\("stripe_events"\)\.delete\(\)\.eq\("id", event\.id\)/);
+  assert.doesNotMatch(src, /delete\(\)\.eq\("id", event\.id\)/,"no pre-insert row to un-dedupe any more");
   // plan code untouched
   assert.match(src, /async function onInvoicePaid/);
 });
 
 test("a refunded unlock re-locks only its own payment; the duplicate auto-refund matches no row", () => {
   const src = read("app/api/stripe/webhook/route.ts");
-  const fn = src.slice(src.indexOf("async function onChargeRefunded"), src.indexOf("async function syncSubscription"));
+  const fn = src.slice(src.indexOf("async function relockRefundedCharge"), src.indexOf("async function syncSubscription"));
   assert.match(fn, /charge\.refunded !== true/);
   assert.match(fn, /\.eq\("stripe_payment_intent", pi\)/);
   assert.match(fn, /status: "refunded"/);
@@ -234,6 +234,6 @@ test("a discounted 100%-off or discounted total does not confuse the check: the 
 
 test("the webhook settles a session re-read with the pinned API version, not the raw event body", () => {
   const w = read("app/api/stripe/webhook/route.ts");
-  assert.match(w, /stripe\.checkout\.sessions\.retrieve\(unlockSession\.id\)/);
-  assert.match(w, /settleReportUnlock\(fresh, createUnlockStore\(\)\)/);
+  assert.match(w, /retrieveSession: \(id\) => stripe\.checkout\.sessions\.retrieve\(id\)/);
+  assert.match(read("lib/unlocks/process-event.ts"), /deps\.retrieveSession\(raw\.id\);\s*result = await settleReportUnlock\(session, deps\.store\)/);
 });
