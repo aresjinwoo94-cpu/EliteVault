@@ -363,10 +363,8 @@
     "niche": "Fitness",
     "notReady": "No lista para anuncios · 3 correcciones",
     "verdict": "veredicto",
-    "overall": "global",
     "quote": "“Producto simpático, pero las erratas y un catálogo aleatorio levantan sospechas.”",
     "persona": "Reacción del buyer persona · M 28–34 · EE. UU.",
-    "topFixes": "Principales correcciones, ordenadas por impacto",
     "meta7": "Meta a 7 días",
     "leaking": "Dónde pierdes ventas",
     "sixDims": "Seis dimensiones de conversión: la más baja es por donde se escapa el tráfico frío.",
@@ -377,12 +375,13 @@
     "dimTech": "Técnica",
     "dimNiche": "Nicho",
     "dimCro": "CRO",
-    "fix1": "Las erratas en los títulos de producto matan la confianza al llegar",
-    "fix2": "Un temporizador falso de 24:00:00 parece un truco barato de urgencia",
-    "fix3": "Un hero genérico de «Comprar ahora» añade fricción antes de aportar valor",
     "scCons": "Cons.",
     "scBal": "Equil.",
-    "scAggr": "Agres."
+    "scAggr": "Agres.",
+    "compTitle": "Tu competidor más fuerte",
+    "compPro": "Pro",
+    "compYou": "Tu tienda",
+    "compTop": "La tienda líder de tu nicho"
   },
   "features": {
     "yourStoreAlt": "Tu tienda",

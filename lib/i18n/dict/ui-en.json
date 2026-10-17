@@ -363,10 +363,8 @@
     "niche": "Fitness",
     "notReady": "Not ad-ready · 3 fixes",
     "verdict": "verdict",
-    "overall": "overall",
     "quote": "“Cute product, but typos and a random catalog raise red flags.”",
     "persona": "Buyer-persona reaction · F 28–34 · US",
-    "topFixes": "Top fixes — ranked by leverage",
     "meta7": "7-day Meta",
     "leaking": "Where you’re leaking sales",
     "sixDims": "Six conversion dimensions — lowest = where cold traffic slips away.",
@@ -377,12 +375,13 @@
     "dimTech": "Tech",
     "dimNiche": "Niche fit",
     "dimCro": "CRO",
-    "fix1": "Typos in product titles kill trust on arrival",
-    "fix2": "Fake 24:00:00 timer reads as a cheap urgency trick",
-    "fix3": "Generic “Buy Now” hero adds friction before value",
     "scCons": "Cons.",
     "scBal": "Bal.",
-    "scAggr": "Aggr."
+    "scAggr": "Aggr.",
+    "compTitle": "Competitor insights",
+    "compPro": "Pro",
+    "compYou": "Your store",
+    "compTop": "Top store in your niche"
   },
   "features": {
     "yourStoreAlt": "Your store",

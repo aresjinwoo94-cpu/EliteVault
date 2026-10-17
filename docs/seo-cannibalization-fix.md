@@ -23,8 +23,8 @@ Varias URLs propias apuntan a la misma keyword. Google divide la señal entre el
 
 - **NO se cambian slugs ni URLs** → cero redirects 301, no se pierde lo indexado.
 - **Home: título y H1 se quedan IGUAL** (decisión del dueño, y están bien):
-  - title: `Shopify Store Analyzer & Free Store Audit | EliteVault`
-  - H1 (`hero.line1`): `Free Shopify store audit —`
+  - title: `Shopify Store Analyzer & Store Audit | EliteVault`
+  - H1 (`hero.line1`): `Shopify store audit —` (LP oct-2026: sin "Free" delante)
 - No tocar los CTAs del blog a `/sign-up?next=/app/analyzer` (PR #96).
 - No tocar `app/liquid`.
 
@@ -32,7 +32,7 @@ Varias URLs propias apuntan a la misma keyword. Google divide la señal entre el
 
 | URL | Keyword principal NUEVA | Antes |
 |---|---|---|
-| `/` | store audit · free shopify store audit · shopify store analyzer | (sin cambio) |
+| `/` | store audit · shopify store audit · shopify store analyzer | LP oct-2026: la home deja de apuntar a "free …" |
 | `/free-website-audit` | **free ecommerce website audit** | store audit |
 | `/blog/store-audit-review-my-store-feedback` | **review my shopify store** | store audit |
 | `/blog/ecommerce-store-audit-vs-consultant` | **cro audit cost** | ecommerce store audit |
