@@ -960,13 +960,13 @@
     "theComparison": "LA COMPARACIÓN",
     "noContest": "SIN COMPETENCIA",
     "pricing": "PRECIOS",
-    "freeDiagnosis": "DIAGNÓSTICO GRATIS",
+    "freeDiagnosis": "EL DIAGNÓSTICO",
     "fromLibrary": "DE LA BIBLIOTECA",
     "realStores": "TIENDAS REALES"
   },
   "plans": {
     "free": {
-      "tagline": "Audita tu tienda gratis"
+      "tagline": "Empieza con el diagnóstico"
     },
     "pro": {
       "tagline": "Donde la mayoría de tiendas sube de nivel"

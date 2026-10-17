@@ -960,13 +960,13 @@
     "theComparison": "THE COMPARISON",
     "noContest": "NO CONTEST",
     "pricing": "PRICING",
-    "freeDiagnosis": "FREE DIAGNOSIS",
+    "freeDiagnosis": "THE DIAGNOSIS",
     "fromLibrary": "FROM THE LIBRARY",
     "realStores": "REAL STORES"
   },
   "plans": {
     "free": {
-      "tagline": "Audit your store free"
+      "tagline": "Start with the diagnosis"
     },
     "pro": {
       "tagline": "Where most stores level up"
