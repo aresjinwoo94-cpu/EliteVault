@@ -21,18 +21,17 @@ function withFlag<T>(value: string | undefined, fn: () => T): T {
   }
 }
 
-test("production test list: with the global flag OFF only the owner's email gets the unlock", () => {
+test("live: the unlock is ON by default in code, the test list is empty, and REPORT_UNLOCK=false is the kill switch", () => {
   withFlag(undefined, () => {
+    assert.equal(reportUnlockEnabled(), true);
+    assert.equal(reportUnlockEnabledFor("someone@else.com"), true);
+    assert.equal(reportUnlockEnabledFor(null), true, "anonymous visitors see the offer too");
+  });
+  assert.deepEqual([...REPORT_UNLOCK_TEST_EMAILS], [], "the owner's email is no longer special");
+  withFlag("false", () => {
     assert.equal(reportUnlockEnabled(), false);
-    assert.deepEqual([...REPORT_UNLOCK_TEST_EMAILS], ["aresjinwoo94@gmail.com", "ariesskuri@gmail.com"]);
-    assert.equal(reportUnlockEnabledFor("ariesskuri@gmail.com"), true);
-    assert.equal(reportUnlockEnabledFor("aresjinwoo94@gmail.com"), true);
-    assert.equal(reportUnlockEnabledFor("  AresJinwoo94@Gmail.com "), true, "case/space insensitive");
-    assert.equal(reportUnlockEnabledFor("someone@else.com"), false);
-    assert.equal(reportUnlockEnabledFor("aresjinwoo94@gmail.com.evil.io"), false, "exact match, not a prefix");
-    assert.equal(reportUnlockEnabledFor(null), false, "anonymous viewers have no email");
-    assert.equal(reportUnlockEnabledFor(undefined), false);
-    assert.equal(reportUnlockEnabledFor(""), false);
+    assert.equal(reportUnlockEnabledFor("aresjinwoo94@gmail.com"), false);
+    assert.equal(reportUnlockEnabledFor(null), false);
   });
 });
 
@@ -84,9 +83,8 @@ test("unlock summary: count × price, refunds netted, gross keeps the charge", (
 });
 
 test("WP-6: the unlock appears in legal/FAQ/llms.txt only while it is on sale, and never as a plan", () => {
-  withFlag(undefined, () => {
-    assert.ok(!FAQ_ITEMS.some((f) => /one report/i.test(f.q)), "flag off: no FAQ entry");
-  });
+  // live: the flag is on by default, so the FAQ lists it (still gated by the same flag in code)
+  assert.ok(FAQ_ITEMS.some((f) => /one report/i.test(f.q)), "flag on: FAQ entry present");
   const refunds = read("app/legal/refunds/page.tsx");
   assert.match(refunds, /\{unlock && \(/);
   assert.match(refunds, /within 7 days/);

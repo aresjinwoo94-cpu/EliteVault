@@ -163,8 +163,8 @@ test("a refunded unlock re-locks only its own payment; the duplicate auto-refund
   assert.match(fn, /status: "refunded"/);
 });
 
-test("REPORT_UNLOCK is OFF by default and the entitlement is only consulted when it is on", () => {
-  assert.match(read("lib/flags.ts"), /reportUnlockEnabled\(\): boolean \{\s*return enabled\("REPORT_UNLOCK", false\);/);
+test("REPORT_UNLOCK is ON by default in code (live) and the entitlement is only consulted when it is on", () => {
+  assert.match(read("lib/flags.ts"), /reportUnlockEnabled\(\): boolean \{\s*return enabled\("REPORT_UNLOCK", true\);/);
   const ent = read("lib/unlocks/entitlement.ts");
   assert.ok(ent.indexOf("if (!reportUnlockEnabled()) return false;") < ent.indexOf("isAnalysisUnlocked(p.analysisId"));
 });
