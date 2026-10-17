@@ -24,7 +24,8 @@ function withFlag<T>(value: string | undefined, fn: () => T): T {
 test("production test list: with the global flag OFF only the owner's email gets the unlock", () => {
   withFlag(undefined, () => {
     assert.equal(reportUnlockEnabled(), false);
-    assert.deepEqual([...REPORT_UNLOCK_TEST_EMAILS], ["aresjinwoo94@gmail.com"]);
+    assert.deepEqual([...REPORT_UNLOCK_TEST_EMAILS], ["aresjinwoo94@gmail.com", "ariesskuri@gmail.com"]);
+    assert.equal(reportUnlockEnabledFor("ariesskuri@gmail.com"), true);
     assert.equal(reportUnlockEnabledFor("aresjinwoo94@gmail.com"), true);
     assert.equal(reportUnlockEnabledFor("  AresJinwoo94@Gmail.com "), true, "case/space insensitive");
     assert.equal(reportUnlockEnabledFor("someone@else.com"), false);

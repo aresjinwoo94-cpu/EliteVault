@@ -200,7 +200,7 @@ export function reportUnlockEnabled(): boolean {
  * these — see and can use the unlock, so the owner can run one real $7 purchase + refund before launch. Emails in
  * code, compared lowercase; empty the list (or turn the global flag on) when the test is over.
  */
-export const REPORT_UNLOCK_TEST_EMAILS: readonly string[] = ["aresjinwoo94@gmail.com"];
+export const REPORT_UNLOCK_TEST_EMAILS: readonly string[] = ["aresjinwoo94@gmail.com", "ariesskuri@gmail.com"];
 
 /**
  * The flag as seen by ONE viewer: the global flag, or an allow-listed account. Everything that decides what a
