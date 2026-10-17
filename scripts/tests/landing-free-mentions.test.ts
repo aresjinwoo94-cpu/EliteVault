@@ -87,3 +87,11 @@ test("the diagram shows the report v2: no 0-100 score; a competitor card with a 
   assert.equal(en.compYou, "Your store");
   assert.match(read("components/marketing/analyzer-demo.tsx"), /<AnalyzerCollage \/>/);
 });
+
+test("the pricing section's pill and the Free plan tagline are not 'free' slogans either (the plan NAME and its factual feature list stay)", () => {
+  for (const locale of ["en", "es"] as const) {
+    const ui = JSON.parse(read(`lib/i18n/dict/ui-${locale}.json`)) as { pills: Record<string, string>; plans: { free: { tagline: string } } };
+    for (const [k, v] of Object.entries(ui.pills)) assert.doesNotMatch(v, FREE, `${locale}:pills.${k}`);
+    assert.doesNotMatch(ui.plans.free.tagline, FREE, `${locale}:plans.free.tagline`);
+  }
+});
