@@ -378,14 +378,10 @@
     "scCons": "Cons.",
     "scBal": "Equil.",
     "scAggr": "Agres.",
-    "compTitle": "La tienda líder de tu nicho",
+    "compTitle": "Tu competidor más fuerte",
     "compPro": "Pro",
-    "compBrand": "Northpeak",
-    "compNiche": "Fitness",
-    "compHeading": "Lo que hace y tú no",
-    "comp1": "Reseñas y estrellas sobre el pliegue",
-    "comp2": "Pack de oferta en el producto",
-    "comp3": "Envío prometido dentro del hero"
+    "compYou": "Tu tienda",
+    "compTop": "La tienda líder de tu nicho"
   },
   "features": {
     "yourStoreAlt": "Tu tienda",

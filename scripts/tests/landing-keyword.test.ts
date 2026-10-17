@@ -99,7 +99,7 @@ test("the repositioned copy exists in both locales", () => {
 
   assert.match(en.hero.badge1, /shopify store analyzer/i);
   assert.match(es.hero.badge1, /analizador shopify/i);
-  assert.equal(`${en.hero.line1} ${en.hero.line2}`, "Shopify store audit — see who's ahead of you and why.");
+  assert.equal(`${en.hero.line1} ${en.hero.line2}`, "Shopify store audit See who's ahead of you and why.");
   assert.match(`${en.hero.line1} ${en.hero.line2}`, /store audit/i);
   assert.match(`${es.hero.line1} ${es.hero.line2}`, /tienda Shopify/);
   assert.match(en.hero.subPre + en.hero.subHighlight, /before you scale traffic — see the exact leaks, ranked by impact/);

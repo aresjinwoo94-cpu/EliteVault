@@ -56,7 +56,9 @@ test("the $1,500 slogan is gone in EN and ES, everywhere user-facing", () => {
 });
 
 test("the home keeps 'store audit' in the H1 and the title, without the leading 'Free'", () => {
-  assert.equal(`${messages.en.hero.line1} ${messages.en.hero.line2}`, "Shopify store audit — see who's ahead of you and why.");
+  assert.equal(messages.en.hero.line1, "Shopify store audit");
+  assert.equal(messages.en.hero.line2, "See who's ahead of you and why.");
+  assert.doesNotMatch(`${messages.en.hero.line1}${messages.en.hero.line2}${messages.es.hero.line1}${messages.es.hero.line2}`, /[—–]/, "no dash in the H1");
   assert.match(`${messages.es.hero.line1} ${messages.es.hero.line2}`, /Auditoría de tu tienda Shopify/);
   const page = read("app/page.tsx");
   assert.match(page, /absolute: "Shopify Store Analyzer & Store Audit \| EliteVault"/);
@@ -68,16 +70,20 @@ test("the Free plan name and the FAQ question 'Is there a free plan?' stay", () 
   assert.match(read("app/page.tsx"), /question: "Is there a free plan\?"/);
 });
 
-test("the diagram shows the report v2: no 0-100 score, a competitor card with a Pro chip, an invented brand", () => {
+test("the diagram shows the report v2: no 0-100 score; a competitor card with a Pro chip and two stores side by side with generic icons", () => {
   const collage = read("components/marketing/analyzer-collage.tsx");
   assert.doesNotMatch(collage, /\/100|collage\.overall|reportV2|collage\.topFixes/);
   assert.match(collage, /collage\.compTitle/);
   assert.match(collage, /collage\.compPro/);
-  assert.match(collage, /collage\.compHeading/);
+  assert.match(collage, /collage\.compYou/);
+  assert.match(collage, /collage\.compTop/);
+  assert.match(collage, /<svg viewBox="0 0 100 44"/, "inline SVG mini charts");
+  assert.match(collage, /<Store className/, "a generic store icon");
+  assert.doesNotMatch(collage.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\{\/\*[\s\S]*?\*\/\}/g, ""), /shopify|logo|<img|<Image/i,"no brand logo anywhere in the diagram (trademark / App Store risk)");
   const en = JSON.parse(read("lib/i18n/dict/ui-en.json")).collage as Record<string, string>;
   const es = JSON.parse(read("lib/i18n/dict/ui-es.json")).collage as Record<string, string>;
-  assert.equal(en.compBrand, "Northpeak", "an invented brand, never a real store");
   assert.deepEqual(Object.keys(en).sort(), Object.keys(es).sort(), "EN and ES collage keys match");
-  for (const k of ["comp1", "comp2", "comp3", "compTitle", "compHeading"]) assert.ok(en[k] && es[k], k);
+  for (const k of ["compTitle", "compYou", "compTop"]) assert.ok(en[k] && es[k], k);
+  assert.equal(en.compYou, "Your store");
   assert.match(read("components/marketing/analyzer-demo.tsx"), /<AnalyzerCollage \/>/);
 });

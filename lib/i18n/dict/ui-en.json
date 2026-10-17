@@ -378,14 +378,10 @@
     "scCons": "Cons.",
     "scBal": "Bal.",
     "scAggr": "Aggr.",
-    "compTitle": "Top store in your niche",
+    "compTitle": "Competitor insights",
     "compPro": "Pro",
-    "compBrand": "Northpeak",
-    "compNiche": "Fitness",
-    "compHeading": "What they do that you don’t",
-    "comp1": "Reviews and star rating above the fold",
-    "comp2": "Bundle offer right on the product page",
-    "comp3": "Shipping promise inside the hero"
+    "compYou": "Your store",
+    "compTop": "Top store in your niche"
   },
   "features": {
     "yourStoreAlt": "Your store",

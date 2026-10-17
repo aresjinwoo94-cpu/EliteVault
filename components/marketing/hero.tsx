@@ -70,8 +70,8 @@ export function Hero() {
               background slab) — allowed accenting, on-brand with the identity.
             */}
             <motion.h1 initial={false} className="hero-h1 mt-6 text-balance">
-              {t("hero.line1")}{" "}
-              <span className="text-gold-gradient">{t("hero.line2")}</span>
+              <span className="block">{t("hero.line1")}</span>
+              <span className="block text-gold-gradient">{t("hero.line2")}</span>
               {line3 ? <> {line3}</> : null}
             </motion.h1>
 

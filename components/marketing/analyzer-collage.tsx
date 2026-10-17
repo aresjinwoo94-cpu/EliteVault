@@ -1,4 +1,4 @@
-import { CheckCircle2, Megaphone, Quote, Swords } from "lucide-react";
+import { CheckCircle2, Megaphone, Quote, Store, Swords } from "lucide-react";
 import { useT } from "@/components/i18n/locale-provider";
 
 /**
@@ -10,7 +10,7 @@ import { useT } from "@/components/i18n/locale-provider";
  * What it conveys, mapped to the four steps on the left + the money:
  *   • reads your store        → the annotated store wireframe with pins
  *   • six dimensions          → the "where you're leaking sales" radar (no number is shown)
- *   • who is ahead of you     → the "Competitor insights" card (invented brand, never a real store)
+ *   • who is ahead of you     → the "Competitor insights" card: two stores side by side (generic icons, no brand)
  *   • buyer-persona reaction  → the persona quote
  *   • 7-day Meta projection   → the ROAS scenario strip
  *   • the payoff              → the money-potential pill + the verdict (report v2: the
@@ -28,13 +28,6 @@ const DIMENSIONS = [
   { label: "collage.dimTech", v: 48 },
   { label: "collage.dimNiche", v: 32 },
   { label: "collage.dimCro", v: 42 },
-] as const;
-
-/** "What they do that you don't" — an invented brand, never a real store (no implied comparison with a real company). */
-const COMPETITOR_LINES = [
-  { text: "collage.comp1", tone: "high" },
-  { text: "collage.comp2", tone: "med" },
-  { text: "collage.comp3", tone: "med" },
 ] as const;
 
 const SCENARIOS = [
@@ -112,9 +105,10 @@ export function AnalyzerCollage() {
             </div>
           </div>
 
-          {/* Competitor insights — who is ahead of you and what they do differently (Pro). */}
+          {/* Competitor insights — your store next to the strongest store of your niche (Pro). Generic icons only:
+              no brand logo (trademark) and no real store. */}
           <div className="rounded-xl border border-champagne-400/20 bg-gradient-to-br from-champagne-400/[0.05] to-obsidian-900/30 p-3">
-            <div className="mb-2 flex items-center justify-between gap-2">
+            <div className="mb-2.5 flex items-center justify-between gap-2">
               <div className="flex min-w-0 items-center gap-1.5">
                 <Swords className="size-3 shrink-0 text-champagne-400" />
                 <p className="truncate font-mono text-[10px] uppercase tracking-widest text-white/50">
@@ -125,33 +119,10 @@ export function AnalyzerCollage() {
                 {t("collage.compPro")}
               </span>
             </div>
-            <div className="mb-2.5 flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5">
-              <span
-                aria-hidden
-                className="grid size-5 shrink-0 place-items-center rounded-md bg-signal-600/20 text-[10px] font-semibold text-signal-300"
-              >
-                N
-              </span>
-              <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-white/85">
-                {t("collage.compBrand")}
-              </span>
-              <span className="shrink-0 rounded-full border border-white/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-white/45">
-                {t("collage.compNiche")}
-              </span>
+            <div className="grid grid-cols-2 gap-2.5">
+              <StoreTrend side="you" label={t("collage.compYou")} />
+              <StoreTrend side="top" label={t("collage.compTop")} />
             </div>
-            <p className="mb-1.5 text-[10px] uppercase tracking-widest text-white/35">
-              {t("collage.compHeading")}
-            </p>
-            <ul className="space-y-1.5">
-              {COMPETITOR_LINES.map((l) => (
-                <li key={l.text} className="flex items-center gap-2.5">
-                  <span className="min-w-0 flex-1 truncate text-[12px] text-white/75">
-                    {t(l.text)}
-                  </span>
-                  <ImpactChip tone={l.tone} />
-                </li>
-              ))}
-            </ul>
           </div>
 
           {/* 7-day Meta projection — the last deliverable, kept to a thin strip. */}
@@ -185,6 +156,54 @@ export function AnalyzerCollage() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** One side of the two-store comparison: a generic store icon over a tiny trend line (flat/down vs up). */
+function StoreTrend({ side, label }: { side: "you" | "top"; label: string }) {
+  const top = side === "top";
+  return (
+    <div
+      className={`relative min-w-0 rounded-lg border p-2.5 ${
+        top ? "border-success/25 bg-success/[0.04]" : "border-white/[0.07] bg-white/[0.02]"
+      }`}
+    >
+      <div className="flex items-center gap-1.5">
+        <span
+          aria-hidden
+          className={`grid size-6 shrink-0 place-items-center rounded-md ${
+            top ? "bg-success/15 text-success" : "bg-white/[0.06] text-white/55"
+          }`}
+        >
+          <Store className="size-3.5" />
+        </span>
+        <p className="min-w-0 text-[10px] font-medium uppercase leading-tight tracking-wide text-white/65">
+          {label}
+        </p>
+        {top && (
+          <span
+            aria-hidden
+            className="ml-auto grid size-5 shrink-0 place-items-center rounded-full bg-success/20 text-[11px] font-semibold text-success"
+          >
+            $
+          </span>
+        )}
+      </div>
+      <svg viewBox="0 0 100 44" className="mt-2 h-11 w-full" role="img" aria-hidden>
+        <line x1="0" y1="43" x2="100" y2="43" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+        {top ? (
+          <>
+            <polyline points="0,36 16,32 32,33 50,23 68,16 84,10 100,5" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="100" cy="5" r="2.6" fill="#34d399" />
+          </>
+        ) : (
+          <>
+            <polyline points="0,15 18,17 36,16 54,22 72,27 100,34" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.85" />
+            <circle cx="100" cy="34" r="2.6" fill="#f87171" />
+          </>
+        )}
+      </svg>
     </div>
   );
 }
@@ -334,22 +353,5 @@ function Radar() {
         })}
       </svg>
     </div>
-  );
-}
-
-function ImpactChip({ tone }: { tone: string }) {
-  const { t } = useT();
-  const map: Record<string, { label: string; cls: string }> = {
-    high: { label: t("common.impactHigh"), cls: "border-destructive/30 bg-destructive/[0.06] text-destructive" },
-    med: { label: t("common.impactMed"), cls: "border-warning/30 bg-warning/[0.08] text-warning" },
-    low: { label: t("common.impactLow"), cls: "border-success/30 bg-success/[0.08] text-success" },
-  };
-  const m = map[tone] ?? map.med;
-  return (
-    <span
-      className={`shrink-0 rounded-full border px-1.5 py-0.5 text-[9px] uppercase tracking-wide ${m.cls}`}
-    >
-      {m.label}
-    </span>
   );
 }
