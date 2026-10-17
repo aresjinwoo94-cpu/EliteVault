@@ -24,11 +24,12 @@ before(async () => {
       user_id uuid references profiles(id) on delete cascade,
       url text, screenshot_url text, buyer_persona jsonb,
       status analysis_status not null default 'queued',
-      error text, credits_charged int not null default 1,
+      error text, credits_charged int not null default 1, result jsonb,
       finished_at timestamptz, created_at timestamptz not null default now());
     insert into profiles (id, credits) values ('${U}', 1), ('${U2}', 5);
   `);
   await db.exec(readFileSync(resolve(process.cwd(), "supabase/migrations/0042_atomic_credits.sql"), "utf8"));
+  await db.exec(readFileSync(resolve(process.cwd(), "supabase/migrations/0044_refund_blocked_capture.sql"), "utf8"));
 });
 
 const credits = async (id = U) => (await db.query<{ credits: number }>(`select credits from profiles where id='${id}'`)).rows[0].credits;
@@ -184,4 +185,51 @@ test("a free account whose audit FAILS in any way keeps its credit (every failur
     assert.equal(await refund(id, msg), false, "never twice");
     assert.equal(await credits(), 1);
   }
+});
+
+test("0044: a succeeded run whose capture was an anti-bot wall gives the credit back, once, and stays 'succeeded'", async () => {
+  await db.exec(`update profiles set credits = 1 where id='${U}'`);
+  const id = (await charge())!;
+  assert.equal(await credits(), 0);
+  await db.exec(`update analyses set status='succeeded', result='{"capture_blocked":{"detected":true,"reason":"Cloudflare"}}' where id='${id}'`);
+  assert.equal(await refund(id, "capture_blocked"), true);
+  assert.equal(await credits(), 1, "the user lost nothing");
+  const row = (await db.query<{ status: string; r: string | null }>(`select status, refunded_at r from analyses where id='${id}'`)).rows[0];
+  assert.equal(row.status, "succeeded", "the notice keeps rendering: nothing is demoted");
+  assert.ok(row.r, "marked refunded");
+  assert.equal(await events(id, "refund"), 1);
+  assert.equal(await refund(id, "capture_blocked"), false, "never twice (poller, retry or a second call)");
+  assert.equal(await refund(id, "late onFailure"), false);
+  assert.equal(await credits(), 1);
+});
+
+test("0044: only a DETECTED block is refunded — a normal succeeded audit (or detected:false) never is", async () => {
+  await db.exec(`update profiles set credits = 2 where id='${U}'`);
+  const a = (await charge())!;
+  await db.exec(`update analyses set status='succeeded', result='{"summary":"ok"}' where id='${a}'`);
+  assert.equal(await refund(a), false);
+  const b = (await charge())!;
+  await db.exec(`update analyses set status='succeeded', result='{"capture_blocked":{"detected":false}}' where id='${b}'`);
+  assert.equal(await refund(b), false);
+  assert.equal(await credits(), 0, "both keep their charge");
+});
+
+test("0044: an anonymous blocked run moves no credit; a blocked run never double-refunds a failure refund", async () => {
+  const anon = (await db.query<{ id: string }>(`insert into analyses (user_id, url, status, result) values (null,'https://a.com','succeeded','{"capture_blocked":{"detected":true}}') returning id`)).rows[0].id;
+  assert.equal(await refund(anon, "capture_blocked"), true);
+  assert.equal(await refund(anon), false);
+  await db.exec(`update profiles set credits = 1 where id='${U}'`);
+  const id = (await charge())!;
+  assert.equal(await refund(id, "boom"), true, "a normal failure refund");
+  assert.equal(await credits(), 1);
+  await db.exec(`update analyses set status='succeeded', result='{"capture_blocked":{"detected":true}}' where id='${id}'`);
+  assert.equal(await refund(id, "capture_blocked"), false, "already refunded: refunded_at is set");
+  assert.equal(await credits(), 1);
+});
+
+test("the pipeline refunds a blocked capture after save-result, only for owned audits, and never fails the audit", () => {
+  const src = readFileSync(resolve(process.cwd(), "inngest/functions/analyze-website.ts"), "utf8");
+  assert.match(src, /if \(userId && result\.capture_blocked\?\.detected === true\) \{\s*await step\.run\("refund-blocked-capture"/);
+  assert.ok(src.indexOf('step.run("save-result"') < src.indexOf('step.run("refund-blocked-capture"'));
+  assert.match(src, /blocked-capture refund failed/);
 });
