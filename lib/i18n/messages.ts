@@ -403,6 +403,7 @@ const en: Dict = {
     blockedBodyVendor:
       "{domain} is protected by {vendor}, so all we captured was the verification screen — not your storefront. Nothing below would describe your actual store, so we're not guessing.",
     blockedWhat: "What you can do",
+    blockedCredit: "No charge: this audit's credit has been returned to your account.",
     blockedRetry:
       "Try again in a minute — these checks often pass on a second attempt.",
     blockedAllowlist:
@@ -1353,6 +1354,7 @@ const es: Dict = {
     blockedBodyVendor:
       "{domain} está protegido por {vendor}, así que lo único que capturamos fue la pantalla de verificación — no tu tienda. Nada de lo que pusiéramos aquí describiría tu tienda de verdad, así que no lo adivinamos.",
     blockedWhat: "Qué puedes hacer",
+    blockedCredit: "Sin cargo: el crédito de esta auditoría se devolvió a tu cuenta.",
     blockedRetry:
       "Inténtalo de nuevo en un minuto — estas verificaciones suelen pasar al segundo intento.",
     blockedAllowlist:

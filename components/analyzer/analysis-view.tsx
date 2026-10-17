@@ -689,6 +689,7 @@ export function AnalysisView({
           url={data.url}
           vendor={captureBlocked.vendor}
           reason={captureBlocked.reason}
+          creditReturned={!isAnon}
         />
       )}
 

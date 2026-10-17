@@ -734,6 +734,20 @@ export const analyzeWebsite = inngest.createFunction(
       );
     });
 
+    // A run whose screenshot was an anti-bot wall gave the user nothing: the credit goes back (migration 0044
+    // extends refund_analysis for exactly this case; exactly once, no-op for anonymous audits). The audit keeps
+    // status "succeeded" so the "we could not read your store" notice keeps rendering. Best-effort: a failure
+    // here must never fail the audit (the 8-minute poller does not retry it — the owner can refund by hand).
+    if (userId && result.capture_blocked?.detected === true) {
+      await step.run("refund-blocked-capture", async () => {
+        try {
+          await refundAnalysis(service, analysisId, "capture_blocked");
+        } catch (e) {
+          console.warn("[analyze] blocked-capture refund failed:", (e as Error).message);
+        }
+      });
+    }
+
     // Real niche match (tech-fixes §2) — DECOUPLED from the critical path above.
     // Detects the store's niche from the screenshot and ranks the genuinely
     // closest Library winners against it. Best-effort and self-contained: a
