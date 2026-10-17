@@ -1,7 +1,7 @@
 "use client";
 
 import { m as motion } from "framer-motion";
-import { Brain, Eye, Scan, Target } from "lucide-react";
+import { Brain, Compass, Megaphone, Trophy } from "lucide-react";
 import { AnalyzerCollage } from "./analyzer-collage";
 import { AnalyzerBg } from "./analyzer-bg";
 import { DataPill } from "@/components/ui/data-pill";
@@ -11,13 +11,13 @@ const ease = [0.22, 1, 0.36, 1] as const;
 
 const STEPS = [
   {
-    icon: Eye,
+    icon: Trophy,
     key: "stepReads",
     titleKey: "analyzerDemo.stepReadsTitle",
     bodyKey: "analyzerDemo.stepReadsBody",
   },
   {
-    icon: Scan,
+    icon: Compass,
     key: "stepScores",
     titleKey: "analyzerDemo.stepScoresTitle",
     bodyKey: "analyzerDemo.stepScoresBody",
@@ -29,14 +29,14 @@ const STEPS = [
     bodyKey: "analyzerDemo.stepPersonaBody",
   },
   {
-    icon: Target,
+    icon: Megaphone,
     key: "stepCampaign",
     titleKey: "analyzerDemo.stepCampaignTitle",
     bodyKey: "analyzerDemo.stepCampaignBody",
   },
 ];
 
-export function AnalyzerDemo({ reportV2 = false }: { reportV2?: boolean }) {
+export function AnalyzerDemo() {
   const { t } = useT();
   return (
     <section
@@ -108,7 +108,7 @@ export function AnalyzerDemo({ reportV2 = false }: { reportV2?: boolean }) {
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease }}
           >
-            <AnalyzerCollage reportV2={reportV2} />
+            <AnalyzerCollage />
           </motion.div>
         </div>
       </div>

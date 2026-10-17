@@ -1,4 +1,4 @@
-import { CheckCircle2, Megaphone, Quote, Zap } from "lucide-react";
+import { CheckCircle2, Megaphone, Quote, Swords } from "lucide-react";
 import { useT } from "@/components/i18n/locale-provider";
 
 /**
@@ -9,11 +9,12 @@ import { useT } from "@/components/i18n/locale-provider";
  *
  * What it conveys, mapped to the four steps on the left + the money:
  *   • reads your store        → the annotated store wireframe with pins
- *   • scores 6 dimensions     → the "where you're leaking sales" radar (54/100)
+ *   • six dimensions          → the "where you're leaking sales" radar (no number is shown)
+ *   • who is ahead of you     → the "Competitor insights" card (invented brand, never a real store)
  *   • buyer-persona reaction  → the persona quote
  *   • 7-day Meta projection   → the ROAS scenario strip
- *   • the payoff              → the money-potential pill (replaces the old score
- *                               ring, which the product no longer shows)
+ *   • the payoff              → the money-potential pill + the verdict (report v2: the
+ *                               product shows no 0–100 score any more)
  *
  * Values are illustrative (a product demo, like the prior mock), drawn from a
  * real example audit so the story is concrete. audit-snapshot.tsx stays in the
@@ -29,10 +30,11 @@ const DIMENSIONS = [
   { label: "collage.dimCro", v: 42 },
 ] as const;
 
-const FIXES = [
-  { n: 1, text: "collage.fix1", tone: "high" },
-  { n: 2, text: "collage.fix2", tone: "med" },
-  { n: 3, text: "collage.fix3", tone: "med" },
+/** "What they do that you don't" — an invented brand, never a real store (no implied comparison with a real company). */
+const COMPETITOR_LINES = [
+  { text: "collage.comp1", tone: "high" },
+  { text: "collage.comp2", tone: "med" },
+  { text: "collage.comp3", tone: "med" },
 ] as const;
 
 const SCENARIOS = [
@@ -41,7 +43,7 @@ const SCENARIOS = [
   { label: "collage.scAggr", roas: "2.3×", tone: "win" },
 ] as const;
 
-export function AnalyzerCollage({ reportV2 = false }: { reportV2?: boolean }) {
+export function AnalyzerCollage() {
   const { t } = useT();
   return (
     <div className="relative">
@@ -66,11 +68,8 @@ export function AnalyzerCollage({ reportV2 = false }: { reportV2?: boolean }) {
         </div>
 
         <div className="space-y-3 p-4">
-          {/* Headline row — money potential (replaces score) + overall grade.
-              analyzer-report-redesign brief §A.6: when the redesign flag is on
-              the visible 0–100 drops off, leaving the $ potential band as the
-              single headline metric. */}
-          <div className="flex items-center justify-between gap-3">
+          {/* Headline row — money potential + verdict (report v2: no visible 0–100). */}
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <div className="flex items-center gap-2.5 rounded-xl border border-signal-400/25 bg-signal-600/[0.06] px-3 py-2">
               <span className="text-[10px] uppercase tracking-wide text-white/50">
                 {t("collage.potential")}
@@ -83,26 +82,15 @@ export function AnalyzerCollage({ reportV2 = false }: { reportV2?: boolean }) {
                 {t("collage.niche")}
               </span>
             </div>
-            {reportV2 ? (
-              <div className="shrink-0 text-right">
-                <p className="flex items-center gap-1.5 text-[11px] text-champagne-300">
-                  <Megaphone className="size-3.5" />
-                  {t("collage.notReady")}
-                </p>
-                <p className="mt-1 text-[10px] uppercase tracking-widest text-white/35">
-                  {t("collage.verdict")}
-                </p>
-              </div>
-            ) : (
-              <div className="shrink-0 text-right">
-                <p className="font-mono text-lg leading-none tabular-nums text-white">
-                  54<span className="text-sm text-white/35">/100</span>
-                </p>
-                <p className="mt-1 text-[10px] uppercase tracking-widest text-white/35">
-                  {t("collage.overall")}
-                </p>
-              </div>
-            )}
+            <div className="shrink-0 sm:text-right">
+              <p className="flex items-center gap-1.5 text-[11px] text-champagne-300">
+                <Megaphone className="size-3.5" />
+                {t("collage.notReady")}
+              </p>
+              <p className="mt-1 text-[10px] uppercase tracking-widest text-white/35">
+                {t("collage.verdict")}
+              </p>
+            </div>
           </div>
 
           {/* Main row — annotated store wireframe + the six-dimension radar. */}
@@ -124,35 +112,54 @@ export function AnalyzerCollage({ reportV2 = false }: { reportV2?: boolean }) {
             </div>
           </div>
 
-          {/* Ranked top fixes. */}
-          <div className="rounded-xl border border-white/[0.06] bg-obsidian-900/30 p-3">
-            <div className="mb-2 flex items-center gap-1.5">
-              <Zap className="size-3 text-champagne-400" />
-              <p className="font-mono text-[10px] uppercase tracking-widest text-white/40">
-                {t("collage.topFixes")}
-              </p>
+          {/* Competitor insights — who is ahead of you and what they do differently (Pro). */}
+          <div className="rounded-xl border border-champagne-400/20 bg-gradient-to-br from-champagne-400/[0.05] to-obsidian-900/30 p-3">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-1.5">
+                <Swords className="size-3 shrink-0 text-champagne-400" />
+                <p className="truncate font-mono text-[10px] uppercase tracking-widest text-white/50">
+                  {t("collage.compTitle")}
+                </p>
+              </div>
+              <span className="shrink-0 rounded-full border border-champagne-400/40 px-1.5 py-0.5 text-[9px] uppercase tracking-widest text-champagne-300">
+                {t("collage.compPro")}
+              </span>
             </div>
+            <div className="mb-2.5 flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5">
+              <span
+                aria-hidden
+                className="grid size-5 shrink-0 place-items-center rounded-md bg-signal-600/20 text-[10px] font-semibold text-signal-300"
+              >
+                N
+              </span>
+              <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-white/85">
+                {t("collage.compBrand")}
+              </span>
+              <span className="shrink-0 rounded-full border border-white/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-white/45">
+                {t("collage.compNiche")}
+              </span>
+            </div>
+            <p className="mb-1.5 text-[10px] uppercase tracking-widest text-white/35">
+              {t("collage.compHeading")}
+            </p>
             <ul className="space-y-1.5">
-              {FIXES.map((f) => (
-                <li key={f.n} className="flex items-center gap-2.5">
-                  <span className="font-serif text-sm leading-none text-gold-gradient tnum">
-                    {f.n}
-                  </span>
+              {COMPETITOR_LINES.map((l) => (
+                <li key={l.text} className="flex items-center gap-2.5">
                   <span className="min-w-0 flex-1 truncate text-[12px] text-white/75">
-                    {t(f.text)}
+                    {t(l.text)}
                   </span>
-                  <ImpactChip tone={f.tone} />
+                  <ImpactChip tone={l.tone} />
                 </li>
               ))}
             </ul>
           </div>
 
           {/* 7-day Meta projection — the last deliverable, kept to a thin strip. */}
-          <div className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-obsidian-900/30 px-3 py-2">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-xl border border-white/[0.06] bg-obsidian-900/30 px-3 py-2">
             <p className="font-mono text-[10px] uppercase tracking-widest text-white/40">
               {t("collage.meta7")}
             </p>
-            <div className="flex flex-1 items-center justify-end gap-1.5">
+            <div className="flex flex-1 flex-wrap items-center justify-end gap-1.5">
               {SCENARIOS.map((s) => (
                 <span
                   key={s.label}

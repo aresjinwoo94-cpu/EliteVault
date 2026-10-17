@@ -15,10 +15,10 @@ import { MarketingNav } from "@/components/marketing/nav";
  */
 export const metadata: Metadata = {
   title: {
-    absolute: "Shopify Store Analyzer & Free Store Audit | EliteVault",
+    absolute: "Shopify Store Analyzer & Store Audit | EliteVault",
   },
   description:
-    "Free AI Shopify store analyzer and store audit. Get an annotated audit of your store page, ranked by what's costing you sales on paid traffic, before you scale.",
+    "AI Shopify store analyzer and store audit. See where your store is losing sales, who in your niche is ahead of you, and what to fix first before you scale paid traffic.",
   keywords: [
     // WP-D primary.
     "shopify store analyzer",
@@ -45,16 +45,16 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   openGraph: {
     // WP-D — the share card leads with the analyzer, like the title does.
-    title: "Shopify Store Analyzer & Free Store Audit — Find What's Costing You Sales",
+    title: "Shopify Store Analyzer & Store Audit — See Who's Ahead of You",
     description:
-      "A free AI analyzer and store audit for your Shopify store: an annotated audit of your store page, ranked by what's costing you sales on paid traffic.",
+      "An AI analyzer and store audit for your Shopify store: see where you're losing sales, who in your niche is ahead of you, and what to fix first before you scale paid traffic.",
     type: "website",
     url: "/",
   },
   twitter: {
-    title: "Shopify Store Analyzer & Free Store Audit — Find What's Costing You Sales",
+    title: "Shopify Store Analyzer & Store Audit — See Who's Ahead of You",
     description:
-      "A free AI analyzer and store audit for your Shopify store: an annotated audit of your store page, ranked by what's costing you sales on paid traffic.",
+      "An AI analyzer and store audit for your Shopify store: see where you're losing sales, who in your niche is ahead of you, and what to fix first before you scale paid traffic.",
   },
 };
 
@@ -83,7 +83,6 @@ import { FAQ } from "@/components/marketing/faq";
 import { Footer } from "@/components/marketing/footer";
 import { PLANS } from "@/lib/stripe/plans";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { analyzerReportV2Enabled } from "@/lib/flags";
 
 /**
  * Landing-page JSON-LD structured data.
@@ -200,7 +199,6 @@ export default async function HomePage() {
   // analyzer-report-redesign brief §A.6 — the landing diagram drops the visible
   // 0–100 when the redesign flag is on (server-resolved, threaded to the client
   // demo section). Off ⇒ the collage is byte-identical.
-  const reportV2 = analyzerReportV2Enabled();
   return (
     <>
       {/*
@@ -222,7 +220,7 @@ export default async function HomePage() {
         <Hero />
         <SocialStrip />
         <WhoFor />
-        <AnalyzerDemo reportV2={reportV2} />
+        <AnalyzerDemo />
         <ScanDivider />
         <TwoPaths />
         <FeaturesShowcase />
