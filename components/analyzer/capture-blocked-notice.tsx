@@ -30,7 +30,10 @@ export function CaptureBlockedNotice({
   url,
   vendor,
   reason,
+  creditReturned = false,
 }: {
+  /** The audit's credit was given back (signed-in accounts). */
+  creditReturned?: boolean;
   url: string | null;
   /** e.g. "Cloudflare" — from discovery's pre-check, when identifiable. */
   vendor?: string | null;
@@ -70,6 +73,9 @@ export function CaptureBlockedNotice({
             <p className="mt-2 max-w-[62ch] text-sm leading-relaxed text-white/65">
               {body}
             </p>
+            {creditReturned && (
+              <p className="mt-3 text-sm font-medium text-signal-300">{t("report.blockedCredit")}</p>
+            )}
             {reason && (
               <p className="mt-2 text-[12px] text-white/40">
                 {/* The model's own words, so the message is specific rather
