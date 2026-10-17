@@ -22,7 +22,7 @@ const en: Dict = {
     faq: "FAQ",
     about: "About",
     signIn: "Sign in",
-    startFree: "Start free",
+    startFree: "Audit my store",
     menu: "Menu",
     openMenu: "Open menu",
     closeMenu: "Close menu",
@@ -33,8 +33,8 @@ const en: Dict = {
     // WP-D — repositioned from "Meta ads" to the analyzer itself: the store is
     // what we analyze, and paid traffic is only the reason it matters. The
     // gradient (line2) carries the keyword.
-    line1: "Free Shopify store audit —",
-    line2: "find what's costing you sales.",
+    line1: "Shopify store audit",
+    line2: "See who's ahead of you and why.",
     line3: "",
     // Brief §1.1 — subtitle leads with the money (what the owner cares about),
     // then "ideal customer" + "how they see your site" (the analyzer's other two
@@ -43,21 +43,21 @@ const en: Dict = {
     subPre: "Analyze your store before you scale traffic — see ",
     subHighlight: "the exact leaks, ranked by impact",
     subPost: ".",
-    ctaPrimary: "Audit my store free",
+    ctaPrimary: "Audit my store",
     ctaSecondary: "or see how it works first",
-    trust: "No credit card · 1 free analysis · Cancel anytime.",
+    trust: "Cancel anytime · no lock-in.",
     stripeBadge: "Payments secured by Stripe",
     sslBadge: "256-bit SSL",
     teaserTitle: "See how the analyzer works",
     teaserDuration: "54 sec · sound on",
     // Activation funnel — inline anonymous-audit box (Tarea 1).
     inputPlaceholder: "Paste your store URL (e.g. yourstore.com)",
-    auditButton: "Audit my store — free",
+    auditButton: "Audit my store",
     auditing: "Auditing your store…",
-    anonMicro: "No login · no card · 1 free audit",
+    anonMicro: "No card needed for your first audit",
     // Fallback for visitors who reach a CTA without pasting a URL — the SEO
     // landings show this under the inline box so /sign-up stays reachable.
-    signUpFallback: "or create a free account",
+    signUpFallback: "or create an account",
   },
   // Anonymous audit reveal + registration gate (activation funnel Tarea 1).
   anonReveal: {
@@ -163,7 +163,7 @@ const en: Dict = {
     analyzeTitle: "Analyze your store",
     analyzeBody:
       "Paste your URL and get a CRO score, an annotated screenshot, a buyer-persona reaction and a ranked punch-list of fixes — in about a minute.",
-    analyzeCta: "Audit my store free",
+    analyzeCta: "Audit my store",
     studyLabel: "Path 2 — Model",
     studyTitle: "Or study the ones already converting",
     studyBody:
@@ -175,7 +175,7 @@ const en: Dict = {
       "EliteVault — AI-powered audit & winning-site library for ecommerce founders.",
     pricing: "Pricing",
     faq: "FAQ",
-    freeAudit: "Free audit",
+    freeAudit: "Store audit",
     persona: "Persona simulator",
     metaAds: "Meta Ads forecast",
     winners: "Winning stores",
@@ -201,7 +201,7 @@ const en: Dict = {
     balanced: "Balanced",
     aggressive: "Aggressive",
     unlockPro: "Unlock with Pro — ${price}/mo",
-    signupCta: "Create your free account",
+    signupCta: "Create your account",
     runCta: "Run your simulation",
     optimizerUpsell: "The Meta Ads Optimizer is on Scale.",
     optimizerCta: "Upgrade to Scale",
@@ -211,9 +211,8 @@ const en: Dict = {
     cancelAnytime: "Cancel anytime · prorated",
   },
   pricing: {
-    heading: "Free diagnosis. Pay for the cure.",
-    subheading:
-      "Audit your store free — score, annotated screenshot and your #1 fix. Upgrade to Pro for the rest of your fixes, unlimited audits and 1 Meta projection/month; Scale for unlimited projections and volume.",
+    heading: "Start with the diagnosis. Pay when you want the full cure.",
+    subheading: "Your first audit shows where you're losing sales and unlocks one set of fixes. Pro opens every fix, the persona simulation, unlimited audits and 1 Meta projection a month; Scale adds unlimited projections and volume.",
     ladderDiagnose: "Diagnose",
     ladderCure: "Cure",
     ladderVolume: "Volume",
@@ -265,7 +264,7 @@ const en: Dict = {
     closingPre: "The only tool that both",
     closingBold: "audits your store and shows you the winners to copy",
     closingPost: "— for the price of a lunch.",
-    cta: "Audit my store free",
+    cta: "Audit my store",
   },
   faq: {
     heading: "Questions, answered.",
@@ -313,9 +312,8 @@ const en: Dict = {
       "Estimated from public traffic and on-site behavior signals — not official figures reported by the brand.",
     estimateDisclaimer:
       "Metrics estimated by modeling public traffic and behavior signals. Not figures reported by the brands themselves.",
-    founderNote:
-      "I built EliteVault because I was tired of guessing why a store wasn't converting and paying $2k for a consultant to tell me what an honest audit could in 60 seconds. So I made the diagnosis free — run it on your own store, see the exact score and the annotated screenshot, and only pay if you want the prioritized cure. No fake numbers, no dark patterns, cancel in two clicks.",
-    badgeNoCard: "No credit card for your free audit",
+    founderNote: "I built EliteVault because I watched good stores lose to competitors with worse products and better pages — and paying $2k for a consultant to find out why wasn't an option for most founders. So I built the advisor I wanted: it shows where your store is losing sales, who in your niche is ahead and what they do differently. No fake numbers, no dark patterns, cancel in two clicks.",
+    badgeNoCard: "No credit card to start",
     badgeStripe: "Payments secured by Stripe",
     badgeCancel: "Cancel anytime · no lock-in",
     badgeEstimates: "Estimates, not predictions",
@@ -489,25 +487,19 @@ const en: Dict = {
     v2StepLocked: "— locked, upgrade to unlock",
   },
   analyzerDemo: {
-    heading: "What $1,500 of CRO consulting looks like. Free.",
-    subheadingPre: "Paste a URL. In",
-    subheadingPrice: "60 seconds:",
-    subheadingPost:
-      "an annotated screenshot, your leak map, and fixes ranked by leverage. That's the report on the right.",
-    stepReadsTitle: "Sees your store's real potential",
-    stepReadsBody:
-      "Every store has a revenue ceiling it hasn't hit yet. AI vision reads your hero, product grid, copy, and color system to show what yours could sell once it's conversion-ready.",
-    stepScoresTitle: "One score, six reasons",
-    stepScoresBody:
-      "Color, layout, imagery, technical, niche fit, CRO principles — calibrated against the brands actually scaling on paid social.",
-    stepPersonaTitle: "Simulates your buyer persona",
-    stepPersonaBody:
-      "Pick a persona (or define one) and watch them react to your store in their own voice. \"Looks like a low-quality dropshipping site\" beats any heatmap.",
-    stepCampaignTitle: "Every leak, marked and ranked",
-    stepCampaignBody:
-      "Issues flagged directly on your own screenshot. Fixes ordered by leverage, not guesswork — so you know exactly what to fix first.",
-    videoAria:
-      "EliteVault analyzer demo: paste a URL and get a score, an annotated screenshot, and ranked fixes",
+    heading: "Secure your store's place in its market.",
+    subheadingPre: "Paste your URL. In",
+    subheadingPrice: "about a minute",
+    subheadingPost: "see who's ahead of you and what to fix first.",
+    stepReadsTitle: "Find out who's ahead of you",
+    stepReadsBody: "See the top store in your niche next to yours, side by side.",
+    stepScoresTitle: "The advisor your store was missing",
+    stepScoresBody: "Every issue marked on your own screenshot, with a clear plan.",
+    stepPersonaTitle: "Hear your buyer before they leave",
+    stepPersonaBody: "Watch a buyer persona react to your store in their own words.",
+    stepCampaignTitle: "Scale ads with your eyes open",
+    stepCampaignBody: "Project a 7-day Meta campaign in three honest scenarios.",
+    videoAria: "EliteVault demo: paste a URL and see where you're losing sales, who's ahead of you in your niche, and what to change first",
     videoPlay: "Play the analyzer demo",
   },
   auth: {
@@ -599,7 +591,7 @@ const en: Dict = {
     finalH2: "Find your winning stores",
     finalBody:
       "Browse 3 hand-picked winners free, then unlock the full library and image-similarity search on Pro.",
-    finalCta: "Start free",
+    finalCta: "Audit my store",
   },
   reviews: {
     heading: "Reviews",
@@ -901,7 +893,7 @@ const en: Dict = {
     finalH2: "Watch a buyer react to your store",
     finalBody:
       "Start with a free audit — score and annotated screenshot — then unlock the full buyer-persona simulation on Pro.",
-    finalCta: "Start free",
+    finalCta: "Audit my store",
   },
   metaAdsPage: {
     badge1: "META ADS FORECAST",
@@ -945,7 +937,7 @@ const en: Dict = {
     finalH2: "Know the math before you spend",
     finalBody:
       "Start free with a store audit — it now includes a modeled ROAS range for your store. The full 7-day Campaign Scenario Modeler is included on Pro (1/month) and unlimited on Scale.",
-    finalCta: "Start free",
+    finalCta: "Audit my store",
   },
   library: {
     // Shared vocabulary with the Analyzer: these label the 6 canonical audit
@@ -985,7 +977,7 @@ const es: Dict = {
     faq: "FAQ",
     about: "Nosotros",
     signIn: "Iniciar sesión",
-    startFree: "Empezar gratis",
+    startFree: "Audita mi tienda",
     menu: "Menú",
     openMenu: "Abrir menú",
     closeMenu: "Cerrar menú",
@@ -996,8 +988,8 @@ const es: Dict = {
     // WP-D — reposicionado de "anuncios de Meta" al analizador: lo que
     // analizamos es la tienda, y el tráfico pago es solo el motivo por el que
     // importa. El degradado (line2) lleva la keyword.
-    line1: "Auditoría gratis de tu tienda Shopify —",
-    line2: "descubre qué te está costando ventas.",
+    line1: "Auditoría de tu tienda Shopify",
+    line2: "Descubre quién va por delante y por qué.",
     line3: "",
     // Brief §1.1 — el subtítulo abre con el dinero (lo que le importa al dueño),
     // luego "cliente ideal" + "cómo ve tu web" (los otros dos entregables reales
@@ -1006,21 +998,21 @@ const es: Dict = {
     subPre: "Analiza tu tienda antes de escalar tráfico — mira ",
     subHighlight: "las fugas exactas, ordenadas por impacto",
     subPost: ".",
-    ctaPrimary: "Audita mi tienda gratis",
+    ctaPrimary: "Audita mi tienda",
     ctaSecondary: "o mira cómo funciona primero",
-    trust: "Sin tarjeta · 1 análisis gratis · Cancela cuando quieras.",
+    trust: "Cancela cuando quieras · sin ataduras.",
     stripeBadge: "Pagos protegidos con Stripe",
     sslBadge: "SSL de 256 bits",
     teaserTitle: "Mira cómo funciona el analizador",
     teaserDuration: "54 s · con sonido",
     // Funnel de activación — caja de auditoría anónima inline (Tarea 1).
     inputPlaceholder: "Pega la URL de tu tienda (ej. tutienda.com)",
-    auditButton: "Auditar mi tienda — gratis",
+    auditButton: "Auditar mi tienda",
     auditing: "Auditando tu tienda…",
-    anonMicro: "Sin registro · sin tarjeta · 1 auditoría gratis",
+    anonMicro: "Sin tarjeta para tu primera auditoría",
     // Salida para quien llega a una CTA sin pegar una URL — las landings de
     // SEO lo muestran bajo la caja para que /sign-up siga siendo alcanzable.
-    signUpFallback: "o crea una cuenta gratis",
+    signUpFallback: "o crea una cuenta",
   },
   // Reveal anónimo + gate de registro (funnel de activación Tarea 1).
   anonReveal: {
@@ -1123,7 +1115,7 @@ const es: Dict = {
     analyzeTitle: "Analiza tu tienda",
     analyzeBody:
       "Pega tu URL y obtén un score de conversión, un screenshot anotado, la reacción de un buyer persona y una lista priorizada de mejoras — en cerca de un minuto.",
-    analyzeCta: "Audita mi tienda gratis",
+    analyzeCta: "Audita mi tienda",
     studyLabel: "Camino 2 — Modela",
     studyTitle: "O estudia las que ya están convirtiendo",
     studyBody:
@@ -1135,7 +1127,7 @@ const es: Dict = {
       "EliteVault — auditoría con IA y librería de tiendas ganadoras para fundadores de ecommerce.",
     pricing: "Precios",
     faq: "FAQ",
-    freeAudit: "Auditoría gratis",
+    freeAudit: "Auditoría de tienda",
     persona: "Simulador de persona",
     metaAds: "Forecast de Meta Ads",
     winners: "Tiendas ganadoras",
@@ -1161,7 +1153,7 @@ const es: Dict = {
     balanced: "Equilibrado",
     aggressive: "Agresivo",
     unlockPro: "Desbloquear con Pro — ${price}/mes",
-    signupCta: "Crea tu cuenta gratis",
+    signupCta: "Crea tu cuenta",
     runCta: "Correr tu simulación",
     optimizerUpsell: "El Optimizer de Meta Ads es del plan Scale.",
     optimizerCta: "Subir a Scale",
@@ -1171,9 +1163,8 @@ const es: Dict = {
     cancelAnytime: "Cancela cuando quieras · prorrateado",
   },
   pricing: {
-    heading: "Diagnóstico gratis. Paga por la cura.",
-    subheading:
-      "Audita tu tienda gratis — puntuación, captura anotada y tu arreglo #1. Pasa a Pro para el resto de tus arreglos, auditorías ilimitadas y 1 proyección Meta/mes; a Scale para proyecciones ilimitadas y volumen.",
+    heading: "Empieza con el diagnóstico. Paga cuando quieras la cura completa.",
+    subheading: "Tu primera auditoría te muestra dónde pierdes ventas y desbloquea un grupo de arreglos. Pro abre todos los arreglos, la simulación de comprador, auditorías ilimitadas y 1 proyección Meta al mes; Scale suma proyecciones ilimitadas y volumen.",
     ladderDiagnose: "Diagnostica",
     ladderCure: "Cura",
     ladderVolume: "Volumen",
@@ -1184,7 +1175,7 @@ const es: Dict = {
     perMonth: "mes",
     perYear: "año",
     billedYearly: "/mes facturado anual · ahorra",
-    ctaFree: "Empezar gratis",
+    ctaFree: "Comenzar",
     ctaStart: "Empieza con",
     stripeNote: "Pago seguro con Stripe · Cancela cuando quieras · Sin cargos ocultos",
     localCurrencyNote: "Se cobra en tu moneda local al pagar",
@@ -1225,7 +1216,7 @@ const es: Dict = {
     closingPre: "La única herramienta que",
     closingBold: "audita tu tienda y te enseña a las ganadoras que copiar",
     closingPost: "— por el precio de un almuerzo.",
-    cta: "Audita mi tienda gratis",
+    cta: "Audita mi tienda",
   },
   faq: {
     heading: "Preguntas, resueltas.",
@@ -1273,9 +1264,8 @@ const es: Dict = {
       "Estimado a partir de señales públicas de tráfico y comportamiento del sitio. No son datos oficiales de la marca.",
     estimateDisclaimer:
       "Métricas estimadas mediante modelado sobre señales públicas de tráfico y comportamiento. No son cifras reportadas por las marcas.",
-    founderNote:
-      "Creé EliteVault porque estaba cansado de adivinar por qué una tienda no convertía y de pagar $2k a un consultor para que me dijera lo que una auditoría honesta resolvía en 60 segundos. Así que hice el diagnóstico gratis: córrelo en tu propia tienda, mira el puntaje exacto y la captura anotada, y paga solo si quieres la solución priorizada. Sin números falsos, sin trucos sucios, cancela en dos clics.",
-    badgeNoCard: "Sin tarjeta para tu auditoría gratis",
+    founderNote: "Creé EliteVault porque vi cómo buenas tiendas perdían contra competidores con peores productos y mejores páginas, y pagar $2k a un consultor para descubrir por qué no era una opción para la mayoría de los founders. Así que construí el asesor que yo quería: te muestra dónde tu tienda pierde ventas, quién de tu nicho va por delante y qué hace distinto. Sin números falsos, sin trucos sucios, cancela en dos clics.",
+    badgeNoCard: "Sin tarjeta para empezar",
     badgeStripe: "Pagos protegidos por Stripe",
     badgeCancel: "Cancela cuando quieras · sin ataduras",
     badgeEstimates: "Estimaciones, no predicciones",
@@ -1448,25 +1438,19 @@ const es: Dict = {
     v2StepLocked: "— bloqueado, mejora tu plan para desbloquear",
   },
   analyzerDemo: {
-    heading: "Así se ve una consultoría CRO de $1,500. Gratis.",
-    subheadingPre: "Pega una URL. En",
-    subheadingPrice: "60 segundos:",
-    subheadingPost:
-      "una captura anotada, el mapa de tus fugas y arreglos ordenados por impacto. Ese es el informe que ves a la derecha.",
-    stepReadsTitle: "Ve el potencial real de tu tienda",
-    stepReadsBody:
-      "Cada tienda tiene un techo de ingresos que aún no alcanzó. La visión por IA lee tu hero, la grilla de productos, los textos y el sistema de color para mostrar cuánto podría vender la tuya una vez lista para convertir.",
-    stepScoresTitle: "Un score, seis razones",
-    stepScoresBody:
-      "Color, layout, imágenes, técnica, encaje con el nicho y principios de CRO — calibrados contra las marcas que de verdad escalan en paid social.",
-    stepPersonaTitle: "Simula a tu buyer persona",
-    stepPersonaBody:
-      "Elige una persona (o define una) y mira cómo reacciona a tu tienda con su propia voz. Un \"parece un dropshipping de baja calidad\" vale más que cualquier mapa de calor.",
-    stepCampaignTitle: "Cada fuga, marcada y ordenada",
-    stepCampaignBody:
-      "Los problemas señalados directamente sobre tu propia captura. Arreglos ordenados por impacto, no por corazonada — para que sepas exactamente qué arreglar primero.",
-    videoAria:
-      "Demostración del analizador de EliteVault: pega una URL y obtén score, captura anotada y arreglos priorizados",
+    heading: "Asegura el lugar de tu tienda en su mercado.",
+    subheadingPre: "Pega tu URL. En",
+    subheadingPrice: "cerca de un minuto",
+    subheadingPost: "verás quién va por delante y qué arreglar primero.",
+    stepReadsTitle: "Entérate si alguien está por encima de ti",
+    stepReadsBody: "Mira la mejor tienda de tu nicho junto a la tuya.",
+    stepScoresTitle: "El asesor que tu tienda necesitaba",
+    stepScoresBody: "Cada problema marcado en tu captura, con un plan claro.",
+    stepPersonaTitle: "Escucha a tu comprador antes de que se vaya",
+    stepPersonaBody: "Mira cómo reacciona un comprador a tu tienda, con sus palabras.",
+    stepCampaignTitle: "Escala tus anuncios sabiendo lo que viene",
+    stepCampaignBody: "Proyecta una campaña de Meta de 7 días en tres escenarios.",
+    videoAria: "Demostración de EliteVault: pega una URL y mira dónde estás perdiendo ventas, quién va por delante en tu nicho y qué cambiar primero",
     videoPlay: "Reproducir la demo del analizador",
   },
   auth: {
@@ -1558,7 +1542,7 @@ const es: Dict = {
     finalH2: "Encuentra tus tiendas ganadoras",
     finalBody:
       "Explora 3 ganadoras seleccionadas gratis, y desbloquea la librería completa y la búsqueda por imagen en Pro.",
-    finalCta: "Empezar gratis",
+    finalCta: "Auditar mi tienda",
   },
   reviews: {
     heading: "Reseñas",
@@ -1858,7 +1842,7 @@ const es: Dict = {
     finalH2: "Mira a un comprador reaccionar a tu tienda",
     finalBody:
       "Empieza con una auditoría gratis — score y captura anotada — y luego desbloquea la simulación completa de buyer-persona en Pro.",
-    finalCta: "Empezar gratis",
+    finalCta: "Auditar mi tienda",
   },
   metaAdsPage: {
     badge1: "FORECAST DE META ADS",
@@ -1902,7 +1886,7 @@ const es: Dict = {
     finalH2: "Conoce las cuentas antes de gastar",
     finalBody:
       "Empieza gratis con una auditoría de tienda — ahora incluye un rango modelado de ROAS para tu tienda. El Modelador de Escenarios de Campaña a 7 días completo viene incluido en Pro (1/mes) e ilimitado en Scale.",
-    finalCta: "Empezar gratis",
+    finalCta: "Auditar mi tienda",
   },
   library: {
     // Vocabulario compartido con el Analyzer: etiquetan las 6 dimensiones

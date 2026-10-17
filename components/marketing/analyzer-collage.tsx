@@ -1,4 +1,4 @@
-import { CheckCircle2, Megaphone, Quote, Zap } from "lucide-react";
+import { CheckCircle2, Megaphone, Quote, Store, Swords } from "lucide-react";
 import { useT } from "@/components/i18n/locale-provider";
 
 /**
@@ -9,11 +9,12 @@ import { useT } from "@/components/i18n/locale-provider";
  *
  * What it conveys, mapped to the four steps on the left + the money:
  *   • reads your store        → the annotated store wireframe with pins
- *   • scores 6 dimensions     → the "where you're leaking sales" radar (54/100)
+ *   • six dimensions          → the "where you're leaking sales" radar (no number is shown)
+ *   • who is ahead of you     → the "Competitor insights" card: two stores side by side (generic icons, no brand)
  *   • buyer-persona reaction  → the persona quote
  *   • 7-day Meta projection   → the ROAS scenario strip
- *   • the payoff              → the money-potential pill (replaces the old score
- *                               ring, which the product no longer shows)
+ *   • the payoff              → the money-potential pill + the verdict (report v2: the
+ *                               product shows no 0–100 score any more)
  *
  * Values are illustrative (a product demo, like the prior mock), drawn from a
  * real example audit so the story is concrete. audit-snapshot.tsx stays in the
@@ -29,19 +30,13 @@ const DIMENSIONS = [
   { label: "collage.dimCro", v: 42 },
 ] as const;
 
-const FIXES = [
-  { n: 1, text: "collage.fix1", tone: "high" },
-  { n: 2, text: "collage.fix2", tone: "med" },
-  { n: 3, text: "collage.fix3", tone: "med" },
-] as const;
-
 const SCENARIOS = [
   { label: "collage.scCons", roas: "0.8×", tone: "loss" },
   { label: "collage.scBal", roas: "1.6×", tone: "gold" },
   { label: "collage.scAggr", roas: "2.3×", tone: "win" },
 ] as const;
 
-export function AnalyzerCollage({ reportV2 = false }: { reportV2?: boolean }) {
+export function AnalyzerCollage() {
   const { t } = useT();
   return (
     <div className="relative">
@@ -66,11 +61,8 @@ export function AnalyzerCollage({ reportV2 = false }: { reportV2?: boolean }) {
         </div>
 
         <div className="space-y-3 p-4">
-          {/* Headline row — money potential (replaces score) + overall grade.
-              analyzer-report-redesign brief §A.6: when the redesign flag is on
-              the visible 0–100 drops off, leaving the $ potential band as the
-              single headline metric. */}
-          <div className="flex items-center justify-between gap-3">
+          {/* Headline row — money potential + verdict (report v2: no visible 0–100). */}
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <div className="flex items-center gap-2.5 rounded-xl border border-signal-400/25 bg-signal-600/[0.06] px-3 py-2">
               <span className="text-[10px] uppercase tracking-wide text-white/50">
                 {t("collage.potential")}
@@ -83,26 +75,15 @@ export function AnalyzerCollage({ reportV2 = false }: { reportV2?: boolean }) {
                 {t("collage.niche")}
               </span>
             </div>
-            {reportV2 ? (
-              <div className="shrink-0 text-right">
-                <p className="flex items-center gap-1.5 text-[11px] text-champagne-300">
-                  <Megaphone className="size-3.5" />
-                  {t("collage.notReady")}
-                </p>
-                <p className="mt-1 text-[10px] uppercase tracking-widest text-white/35">
-                  {t("collage.verdict")}
-                </p>
-              </div>
-            ) : (
-              <div className="shrink-0 text-right">
-                <p className="font-mono text-lg leading-none tabular-nums text-white">
-                  54<span className="text-sm text-white/35">/100</span>
-                </p>
-                <p className="mt-1 text-[10px] uppercase tracking-widest text-white/35">
-                  {t("collage.overall")}
-                </p>
-              </div>
-            )}
+            <div className="shrink-0 sm:text-right">
+              <p className="flex items-center gap-1.5 text-[11px] text-champagne-300">
+                <Megaphone className="size-3.5" />
+                {t("collage.notReady")}
+              </p>
+              <p className="mt-1 text-[10px] uppercase tracking-widest text-white/35">
+                {t("collage.verdict")}
+              </p>
+            </div>
           </div>
 
           {/* Main row — annotated store wireframe + the six-dimension radar. */}
@@ -124,35 +105,32 @@ export function AnalyzerCollage({ reportV2 = false }: { reportV2?: boolean }) {
             </div>
           </div>
 
-          {/* Ranked top fixes. */}
-          <div className="rounded-xl border border-white/[0.06] bg-obsidian-900/30 p-3">
-            <div className="mb-2 flex items-center gap-1.5">
-              <Zap className="size-3 text-champagne-400" />
-              <p className="font-mono text-[10px] uppercase tracking-widest text-white/40">
-                {t("collage.topFixes")}
-              </p>
+          {/* Competitor insights — your store next to the strongest store of your niche (Pro). Generic icons only:
+              no brand logo (trademark) and no real store. */}
+          <div className="rounded-xl border border-champagne-400/20 bg-gradient-to-br from-champagne-400/[0.05] to-obsidian-900/30 p-3">
+            <div className="mb-2.5 flex items-center justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-1.5">
+                <Swords className="size-3 shrink-0 text-champagne-400" />
+                <p className="truncate font-mono text-[10px] uppercase tracking-widest text-white/50">
+                  {t("collage.compTitle")}
+                </p>
+              </div>
+              <span className="shrink-0 rounded-full border border-champagne-400/40 px-1.5 py-0.5 text-[9px] uppercase tracking-widest text-champagne-300">
+                {t("collage.compPro")}
+              </span>
             </div>
-            <ul className="space-y-1.5">
-              {FIXES.map((f) => (
-                <li key={f.n} className="flex items-center gap-2.5">
-                  <span className="font-serif text-sm leading-none text-gold-gradient tnum">
-                    {f.n}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-[12px] text-white/75">
-                    {t(f.text)}
-                  </span>
-                  <ImpactChip tone={f.tone} />
-                </li>
-              ))}
-            </ul>
+            <div className="grid grid-cols-2 gap-2.5">
+              <StoreTrend side="you" label={t("collage.compYou")} />
+              <StoreTrend side="top" label={t("collage.compTop")} />
+            </div>
           </div>
 
           {/* 7-day Meta projection — the last deliverable, kept to a thin strip. */}
-          <div className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-obsidian-900/30 px-3 py-2">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-xl border border-white/[0.06] bg-obsidian-900/30 px-3 py-2">
             <p className="font-mono text-[10px] uppercase tracking-widest text-white/40">
               {t("collage.meta7")}
             </p>
-            <div className="flex flex-1 items-center justify-end gap-1.5">
+            <div className="flex flex-1 flex-wrap items-center justify-end gap-1.5">
               {SCENARIOS.map((s) => (
                 <span
                   key={s.label}
@@ -178,6 +156,54 @@ export function AnalyzerCollage({ reportV2 = false }: { reportV2?: boolean }) {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** One side of the two-store comparison: a generic store icon over a tiny trend line (flat/down vs up). */
+function StoreTrend({ side, label }: { side: "you" | "top"; label: string }) {
+  const top = side === "top";
+  return (
+    <div
+      className={`relative min-w-0 rounded-lg border p-2.5 ${
+        top ? "border-success/25 bg-success/[0.04]" : "border-white/[0.07] bg-white/[0.02]"
+      }`}
+    >
+      <div className="flex items-center gap-1.5">
+        <span
+          aria-hidden
+          className={`grid size-6 shrink-0 place-items-center rounded-md ${
+            top ? "bg-success/15 text-success" : "bg-white/[0.06] text-white/55"
+          }`}
+        >
+          <Store className="size-3.5" />
+        </span>
+        <p className="min-w-0 text-[10px] font-medium uppercase leading-tight tracking-wide text-white/65">
+          {label}
+        </p>
+        {top && (
+          <span
+            aria-hidden
+            className="ml-auto grid size-5 shrink-0 place-items-center rounded-full bg-success/20 text-[11px] font-semibold text-success"
+          >
+            $
+          </span>
+        )}
+      </div>
+      <svg viewBox="0 0 100 44" className="mt-2 h-11 w-full" role="img" aria-hidden>
+        <line x1="0" y1="43" x2="100" y2="43" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+        {top ? (
+          <>
+            <polyline points="0,36 16,32 32,33 50,23 68,16 84,10 100,5" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="100" cy="5" r="2.6" fill="#34d399" />
+          </>
+        ) : (
+          <>
+            <polyline points="0,15 18,17 36,16 54,22 72,27 100,34" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.85" />
+            <circle cx="100" cy="34" r="2.6" fill="#f87171" />
+          </>
+        )}
+      </svg>
     </div>
   );
 }
@@ -327,22 +353,5 @@ function Radar() {
         })}
       </svg>
     </div>
-  );
-}
-
-function ImpactChip({ tone }: { tone: string }) {
-  const { t } = useT();
-  const map: Record<string, { label: string; cls: string }> = {
-    high: { label: t("common.impactHigh"), cls: "border-destructive/30 bg-destructive/[0.06] text-destructive" },
-    med: { label: t("common.impactMed"), cls: "border-warning/30 bg-warning/[0.08] text-warning" },
-    low: { label: t("common.impactLow"), cls: "border-success/30 bg-success/[0.08] text-success" },
-  };
-  const m = map[tone] ?? map.med;
-  return (
-    <span
-      className={`shrink-0 rounded-full border px-1.5 py-0.5 text-[9px] uppercase tracking-wide ${m.cls}`}
-    >
-      {m.label}
-    </span>
   );
 }

@@ -16,8 +16,6 @@ const norm = (s: string) => s.trim().toLowerCase();
 /** Reserved for the homepage — see app/page.tsx. */
 const HOME_RESERVED = [
   "store audit",
-  "free store audit",
-  "free shopify store audit",
   "shopify store audit",
   "shopify store analyzer",
   "store analyzer",

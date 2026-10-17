@@ -28,9 +28,9 @@ const KEYWORD = "shopify store analyzer";
 test("the landing's title, description and keywords lead with the analyzer", () => {
   assert.match(
     metadataBlock,
-    /absolute:\s*\n?\s*"Shopify Store Analyzer & Free Store Audit \| EliteVault"/,
+    /absolute:\s*\n?\s*"Shopify Store Analyzer & Store Audit \| EliteVault"/,
   );
-  assert.match(metadataBlock, /"Free AI Shopify store analyzer and store audit\./);
+  assert.match(metadataBlock, /"AI Shopify store analyzer and store audit\./);
   // First keyword wins the most weight; it must be the target.
   const keywords = metadataBlock.match(/keywords:\s*\[([\s\S]*?)\]/);
   assert.ok(keywords, "keywords array");
@@ -99,7 +99,7 @@ test("the repositioned copy exists in both locales", () => {
 
   assert.match(en.hero.badge1, /shopify store analyzer/i);
   assert.match(es.hero.badge1, /analizador shopify/i);
-  assert.equal(`${en.hero.line1} ${en.hero.line2}`, "Free Shopify store audit — find what's costing you sales.");
+  assert.equal(`${en.hero.line1} ${en.hero.line2}`, "Shopify store audit See who's ahead of you and why.");
   assert.match(`${en.hero.line1} ${en.hero.line2}`, /store audit/i);
   assert.match(`${es.hero.line1} ${es.hero.line2}`, /tienda Shopify/);
   assert.match(en.hero.subPre + en.hero.subHighlight, /before you scale traffic — see the exact leaks, ranked by impact/);
