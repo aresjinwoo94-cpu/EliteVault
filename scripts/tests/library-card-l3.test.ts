@@ -155,3 +155,10 @@ test("the Library view no longer prints the 'estimated figures' disclaimer (ther
     assert.doesNotMatch(v.subFree + v.unlockBody, /full metrics|métricas completas|métricas de cada|metrics on every/i, locale);
   }
 });
+
+test("the landing's winners section shows no AI-estimated conversion rate (name, niche and image only)", () => {
+  const src = strip(read("components/marketing/social-proof.tsx"));
+  assert.doesNotMatch(src, /convRate|conv_rate|social\.convRate|estimateDisclaimer|Tooltip/);
+  assert.match(src, /\{s\.title\}/);
+  assert.match(src, /\{s\.niche\}/);
+});

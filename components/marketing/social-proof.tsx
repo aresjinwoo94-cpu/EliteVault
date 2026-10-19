@@ -5,7 +5,6 @@ import { m as motion } from "framer-motion";
 import {
   ArrowRight,
   CreditCard,
-  Info,
   Lock,
   ShieldCheck,
   Sparkles,
@@ -13,11 +12,6 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { DataPill } from "@/components/ui/data-pill";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { COMPANY } from "@/lib/company";
 import { useT } from "@/components/i18n/locale-provider";
 import { fill } from "@/lib/i18n/lookup";
@@ -53,8 +47,6 @@ export interface FeaturedStore {
   title: string;
   niche: string;
   thumbnailUrl: string;
-  /** Real conv_rate metric from winning_sites.metrics, e.g. 4.4 */
-  convRate: number | null;
 }
 
 const TRUST_BADGES: { icon: typeof ShieldCheck; key: string; labelKey: string }[] = [
@@ -113,42 +105,11 @@ export function SocialProof({ stores = [] }: { stores?: FeaturedStore[] }) {
                         {s.niche}
                       </p>
                     </div>
-                    {s.convRate != null && (
-                      <div className="shrink-0 rounded-lg bg-signal-600/10 px-2.5 py-1.5 text-right ring-1 ring-signal-500/20">
-                        <p className="font-mono tabular-nums text-lg leading-none text-signal-300">
-                          {s.convRate}%
-                        </p>
-                        <div className="mt-0.5 flex items-center justify-end gap-1">
-                          <p className="text-[9px] uppercase tracking-wider text-white/40">
-                            {t("social.convRate")}
-                          </p>
-                          <Tooltip>
-                            <TooltipTrigger
-                              aria-label={t("social.convRateTip")}
-                              className="grid size-4 place-items-center rounded-full text-white/40 transition-colors hover:text-white/70 focus:text-white/70 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
-                            >
-                              <Info className="size-3" aria-hidden="true" />
-                            </TooltipTrigger>
-                            <TooltipContent className="max-w-[240px] text-left">
-                              {t("social.convRateTip")}
-                            </TooltipContent>
-                          </Tooltip>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </Card>
               </motion.div>
             ))}
           </div>
-        )}
-
-        {/* Grid-level estimate disclaimer — no third-party conversion figure
-            appears without the word "estimated" nearby and an explanation. */}
-        {stores.length > 0 && (
-          <p className="mx-auto mt-4 max-w-2xl text-center text-xs text-white/35 leading-relaxed">
-            {t("social.estimateDisclaimer")}
-          </p>
         )}
 
         {/* CTA into the Library (post-login default also lands there) */}
