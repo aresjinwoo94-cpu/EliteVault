@@ -53,7 +53,7 @@ export const PLANS: Record<PlanTier, Plan> = {
   free: {
     id: "free",
     name: "Free",
-    tagline: "Audit your store free",
+    tagline: "Start with the diagnosis",
     description:
       "Run one free audit of your own store — overall score, annotated screenshot AND one set of fixes of your choice (most urgent, post-purchase, theme & colors or your niche's top store), unlocked, no credit card. Browse 3 hand-picked winning stores with full metrics and read the community feed. Upgrade to Pro to unlock the rest of your ranked fixes, buyer-persona simulation and unlimited audits.",
     price: { month: 0, year: 0 },
