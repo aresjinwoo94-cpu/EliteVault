@@ -304,7 +304,7 @@ const en: Dict = {
   social: {
     heading: "These stores are crushing it.",
     subheading:
-      "Three winners straight from the EliteVault Library — real stores, hand-picked, with conversion metrics modeled from public signals.",
+      "Three winners straight from the EliteVault Library — real stores, hand-picked.",
     libraryCtaLead: "Want the winners in your niche?",
     libraryCta: "Log in to browse the full Library",
     convRate: "est. conv. rate",
@@ -559,7 +559,7 @@ const en: Dict = {
     badge2: "CURATED, NOT A MOODBOARD",
     heroH1: "A curated library of winning ecommerce stores",
     heroBody:
-      "Browse curated Shopify and DTC stores that stand out in their niche — filter by niche, see modeled metrics, and find the winners structurally closest to yours with image-similarity search. Then audit your own store free.",
+      "Browse curated Shopify and DTC stores that stand out in their niche — filter by niche, see how each one is built, and find the winners structurally closest to yours with image-similarity search. Then audit your own store free.",
     heroCta: "Browse winning stores",
     heroCaption: "3 winners free · no credit card",
     whatH2: "What's inside the library",
@@ -578,9 +578,9 @@ const en: Dict = {
     step1Title: "Find curated winners",
     step1Body:
       "Start from stores proven to convert cold traffic, filtered to your niche — your library of solved problems.",
-    step2Title: "Study the full metrics",
+    step2Title: "Study how they are built",
     step2Body:
-      "See how each winner is built — offer, hero, trust stack and more — with the numbers behind it.",
+      "See how each winner is built — offer, hero, trust stack and more — and open the store itself in one click.",
     step3Title: "Copy the principles, audit yours",
     step3Body:
       "Extract what works, then run a free audit of your own store to see where you stand against them.",
@@ -775,10 +775,10 @@ const en: Dict = {
   plans: {
     free: {
       name: "Free",
-      desc: "Run one free audit of your own store — overall score, annotated screenshot AND one set of fixes of your choice (most urgent, post-purchase, theme & colors or your niche's top store), unlocked, no credit card. Browse 3 hand-picked winning stores with full metrics and read the community feed. Upgrade to Pro to unlock the rest of your ranked fixes, buyer-persona simulation and unlimited audits.",
+      desc: "Run one free audit of your own store — overall score, annotated screenshot AND one set of fixes of your choice (most urgent, post-purchase, theme & colors or your niche's top store), unlocked, no credit card. Browse 3 hand-picked winning stores and read the community feed. Upgrade to Pro to unlock the rest of your ranked fixes, buyer-persona simulation and unlimited audits.",
       f0: "1 free audit: score + annotated screenshot",
       f1: "You choose one type of fixes — unlocked & actionable",
-      f2: "3 hand-picked winning stores with full metrics",
+      f2: "3 hand-picked winning stores",
       f3: "Browse the Community feed",
       f4: "The rest of your ranked fixes + buyer-persona simulation",
       f5: "AI image & text search across 45+ stores",
@@ -790,7 +790,7 @@ const en: Dict = {
       badge: "Most popular",
       desc: "Full Library + brutal Analyzer with annotated screenshots, buyer-persona simulations, and the ability to publish your audits to the Community. Includes 1 Meta campaign projection per month.",
       f0: "Everything in Free",
-      f1: "Unlimited Library with full metrics",
+      f1: "Full Library of winning stores",
       f2: "Image-similarity search",
       f3: "Full Website Analyzer with annotated screenshots",
       f4: "Buyer-persona simulations (all your ranked fixes)",
@@ -1256,7 +1256,7 @@ const es: Dict = {
   social: {
     heading: "Estas tiendas la rompieron.",
     subheading:
-      "Tres ganadoras directas del Library de EliteVault — tiendas reales, seleccionadas a mano, con métricas de conversión modeladas a partir de señales públicas.",
+      "Tres ganadoras directas del Library de EliteVault — tiendas reales, seleccionadas a mano.",
     libraryCtaLead: "¿Quieres ver las ganadoras de tu nicho?",
     libraryCta: "Entra al Library iniciando sesión",
     convRate: "tasa conv. est.",
@@ -1510,7 +1510,7 @@ const es: Dict = {
     badge2: "CURADAS, NO UN MOODBOARD",
     heroH1: "Una librería curada de tiendas ecommerce ganadoras",
     heroBody:
-      "Explora tiendas de Shopify y DTC curadas que destacan en su nicho — filtra por nicho, mira métricas modeladas y encuentra las ganadoras más parecidas a la tuya con búsqueda por similitud de imagen. Luego audita tu propia tienda gratis.",
+      "Explora tiendas de Shopify y DTC curadas que destacan en su nicho — filtra por nicho, mira cómo está construida cada una y encuentra las ganadoras más parecidas a la tuya con búsqueda por similitud de imagen. Luego audita tu propia tienda gratis.",
     heroCta: "Explorar tiendas ganadoras",
     heroCaption: "3 ganadoras gratis · sin tarjeta",
     whatH2: "Qué hay dentro de la librería",
@@ -1529,9 +1529,9 @@ const es: Dict = {
     step1Title: "Encuentra ganadoras curadas",
     step1Body:
       "Parte de tiendas que ya convierten tráfico frío, filtradas a tu nicho — tu librería de problemas resueltos.",
-    step2Title: "Estudia las métricas completas",
+    step2Title: "Estudia cómo están construidas",
     step2Body:
-      "Mira cómo está construida cada ganadora — oferta, hero, stack de confianza y más — con los números detrás.",
+      "Mira cómo está construida cada ganadora — oferta, hero, stack de confianza y más — y abre la tienda en un clic.",
     step3Title: "Copia los principios, audita la tuya",
     step3Body:
       "Extrae lo que funciona y luego corre una auditoría gratis de tu tienda para ver dónde estás frente a ellas.",
@@ -1724,10 +1724,10 @@ const es: Dict = {
   plans: {
     free: {
       name: "Gratis",
-      desc: "Haz una auditoría gratis de tu propia tienda: puntuación global, captura anotada Y un grupo de correcciones a tu elección (lo más urgente, posventa, tema y colores o la tienda líder de tu nicho), desbloqueado y sin tarjeta de crédito. Explora 3 tiendas ganadoras seleccionadas a mano con todas sus métricas y lee el feed de la comunidad. Pasa a Pro para desbloquear el resto de tus correcciones ordenadas, la simulación de buyer persona y auditorías ilimitadas.",
+      desc: "Haz una auditoría gratis de tu propia tienda: puntuación global, captura anotada Y un grupo de correcciones a tu elección (lo más urgente, posventa, tema y colores o la tienda líder de tu nicho), desbloqueado y sin tarjeta de crédito. Explora 3 tiendas ganadoras seleccionadas a mano y lee el feed de la comunidad. Pasa a Pro para desbloquear el resto de tus correcciones ordenadas, la simulación de buyer persona y auditorías ilimitadas.",
       f0: "1 auditoría gratis: puntuación + captura anotada",
       f1: "Eliges un tipo de correcciones — desbloqueado y accionable",
-      f2: "3 tiendas ganadoras seleccionadas a mano con métricas completas",
+      f2: "3 tiendas ganadoras seleccionadas a mano",
       f3: "Explora el feed de la Comunidad",
       f4: "El resto de tus correcciones ordenadas + simulación de buyer persona",
       f5: "Búsqueda por imagen y texto con IA en más de 45 tiendas",
@@ -1739,7 +1739,7 @@ const es: Dict = {
       badge: "Más popular",
       desc: "Biblioteca completa + un Analyzer implacable con capturas anotadas, simulaciones de buyer persona y la opción de publicar tus auditorías en la Comunidad. Incluye 1 proyección de campaña de Meta al mes.",
       f0: "Todo lo de Gratis",
-      f1: "Biblioteca ilimitada con métricas completas",
+      f1: "Biblioteca completa de tiendas ganadoras",
       f2: "Búsqueda por similitud de imagen",
       f3: "Analyzer web completo con capturas anotadas",
       f4: "Simulaciones de buyer persona (todas tus correcciones ordenadas)",

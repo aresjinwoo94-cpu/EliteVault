@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, Lock, TrendingUp } from "lucide-react";
+import { ArrowRight, TrendingUp } from "lucide-react";
 import { AnonAuditBox } from "@/components/marketing/anon-audit-box";
 import { MarketingNav } from "@/components/marketing/nav";
 import { Footer } from "@/components/marketing/footer";
 import { DataPill } from "@/components/ui/data-pill";
 import { getT } from "@/lib/i18n/server";
 import { fill } from "@/lib/i18n/lookup";
-import { Rich } from "@/components/i18n/rich";
 import {
   getNichePage,
   getQualifyingNiches,
@@ -22,13 +21,12 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
  *
  * Long-tail capture ("winning skincare shopify stores", "best beverage
  * shopify stores"…) where the generic listicles don't field a dedicated
- * page. Content is REAL Library data (names, thumbnails, conversion
- * metrics), so each page is substantive, unique and fresh — not doorway
+ * page. Content is REAL Library data (names, thumbnails, niche, a Shopify
+ * badge when verified, a Meta ad count when really measured), so each page is substantive, unique and fresh — not doorway
  * spam. Niches under MIN_STORES 404 until the Library grows.
  *
- * Metrics gating mirrors the product: the top 3 stores show their real
- * conv_rate (same teaser the landing shows); the rest are locked behind
- * sign-in — the page IS the funnel into the Library.
+ * No metrics here: only verifiable facts (see components/library/site-card.tsx). The page is the funnel
+ * into the Library.
  *
  * English on purpose (SEO surface), like the hub page's FAQ.
  */
@@ -45,7 +43,7 @@ export async function generateMetadata(props: {
     title: {
       absolute: `Winning ${meta.label} Shopify Stores (2026) — Real Examples | EliteVault`,
     },
-    description: `A curated list of winning ${meta.plural} on Shopify: real stores with modeled conversion metrics. Study what converts in ${meta.label.toLowerCase()} and audit your own store free.`,
+    description: `A curated list of winning ${meta.plural} on Shopify: real stores, checked automatically. Study what converts in ${meta.label.toLowerCase()} and audit your own store free.`,
     keywords: [
       `winning ${meta.label.toLowerCase()} shopify stores`,
       `best ${meta.label.toLowerCase()} shopify stores`,
@@ -56,7 +54,7 @@ export async function generateMetadata(props: {
     alternates: { canonical: `/winning-shopify-stores/${niche}` },
     openGraph: {
       title: `Winning ${meta.label} Shopify Stores — EliteVault`,
-      description: `Real ${meta.plural} from the EliteVault Library, with modeled metrics.`,
+      description: `Real ${meta.plural} from the EliteVault Library.`,
       type: "website",
       url: `${baseUrl}/winning-shopify-stores/${niche}`,
     },
@@ -74,20 +72,19 @@ export default async function NichePage(props: {
   const others = (await getQualifyingNiches()).filter(
     (n) => n.slug !== page.slug,
   );
-  const teaserCount = 3;
 
   const faqs = [
     {
       q: `What makes a winning ${page.label.toLowerCase()} Shopify store?`,
-      a: `In ${page.label.toLowerCase()}, the stores that convert pair instant offer clarity with category-appropriate trust: strong above-the-fold imagery, visible social proof, and a checkout with no surprises. The ${page.stores.length} ${page.plural} in this list were chosen by an AI assistant and passed automated checks — not picked for looks${page.avgConv != null ? `, and they average a ${page.avgConv}% conversion rate` : ""}.`,
+      a: `In ${page.label.toLowerCase()}, the stores that convert pair instant offer clarity with category-appropriate trust: strong above-the-fold imagery, visible social proof, and a checkout with no surprises. The ${page.stores.length} ${page.plural} in this list were chosen by an AI assistant and passed automated checks — not picked for looks.`,
     },
     {
       q: `How do you verify these ${page.plural} are actually winning?`,
-      a: "We don't claim to audit their books. Candidate stores are proposed by an AI assistant and published only after automated checks (site live, complete listing, niche fit). Conversion rate, CTR and traffic are estimates modeled from public signals — not numbers reported by the brands — and we label them as such.",
+      a: "We don't claim to audit their books. Candidate stores are proposed by an AI assistant and published only after automated checks (site live, complete listing, niche fit). When we show an ad count it is a real Meta Ad Library measurement; we show no conversion or traffic figures we can't verify.",
     },
     {
       q: `Can I compare my store against these ${page.plural}?`,
-      a: "Yes — run a free EliteVault audit on your own URL. You get a conversion score, an annotated screenshot and ranked fixes, plus where you stand against your niche's average. No credit card, nothing to install.",
+      a: "Yes — run an EliteVault audit on your own URL. You get an annotated screenshot and ranked fixes, plus which store in your niche is ahead of you and what it does differently. No credit card, nothing to install.",
     },
   ];
 
@@ -96,7 +93,6 @@ export default async function NichePage(props: {
     label: page.label.toLowerCase(),
     plural: page.plural,
     n: page.stores.length,
-    avg: page.avgConv != null ? fill(t("nichePage.faqAvg"), { pct: page.avgConv }) : "",
   };
 
   const jsonLd = [
@@ -105,7 +101,7 @@ export default async function NichePage(props: {
       "@type": "CollectionPage",
       name: `Winning ${page.label} Shopify Stores`,
       url: `${baseUrl}/winning-shopify-stores/${page.slug}`,
-      description: `Curated winning ${page.plural} on Shopify with modeled conversion metrics.`,
+      description: `Curated winning ${page.plural} on Shopify, checked automatically.`,
     },
     {
       "@context": "https://schema.org",
@@ -165,15 +161,6 @@ export default async function NichePage(props: {
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-white/55 leading-relaxed">
             {fill(t("nichePage.intro"), { n: page.stores.length, plural: page.plural })}
-            {page.avgConv != null && (
-              <>
-                {" "}
-                <Rich
-                  text={fill(t("nichePage.avg"), { pct: page.avgConv })}
-                  tags={{ b: (c) => <span className="text-white/85">{c}</span> }}
-                />
-              </>
-            )}
             {t("nichePage.introEnd")}
           </p>
           {/*
@@ -194,7 +181,7 @@ export default async function NichePage(props: {
           />
         </div>
 
-        {/* Store grid — top 3 show real conv_rate, rest locked (funnel) */}
+        {/* Store grid — name, niche, Shopify badge (verified only) and a Meta ad count (real measurements only). No estimates. */}
         <section className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {page.stores.map((s, i) => (
             <div
@@ -220,41 +207,25 @@ export default async function NichePage(props: {
                 )}
                 <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-obsidian-950/80 to-transparent" />
               </div>
-              <div className="flex items-start justify-between gap-3 p-4">
-                <div className="min-w-0">
-                  <p className="font-medium text-white truncate">{s.title}</p>
-                  <p className="font-mono text-xs text-white/40 truncate">
-                    {s.domain}
-                  </p>
+              <div className="p-4">
+                <p className="font-medium text-white truncate">{s.title}</p>
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="text-xs text-white/45">{page.label}</span>
+                  {s.shopifyVerified && (
+                    <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-white/55">
+                      Shopify
+                    </span>
+                  )}
                 </div>
-                {i < teaserCount && s.convRate != null ? (
-                  <div className="shrink-0 rounded-lg bg-signal-600/10 px-2.5 py-1.5 text-right ring-1 ring-signal-500/20">
-                    <p className="font-mono tabular-nums text-base leading-none text-signal-300">
-                      {s.convRate}%
-                    </p>
-                    <p className="mt-0.5 text-[11px] uppercase tracking-wider text-white/40">
-                      {t("nichePage.estConv")}
-                    </p>
-                  </div>
-                ) : (
-                  <Link
-                    href="/sign-in?next=/app/library"
-                    className="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2 min-h-11 text-xs text-white/45 transition-colors hover:text-white/70"
-                  >
-                    <Lock className="size-3" />
-                    {t("nichePage.metrics")}
-                  </Link>
+                {s.measuredAds !== null && (
+                  <p className="mt-2 text-[11px] text-white/55">
+                    {fill(t("siteCard.metaAds"), { n: s.measuredAds })}
+                  </p>
                 )}
               </div>
             </div>
           ))}
         </section>
-
-        {/* Estimate disclaimer — conversion figures are modeled from public
-            signals, never brand-reported. Keep it adjacent to the numbers. */}
-        <p className="mt-4 text-center text-xs text-white/35 leading-relaxed">
-          {t("nichePage.estimateNote")}
-        </p>
 
         {/* CTA into the Library */}
         <section className="mt-12 rounded-3xl border border-signal-500/20 bg-signal-600/[0.04] p-8 text-center">

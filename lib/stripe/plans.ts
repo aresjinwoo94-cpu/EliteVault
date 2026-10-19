@@ -55,7 +55,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     name: "Free",
     tagline: "Start with the diagnosis",
     description:
-      "Run one free audit of your own store — overall score, annotated screenshot AND one set of fixes of your choice (most urgent, post-purchase, theme & colors or your niche's top store), unlocked, no credit card. Browse 3 hand-picked winning stores with full metrics and read the community feed. Upgrade to Pro to unlock the rest of your ranked fixes, buyer-persona simulation and unlimited audits.",
+      "Run one free audit of your own store — overall score, annotated screenshot AND one set of fixes of your choice (most urgent, post-purchase, theme & colors or your niche's top store), unlocked, no credit card. Browse 3 hand-picked winning stores and read the community feed. Upgrade to Pro to unlock the rest of your ranked fixes, buyer-persona simulation and unlimited audits.",
     price: { month: 0, year: 0 },
     stripePriceIds: {},
     // monthlyCredits stays 0: paid plans renew credits monthly via the
@@ -74,7 +74,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     features: [
       { text: "1 free audit: score + annotated screenshot", included: true, highlight: true },
       { text: "You choose one type of fixes — unlocked & actionable", included: true, highlight: true },
-      { text: "3 hand-picked winning stores with full metrics", included: true },
+      { text: "3 hand-picked winning stores", included: true },
       { text: "Browse the Community feed", included: true },
       { text: "The rest of your ranked fixes + buyer-persona simulation", included: false },
       { text: "AI image & text search across 45+ stores", included: false },
@@ -103,7 +103,7 @@ export const PLANS: Record<PlanTier, Plan> = {
     highlight: true,
     features: [
       { text: "Everything in Free", included: true },
-      { text: "Unlimited Library with full metrics", included: true },
+      { text: "Full Library of winning stores", included: true },
       { text: "Image-similarity search", included: true },
       {
         text: "Full Website Analyzer with annotated screenshots",
