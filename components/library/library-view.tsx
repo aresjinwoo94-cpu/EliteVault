@@ -357,14 +357,6 @@ export function LibraryView({
               )}
             </motion.div>
 
-            {/* Estimate disclaimer — the CTR/ROI/conv./traffic figures on every
-                card are modeled from public traffic and behavior signals, not
-                numbers the brands report. Say so once, plainly, under the grid. */}
-            {displayItems.length > 0 && (
-              <p className="mt-6 text-center text-xs text-white/35 leading-relaxed">
-                {t("libraryView.metricsNote")}
-              </p>
-            )}
           </>
         );
 
