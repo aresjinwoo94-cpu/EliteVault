@@ -183,20 +183,20 @@ const CHIPS = [
 function CompetitorChart() {
   const { t } = useT();
   const X = [8, 53.6, 99.2, 144.8, 190.4, 236];
-  const TOP = [108, 102, 96, 76, 52, 28];
-  const YOU = [90, 92, 95, 100, 106, 112];
+  const TOP = [76, 72, 68, 54, 36, 18];
+  const YOU = [64, 66, 68, 72, 76, 80];
   const pts = (ys: number[]) => ys.map((y, i) => `${X[i]},${y}`).join(" ");
   const topLine = pts(TOP);
   const youLine = pts(YOU);
-  const baseline = 128;
+  const baseline = 92;
   const topFill = `${X[0]},${baseline} ${topLine} ${X[5]},${baseline}`;
   // area between the lines over the right half (indices 3..5)
   const gap = [3, 4, 5].map((i) => `${X[i]},${TOP[i]}`).join(" ") + " " + [5, 4, 3].map((i) => `${X[i]},${YOU[i]}`).join(" ");
   const gapY = (TOP[4] + YOU[4]) / 2;
   return (
     <svg
-      viewBox="0 0 320 140"
-      className="block h-auto w-full"
+      viewBox="0 0 320 100"
+      className="block h-auto max-h-[112px] w-full"
       role="img"
       aria-label={t("collage.compAria")}
     >

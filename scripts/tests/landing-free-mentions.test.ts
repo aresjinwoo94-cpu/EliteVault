@@ -78,7 +78,7 @@ test("the diagram shows the report v2: no 0-100 score; a competitor card with a 
   assert.match(collage, /collage\.compGap/);
   assert.match(collage, /collage\.compTopEnd/);
   assert.match(collage, /collage\.compYouEnd/);
-  assert.match(collage, /<svg\s+viewBox="0 0 320 140"/, "ONE inline SVG chart");
+  assert.match(collage, /<svg\s+viewBox="0 0 320 100"/, "ONE inline SVG chart");
   assert.equal((collage.match(/<polyline/g) ?? []).length, 2, "two lines on the same axes");
   assert.match(collage, /strokeDasharray="5 5"/, "your store: dashed");
   assert.match(collage, /strokeWidth="3"/, "top store: thick line");
