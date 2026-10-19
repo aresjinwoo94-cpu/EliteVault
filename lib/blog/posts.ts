@@ -573,10 +573,10 @@ ${finalVideo}
   },
   {
     slug: "is-your-store-ready-for-meta-ads",
-    title: "Is Your Store Ready for Meta Ads? A 6-Point Checklist",
-    h1: "Is your store ready for Meta ads? A 6-point checklist before you spend a dollar",
+    title: "Is My Store Ready for Meta Ads? A 6-Point Readiness Check",
+    h1: "Is your store ready for Meta ads? A 6-point check, with a pass test for each",
     description:
-      "Before you fund a Meta campaign, run your store through this 6-point readiness check — offer clarity, trust, imagery, speed and more. How to diagnose each, and a free 60-second audit.",
+      "Is my store ready for Meta ads? Six pass-or-fail checks on offer, trust, imagery, friction and mobile speed, plus the Meta-side setup to confirm first.",
     keyword: "is my store ready for meta ads",
     keywords: [
       "is my store ready for meta ads",
@@ -587,47 +587,101 @@ ${finalVideo}
       "shopify store facebook ads checklist",
     ],
     date: "2026-08-03",
+    updated: "2026-10-19",
     author: "Ariel Jiménez",
     readingMinutes: 7,
     video: FINAL_VIDEO_META,
     excerpt:
-      "Meta will happily spend your budget sending strangers to a store that leaks them. The 6-point readiness check to run before you fund a campaign — and how to diagnose each.",
+      "Six pass-or-fail checks to run before you fund a Meta campaign, what to do when one fails, and the tracking basics to confirm on the Meta side.",
     bodyHtml: `
-<p class="lede">Almost every solo founder makes the same expensive mistake: launch the campaign first, find out the store can't convert cold traffic second. Meta will happily spend your budget sending strangers to a page that leaks them — running paid traffic to a store that can't convert is pouring water into a bucket with a hole in the bottom. Your store is ready when a cold visitor gets the offer in two seconds, trusts you enough to buy, and hits no friction on mobile. Here are the six things to check first, and how to diagnose each one fast.</p>
-<p>This matters most when your product is a <em>want</em>, not a <em>need</em> — apparel, jewelry, skincare, home decor, candles, accessories. The buyer isn't solving an urgent problem; they're deciding in the first two seconds whether they trust and desire your brand. Cold Meta traffic is the harshest test of that, and design <em>is</em> the sale.</p>
-<h2>1. The offer isn't clear in the first 2 seconds</h2>
-<p>If a stranger can't tell what you sell and why it's for them before scrolling, they bounce — and cold traffic gives you nothing longer than a couple of seconds. <strong>Diagnose:</strong> show your homepage to someone who's never seen it for two seconds, then ask what you sell and who it's for. If they hesitate, this is costing you the most.</p>
-<h2>2. One offer, one CTA — or decision fatigue</h2>
-<p>A landing page with competing offers, full navigation and a dozen directions creates friction at exactly the wrong moment. Paid traffic wants one obvious next step. <strong>Diagnose:</strong> open your page on mobile and count the number of things asking for a tap above the fold. More than one primary action? Cut.</p>
-<h2>3. No trust, or trust hidden below the fold</h2>
-<p>A stranger from an ad has zero prior relationship with you — visible proof is what earns the first purchase. <strong>Diagnose:</strong> can a buyer see reviews, a return policy and secure-checkout signals <em>near the buy button</em>? If trust lives only in the footer, it doesn't exist. More on this in <a href="/blog/why-your-shopify-store-isnt-converting">why your store isn't converting</a>.</p>
-<h2>4. Imagery that doesn't fit your niche</h2>
-<p>What converts in skincare kills conversion in supplements. Generic dropship-template visuals read as risky to cold buyers. <strong>Diagnose:</strong> put your hero next to two winning stores in your exact niche. If yours looks like a template and theirs look like brands, that gap is your cost per purchase.</p>
-<h2>5. Friction between "interested" and "bought"</h2>
-<p>Confusing variants, hidden shipping, forced account creation, a clunky mobile checkout — every one is a place paid traffic quietly drops off. <strong>Diagnose:</strong> complete a purchase on your own store on mobile and count the taps and surprises. Each one is an exit.</p>
-<h2>6. A slow store on mobile</h2>
-<p>Every second of load past three seconds burns traffic you paid for, and mobile — where Meta lives — is least forgiving. <strong>Diagnose:</strong> run a free PageSpeed Insights test on mobile. LCP over ~2.5s? Fix heavy images and apps before you spend.</p>
-<h2>Readiness first, forecast second</h2>
-<p>You don't need perfection to start — you need a store that doesn't fight the campaign. Once it can take the traffic, model the campaign before you fund it: the <a href="/meta-ads-forecast">Meta Ads scenario modeler</a> projects a 7-day campaign across conservative, balanced and aggressive cases from your AOV and budget, so you spend knowing the floor, not just the dream. And if the clicks are already coming but not converting, start with <a href="/blog/why-meta-ads-arent-converting">why your Meta ads aren't converting</a>.</p>
-<h2>The fastest way to know</h2>
-<p>You could check all six by hand — or get a senior-media-buyer read of your store in under a minute. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=is-your-store-ready-for-meta-ads">EliteVault's free audit</a> annotates your homepage with the exact issues from this list, scores your readiness across the six categories, simulates how a buyer persona reacts, and ranks what to fix first by leverage — free, no card. When you know which leak is yours, fixing it before you spend is the easy part.</p>
+<p class="lede">Is my store ready for Meta ads? Yes, when a cold visitor understands the offer in about two seconds, finds enough proof to trust you, and reaches the purchase without friction on a phone. Six checks cover that, and each has a pass test you can run yourself before you spend a dollar. A store that fails them doesn't need better ads; it needs repairs first.</p>
+${finalVideo}
+<p>Before the checks, watch the comparison in the video: a real store with weak ad returns beside a top store in its niche. That is the right frame for readiness, because a cold shopper from Meta isn't judging your store alone, but against the one they were looking at a minute ago. The goal is a store that holds up in that comparison, and the checks below tell you where it doesn't.</p>
+<p>This matters most when the product is a want rather than a need: apparel, jewelry, skincare, home decor, candles, accessories. The buyer isn't solving an urgent problem, so trust, desire and ease decide the sale, and cold traffic is the hardest test of all three. Want a quick read of your store before you start? <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=is-your-store-ready-for-meta-ads">Run the audit on your store →</a></p>
+
+<h2>What should be in place on the Meta side first?</h2>
+<p>The six checks are about your store, but they assume Meta can see what happens on it. Confirm two things before anything else:</p>
+<ul>
+<li><strong>The Meta Pixel is installed and firing.</strong> Meta's page on how to <a href="https://www.facebook.com/business/help/952192354843755" rel="nofollow">set up and install the Meta Pixel</a> is the place to start. Without purchase events, a campaign can't learn who buys.</li>
+<li><strong>Server-side events as a backup.</strong> Meta describes its <a href="https://developers.facebook.com/docs/marketing-api/conversions-api/" rel="nofollow">Conversions API</a> as a connection between your marketing data and Meta, and notes that if you already have a Pixel you can set it up alongside. Server-side events don't depend on the visitor's browser, so they give Meta a second signal.</li>
+</ul>
+<p>When tracking works, the next question is whether the store deserves the traffic. That is what the scorecard below answers.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 436" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="d3a-title d3a-desc"><title id="d3a-title">Readiness scorecard: six checks</title><desc id="d3a-desc">A list of six numbered checks, each with a pass test. 1 offer in two seconds, 2 one offer and one action, 3 trust near the button, 4 imagery fits the niche, 5 easy path to purchase, 6 fast on mobile. Below it, our rule of thumb: six of six means launch a small test, four to five means fix the failures then launch, three or fewer means hold the budget.</desc>
+<rect x="0.5" y="0.5" width="299" height="47" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><circle cx="20" cy="24" r="10" fill="#2DD4BF"/><text x="20" y="29" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">1</text><text x="42" y="21" font-size="14" font-weight="600" fill="#ffffff">Offer in two seconds</text><text x="42" y="40" font-size="14" fill="rgba(255,255,255,0.6)">Pass: a stranger says what you sell</text><rect x="0.5" y="54.5" width="299" height="47" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><circle cx="20" cy="78" r="10" fill="#2DD4BF"/><text x="20" y="83" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">2</text><text x="42" y="75" font-size="14" font-weight="600" fill="#ffffff">One offer, one action</text><text x="42" y="94" font-size="14" fill="rgba(255,255,255,0.6)">Pass: one main tap above the fold</text><rect x="0.5" y="108.5" width="299" height="47" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><circle cx="20" cy="132" r="10" fill="#2DD4BF"/><text x="20" y="137" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">3</text><text x="42" y="129" font-size="14" font-weight="600" fill="#ffffff">Trust near the button</text><text x="42" y="148" font-size="14" fill="rgba(255,255,255,0.6)">Pass: reviews and returns in view</text><rect x="0.5" y="162.5" width="299" height="47" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><circle cx="20" cy="186" r="10" fill="#2DD4BF"/><text x="20" y="191" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">4</text><text x="42" y="183" font-size="14" font-weight="600" fill="#ffffff">Imagery fits the niche</text><text x="42" y="202" font-size="14" fill="rgba(255,255,255,0.6)">Pass: brand look, not a template</text><rect x="0.5" y="216.5" width="299" height="47" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><circle cx="20" cy="240" r="10" fill="#2DD4BF"/><text x="20" y="245" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">5</text><text x="42" y="237" font-size="14" font-weight="600" fill="#ffffff">Easy path to purchase</text><text x="42" y="256" font-size="14" fill="rgba(255,255,255,0.6)">Pass: no surprises on mobile</text><rect x="0.5" y="270.5" width="299" height="47" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><circle cx="20" cy="294" r="10" fill="#2DD4BF"/><text x="20" y="299" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">6</text><text x="42" y="291" font-size="14" font-weight="600" fill="#ffffff">Fast on mobile</text><text x="42" y="310" font-size="14" fill="rgba(255,255,255,0.6)">Pass: LCP of 2.5 s or less</text><rect x="0.5" y="338.5" width="299" height="91" rx="8" fill="rgba(45,212,191,0.08)" stroke="#2DD4BF"/><text x="14" y="362" font-size="14" font-weight="600" fill="#2DD4BF">Our rule of thumb</text><text x="14" y="384" font-size="14" fill="rgba(255,255,255,0.85)">6 of 6: launch a small test</text><text x="14" y="404" font-size="14" fill="rgba(255,255,255,0.85)">4 to 5: fix the fails, then launch</text><text x="14" y="424" font-size="14" fill="rgba(255,255,255,0.85)">0 to 3: hold the budget</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Score your own store: one point per pass. The thresholds are our rule of thumb, not a Meta requirement.</figcaption>
+</figure>
+
+<h2>1. Can a stranger tell what you sell in two seconds?</h2>
+<p><strong>Pass test:</strong> show your home page, or your ad landing page, to someone who has never seen it for two seconds, then ask what you sell and who it is for. They should answer without hesitating.</p>
+<p><strong>If it fails:</strong> rewrite the top of the page as one concrete promise and show the product in use. A cold click has very little time to make sense, and if this check fails, nothing below it can work.</p>
+
+<h2>2. Is there one offer and one clear action?</h2>
+<p><strong>Pass test:</strong> open the page on your phone and count the things asking for a tap above the fold. One primary action passes. A full navigation bar, three banners and two buttons does not.</p>
+<p><strong>If it fails:</strong> send the campaign to a page built for it, with one offer and one call to action, and hide or simplify the menu. Paid traffic wants a single obvious next step.</p>
+
+<h2>3. Is trust visible near the buy button?</h2>
+<p><strong>Pass test:</strong> on your phone, can a buyer see reviews, a returns promise and payment or security cues next to the Add to cart button, without scrolling away? A stranger from an ad has no history with you, so visible proof is what earns the first purchase. Trust is also a real abandonment reason: in Baymard's survey, <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">19% of shoppers who left</a> cited not trusting the site with their card information.</p>
+<p><strong>If it fails:</strong> put the proof next to the button (stars, a review count and a returns line) and show only the payment marks you really accept. A wall of generic badges looks like decoration; keep it few and honest.</p>
+
+<h2>4. Do the images and the look fit your niche?</h2>
+<p><strong>Pass test:</strong> place your hero next to the home pages of two strong stores in your exact niche. If yours reads as a brand and theirs read as brands, you pass. If yours reads as a template, you don't. What converts in skincare doesn't convert in supplements, and generic drop-ship visuals read as risky to cold buyers.</p>
+<p><strong>If it fails:</strong> replace stock and supplier images with your own, match the visual conventions of your niche and write copy in your buyer's language. Our guide to <a href="/blog/reverse-engineer-winning-shopify-stores">reverse-engineering winning Shopify stores</a> shows how to study what the leaders do.</p>
+
+<h2>5. Is the path from interest to purchase easy?</h2>
+<p><strong>Pass test:</strong> complete a purchase on your own store, on a phone, and count the taps, the form fields and the surprises. Confusing variants, hidden shipping, forced account creation and a clunky mobile checkout each quietly end sessions. Baymard's survey puts the most common reasons at <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">extra costs (40%)</a>, a required account (18%) and a checkout that was too long or complicated (17%).</p>
+<p><strong>If it fails:</strong> show shipping and the total early, offer guest checkout and turn on the express payment options your market uses. Our guide to <a href="/blog/abandoned-cart-recovery">abandoned cart recovery</a> covers the flow for shoppers who leave anyway.</p>
+
+<h2>6. Is the store fast on mobile?</h2>
+<p><strong>Pass test:</strong> run your landing page through <a href="https://pagespeed.web.dev/" rel="nofollow">PageSpeed Insights</a> on mobile. Google's <a href="https://web.dev/articles/lcp" rel="nofollow">web.dev guidance</a> treats a Largest Contentful Paint of 2.5 seconds or less as good, and above 4.0 seconds as poor. Meta itself cares about this step: when it introduced the landing page views metric, it said that <a href="https://about.fb.com/news/2017/06/better-understand-interactions/" rel="nofollow">slow-loading mobile sites or poor connections</a> cause many people to lose interest, and counted visitors who actually arrive after a click, not only the clicks.</p>
+<p><strong>If it fails:</strong> start with the heaviest image on the page, then drop the apps you don't use; the full list of fixes is in our diagnosis guide on <a href="/blog/why-your-shopify-store-isnt-converting">why a Shopify store isn't converting</a>. You paid for the click; a page that doesn't load wastes it.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 384" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="d3b-title d3b-desc"><title id="d3b-title">Where a paid click breaks</title><desc id="d3b-desc">A vertical path from ad click to purchase. The page loads: check 6. The offer lands: checks 1 and 2. The shopper trusts you: checks 3 and 4. The path is smooth: check 5. Then purchase.</desc>
+<rect x="0.5" y="0.5" width="299" height="35" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="24" font-size="14" font-weight="600" fill="#ffffff">Someone clicks your ad</text><path d="M150 36 L150 51" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 49 L150 56 L155 49 Z" fill="#2DD4BF"/><rect x="0.5" y="56.5" width="299" height="51" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="78" font-size="14" font-weight="600" fill="#ffffff">The page loads</text><text x="14" y="98" font-size="14" fill="#2DD4BF">Check 6: speed on mobile</text><path d="M150 108 L150 123" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 121 L150 128 L155 121 Z" fill="#2DD4BF"/><rect x="0.5" y="128.5" width="299" height="51" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="150" font-size="14" font-weight="600" fill="#ffffff">The offer lands</text><text x="14" y="170" font-size="14" fill="#2DD4BF">Checks 1 and 2: offer, one action</text><path d="M150 180 L150 195" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 193 L150 200 L155 193 Z" fill="#2DD4BF"/><rect x="0.5" y="200.5" width="299" height="51" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="222" font-size="14" font-weight="600" fill="#ffffff">The shopper trusts you</text><text x="14" y="242" font-size="14" fill="#2DD4BF">Checks 3 and 4: proof, imagery</text><path d="M150 252 L150 267" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 265 L150 272 L155 265 Z" fill="#2DD4BF"/><rect x="0.5" y="272.5" width="299" height="51" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="294" font-size="14" font-weight="600" fill="#ffffff">The path is smooth</text><text x="14" y="314" font-size="14" fill="#2DD4BF">Check 5: variants, cost, checkout</text><path d="M150 324 L150 339" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 337 L150 344 L155 337 Z" fill="#2DD4BF"/><rect x="0.5" y="344.5" width="299" height="35" rx="8" fill="rgba(45,212,191,0.14)" stroke="#2DD4BF"/><text x="14" y="368" font-size="14" font-weight="600" fill="#ffffff">Purchase</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Every paid click has to clear the same four steps in order. A failure early on hides everything behind it.</figcaption>
+</figure>
+
+<h2>Three mistakes that make a store look ready when it isn't</h2>
+<ul>
+<li><strong>Scoring the wrong page.</strong> Run the checks on the page the ad lands on, which may be a product page or a collection, not on your home page. Cold shoppers never see the page you polished.</li>
+<li><strong>Asking people who know your brand.</strong> Friends and past customers already trust you. Use someone who has never heard of the store, or look at it through the eyes of one.</li>
+<li><strong>Checking only on a desktop.</strong> Most of the harm happens on phones, so repeat checks 2, 3, 5 and 6 on a real phone, on mobile data rather than office Wi-Fi.</li>
+</ul>
+<p>Score honestly, because a generous score only moves the failure into your ad spend.</p>
+
+<h2>How do you read your score?</h2>
+<p>Give yourself one point per pass. At six, launch a small test with a budget you can afford to lose, because readiness doesn't guarantee results; it only removes the avoidable leaks. At four or five, fix the failures first, in the order the path shows: speed (6), then the offer (1 and 2), then trust and imagery (3 and 4), then the purchase path (5), because a failure early on hides everything behind it. At three or fewer, hold the budget: more clicks would only buy you a faster look at the same problems.</p>
+<p>You don't need a perfect store to start. You need one that doesn't fight the campaign. Once it can take the traffic, model the outcome before you fund it: the <a href="/meta-ads-forecast">Meta Ads scenario modeler</a> projects a 7-day campaign across conservative, balanced and aggressive cases from your average order value and budget, so you spend knowing the floor, not just the dream.</p>
+
+<h2>What does a failed check look like in the numbers?</h2>
+<p>Each check leaves a trace you can find after launch, which is why the scorecard is worth keeping. A fail on check 6 shows up as many link clicks and far fewer landing page views. A fail on checks 1 to 4 shows up as landing page views with almost no add-to-carts. A fail on check 5 shows up as add-to-carts and checkout starts that never become orders. If your results later match one of those patterns, you already know which line of the scorecard to reopen.</p>
+
+<h2>What if the store passes and the ads still don't convert?</h2>
+<p>Then the diagnosis changes. Meta documents a <a href="https://www.facebook.com/business/help/112167992830700" rel="nofollow">learning phase</a> in its help center. Read what it says before you judge a campaign's first days, and check that the Pixel and server events match your real orders. If clicks keep coming without sales after that, work through <a href="/blog/why-meta-ads-arent-converting">why Meta ads aren't converting</a>, which separates ad problems from page problems, and look at the <a href="/blog/best-shopify-tools-increase-roas-2026">Shopify tools that raise ROAS</a> for the part of the stack that is weakest.</p>
+
+<h2>Make your store the one cold shoppers choose</h2>
+<p>Passing the checklist makes you ready, not unbeatable. What sets a store apart is what it makes easier than the one next to it, so keep the comparison going: put your page next to the top store in your niche, on a phone, and write down what they do better. Our <a href="/">Shopify store audit</a> annotates your pages with the issues from this list and ranks the fixes by impact (ours — full disclosure). <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=is-your-store-ready-for-meta-ads">Run the audit on your store →</a></p>
 `.trim(),
     faqs: [
       {
         q: "How do I know if my store is ready for Meta ads?",
-        a: "Your store is ready when a cold visitor understands the offer in about two seconds, trusts you enough to buy, and hits no friction on mobile. Score those six things with a free 60-second audit instead of guessing.",
+        a: "Your store is ready when a cold visitor understands the offer in about two seconds, sees enough proof to trust you and reaches the purchase without friction on mobile. Run the six pass tests in this guide: offer clarity, one action, trust near the button, niche-fit imagery, an easy path to purchase and mobile speed.",
       },
       {
         q: "Should I fix my store or run ads first?",
-        a: "Fix the store first. Ads can't fix a conversion problem — they expose it faster and more expensively. Audit the store, fix the top leaks, then launch.",
+        a: "Fix the store first. Ads don't create conversions; they send traffic to whatever conversion rate you already have, so a leaky store just makes the leak more expensive. Score the six checks, repair the failures and launch a small test.",
       },
       {
-        q: "Why am I getting clicks from my ads but no sales?",
-        a: "Clicks without sales is almost always a post-click problem, not an ad problem: an unclear offer, weak trust, a slow mobile page, or a design that reads as risky to strangers. Sending more traffic into a leaky store won't fix it.",
+        q: "How much does a store need to convert before running Meta ads?",
+        a: "There is no universal threshold, and any single number would mislead because it depends on price, niche and traffic quality. Use your break-even math instead: work out the conversion rate your margins need, then model it with the scenario modeler before you fund a campaign.",
       },
       {
-        q: "Does store design really affect ad performance?",
-        a: "Yes — heavily, especially for want-not-need niches like fashion, beauty and decor. Cold traffic judges design in seconds, so a weak first impression or off-niche imagery raises your cost per purchase no matter how good the creative is.",
+        q: "Do I need the Meta Pixel before I run ads?",
+        a: "Yes. The Pixel reports events such as purchases to Meta, which a campaign needs in order to optimize. Meta also offers the Conversions API for server-side events that can be set up alongside the Pixel. Confirm both report your real orders before you spend.",
+      },
+      {
+        q: "Does store design really affect Meta ad performance?",
+        a: "Yes, especially for want-not-need products. Cold traffic judges a page in seconds, so a template look, unclear offer or weak proof raises the cost of each purchase no matter how good the ad creative is.",
       },
     ],
   },
@@ -850,10 +904,10 @@ ${finalVideo}
   },
   {
     slug: "why-meta-ads-arent-converting",
-    title: "Why Your Meta Ads Aren't Converting (It's Not Your Ads) — 2026",
-    h1: "Your Meta ads aren't broken — your store is (and your media buyer won't say it)",
+    title: "Why Meta Ads Aren't Converting: Is It the Ad or Your Store?",
+    h1: "Why Meta ads aren't converting: how to tell if it's the ad or your store, and what to fix",
     description:
-      "Your Meta ads aren't converting and it isn't your targeting. The real reason is your store. Here's how to diagnose the landing-page leak before you burn another dollar.",
+      "Why Meta ads not converting? Tell an ad problem from a page problem with CTR and conversion, then check five store-side leaks and your tracking.",
     keyword: "why meta ads not converting",
     keywords: [
       "why meta ads not converting",
@@ -864,63 +918,117 @@ ${finalVideo}
       "fix facebook ads conversions",
     ],
     date: "2026-06-17",
+    updated: "2026-10-19",
     author: "Ariel Jiménez",
-    readingMinutes: 8,
+    readingMinutes: 7,
     video: FINAL_VIDEO_META,
     excerpt:
-      "Clicks but no sales? The leak already moved past the ad. Here's how to find the store-side leak before you spend another dollar.",
+      "Clicks but no sales? A two-metric test to tell the ad from the page, the five store-side leaks that waste paid clicks, and what to check on the Meta side first.",
     bodyHtml: `
-<p class="lede">When the sales don't come, the media buyer reaches for the same three words every time: "scale the testing." More creatives, more audiences, more budget. There's a reason that's the answer — and it's not the one that fixes your ROAS.</p>
-<p>If your ads get clicks but the cart stays empty, the problem has already moved past the ad. The ad did its one job: it got a stranger to your store. What happened next — the bounce, the hesitation, the closed tab — happened on <em>your</em> page. But "your store is the problem" is a hard thing to hear from someone you're paying to run your ads, so most won't lead with it.</p>
+<p class="lede">The short answer to "why Meta ads not converting" is that the ad did its job and something after the click didn't. Compare two numbers, click-through rate and conversion on the store, and you can tell whether the problem is the ad, the page or both. Most of the time, cheap clicks with no sales point at the page, not the targeting.</p>
+${finalVideo}
+<p>In the video, the page side of that story: a real store with weak ad returns beside a top store in its niche. Keep that comparison in mind while you read. Your ad isn't competing with other ads once the click happens; it is competing with every other tab the shopper has open.</p>
 <blockquote>An ad can only sell the click. The store has to sell the product.</blockquote>
-<h2>The tell: clicks vs. conversions</h2>
-<p>You can diagnose where the leak is with one distinction most founders blur together:</p>
-<table><thead><tr><th>Symptom</th><th>Where the leak is</th></tr></thead><tbody>
-<tr><td>Expensive clicks, high CPM</td><td>Ad-side: creative or targeting</td></tr>
-<tr><td>Cheap clicks, no conversions</td><td>Store-side: landing experience</td></tr>
-<tr><td>People add to cart, then vanish</td><td>Checkout: friction or trust</td></tr>
+
+<h2>Is it the ad or the page?</h2>
+<p>You can split the diagnosis with two numbers most founders blur together. The ad's click-through rate tells you whether people respond to the message. The store's conversion rate tells you whether the page turns those visits into orders. Put them in a grid and the pattern shows.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 274" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="d4a-title d4a-desc"><title id="d4a-title">Ad or page? Click-through rate against conversion</title><desc id="d4a-desc">A two-by-two grid. Low click-through rate with high conversion is an ad problem: the page sells but few click, so fix the ad. High with high is working: scale slowly and keep testing. Low click-through rate with low conversion means both leak: fix the page first, then the ads. High click-through rate with low conversion is a page problem: the ad wins the click and the store loses it.</desc>
+<text x="93" y="16" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Low CTR</text><text x="231" y="16" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">High CTR</text><text transform="translate(12 86) rotate(-90)" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">High conv.</text><text transform="translate(12 206) rotate(-90)" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Low conv.</text><rect x="28.5" y="26.5" width="129" height="111" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="38" y="52" font-size="14" font-weight="600" fill="#ffffff">Ad problem</text><text x="38" y="76" font-size="14" fill="rgba(255,255,255,0.6)">Page sells,</text><text x="38" y="96" font-size="14" fill="rgba(255,255,255,0.6)">few clicks:</text><text x="38" y="116" font-size="14" fill="rgba(255,255,255,0.6)">fix the ad</text><rect x="166.5" y="26.5" width="129" height="111" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="176" y="52" font-size="14" font-weight="600" fill="#ffffff">Working</text><text x="176" y="76" font-size="14" fill="rgba(255,255,255,0.6)">Scale slowly,</text><text x="176" y="96" font-size="14" fill="rgba(255,255,255,0.6)">keep testing</text><rect x="28.5" y="146.5" width="129" height="111" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="38" y="172" font-size="14" font-weight="600" fill="#ffffff">Both leak</text><text x="38" y="196" font-size="14" fill="rgba(255,255,255,0.6)">Fix the page</text><text x="38" y="216" font-size="14" fill="rgba(255,255,255,0.6)">first, then ads</text><rect x="166.5" y="146.5" width="129" height="111" rx="8" fill="rgba(45,212,191,0.12)" stroke="#2DD4BF" stroke-width="2"/><text x="176" y="172" font-size="14" font-weight="600" fill="#2DD4BF">Page problem</text><text x="176" y="196" font-size="14" fill="rgba(255,255,255,0.6)">Ad wins the click,</text><text x="176" y="216" font-size="14" fill="rgba(255,255,255,0.6)">store loses it</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">CTR is the click-through rate on the ad; conversion is purchases per session on the store. Compare against your own account's averages, not a universal number.</figcaption>
+</figure>
+<p>Read it like this. Low CTR with a page that converts means the ad isn't earning clicks, so work on creative and audience. High CTR and low conversion means the ad is doing its job and the store is losing the shopper. If both are low, fix the page first, because better ads would only feed the same leak. The labels use your own account's averages as the yardstick; there is no honest universal threshold, so skip any article that gives you one.</p>
+<p>If the page is the suspect, you can see where it leaks without reading every screen. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=why-meta-ads-arent-converting">Run the audit on your store →</a></p>
+
+<h2>What do the metrics between click and purchase tell you?</h2>
+<p>Work through the numbers in order. Each one points at a different stage:</p>
+<table><thead><tr><th>Metric or symptom</th><th>Where the leak is</th></tr></thead><tbody>
+<tr><td>Expensive clicks, low CTR</td><td>The ad: creative, hook or audience</td></tr>
+<tr><td>Many link clicks, far fewer landing page views</td><td>Page speed or tracking: people click and never see the page</td></tr>
+<tr><td>Landing page views, few add-to-carts</td><td>The landing experience: offer, trust, product page</td></tr>
+<tr><td>Add-to-carts, few checkouts started</td><td>Surprise costs or a confusing cart</td></tr>
+<tr><td>Checkouts started, few purchases</td><td>Checkout friction or trust</td></tr>
 </tbody></table>
-<p>If you're getting cheap clicks and still no sales, throwing more money at audiences and creatives is like fixing a leaky bucket by pouring in more water. The water (traffic) was never the issue.</p>
-<h2>The 5 store-side leaks that kill paid traffic</h2>
+<p>The second row deserves attention. Meta introduced the landing page views metric to count <a href="https://about.fb.com/news/2017/06/better-understand-interactions/" rel="nofollow">visitors who actually arrive at your website after a link click</a>, and said at the time that slow-loading mobile sites or poor connections cause many people to lose interest. A big gap between clicks and landing page views is a speed or tracking problem, and no creative test will close it.</p>
+
+<h2>An illustrative example: reading one week of data</h2>
+<p>These numbers are invented to show the method. Say a campaign delivers 1,000 link clicks, but only 700 landing page views. Three hundred people clicked and never saw your page, so the first job is speed and tracking, not copy. Of those 700, 14 add to cart and 4 buy. Fourteen carts from 700 views is a weak landing experience: the offer, the trust or the product page isn't doing its job. If instead 700 views produced 70 carts and 5 orders, the store is interesting enough and the loss sits in the cart and checkout. The same ad, three different repairs, and the order of the numbers is how you tell them apart.</p>
+
+<h2>Check your tracking before you blame anything</h2>
+<p>Several of the leaks below look real in your dashboard and aren't. Before you rebuild a page, confirm that Meta sees your orders. Verify that the Pixel is installed and firing following Meta's <a href="https://www.facebook.com/business/help/952192354843755" rel="nofollow">setup guide for the Meta Pixel</a>, and consider adding the <a href="https://developers.facebook.com/docs/marketing-api/conversions-api/" rel="nofollow">Conversions API</a>, which Meta describes as a connection between your marketing data and Meta that can be set up alongside a Pixel. Then compare the purchases Meta reports with the orders in Shopify over the same period. If they differ a lot, you may be optimizing a campaign on incomplete data.</p>
+
+<h2>The five store-side leaks that waste paid clicks</h2>
 <h3>1. Message mismatch</h3>
-<p>Your ad screams "50% off today." The visitor lands on a homepage with no mention of the offer. That two-second gap between promise and page is where conversions die. The ad and the landing page have to tell <em>one</em> continuous story.</p>
+<p>Your ad says "20% off linen shirts today." The visitor lands on a home page that never mentions it. That gap between promise and page is where conversions die. Nielsen Norman Group's idea of <a href="https://www.nngroup.com/articles/information-scent/" rel="nofollow">information scent</a> describes how people judge where a link leads from the cue in front of them. An ad is that cue (that application is our reading, not NN/g's), so the page should repeat the ad's promise in its headline, show the same product and carry the same offer.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 274" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="d4b-title d4b-desc"><title id="d4b-title">Message match: the ad's promise and the landing page</title><desc id="d4b-desc">An ad promising linen shirts at twenty percent off today. Page A has a hero that says welcome to our store, so the shopper hunts for the deal: a mismatch. Page B has a hero that repeats linen shirts, twenty percent off, so the promise is confirmed at a glance: a match.</desc>
+<rect x="0.5" y="0.5" width="299" height="61" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="24" font-size="14" fill="rgba(255,255,255,0.6)">The ad promises</text><text x="14" y="48" font-size="14" font-weight="600" fill="#ffffff">Linen shirts, 20% off today</text><path d="M150 64 L150 81" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 79 L150 86 L155 79 Z" fill="#2DD4BF"/><rect x="0.5" y="88.5" width="299" height="83" rx="8" fill="rgba(248,113,113,0.07)" stroke="#F87171"/><text x="14" y="112" font-size="14" font-weight="600" fill="#ffffff">Page A: mismatch</text><text x="14" y="134" font-size="14" fill="rgba(255,255,255,0.6)">Hero says “Welcome to our store”</text><text x="14" y="156" font-size="14" fill="#F87171">Shopper hunts for the deal</text><path d="M272 103 l11 11 M283 103 l-11 11" stroke="#F87171" stroke-width="2.5" fill="none" stroke-linecap="round"/><rect x="0.5" y="188.5" width="299" height="83" rx="8" fill="rgba(45,212,191,0.08)" stroke="#2DD4BF"/><text x="14" y="212" font-size="14" font-weight="600" fill="#ffffff">Page B: match</text><text x="14" y="234" font-size="14" fill="rgba(255,255,255,0.6)">Hero says “Linen shirts, 20% off”</text><text x="14" y="256" font-size="14" fill="#2DD4BF">Promise confirmed at a glance</text><path d="M262 207 l5 5 l9 -11" stroke="#2DD4BF" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<figcaption class="mt-3 text-xs text-white/35">Illustrative example. The page that repeats the ad's promise keeps the shopper on the path the ad started.</figcaption>
+</figure>
 <h3>2. Speed</h3>
-<p>A slow load loses a large share of mobile visitors before they see a single pixel of your offer. You paid for that click. It bounced before your store loaded. That's not a targeting problem — it's a tax you're paying on every dollar of spend.</p>
-<h3>3. The offer isn't obvious in 2 seconds</h3>
-<p>Cold paid traffic has zero patience and zero prior relationship. If a stranger can't tell what you sell, why it's better, and what the deal is — instantly — they're gone. "I'd bounce, the offer isn't obvious" is the single most common reaction cold visitors have to underperforming stores.</p>
+<p>You paid for the click; if the page is slow, you pay for a bounce. Google's <a href="https://web.dev/articles/lcp" rel="nofollow">web.dev guidance</a> treats a Largest Contentful Paint of 2.5 seconds or less as good and anything over 4.0 seconds as poor. A 2016 Google study of more than 10,000 mobile domains reported that <a href="https://blog.amp.dev/2016/09/08/new-study-speedmatters-for-mobile-user-engagement-and-revenue/" rel="nofollow">53% of mobile visits were abandoned</a> when pages took longer than three seconds. The study is old, so measure your own pages; the fixes are in the speed section of our guide on <a href="/blog/why-your-shopify-store-isnt-converting">why a Shopify store isn't converting</a>.</p>
+<h3>3. An offer that isn't obvious</h3>
+<p>Cold paid traffic has no patience and no history with you. If a stranger can't tell what you sell, why it's better and what the deal is within seconds, they leave. Nielsen Norman Group's <a href="https://www.nngroup.com/articles/how-long-do-users-stay-on-web-pages/" rel="nofollow">dwell-time research</a> found that users often leave pages within 10 to 20 seconds, which is the window an ad click has to work with.</p>
 <h3>4. No trust, no sale</h3>
-<p>Warm traffic converts far better than cold because it already trusts you. Cold paid traffic doesn't. If reviews, guarantees, and badges sit below the fold (or don't exist), you're asking a stranger to buy on faith. They won't.</p>
+<p>Warm traffic already trusts you; cold traffic doesn't. If reviews, a returns promise and payment marks sit below the fold or don't exist, you're asking a stranger to buy on faith. Baymard's survey found that <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">19% of shoppers who abandoned an order</a> did so because they didn't trust the site with their card details.</p>
 <h3>5. Mobile collapse</h3>
-<p>80%+ of your Meta traffic is on a phone, and mobile typically converts lower than desktop. If you've only ever QA'd your store on a laptop, you've never actually seen what your paid traffic sees.</p>
-<div class="callout"><h3>The in-app browser trap</h3><p>Many brands under-count conversions because Meta links open in Meta's in-app browser instead of Safari/Chrome — which can break tracking and checkout. Before you blame your store's design, confirm your pixel and checkout actually work inside the in-app browser. Sometimes the leak is plumbing, not persuasion.</p></div>
-<h2>Why "test more" is the wrong reflex</h2>
-<p>Testing more creative is the right move when the <em>ad</em> is underperforming. But when the store is the bottleneck, every new ad you test just sends fresh traffic into the same leaky funnel — and you "learn" that nothing works. You didn't have a creative problem. You had a destination problem, and you spent your test budget proving it three more times.</p>
-<p>The fix order is almost always backwards from what founders do: <strong>audit the store first, then scale the ads.</strong> A store that converts cold traffic turns mediocre ads into profit. A store that doesn't turns great ads into expensive lessons. Not sure which you have? Run the <a href="/blog/is-your-store-ready-for-meta-ads">6-point readiness check</a> before you scale. (More on the usual culprits in <a href="/blog/why-your-shopify-store-isnt-converting">why your store isn't converting</a>.)</p>
-<h2>Diagnose the store like a cold visitor would</h2>
-<p>You can't see your own store objectively — you've visited it a thousand times. The move is to look at it through the eyes of the exact person your ad just sent: a skeptical stranger, on a phone, with their thumb already hovering over "back."</p>
-<p>That's what <a href="/free-website-audit">EliteVault's free analyzer</a> does. Paste your URL and it reacts like a cold buyer — annotated screenshot of every leak, a buyer-persona reaction in their own voice, and a punch-list ranked by impact. And before you scale spend, the <a href="/#pricing">Campaign Scenario Modeler</a> projects a 7-day Meta campaign across conservative, balanced and aggressive cases based on your AOV and budget — so you know whether the math even works before you fund it.</p>
+<p>Check Shopify's Sessions by device report to see how much of your paid traffic uses phones, then buy something on your own store from a phone. If you've only ever tested on a laptop, you have never seen what your paid traffic sees. Baymard's <a href="https://baymard.com/blog/current-state-of-checkout-ux" rel="nofollow">2025 checkout benchmark</a> rated 63% of mobile web checkouts as mediocre or worse, so rough mobile experiences are common.</p>
+
+<h2>Why "test more creatives" is often the wrong reflex</h2>
+<p>New creatives are the right move when the ad is the weak link: low CTR, expensive clicks. When the store is the bottleneck, every new ad sends fresh traffic into the same leak, and you "learn" that nothing works. You didn't have a creative problem; you had a destination problem, and you spent your test budget proving it again.</p>
+<p>The order is usually the reverse of what founders do: <strong>repair the store first, then scale the ads.</strong> A store that converts cold traffic turns mediocre ads into profit, and a store that doesn't turns great ads into expensive lessons. Not sure which one you have? Run the <a href="/blog/is-your-store-ready-for-meta-ads">six-point readiness check</a> first.</p>
+<p>One more thing before you conclude. Meta documents a <a href="https://www.facebook.com/business/help/112167992830700" rel="nofollow">learning phase</a> in its help center. Read what it says before you judge a new campaign by its first days, and avoid changing a campaign every time a number dips.</p>
+
+<h2>What not to do while you diagnose</h2>
+<ul>
+<li><strong>Don't edit the campaign daily.</strong> Constant changes make it impossible to know what caused a shift.</li>
+<li><strong>Don't scale spend on a leak.</strong> A higher budget raises the cost of the same problem.</li>
+<li><strong>Don't change the ad and the page in the same week.</strong> You will not know which one helped.</li>
+<li><strong>Don't copy a competitor's ad without checking their page.</strong> Their results come from the pair, not from the ad alone.</li>
+</ul>
+
+<h2>A fix order you can follow</h2>
+<ol>
+<li><strong>Confirm tracking</strong> so you trust the numbers.</li>
+<li><strong>Read the CTR and conversion pattern</strong> in the grid to choose ad or page.</li>
+<li><strong>Close the click-to-view gap</strong> if landing page views lag far behind link clicks (speed first).</li>
+<li><strong>Match the page to the ad</strong> (leak 1), then clarify the offer and move proof up (leaks 3 and 4).</li>
+<li><strong>Test creative and audience</strong> only once the page can convert.</li>
+</ol>
+<p>If your problem is wider than paid traffic, start with the eight causes in <a href="/blog/why-your-shopify-store-isnt-converting">why your Shopify store isn't converting</a>, and use the <a href="/blog/best-shopify-tools-increase-roas-2026">Shopify tools that raise ROAS</a> to see which part of your stack to improve.</p>
+
+<h2>See your store the way a cold click does</h2>
+<p>You can't see your own store objectively; you've visited it a thousand times. The move is to look through the eyes of the exact person your ad just sent: a skeptical stranger, on a phone, with a thumb hovering over Back. Our <a href="/">Shopify store audit</a> does that, with an annotated screenshot of the leaks and a punch-list ranked by impact (ours — full disclosure). Before you scale, the <a href="/meta-ads-forecast">Meta Ads scenario modeler</a> projects a 7-day campaign across conservative, balanced and aggressive cases from your average order value and budget, so you know whether the math works before you fund it. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=why-meta-ads-arent-converting">Run the audit on your store →</a></p>
 `.trim(),
     faqs: [
       {
         q: "Why are my Meta ads getting clicks but no sales?",
-        a: "Clicks without sales almost always means the leak is post-click: a slow or confusing landing page, a message mismatch between ad and page, or missing trust. The ad did its job; the store didn't.",
+        a: "Clicks without sales almost always mean the leak is after the click: a slow page, an ad that doesn't match the landing page, an unclear offer or missing trust. Compare click-through rate with your store's conversion rate; high CTR and low conversion points at the page.",
       },
       {
         q: "Is it my targeting or my landing page?",
-        a: "If you're getting cheap clicks but no conversions, it's rarely targeting — it's the landing experience. Targeting problems show up as expensive clicks, not as clicks that fail to convert.",
+        a: "If clicks are cheap but orders are rare, it is rarely targeting. Targeting problems tend to show up as low CTR or expensive clicks, while a landing page problem shows up as clicks that don't turn into orders. Check tracking first, then the page, then the audience.",
       },
       {
-        q: "How do I fix Meta ads that aren't converting?",
-        a: "Match the ad promise to the landing page, cut load time under 3 seconds, surface the offer and trust above the fold, confirm tracking works in Meta's in-app browser, and audit the page like a cold visitor would experience it.",
+        q: "How long should I wait before deciding a Meta campaign isn't working?",
+        a: "There is no universal number of days. Meta documents a learning phase in its help center, so read what it says before judging a campaign's first days. Judge it on enough clicks and orders to compare against your own account's averages, not on a few days of noise.",
+      },
+      {
+        q: "Why is my Meta Pixel reporting fewer purchases than Shopify?",
+        a: "Browser-based tracking can miss events, and setups can break. Compare the purchases Meta reports with Shopify orders for the same period, confirm the Pixel is firing, and consider adding Meta's Conversions API alongside it. A large gap means you may be optimizing on incomplete data.",
+      },
+      {
+        q: "What is a good conversion rate for Meta ads traffic?",
+        a: "It depends on niche, price and offer, so a single figure misleads. Cold social traffic usually converts lower than returning visitors, so judge it separately and track your own trend. Our guide to the good conversion rate for Shopify shows how to read yours.",
       },
     ],
   },
   {
     slug: "how-to-increase-shopify-conversion-rate",
-    title: "How to Increase Your Shopify Conversion Rate (2026)",
-    h1: "How to increase your Shopify conversion rate: 11 fixes that actually move the needle",
+    title: "How to Increase Shopify Conversion Rate: 11 Fixes by Stage",
+    h1: "How to increase your Shopify conversion rate: an 11-fix plan from home page to checkout",
     description:
-      "A practical, no-fluff guide to raising your Shopify conversion rate in 2026 — the 11 highest-leverage fixes, ranked by impact, with how to diagnose each.",
+      "How to increase Shopify conversion rate: find the funnel stage that leaks most, then apply 11 fixes in order from the first screen to checkout.",
     keyword: "how to increase shopify conversion rate",
     keywords: [
       "how to increase shopify conversion rate",
@@ -931,67 +1039,109 @@ ${finalVideo}
       "increase online store sales",
     ],
     date: "2026-06-15",
-    readingMinutes: 8,
+    updated: "2026-10-19",
+    author: "Ariel Jiménez",
+    readingMinutes: 7,
     video: FINAL_VIDEO_META,
     excerpt:
-      "The 11 highest-leverage changes to your store — ranked by impact — and how to tell which ones are actually costing you sales.",
+      "Find the funnel stage that leaks most, then work eleven fixes in order, from the first screen to the last checkout step, with the evidence for each and how to know it worked.",
     bodyHtml: `
-<p>Most "conversion rate" advice is a pile of tactics with no order of operations. The truth is that a handful of fixes account for the majority of the lift, and the rest is noise until those are handled. Below are the 11 changes that move the needle most for real Shopify and DTC stores — ordered by leverage, not by how clever they sound.</p>
+<p class="lede">How to increase Shopify conversion rate: find the stage where the most shoppers drop out, fix that one first, and work down the funnel from there. Eleven fixes do most of the lifting, from a clear first screen to a checkout with no surprises, and the order depends on where your own funnel leaks, not on which tactic sounds clever.</p>
+${finalVideo}
+<p>Watch the comparison in the video before you start: a real store with weak results next to a leader in its niche shows which differences decide the sale. The plan below applies the same logic in three moves: measure first, fix by stage, then check that the change worked.</p>
 
-<h2>First, know your starting point</h2>
-<p>A "good" number depends on your niche — see <a href="/blog/good-conversion-rate-for-shopify">what a good conversion rate for Shopify actually is</a>. But before optimizing, look at where people drop: homepage → product → cart → checkout. Fix the earliest, leakiest step first. A beautiful checkout can't save a homepage that loses 70% of visitors in the first five seconds.</p>
+<h2>Where is your store losing the most shoppers?</h2>
+<p>Before changing anything, open Shopify's Conversion rate breakdown report. Per <a href="https://help.shopify.com/en/manual/reports-and-analytics/shopify-reports/report-types/default-reports/behaviour-reports" rel="nofollow">Shopify's help page</a>, it shows the path through your store as a funnel with four stages: all sessions, sessions with cart additions, sessions that reached checkout and sessions that completed checkout. Compare the step-to-step drops. The earliest big drop is usually where to start, because a better checkout can't rescue visitors who never reached it.</p>
+<p>Two more reports narrow it down. Sessions by device shows whether most of your visitors are on phones, and Conversion rate over time shows whether a recent change moved anything. If you want to know what number to aim for before you start, our guide to the <a href="/blog/good-conversion-rate-for-shopify">good conversion rate for Shopify</a> explains why the answer depends on niche, device and traffic source.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 272" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="d2a-title d2a-desc"><title id="d2a-title">The funnel and its main lever at each stage</title><desc id="d2a-desc">Four narrowing bars named as in Shopify's conversion rate breakdown. Sessions: lever is a clear offer and proof. Added to cart: lever is answering doubts on the page. Reached checkout: lever is showing the full cost early. Completed checkout: lever is fewer steps and no surprises.</desc>
+<rect x="0.5" y="0.5" width="299" height="38" rx="8" fill="#2DD4BF" fill-opacity="0.3" stroke="#2DD4BF" stroke-opacity="0.7"/><text x="150" y="25" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Sessions</text><text x="150" y="58" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Lever: a clear offer and proof</text><rect x="18.5" y="68.5" width="263" height="38" rx="8" fill="#2DD4BF" fill-opacity="0.24" stroke="#2DD4BF" stroke-opacity="0.7"/><text x="150" y="93" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Added to cart</text><text x="150" y="126" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Lever: answer doubts on the page</text><rect x="36.5" y="136.5" width="227" height="38" rx="8" fill="#2DD4BF" fill-opacity="0.18" stroke="#2DD4BF" stroke-opacity="0.7"/><text x="150" y="161" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Reached checkout</text><text x="150" y="194" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Lever: show the full cost early</text><rect x="54.5" y="204.5" width="191" height="38" rx="8" fill="#2DD4BF" fill-opacity="0.12" stroke="#2DD4BF" stroke-opacity="0.7"/><text x="150" y="229" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Completed checkout</text><text x="150" y="262" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Lever: fewer steps, no surprises</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Stage names follow Shopify's Conversion rate breakdown report. The lever under each bar is where this guide starts.</figcaption>
+</figure>
+<p>Want to see which stage of your own store is weakest without reading every page yourself? <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=how-to-increase-shopify-conversion-rate">Run the audit on your store →</a></p>
 
-<h2>The 11 fixes, ranked by leverage</h2>
+<h2>An illustrative example: reading the funnel</h2>
+<p>These numbers are made up to show the method, not benchmarks. Say 1,000 sessions produce 60 cart additions, 30 checkout starts and 18 orders. The biggest proportional drop is the first one: 94% of sessions never add anything to the cart. That points at stages 1 and 2, the first screen and the product page, so fixing the checkout first would be effort in the wrong place. Now flip it: 1,000 sessions, 300 cart additions, 250 checkout starts and 15 orders. Shoppers are interested and start checkout, but 94% of them stop before paying, so the work is in stages 3 and 4.</p>
+<p>The same funnel can also differ by device. If phone sessions drop earlier than desktop sessions, the problem is the mobile experience, not the offer. Filter before you decide.</p>
+
+<h2>Stage 1: the first screen (fixes 1 to 6)</h2>
+<p>In many stores the largest drop in the funnel report happens here, before a product has even been seen. Nielsen Norman Group's <a href="https://www.nngroup.com/articles/how-long-do-users-stay-on-web-pages/" rel="nofollow">dwell-time research</a> is the classic reminder that attention is short. These six fixes make the page worth the few seconds you get.</p>
 <h3>1. Make the offer obvious above the fold</h3>
-<p>A first-time visitor should know <strong>what you sell, who it's for, and why it's better</strong> within two seconds — without scrolling. Vague hero copy ("Elevate your everyday") is the single most common conversion killer. Lead with a specific promise.</p>
+<p>A first-time visitor should know what you sell, who it is for and why it beats the alternatives without scrolling. Vague hero copy is the most common leak at this stage. Lead with a specific promise and an image of the product in use.</p>
+<h3>2. Tighten the headline into a short promise</h3>
+<p>Long, abstract headlines are hard to repeat; short, concrete, benefit-first ones are easier for a stranger to grasp. Write ten versions and keep the one a stranger could repeat back to you after five seconds.</p>
+<h3>3. Give each screen one primary action</h3>
+<p>Competing buttons split attention. Pick the action you want (usually Shop or Add to cart), make it the clearest element and make everything else visibly secondary.</p>
+<h3>4. Move proof up, near the decision</h3>
+<p>Reviews, ratings, press mentions and a returns promise belong next to the buy decision, not in the footer. If proof is below the fold, most first-time visitors never see it.</p>
+<h3>5. Make the store fast</h3>
+<p>Speed work is mostly housekeeping: lighter images, fewer apps, nothing heavy on the first screen. Run <a href="https://pagespeed.web.dev/" rel="nofollow">PageSpeed Insights</a> on mobile: Google's <a href="https://web.dev/articles/lcp" rel="nofollow">web.dev guidance</a> calls a Largest Contentful Paint of 2.5 seconds or less good. A Deloitte study for Google found that <a href="https://web.dev/case-studies/milliseconds-make-millions" rel="nofollow">0.1-second improvements</a> in mobile speed across the whole journey were associated with an 8.4% higher conversion rate for retail sites. That result is conditional (every page had to improve on four metrics), so treat it as direction.</p>
+<h3>6. Match the ad to the landing page</h3>
+<p>If an ad promises one thing and the page shows another, paid traffic bounces. Repeat the ad's angle, image and offer in the headline of the page it lands on. The full diagnosis is in <a href="/blog/why-meta-ads-arent-converting">why Meta ads aren't converting</a>.</p>
 
-<h3>2. One primary call-to-action per screen</h3>
-<p>Competing buttons split attention. Pick the single action you want (usually "Shop" or "Add to cart") and make it the loudest element. Everything else is secondary.</p>
+<h2>Stage 2: the product page (fixes 7 and 8)</h2>
+<p>Here the question changes from "what is this store" to "should I buy this." The drop you are watching is the one between sessions and cart additions.</p>
+<h3>7. Use real product photography</h3>
+<p>Shoppers can't touch the product, so images carry the load. In our experience, in-use and in-scale shots help a buyer picture the product in their life better than sterile catalog photos. It is also the slowest fix on the list, which is why it sits late in the matrix.</p>
+<h3>8. Answer objections on the page</h3>
+<p>Returns, sizing, ingredients and delivery time: every unanswered question is a reason to open another tab. A short, product-specific FAQ and a one-line delivery and returns promise near the button remove most of them. Our guide to the <a href="/blog/shopify-product-page">Shopify product page</a> goes element by element.</p>
 
-<h3>3. Move proof up, not down</h3>
-<p>Trust badges, reviews, ratings, and "as seen in" logos belong <em>near the buy decision</em>, not buried in the footer. If your trust signals are below the fold, most buyers never see them.</p>
+<h2>Stage 3: the cart (fix 9)</h2>
+<h3>9. Show shipping and the total early, and use urgency honestly</h3>
+<p>Surprise costs are the clearest pattern in the abandonment data. In Baymard's survey of why shoppers leave (excluding people who were just browsing), <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">40% cited extra costs</a> such as shipping, tax or fees, and 12% could not see or calculate the total order cost up front. State the shipping cost or the free-shipping threshold near the buy button and in the cart. A genuine low-stock note or a "free shipping over a set amount" bar can nudge action; fake countdowns erode trust, so skip them.</p>
 
-<h3>4. Speed: every second costs you sales</h3>
-<p>Compress hero images, lazy-load below-the-fold media, and cut render-blocking apps. Run a free <strong>PageSpeed Insights</strong> test; if your Largest Contentful Paint is over ~2.5s on mobile, that's revenue on the floor.</p>
+<h2>Stage 4: checkout (fix 10)</h2>
+<h3>10. Remove checkout friction</h3>
+<p>Enable express payment options, don't force account creation and keep the form short. Baymard's survey found that <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">18% abandoned because the site required an account</a> and 17% because the process was too long or complicated. Its <a href="https://baymard.com/blog/current-state-of-checkout-ux" rel="nofollow">2025 checkout benchmark</a> also found that 62% of sites fail to make guest checkout the most prominent option. Fix this one on a phone first, since that's where most stores have the most to gain. For the shoppers who still leave, a <a href="/blog/abandoned-cart-recovery">recovery flow</a> is the safety net, but it comes after the loss.</p>
 
-<h3>5. Tighten the headline to a 7-word promise</h3>
-<p>Long, abstract headlines test poorly. Short, concrete, benefit-first headlines win. Write ten variants and keep the one a stranger could repeat back to you.</p>
+<h2>Across every stage: mobile first</h2>
+<h3>11. Design for the thumb</h3>
+<p>Check Sessions by device to see how many of your visitors use phones, then audit the store on a real phone, not a resized desktop window. Use large tap targets, a sticky add-to-cart bar, readable type and no content that requires pinching. The same eleven fixes apply on mobile; they just have less room to be wrong.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 282" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="d2b-title d2b-desc"><title id="d2b-title">Eleven fixes placed by impact and effort</title><desc id="d2b-desc">A two-by-two matrix with eleven numbered fixes. Do first, high impact and low effort: 1 clear offer, 2 short headline, 4 proof near the buy decision, 9 shipping clarity, 10 checkout friction. Plan next, high impact and high effort: 5 speed, 11 mobile first, 8 objections on the page, 6 ad-to-page match. Tidy-ups: 3 one primary action. Later: 7 real product photography.</desc>
+<rect x="30.5" y="8.5" width="265" height="235" rx="6" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.15)"/><path d="M163 8 V244 M30 126 H296" stroke="rgba(255,255,255,0.15)" stroke-width="1"/><text x="36" y="28" font-size="14" font-weight="600" fill="#2DD4BF">Do first</text><text x="292" y="28" text-anchor="end" font-size="14" font-weight="600" fill="rgba(255,255,255,0.6)">Plan next</text><text x="36" y="238" font-size="14" font-weight="600" fill="rgba(255,255,255,0.6)">Tidy-ups</text><text x="292" y="238" text-anchor="end" font-size="14" font-weight="600" fill="rgba(255,255,255,0.6)">Later</text><circle cx="62" cy="56" r="10" fill="#2DD4BF"/><text x="62" y="61" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">1</text><circle cx="112" cy="56" r="10" fill="#2DD4BF"/><text x="112" y="61" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">2</text><circle cx="62" cy="98" r="10" fill="#2DD4BF"/><text x="62" y="103" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">4</text><circle cx="112" cy="98" r="10" fill="#2DD4BF"/><text x="112" y="103" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">9</text><circle cx="142" cy="77" r="12" fill="#2DD4BF"/><text x="142" y="82" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">10</text><circle cx="202" cy="60" r="10" fill="#2DD4BF"/><text x="202" y="65" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">5</text><circle cx="256" cy="60" r="12" fill="#2DD4BF"/><text x="256" y="65" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">11</text><circle cx="202" cy="98" r="10" fill="#2DD4BF"/><text x="202" y="103" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">8</text><circle cx="256" cy="98" r="10" fill="#2DD4BF"/><text x="256" y="103" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">6</text><circle cx="76" cy="172" r="10" fill="#2DD4BF"/><text x="76" y="177" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">3</text><circle cx="232" cy="172" r="10" fill="#2DD4BF"/><text x="232" y="177" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">7</text><text x="163" y="272" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Effort: low → high</text><text transform="translate(14 126) rotate(-90)" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Impact: low → high</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Placement is our judgment from experience, not measured data. The numbers match the headings below; your funnel report decides what to do first.</figcaption>
+</figure>
 
-<h3>6. Real product photography over stock</h3>
-<p>Lifestyle and in-use shots outperform sterile catalog images for most niches. Buyers want to picture the product in their life.</p>
+<h2>Which fixes should you do first?</h2>
+<p>Use the matrix as a starting guess and your funnel report as the decider. If the biggest drop is before the cart, begin with fixes 1, 2 and 4, which are quick and aimed at the first screen. If shoppers add to cart and then vanish, begin with 9 and 10. Leave the heavy work (speed, mobile, photography) for the stages where your numbers say it matters.</p>
+<p>Once you have shipped the first three changes, give them time to collect sessions before judging them. Shopify's Conversion rate over time report shows the trend, but it doesn't split traffic between versions, so change one thing at a time and compare equal periods. If you want to test properly, use a dedicated testing tool, and work in a duplicate of your theme so a mistake never reaches your live store.</p>
 
-<h3>7. Reduce form and checkout friction</h3>
-<p>Enable express checkout (Shop Pay, Apple/Google Pay), don't force account creation, and show shipping cost early. Surprise fees at checkout are a top abandonment cause.</p>
+<h2>What are the common mistakes when trying to raise conversion?</h2>
+<ul>
+<li><strong>Changing five things at once.</strong> You can't tell which one moved the number, or which one hurt.</li>
+<li><strong>Starting with the checkout because it's closest to the money.</strong> It is the last stage, so it only matters if shoppers get there.</li>
+<li><strong>Judging a change after a handful of sessions.</strong> Small samples swing wildly; wait for a meaningful number of visits per variation.</li>
+<li><strong>Copying a competitor's page without knowing why it works.</strong> Copy the blueprint (clarity, proof, ease), not the paint.</li>
+<li><strong>Editing the live theme.</strong> Duplicate it first so you can always go back.</li>
+</ul>
 
-<h3>8. Add scarcity and shipping clarity honestly</h3>
-<p>Genuine low-stock notices and a clear "free shipping over $X" bar nudge action. Fake countdowns erode trust — don't.</p>
+<h2>When does it make sense to bring in help?</h2>
+<p>Once you have the traffic to run real tests, or when the fixes need design and development hours you don't have, outside help starts to pay. Here is <a href="/blog/ecommerce-cro-specialist">what an ecommerce CRO specialist actually does</a>, <a href="/blog/shopify-landing-page-specialist">how to brief a landing page specialist</a> and, if AI is doing part of the build, <a href="/blog/ai-shopify-designer">what a human must still check</a>.</p>
 
-<h3>9. Mobile-first, always</h3>
-<p>The majority of DTC traffic is mobile. Design for the thumb: large tap targets, sticky add-to-cart, no tiny fonts. Audit your store on an actual phone, not a desktop resize.</p>
-
-<h3>10. Answer objections on the page</h3>
-<p>Returns, sizing, ingredients, delivery time — every unanswered question is a reason to leave. A short FAQ near the buy button removes them.</p>
-
-<h3>11. Match the ad to the landing page</h3>
-<p>If your Meta ad promises one thing and the landing page shows another, paid traffic bounces. Message-match the angle, the image, and the offer.</p>
-
-<h2>How to find <em>your</em> specific leaks</h2>
-<p>The fixes above are universal, but the order that matters for <strong>your</strong> store is specific. The fastest way to find it is to look at your homepage the way a skeptical buyer (or a senior media buyer) would. That's exactly what <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=how-to-increase-shopify-conversion-rate">EliteVault's free audit</a> does: it scores your store across layout, imagery, CRO principles and niche fit, annotates the screenshot with the exact problems, and ranks the fixes by leverage — so you're not guessing which of these 11 to do first.</p>
-
-<p>Once you've shipped the top three, re-audit and measure. Conversion optimization is a loop, not a one-time project. If you're not sure where you stand, start by checking <a href="/blog/why-your-shopify-store-isnt-converting">why your store might not be converting</a>, then <a href="/pricing">see how the full audit works</a>. When you have the traffic to run tests, here is <a href="/blog/ecommerce-cro-specialist">what an ecommerce CRO specialist does</a>, and <a href="/blog/shopify-landing-page-specialist">how to brief a landing page specialist</a>. If the build uses AI, see <a href="/blog/ai-shopify-designer">what a human must still check</a>.</p>
+<h2>Beat the store your shopper compares you with</h2>
+<p>Conversion work isn't about a perfect store. It is about being the easier, more believable choice in your niche. Open your best seller next to the top store you compete with, on a phone, and write down what they make easier. Our <a href="/">Shopify store audit</a> does that comparison for your pages and ranks what to fix first (ours — full disclosure). For a page-by-page version you can run yourself, use the <a href="/blog/shopify-cro-audit">Shopify CRO audit checklist</a>, and if conversions are near zero rather than low, start with <a href="/blog/why-your-shopify-store-isnt-converting">why your store isn't converting</a>. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=how-to-increase-shopify-conversion-rate">Run the audit on your store →</a></p>
 `.trim(),
     faqs: [
       {
         q: "How can I increase my Shopify conversion rate fast?",
-        a: "Start with the highest-leverage fixes, not a hundred small tweaks: make the offer obvious above the fold, surface trust signals near the buy button, and cut mobile load time. Those three move the most for most stores — ship them first, then re-measure.",
+        a: "Start with the stage that leaks most in Shopify's Conversion rate breakdown report. For most stores the fastest fixes are a clear offer on the first screen, proof next to the buy button and shipping costs shown early, because they are quick and sit where many shoppers are lost. Change one thing at a time so you can see what worked.",
       },
       {
-        q: "What is a good Shopify conversion rate to aim for?",
-        a: "It depends on niche, price point and traffic source, but most stores sit roughly between 1.5% and 3.5%. Judge cold paid traffic separately from branded traffic, and track your own trend over time rather than chasing a universal number.",
+        q: "What is a good Shopify conversion rate?",
+        a: "It depends on niche, price point, device and traffic source, so a single number misleads. Judge cold paid traffic apart from returning visitors and track your own trend over time. Our guide to the good conversion rate for Shopify explains the ranges and how to read yours.",
       },
       {
-        q: "Why is my Shopify store getting traffic but no sales?",
-        a: "Usually the offer isn't clear in the first 2 seconds, trust is missing or buried below the fold, or the store is slow on mobile. Diagnose which one is yours with a free audit before changing anything — fixing the wrong thing wastes weeks.",
+        q: "How long does it take to see results from conversion changes?",
+        a: "It depends on your traffic. A change needs enough sessions to show up in the funnel report, and low-traffic stores may need weeks to see a trend. Compare equal periods, change one thing at a time and avoid judging a change on a handful of visits.",
+      },
+      {
+        q: "Does page speed really affect Shopify conversion rate?",
+        a: "Studies point that way. Google's 2016 research on more than 10,000 mobile domains found 53% of visits abandoned when pages took over three seconds, and a Deloitte study for Google linked small speed gains to higher retail conversion. Both are older, so check your own pages in PageSpeed Insights.",
+      },
+      {
+        q: "Should I fix traffic or conversion first?",
+        a: "Fix conversion first when you already get steady visits and few orders, because buying more traffic only sends more people through the same leak. Work on traffic first when the store converts well but few people arrive.",
       },
     ],
   },
@@ -1068,10 +1218,10 @@ ${finalVideo}
   },
   {
     slug: "why-your-shopify-store-isnt-converting",
-    title: "Why Your Shopify Store Isn't Converting (8 Reasons)",
-    h1: "Why your Shopify store isn't converting — 8 reasons, and how to diagnose each",
+    title: "Why Is My Shopify Store Not Converting? 8 Causes and Fixes",
+    h1: "Why is my Shopify store not converting? 8 causes, how to check each, and what to fix first",
     description:
-      "Traffic but no sales? Here are the 8 most common reasons a Shopify store doesn't convert, how to diagnose each one fast, and what to fix first.",
+      "Why is my Shopify store not converting? Eight causes with symptom, check and fix, the order to repair them, and the three Shopify reports to open first.",
     keyword: "why is my shopify store not converting",
     keywords: [
       "why is my shopify store not converting",
@@ -1082,52 +1232,109 @@ ${finalVideo}
       "why am i not getting sales shopify",
     ],
     date: "2026-06-15",
-    readingMinutes: 7,
+    updated: "2026-10-19",
+    author: "Ariel Jiménez",
+    readingMinutes: 8,
     video: FINAL_VIDEO_META,
     excerpt:
-      "Getting traffic but no sales? The 8 usual culprits — and a fast way to diagnose which one is yours.",
+      "Traffic but no sales: three reports to open first, eight causes with a symptom, a check and a fix for each, and the order to repair them in.",
     bodyHtml: `
-<p>Traffic coming in, sales not coming out. It's the most frustrating place to be — you're paying for visitors who leave. The good news: stores fail to convert for a short, predictable list of reasons. Here are the eight most common, and how to diagnose each one quickly.</p>
+<p class="lede">Why is my Shopify store not converting? Almost always because something between the click and the payment fails the shopper: an offer they can't read in seconds, a page that loads slowly, proof they can't see, or a checkout with one surprise too many. Eight causes cover most stores, and each one leaves a symptom you can check in under an hour.</p>
+${finalVideo}
+<p>The video above sets a real store with a weak return on ad spend next to a top store in its niche. That comparison is the quickest way to see what is wrong, because "not converting" is relative: shoppers are choosing between you and whichever store is easiest to trust. This guide uses the same idea. For each of the eight causes you get the symptom, a quick check and the fix, then the order to work in.</p>
 
-<h2>1. The offer isn't clear in the first 2 seconds</h2>
-<p>If a new visitor can't tell what you sell and why it's for them before scrolling, they leave. <strong>Diagnose:</strong> show your homepage to someone who's never seen it for two seconds, then ask what you sell. If they hesitate, this is your problem.</p>
+<h2>Where do you start when traffic comes but sales don't?</h2>
+<p>Change nothing yet. Open three reports in your Shopify admin first, because they tell you which causes to suspect:</p>
+<ol>
+<li><strong>Conversion rate breakdown.</strong> <a href="https://help.shopify.com/en/manual/reports-and-analytics/shopify-reports/report-types/default-reports/behaviour-reports" rel="nofollow">Shopify describes it</a> as the path visitors take through your store, shown as a funnel: all sessions, sessions with cart additions, sessions that reached checkout and sessions that completed checkout. The biggest drop between two steps is where to look first.</li>
+<li><strong>Sessions by device.</strong> It shows which device types visitors use. If most sessions are on phones and you have only ever reviewed the store on a laptop, you haven't seen what your buyers see.</li>
+<li><strong>Sessions by referrer.</strong> Per <a href="https://help.shopify.com/en/manual/reports-and-analytics/shopify-reports/report-types/default-reports/acquisition-reports" rel="nofollow">Shopify's acquisition reports</a>, it shows whether visitors come directly, from search or from a referral. Set it beside where your orders come from. A store that sells to returning visitors but not to strangers has a different problem from one that sells to nobody.</li>
+</ol>
+<p>With those three numbers, ask the questions in the diagram: who arrives, what do they see, where do they leave.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 312" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="d1a-title d1a-desc"><title id="d1a-title">Traffic but no sales: three questions</title><desc id="d1a-desc">A three-step decision path. First ask who is arriving: a wrong or cold audience points to causes 2 and 8. Then ask what they see: a slow, unclear or untrusted page points to causes 1, 3, 4 and 6. Then ask where they leave: the product page points to cause 7, the cart or checkout to cause 5.</desc>
+<rect x="0.5" y="0.5" width="299" height="87" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="26" font-size="14" font-weight="600" fill="#ffffff">1. Who is arriving?</text><text x="14" y="52" font-size="14" fill="rgba(255,255,255,0.6)">Wrong or cold audience</text><text x="14" y="74" font-size="14" fill="#2DD4BF">→ causes 2 and 8</text><path d="M150 90 L150 105" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 103 L150 110 L155 103 Z" fill="#2DD4BF"/><text x="164" y="105" font-size="14" fill="rgba(255,255,255,0.6)">if fine, ask next</text><rect x="0.5" y="112.5" width="299" height="87" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="138" font-size="14" font-weight="600" fill="#ffffff">2. What do they see?</text><text x="14" y="164" font-size="14" fill="rgba(255,255,255,0.6)">Slow, unclear or untrusted page</text><text x="14" y="186" font-size="14" fill="#2DD4BF">→ causes 1, 3, 4 and 6</text><path d="M150 202 L150 217" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 215 L150 222 L155 215 Z" fill="#2DD4BF"/><text x="164" y="217" font-size="14" fill="rgba(255,255,255,0.6)">if fine, ask next</text><rect x="0.5" y="224.5" width="299" height="87" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="250" font-size="14" font-weight="600" fill="#ffffff">3. Where do they leave?</text><text x="14" y="276" font-size="14" fill="rgba(255,255,255,0.6)">Product page → cause 7</text><text x="14" y="298" font-size="14" fill="#2DD4BF">Cart or checkout → cause 5</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Work down the three questions in order. Each answer narrows the eight causes below to two or four.</figcaption>
+</figure>
+<p>Want the answers from your own pages instead of a guess? <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=why-your-shopify-store-isnt-converting">Run the audit on your store →</a></p>
+
+<h2>The eight causes, by stage of the visit</h2>
+<p>Stores rarely fail for exotic reasons. The causes below follow the shopper's path, from the moment they arrive to the moment they pay, so you can match each one to the step where your funnel report shows the drop.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 290" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="d1b-title d1b-desc"><title id="d1b-title">The eight causes along the visit</title><desc id="d1b-desc">Eight numbered causes grouped by stage. Arrive: 8 wrong audience, 2 cold-traffic yardstick, 6 ad-to-page mismatch. First look: 1 offer unclear, 3 slow on mobile, 4 trust hidden. Product: 7 weak product page. Checkout: 5 checkout friction.</desc>
+<rect x="0.5" y="0.5" width="299" height="91" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="12" y="51" font-size="14" font-weight="600" fill="#ffffff">Arrive</text><circle cx="118" cy="18" r="10" fill="#2DD4BF"/><text x="118" y="23" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">8</text><text x="138" y="23" font-size="14" fill="rgba(255,255,255,0.85)">Wrong audience</text><circle cx="118" cy="46" r="10" fill="#2DD4BF"/><text x="118" y="51" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">2</text><text x="138" y="51" font-size="14" fill="rgba(255,255,255,0.85)">Cold-traffic yardstick</text><circle cx="118" cy="74" r="10" fill="#2DD4BF"/><text x="118" y="79" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">6</text><text x="138" y="79" font-size="14" fill="rgba(255,255,255,0.85)">Ad-to-page mismatch</text><rect x="0.5" y="96.5" width="299" height="91" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="12" y="147" font-size="14" font-weight="600" fill="#ffffff">First look</text><circle cx="118" cy="114" r="10" fill="#2DD4BF"/><text x="118" y="119" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">1</text><text x="138" y="119" font-size="14" fill="rgba(255,255,255,0.85)">Offer unclear</text><circle cx="118" cy="142" r="10" fill="#2DD4BF"/><text x="118" y="147" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">3</text><text x="138" y="147" font-size="14" fill="rgba(255,255,255,0.85)">Slow on mobile</text><circle cx="118" cy="170" r="10" fill="#2DD4BF"/><text x="118" y="175" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">4</text><text x="138" y="175" font-size="14" fill="rgba(255,255,255,0.85)">Trust hidden</text><rect x="0.5" y="192.5" width="299" height="35" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="12" y="215" font-size="14" font-weight="600" fill="#ffffff">Product</text><circle cx="118" cy="210" r="10" fill="#2DD4BF"/><text x="118" y="215" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">7</text><text x="138" y="215" font-size="14" fill="rgba(255,255,255,0.85)">Weak product page</text><rect x="0.5" y="234.5" width="299" height="35" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="12" y="257" font-size="14" font-weight="600" fill="#ffffff">Checkout</text><circle cx="118" cy="252" r="10" fill="#2DD4BF"/><text x="118" y="257" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">5</text><text x="138" y="257" font-size="14" fill="rgba(255,255,255,0.85)">Checkout friction</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">The numbers match the headings below, so you can jump to the stage where your funnel report shows the biggest drop.</figcaption>
+</figure>
+
+<h2>1. The offer isn't clear in the first seconds</h2>
+<p><strong>Symptom:</strong> a high bounce rate on the home or landing page, short sessions, very few add-to-carts. <strong>Check:</strong> show the page to someone who has never seen it for a few seconds, then ask what you sell and who it is for. If they hesitate, this is the leak. Nielsen Norman Group's <a href="https://www.nngroup.com/articles/how-long-do-users-stay-on-web-pages/" rel="nofollow">research on dwell time</a> found that users often leave web pages within 10 to 20 seconds, and argued that the value proposition has to be communicated within the first 10 to hold attention longer. The article dates from 2011, but the behavior it describes is the one every ad click runs into.</p>
+<p><strong>Fix:</strong> rewrite the top of the page as one concrete promise: what you sell, who it is for and the main reason to pick you. Use one image that shows the product in use, not a lifestyle mood board. Vague lines such as "Elevate your everyday" fail this test because a stranger can't repeat them back.</p>
 
 <h2>2. You're judging cold traffic by the wrong yardstick</h2>
-<p>Cold Meta/TikTok traffic converts far lower than branded traffic, especially in a campaign's first week. <strong>Diagnose:</strong> segment conversion by source. If branded is fine and cold is near zero, the store fails the first-impression test — not the whole funnel. More on <a href="/blog/good-conversion-rate-for-shopify">what's actually a good rate by source</a>.</p>
+<p><strong>Symptom:</strong> the blended conversion rate looks low, yet returning customers and email subscribers buy normally. <strong>Check:</strong> split your sessions by source in the referrer report and compare each source against the orders it produced. If warm sources convert and cold ones barely do, the store passes the loyalty test and fails the first-impression test, which is a narrower problem than "the whole funnel is broken."</p>
+<p><strong>Fix:</strong> don't redesign what already works for returning shoppers. Improve what a stranger meets first (causes 1, 3, 4 and 6) and judge cold traffic against its own history, not against your branded traffic. For ranges by source and device, see our guide to <a href="/blog/good-conversion-rate-for-shopify">what a good Shopify conversion rate looks like</a>.</p>
 
-<h2>3. The store is slow</h2>
-<p>Every extra second of load time sheds buyers, and mobile is least forgiving. <strong>Diagnose:</strong> run a free PageSpeed Insights test on mobile. LCP over ~2.5s? Fix images and heavy apps first. A speed test only covers this one cause, though — here is <a href="/blog/shopify-store-analyzer">what a Shopify store analyzer checks</a> beyond speed.</p>
+<h2>3. The store is slow, especially on mobile</h2>
+<p><strong>Symptom:</strong> shoppers leave before the page finishes drawing; the drop is concentrated on phones. <strong>Check:</strong> run your home page and your best-selling product page through <a href="https://pagespeed.web.dev/" rel="nofollow">PageSpeed Insights</a> on mobile. Google's <a href="https://web.dev/articles/lcp" rel="nofollow">web.dev guidance</a> treats a Largest Contentful Paint of 2.5 seconds or less as good and anything above 4.0 seconds as poor, measured at the 75th percentile of page loads.</p>
+<p>The evidence that speed costs sales is consistent, if dated. A 2016 Google study of more than 10,000 mobile domains reported that <a href="https://blog.amp.dev/2016/09/08/new-study-speedmatters-for-mobile-user-engagement-and-revenue/" rel="nofollow">53% of mobile site visits were abandoned</a> when pages took longer than three seconds to load. A later study by Deloitte for Google, covering 37 brands and over 30 million sessions, found that <a href="https://web.dev/case-studies/milliseconds-make-millions" rel="nofollow">shaving 0.1 seconds off mobile load time</a> was associated with an 8.4% higher conversion rate for retail sites, with the caveat that every page across the journey had to improve on four speed metrics. Treat both as direction, not a promise for your store.</p>
+<p><strong>Fix:</strong> compress and correctly size the hero image, remove apps and scripts you no longer use, and keep autoplay video out of the first screen. A speed test only covers this one cause, though. See what a <a href="/blog/shopify-store-analyzer">Shopify store analyzer checks beyond speed</a>.</p>
 
-<h2>4. No trust, or trust hidden below the fold</h2>
-<p>Unknown brand + no reviews + no guarantees = no purchase. <strong>Diagnose:</strong> can a buyer see reviews, a return policy, and secure-checkout signals <em>near the buy button</em>? If trust lives only in the footer, it doesn't exist.</p>
+<h2>4. Trust is missing, or hidden below the fold</h2>
+<p><strong>Symptom:</strong> product-page views are healthy but add-to-carts and checkout starts are weak, and the traffic is mostly new. <strong>Check:</strong> on your phone, can you see reviews, a returns promise and payment or security cues next to the Add to cart button without scrolling? If trust lives only in the footer, for a first-time visitor it doesn't exist. Baymard's survey of checkout abandonment found that <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">19% of respondents</a> left because they didn't trust the site with their credit card information.</p>
+<p><strong>Fix:</strong> move review stars and count beside the title, add a one-line returns and delivery promise by the button, show real payment marks, and add a plain-spoken About and contact page. Keep badges few and honest; invented ones cost more trust than they buy.</p>
 
 <h2>5. Friction at checkout</h2>
-<p>Forced account creation, surprise shipping costs, too many fields. <strong>Diagnose:</strong> complete a purchase on your own store on mobile and count the taps and surprises. Each one is an exit.</p>
+<p><strong>Symptom:</strong> plenty of sessions reach checkout and few complete it, the last drop in the funnel report. <strong>Check:</strong> buy something from your own store on a phone and count the taps, the form fields and the surprises. Baymard's reasons for abandonment (shares of respondents who left for reasons other than just browsing, so they add up to more than 100%) put <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">extra costs such as shipping, tax or fees at 40%</a>, a required account at 18%, a checkout that was too long or complicated at 17%, and not being able to see the total cost up front at 12%. The same publisher's <a href="https://baymard.com/blog/current-state-of-checkout-ux" rel="nofollow">2025 checkout benchmark</a> rated 64% of desktop and 63% of mobile checkouts as mediocre or worse, so a rough checkout is the norm, not the exception.</p>
+<p><strong>Fix:</strong> offer guest checkout, show shipping and the total before the last step, and turn on the express payment options your market uses. Recovery emails help with the shoppers who still leave, but they come after the loss; our guide to <a href="/blog/abandoned-cart-recovery">abandoned cart recovery</a> covers that flow.</p>
 
-<h2>6. Ad-to-page mismatch</h2>
-<p>The ad promised a specific angle; the landing page shows something generic. <strong>Diagnose:</strong> click your own ad and check the message, image, and offer all match the page it lands on.</p>
+<h2>6. The ad promised one thing and the page shows another</h2>
+<p><strong>Symptom:</strong> clicks are cheap, sessions from one campaign bounce, other sources look fine. <strong>Check:</strong> click your own ad on a phone and compare three things on the page you land on: the message, the image and the offer. Nielsen Norman Group's idea of <a href="https://www.nngroup.com/articles/information-scent/" rel="nofollow">information scent</a> describes how people judge where a link will take them from the cue in front of them. An ad is that cue (that application to ads is our reading, not NN/g's), and a generic home page after a specific ad breaks it.</p>
+<p><strong>Fix:</strong> send each campaign to a page that repeats its promise in the headline, shows the same product or angle and carries the same offer. If you run paid social, the full diagnosis is in <a href="/blog/why-meta-ads-arent-converting">why Meta ads aren't converting</a>.</p>
 
 <h2>7. Weak product pages</h2>
-<p>Thin descriptions, no objection-handling, poor photography. <strong>Diagnose:</strong> does the product page answer sizing, returns, delivery time, and "why this over alternatives" without making the buyer hunt?</p>
+<p><strong>Symptom:</strong> visitors view products but few add them to the cart, which shows as a big drop from sessions to cart additions. <strong>Check:</strong> open your best seller and answer five questions as a stranger: what is it, is it for me, what will it cost in total, can I trust this store and when does it arrive. Every unanswered one is a reason to try another tab.</p>
+<p><strong>Fix:</strong> replace pasted supplier copy with benefits for your buyer, add in-use and in-scale photos, answer sizing and returns on the page and put a short FAQ near the button. The full element-by-element version is in our guide to the <a href="/blog/shopify-product-page">Shopify product page</a>.</p>
 
-<h2>8. Wrong audience</h2>
-<p>Sometimes the store is fine and the targeting is off — you're buying clicks from people who were never going to buy. <strong>Diagnose:</strong> if on-page metrics look healthy but a specific campaign tanks, suspect targeting before the store.</p>
+<h2>8. The audience is wrong</h2>
+<p><strong>Symptom:</strong> on-site behavior looks healthy for some sources, but one campaign or audience produces visits and no orders. <strong>Check:</strong> compare the campaign against your other sources on the same pages. If time on site, product views and cart additions are all lower, the people are the problem, not the page. <strong>Fix:</strong> tighten the audience, make the ad describe the product honestly so the wrong people don't click, and stop judging the store on traffic that was never going to buy. Check the store first, though. Blaming targeting is easy, and it is the cause most often named when the real leak is on the page.</p>
 
-<h2>The fastest way to find your reason</h2>
-<p>You could check all eight by hand — or get a senior-media-buyer read of your store in under a minute. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=why-your-shopify-store-isnt-converting">EliteVault's free audit</a> annotates your homepage with the exact issues from this list, simulates how a buyer persona reacts, and ranks what to fix first by leverage. When you know <em>which</em> reason is yours, fixing it is the easy part — then work the <a href="/blog/how-to-increase-shopify-conversion-rate">11 highest-leverage fixes</a>. Posting your store for feedback first? Here is <a href="/blog/store-audit-review-my-store-feedback">what those threads usually say</a>.</p>
+<h2>Which cause do you fix first?</h2>
+<p>Work in this order. It is our rule of thumb, not a measured ranking, but it follows one principle: don't judge anything upstream through a leaky page.</p>
+<ol>
+<li><strong>Anything that blocks the purchase</strong> (5, and a slow site, 3). A broken or painful checkout cancels every other improvement.</li>
+<li><strong>The first impression</strong> (1, 4, 6). They decide whether a stranger stays long enough to see anything else.</li>
+<li><strong>The product page</strong> (7), once more people reach it.</li>
+<li><strong>Audience and yardstick</strong> (8, 2) last, because you can only judge targeting after the page can convert.</li>
+</ol>
+<p>Change one thing at a time and give each change enough sessions to show up in the funnel report, so you know what moved the number. For the full, stage-by-stage plan, see how to <a href="/blog/how-to-increase-shopify-conversion-rate">increase your Shopify conversion rate</a>.</p>
+
+<h2>What if none of the eight fits?</h2>
+<p>Two situations hide the cause. With very few sessions, the numbers are too noisy to diagnose anything; collect more traffic or review the pages by hand with the checks above. And if your funnel report looks fine but orders don't match, confirm that checkout works on every device before you touch the design.</p>
+<p>When you're stuck, an outside read helps, because you've seen your own store a thousand times. Posting it for feedback is one route; here is <a href="/blog/store-audit-review-my-store-feedback">what those review threads usually say</a>. Our <a href="/">Shopify store audit</a> does the same job from the shopper's side: it reads your pages the way a skeptical stranger would, annotates the leaks and ranks the fixes (ours — full disclosure).</p>
+
+<h2>Make your store the one shoppers pick</h2>
+<p>The goal isn't a store with no leaks; it is a store that beats the alternatives in your niche. Compare your home page and best seller with the top store you compete against, on a phone, in ten seconds, and note what they make easier. That list is your roadmap. If you want the structured version, the <a href="/blog/shopify-cro-audit">Shopify CRO audit checklist</a> walks through every page. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=why-your-shopify-store-isnt-converting">Run the audit on your store →</a></p>
 `.trim(),
     faqs: [
       {
-        q: "Why is my Shopify store not converting?",
-        a: "The eight usual causes are an unclear offer, judging cold traffic by the wrong yardstick, slow load time, hidden or missing trust signals, checkout friction, ad-to-page mismatch, weak product pages, and the wrong audience. Diagnose which one is yours before you start fixing.",
+        q: "Why is my Shopify store getting traffic but no sales?",
+        a: "Traffic without sales usually means the leak is after the click: an unclear offer, a slow mobile page, hidden trust signals, a message that doesn't match the ad, or a checkout with surprises. Open the Conversion rate breakdown report in Shopify to see which step loses the most visitors, then check the matching cause.",
       },
       {
-        q: "Why am I getting traffic but no sales on Shopify?",
-        a: "Traffic without sales almost always means a post-click problem — a confusing first impression, missing trust, or a slow mobile page — not a traffic problem. Sending more volume into a leaky funnel won't fix it; fix the leak first.",
+        q: "How long should I wait before deciding my Shopify store isn't converting?",
+        a: "There is no fixed number of days. What matters is the number of sessions, because a few dozen visits can't separate a real problem from noise. Review the pages by hand with the checks in this guide first, and judge the funnel report only when you have enough sessions per source to compare.",
       },
       {
-        q: "How do I diagnose why my store isn't converting?",
-        a: "Look at your store the way a skeptical first-time visitor on a phone would, or run a free audit that annotates the exact issues on your homepage and ranks the fixes — so you fix the one costing you the most first.",
+        q: "What is the most common reason a Shopify store doesn't convert?",
+        a: "There is no single reason, but the first impression and checkout friction recur the most. In Baymard's survey, extra costs at checkout were the top reason shoppers left, at 40% of respondents who weren't just browsing. On the front end, a page that doesn't make the offer clear within seconds loses visitors before they see anything else.",
+      },
+      {
+        q: "Does a slow Shopify store really lose sales?",
+        a: "Evidence says yes. Google's 2016 study reported that 53% of mobile visits were abandoned when pages took over three seconds to load, and a Deloitte study for Google linked small speed gains to higher retail conversion. Both are older and measure averages, so use PageSpeed Insights to see where your own pages stand.",
+      },
+      {
+        q: "Should I fix my store or change my ads first?",
+        a: "Fix the store first if clicks are cheap and orders are rare, because new ads only send more traffic into the same leak. Change the ads first if the clicks themselves are expensive or off-target. The 2×2 in our guide to why Meta ads aren't converting shows how to tell which side you're on.",
       },
     ],
   },
