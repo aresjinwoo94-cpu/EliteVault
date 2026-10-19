@@ -40,14 +40,12 @@ export type BlogPost = {
 };
 
 /**
- * EliteVault teaser video (our own YouTube channel). Rendered as a no-JS
+ * YouTube video facade (our own channel). Rendered as a no-JS
  * "facade": the iframe loads only a thumbnail via srcdoc; clicking it
  * navigates the frame to the real player with autoplay. That keeps the
  * YouTube player JS out of the page until someone asks for it (site-speed),
  * needs no script inside bodyHtml, and the plain link below stays crawlable.
  */
-const TEASER_ID = "lH4O5UE4CPY";
-const TEASER_TITLE = "EliteVault Explained: Analyze Your Ecommerce Store for Free";
 function videoFacade(id: string, title: string, caption: string): string {
   return `<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
 <div class="text-sm font-semibold text-white">Watch: ${title}</div>
@@ -57,8 +55,6 @@ function videoFacade(id: string, title: string, caption: string): string {
 <figcaption class="mt-3 text-xs text-white/35"><a href="https://youtu.be/${id}" rel="noopener">Watch on YouTube</a> · ${caption}</figcaption>
 </figure>`;
 }
-
-const teaserVideo = videoFacade(TEASER_ID, TEASER_TITLE, "a short teaser from our own channel.");
 
 /** Featured video for the first-sale posts (uploadDate verified on the YouTube page, 2026-10-14). */
 const FINAL_VIDEO_ID = "43CfVNIds7Q";
@@ -593,6 +589,7 @@ ${finalVideo}
     date: "2026-08-03",
     author: "Ariel Jiménez",
     readingMinutes: 7,
+    video: FINAL_VIDEO_META,
     excerpt:
       "Meta will happily spend your budget sending strangers to a store that leaks them. The 6-point readiness check to run before you fund a campaign — and how to diagnose each.",
     bodyHtml: `
@@ -653,6 +650,7 @@ ${finalVideo}
     updated: "2026-10-11",
     author: "Ariel Jiménez",
     readingMinutes: 7,
+    video: FINAL_VIDEO_META,
     excerpt:
       "Not all 'free website audit' tools measure the same thing. The three types, what each checks, and which one actually tells you why you're losing sales.",
     bodyHtml: `
@@ -715,6 +713,7 @@ ${finalVideo}
     date: "2026-06-17",
     author: "Ariel Jiménez",
     readingMinutes: 9,
+    video: FINAL_VIDEO_META,
     excerpt:
       "The method gurus charge $997 to teach: break down any converting store, extract the principles, and copy what works — in an afternoon.",
     bodyHtml: `
@@ -788,6 +787,7 @@ ${finalVideo}
     updated: "2026-10-14",
     author: "Ariel Jiménez",
     readingMinutes: 8,
+    video: FINAL_VIDEO_META,
     excerpt:
       "Consultants charge $1,500–$2,000 to audit your store. The framework was never secret — just slow and manual. Here it is, in the open.",
     bodyHtml: `
@@ -866,6 +866,7 @@ ${finalVideo}
     date: "2026-06-17",
     author: "Ariel Jiménez",
     readingMinutes: 8,
+    video: FINAL_VIDEO_META,
     excerpt:
       "Clicks but no sales? The leak already moved past the ad. Here's how to find the store-side leak before you spend another dollar.",
     bodyHtml: `
@@ -931,6 +932,7 @@ ${finalVideo}
     ],
     date: "2026-06-15",
     readingMinutes: 8,
+    video: FINAL_VIDEO_META,
     excerpt:
       "The 11 highest-leverage changes to your store — ranked by impact — and how to tell which ones are actually costing you sales.",
     bodyHtml: `
@@ -1010,6 +1012,7 @@ ${finalVideo}
     ],
     date: "2026-06-15",
     readingMinutes: 6,
+    video: FINAL_VIDEO_META,
     excerpt:
       "The honest answer to 'is my conversion rate good?' — by niche, by traffic source, and why a single number can mislead you.",
     bodyHtml: `
@@ -1080,6 +1083,7 @@ ${finalVideo}
     ],
     date: "2026-06-15",
     readingMinutes: 7,
+    video: FINAL_VIDEO_META,
     excerpt:
       "Getting traffic but no sales? The 8 usual culprits — and a fast way to diagnose which one is yours.",
     bodyHtml: `
@@ -1145,6 +1149,7 @@ ${finalVideo}
     date: "2026-08-15",
     author: "Ariel Jiménez",
     readingMinutes: 8,
+    video: FINAL_VIDEO_META,
     excerpt: "AI personalization lifts ecommerce revenue 5-15% (up to 25% for top performers), and AI chat nearly quadruples conversion. The real numbers, by source and by niche.",
     bodyHtml: `
 <p class="lede">AI in ecommerce isn't one thing — it's personalization, conversational chat, and product recommendations, each with a different, measurable effect on revenue. The short version: AI personalization typically lifts revenue 5–15% (up to 25% for the best operators), AI chat roughly quadruples conversion versus no assistance, and the effect is strongest in niches with high repeat-purchase behavior like beauty and food/beverage. Below is every number with its source, what it means for a Shopify store specifically, and where AI is worth your time versus where a basic conversion fix would do more.</p>
@@ -1268,6 +1273,7 @@ ${finalVideo}
     updated: "2026-09-02",
     author: "Ariel Jiménez",
     readingMinutes: 7,
+    video: FINAL_VIDEO_META,
     excerpt:
       "Nine 2026 design trends with an actual conversion mechanism behind them — speed, mobile, trust, checkout — and the three getting more attention than they return.",
     bodyHtml: `
@@ -1383,6 +1389,7 @@ ${finalVideo}
     updated: "2026-09-02",
     author: "Ariel Jiménez",
     readingMinutes: 7,
+    video: FINAL_VIDEO_META,
     excerpt:
       "Average Meta ecommerce ROAS sits near 2.87x. The tools that actually move it, by category — and why more spend almost never fixes a stuck number.",
     bodyHtml: `
@@ -1482,6 +1489,7 @@ ${finalVideo}
     updated: "2026-09-02",
     author: "Ariel Jiménez",
     readingMinutes: 7,
+    video: FINAL_VIDEO_META,
     excerpt:
       "70.22% of carts are abandoned. The ranked reasons — starting with surprise costs at 40% — and how to tell which one is costing you the most.",
     bodyHtml: `
@@ -1580,6 +1588,7 @@ ${finalVideo}
     updated: "2026-09-02",
     author: "Ariel Jiménez",
     readingMinutes: 8,
+    video: FINAL_VIDEO_META,
     excerpt:
       "Two Shopify Editions, 150+ updates each, and a lot of loose talk about what's free. What's actually included, what needs a paid plan, and what's still Plus-only.",
     bodyHtml: `
@@ -1670,6 +1679,7 @@ ${finalVideo}
     updated: "2026-10-11",
     author: "Ariel Jiménez",
     readingMinutes: 3,
+    video: FINAL_VIDEO_META,
     excerpt:
       "How to analyze your Shopify store: the five things to check, in order, how it differs from a speed test, and how to run the full check free.",
     bodyHtml: `
@@ -1766,13 +1776,14 @@ ${finalVideo}
     updated: "2026-10-11",
     author: "Ariel Jiménez",
     readingMinutes: 3,
+    video: FINAL_VIDEO_META,
     excerpt:
       "How to read Shopify analytics: the reports to open first, what the numbers mean, and why owners still pay for someone to explain the why.",
     bodyHtml: `
 <p class="lede">To <strong>read Shopify analytics</strong>, start with three questions: where do sessions come from, which pages do they land on, and where does conversion drop? Shopify's reports answer those. They count what happened; they can't say why. 70.22% of carts are abandoned (Baymard, 2025), and a report shows that as one number. That is where interpretation starts, and it is why owners still pay for it.</p>
 <p>Below: the reports worth opening first, what the numbers can and can't tell you, and where analysis picks up once the data runs out.</p>
 
-${teaserVideo}
+${finalVideo}
 
 <h2>Doesn't Shopify already track everything?</h2>
 <p>It tracks a lot, and keeps adding more: the <a href="https://www.shopify.com/editions/winter2026" rel="nofollow">Winter '26 Edition</a> brought heatmaps and bot filtering to its analytics. That is better measurement. Measurement still isn't diagnosis. A report can say conversion fell. It can't say your price vanished above the fold on a phone.</p>
@@ -1883,6 +1894,7 @@ ${teaserVideo}
     updated: "2026-10-11",
     author: "Ariel Jiménez",
     readingMinutes: 3,
+    video: FINAL_VIDEO_META,
     excerpt:
       "The same notes keep showing up when owners ask for a review of their Shopify store. What they mean, a quick check for each, and which fix to make first.",
     bodyHtml: `
@@ -1890,7 +1902,7 @@ ${teaserVideo}
 <p>Requests like this show up on subreddits such as r/reviewmyshopify and in the Shopify Community. Store-review requests are not welcome everywhere, so read each community's rules before you post. The better your request, the better the answers: say what you sell, where your traffic comes from, what you've already tried, and ask one specific question.</p>
 <p>The rest of this post translates the shorthand reviewers use into what it usually means, gives you a quick check for each note, and shows how to run the same review on yourself before you ask anyone.</p>
 
-${teaserVideo}
+${finalVideo}
 
 <h2>What do "review my store" threads keep repeating?</h2>
 <p>Public store-review threads, on subreddits like r/reviewmyshopify and in the Shopify Community, tend to circle the same five spots. This is our editorial reading, not a measured count. Here they are in the order a visitor meets them:</p>
@@ -1998,12 +2010,13 @@ ${teaserVideo}
     updated: "2026-10-08",
     author: "Ariel Jiménez",
     readingMinutes: 3,
+    video: FINAL_VIDEO_META,
     excerpt:
       "Offer tests, post-purchase upsells, product pages and funnel analysis: what an ecommerce CRO specialist does, and when hiring one pays off.",
     bodyHtml: `
 <p class="lede">An <strong>ecommerce CRO specialist</strong> finds where visitors drop off, then tests offers, pages and upsells to raise profit per visitor. It's worth paying for because most of the work is testing, not ideas: 70.22% of carts are abandoned (Baymard, 2025), and each fix needs proof. Here is the job, and when to hire.</p>
 
-${teaserVideo}
+${finalVideo}
 
 <h2>What does an ecommerce CRO specialist actually do?</h2>
 <p>We recently saw a listing for a CRO and post-purchase upsell specialist across several Shopify stores. Its scope shows the job well. Underneath, it's one loop:</p>
@@ -2107,12 +2120,13 @@ ${teaserVideo}
     updated: "2026-10-08",
     author: "Ariel Jiménez",
     readingMinutes: 3,
+    video: FINAL_VIDEO_META,
     excerpt:
       "What a Shopify landing page specialist does, the six-item brief that lets them work alone, and why speed decides the result.",
     bodyHtml: `
 <p class="lede">A <strong>Shopify landing page specialist</strong> takes a reference page and a rough idea and builds it in Shopify so it looks sharp and loads clean. The build is the easy part. A clear brief and a fast page decide results: a store that loads in one second converts at 3.05%, at four seconds 0.67% (Portent, 2022).</p>
 
-${teaserVideo}
+${finalVideo}
 
 <h2>What does a Shopify landing page specialist actually do?</h2>
 <p>We recently saw a listing for exactly this role: build landing pages, clean up existing stores, and rebuild layouts and features from examples. The work follows one path. The reference saves time, the rough idea says what the page must achieve, and a specialist who knows the theme's limits keeps the build quick and the code light:</p>
@@ -2206,12 +2220,13 @@ ${teaserVideo}
     updated: "2026-10-09",
     author: "Ariel Jiménez",
     readingMinutes: 3,
+    video: FINAL_VIDEO_META,
     excerpt:
       "AI drafts Shopify sections in minutes. What an AI Shopify designer still has to check, and how to review an AI-built store.",
     bodyHtml: `
 <p class="lede">An <strong>AI Shopify designer</strong> uses tools like Claude to draft sections, then checks and fixes what the AI gets wrong. AI makes a first draft in minutes. It doesn't know whether the cart works or the page sells, and 17% of shoppers who meant to buy left over site errors or crashes (Baymard, 2025). The human check is the job.</p>
 
-${teaserVideo}
+${finalVideo}
 
 <h2>What does an AI Shopify designer actually do?</h2>
 <p>We recently saw a listing for a Shopify designer working with Claude and a provided workflow across several stores. The pattern is a loop, and the human sits in the middle of it. The designer supplies the judgment: does this page make a buying decision easy, and does every part of it work?</p>
