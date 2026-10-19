@@ -81,11 +81,11 @@ const STEPS = [
 const FAQS = [
   {
     q: "How do you find winning Shopify stores?",
-    a: "We curate it: an AI assistant proposes candidate stores in each niche, and every one passes automated checks (site live, complete listing, niche fit) before it is published. Each entry shows modeled metrics so you can study what is likely working — they are estimates, not figures reported by the brands, and the library is re-checked periodically rather than in real time.",
+    a: "We curate it: an AI assistant proposes candidate stores in each niche, and every one passes automated checks (site live, complete listing, niche fit) before it is published. Each entry links straight to the store so you can study what is likely working, and shows an ad count only when it is a real Meta Ad Library measurement. The library is re-checked periodically rather than in real time.",
   },
   {
     q: "Is the winning-stores library free?",
-    a: "The Free plan includes 3 hand-picked winning stores with full metrics and the community feed. Pro and Scale unlock the full library, unlimited entries and image-similarity search.",
+    a: "The Free plan includes 3 hand-picked winning stores and the community feed. Pro and Scale unlock the full library, unlimited entries and image-similarity search.",
   },
   {
     q: "How is this different from a Shopify spy tool?",

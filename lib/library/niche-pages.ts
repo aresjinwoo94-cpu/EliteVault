@@ -1,5 +1,6 @@
 import "server-only";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { measuredActiveAds } from "@/lib/library/ad-signal";
 
 /**
  * Data layer for the programmatic SEO pages /winning-shopify-stores/[niche].
@@ -24,8 +25,11 @@ export interface NicheStore {
   title: string;
   domain: string;
   thumbnailUrl: string | null;
-  convRate: number | null;
   featured: boolean;
+  /** The home really shows Shopify signals (store_checks). Badge only. */
+  shopifyVerified: boolean;
+  /** Active Meta ads — ONLY a real, fresh Meta Ad Library measurement; null otherwise. */
+  measuredAds: number | null;
 }
 
 export interface NichePageData {
@@ -33,7 +37,6 @@ export interface NichePageData {
   label: string;
   plural: string;
   stores: NicheStore[];
-  avgConv: number | null;
 }
 
 function toThumb(url: string | null): string | null {
@@ -81,7 +84,7 @@ export async function getNichePage(slug: string): Promise<NichePageData | null> 
     const service = createSupabaseServiceClient();
     const { data } = await service
       .from("winning_sites")
-      .select("title, domain, niche, thumbnail_url, metrics, is_featured")
+      .select("title, domain, niche, thumbnail_url, is_featured, ad_signals, active_ads_count, shopify_verified")
       .eq("niche", slug)
       .eq("status", "published")
       .eq("is_live", true);
@@ -91,35 +94,28 @@ export async function getNichePage(slug: string): Promise<NichePageData | null> 
         title: string;
         domain: string;
         thumbnail_url: string | null;
-        metrics: { conv_rate?: number } | null;
         is_featured: boolean;
+        ad_signals: Record<string, unknown> | null;
+        active_ads_count: number | null;
+        shopify_verified: boolean | null;
       }[]
     )
       .map((row) => ({
         title: row.title,
         domain: row.domain,
         thumbnailUrl: toThumb(row.thumbnail_url),
-        convRate:
-          typeof row.metrics?.conv_rate === "number"
-            ? row.metrics.conv_rate
-            : null,
         featured: row.is_featured,
+        shopifyVerified: row.shopify_verified === true,
+        measuredAds: measuredActiveAds({ active_ads_count: row.active_ads_count, ad_signals: row.ad_signals })?.count ?? null,
       }))
+      // No estimate decides the order: curated first, then REAL measured ad counts, then name.
       .sort(
         (a, b) =>
           Number(b.featured) - Number(a.featured) ||
-          (b.convRate ?? 0) - (a.convRate ?? 0),
+          (b.measuredAds ?? 0) - (a.measuredAds ?? 0) ||
+          a.title.localeCompare(b.title),
       );
-    const rates = stores.map((s) => s.convRate).filter((r): r is number => r != null);
-    return {
-      slug,
-      label: meta.label,
-      plural: meta.plural,
-      stores,
-      avgConv: rates.length
-        ? Math.round((rates.reduce((a, b) => a + b, 0) / rates.length) * 10) / 10
-        : null,
-    };
+    return { slug, label: meta.label, plural: meta.plural, stores };
   } catch {
     return null;
   }

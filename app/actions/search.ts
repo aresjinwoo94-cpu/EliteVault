@@ -8,6 +8,7 @@ import { runSearchAgent } from "@/ai/agents/search-agent";
 import { detectImageNiche, type NicheDetection } from "@/ai/agents/image-niche-detector";
 import { imageHash } from "@/lib/image-hash";
 import { applyMetricsCap } from "@/lib/library/metrics-cap";
+import { toCardPayload } from "@/lib/library/card-payload";
 
 export interface WinningSiteCard {
   id: string;
@@ -25,7 +26,11 @@ export interface WinningSiteCard {
   description?: string | null;
   is_featured: boolean;
   is_preselected?: boolean;
-  ad_signals?: Record<string, unknown> | null;
+  /**
+   * Active Meta ads — present ONLY for a real, fresh Meta Ad Library measurement (measuredActiveAds()).
+   * The raw `ad_signals` / `active_ads_count` (seeds and AI estimates) never leave the server.
+   */
+  measured_ads?: number | null;
   ai_reason?: string;
   metrics_locked?: boolean;
   teardown?: import("@/lib/supabase/types").Teardown | null;
@@ -124,7 +129,7 @@ export async function searchLibrary(opts: {
   let q = supabase
     .from("winning_sites")
     .select(
-      "id, url, domain, title, niche, thumbnail_url, metrics, description, is_featured, is_preselected, ad_signals, teardown, shopify_verified",
+      "id, url, domain, title, niche, thumbnail_url, metrics, description, is_featured, is_preselected, ad_signals, active_ads_count, teardown, shopify_verified",
     )
     // Only stores that passed the publication gate AND are alive (owner decision 2026-10-09;
     // the RLS policy enforces the same — see migration 0037).
@@ -198,6 +203,10 @@ export async function searchLibrary(opts: {
   // directly — `plan` above is still resolved from the session, never from the
   // caller, which is what keeps the gate unspoofable.
   items = applyMetricsCap(items, plan);
+
+  // Brief oct-2026 §L3: the card shows an ad count only when it is a REAL Meta Ad Library measurement.
+  // Compute it here and drop the raw estimate fields so nothing invented reaches the browser.
+  items = items.map((raw) => toCardPayload(raw as unknown as Record<string, unknown>) as unknown as WinningSiteCard);
 
   return {
     items,

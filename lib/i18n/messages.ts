@@ -559,7 +559,7 @@ const en: Dict = {
     badge2: "CURATED, NOT A MOODBOARD",
     heroH1: "A curated library of winning ecommerce stores",
     heroBody:
-      "Browse curated Shopify and DTC stores that stand out in their niche — filter by niche, see modeled metrics, and find the winners structurally closest to yours with image-similarity search. Then audit your own store free.",
+      "Browse curated Shopify and DTC stores that stand out in their niche — filter by niche, see how each one is built, and find the winners structurally closest to yours with image-similarity search. Then audit your own store free.",
     heroCta: "Browse winning stores",
     heroCaption: "3 winners free · no credit card",
     whatH2: "What's inside the library",
@@ -578,9 +578,9 @@ const en: Dict = {
     step1Title: "Find curated winners",
     step1Body:
       "Start from stores proven to convert cold traffic, filtered to your niche — your library of solved problems.",
-    step2Title: "Study the full metrics",
+    step2Title: "Study how they are built",
     step2Body:
-      "See how each winner is built — offer, hero, trust stack and more — with the numbers behind it.",
+      "See how each winner is built — offer, hero, trust stack and more — and open the store itself in one click.",
     step3Title: "Copy the principles, audit yours",
     step3Body:
       "Extract what works, then run a free audit of your own store to see where you stand against them.",
@@ -1510,7 +1510,7 @@ const es: Dict = {
     badge2: "CURADAS, NO UN MOODBOARD",
     heroH1: "Una librería curada de tiendas ecommerce ganadoras",
     heroBody:
-      "Explora tiendas de Shopify y DTC curadas que destacan en su nicho — filtra por nicho, mira métricas modeladas y encuentra las ganadoras más parecidas a la tuya con búsqueda por similitud de imagen. Luego audita tu propia tienda gratis.",
+      "Explora tiendas de Shopify y DTC curadas que destacan en su nicho — filtra por nicho, mira cómo está construida cada una y encuentra las ganadoras más parecidas a la tuya con búsqueda por similitud de imagen. Luego audita tu propia tienda gratis.",
     heroCta: "Explorar tiendas ganadoras",
     heroCaption: "3 ganadoras gratis · sin tarjeta",
     whatH2: "Qué hay dentro de la librería",
@@ -1529,9 +1529,9 @@ const es: Dict = {
     step1Title: "Encuentra ganadoras curadas",
     step1Body:
       "Parte de tiendas que ya convierten tráfico frío, filtradas a tu nicho — tu librería de problemas resueltos.",
-    step2Title: "Estudia las métricas completas",
+    step2Title: "Estudia cómo están construidas",
     step2Body:
-      "Mira cómo está construida cada ganadora — oferta, hero, stack de confianza y más — con los números detrás.",
+      "Mira cómo está construida cada ganadora — oferta, hero, stack de confianza y más — y abre la tienda en un clic.",
     step3Title: "Copia los principios, audita la tuya",
     step3Body:
       "Extrae lo que funciona y luego corre una auditoría gratis de tu tienda para ver dónde estás frente a ellas.",

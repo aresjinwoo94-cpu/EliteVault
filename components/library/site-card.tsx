@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import { m as motion } from "framer-motion";
-import { Activity, ExternalLink, Info, Lock, Sparkles, TrendingUp } from "lucide-react";
+import { Megaphone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SaveButton } from "./save-button";
 import { TeardownDialog } from "./teardown-dialog";
-import { cn, formatCompact } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { WinningSiteCard } from "@/app/actions/search";
 import { useT } from "@/components/i18n/locale-provider";
+import { fill } from "@/lib/i18n/lookup";
+import { phCapture } from "@/lib/analytics/posthog";
 
 /**
  * Resolve what a card should actually load, if anything.
@@ -35,6 +36,20 @@ function thumbSrc(url: string | null | undefined): string | null {
   return `${url.replace(marker, "/storage/v1/render/image/public/")}?width=800&quality=70`;
 }
 
+/**
+ * Library card (brief oct-2026 §L3, owner decision L-D1).
+ *
+ * The face of the card shows ONLY what is true and verifiable:
+ *   • the store's name and niche,
+ *   • a "Shopify" badge when the home really shows Shopify signals (store_checks),
+ *   • the number of active Meta ads ONLY when it is a real, fresh Meta Ad Library measurement
+ *     (`measured_ads` is computed on the server by measuredActiveAds()).
+ * No CTR / ROI / conversion / traffic and no 0–100 score: those were AI estimates.
+ *
+ * The WHOLE card is a link to the store (stretched-link pattern): the title anchor stretches over the card
+ * with an `after:` pseudo-element, and the ★ save / teardown controls sit above it (`relative z-10`), so using
+ * them never opens the store.
+ */
 export function SiteCard({
   site,
   index = 0,
@@ -48,22 +63,10 @@ export function SiteCard({
   initialSaved?: boolean;
 }) {
   const { t } = useT();
-  // `metrics` is null on locked rows — the server strips it rather than
-  // shipping numbers for CSS to blur. Falling back to {} makes every figure
-  // below render as an em dash, which is exactly what a locked card should say.
-  const m = (site.metrics ?? {}) as {
-    ctr?: number;
-    roi?: number;
-    conv_rate?: number;
-    traffic_est?: number;
-  };
-  const ad = site.ad_signals as
-    | { active_ads?: number; activity_score?: number; estimated?: boolean }
-    | null
-    | undefined;
   const locked = !!site.metrics_locked;
   const [imgFailed, setImgFailed] = useState(false);
   const src = thumbSrc(site.thumbnail_url);
+  const ads = typeof site.measured_ads === "number" && site.measured_ads > 0 ? site.measured_ads : null;
 
   return (
     <motion.div
@@ -75,22 +78,14 @@ export function SiteCard({
         duration: 0.45,
         ease: [0.22, 1, 0.36, 1],
       }}
+      data-library-card
       className={cn(
-        "group relative overflow-hidden rounded-2xl border bg-card/40 transition-all",
+        "group relative overflow-hidden rounded-2xl border bg-card/40 transition-all focus-within:border-white/[0.2]",
         locked
           ? "border-white/[0.04] hover:border-champagne-400/20"
           : "border-white/[0.06] hover:border-white/[0.14]",
       )}
     >
-      {site.ai_reason && (
-        <div className="absolute top-3 left-3 z-10 max-w-[80%]">
-          <Badge variant="ai">
-            <Sparkles className="size-3" />
-            {site.ai_reason.slice(0, 80)}
-          </Badge>
-        </div>
-      )}
-
       <div className="relative aspect-[4/3] overflow-hidden bg-obsidian-900">
         {imgFailed || !src ? (
           // Branded placeholder (landing-images-fix §4) — a dignified fallback
@@ -138,142 +133,57 @@ export function SiteCard({
             loading="lazy"
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-obsidian-950/80 via-obsidian-950/20 to-transparent" />
-        <div className="absolute bottom-3 left-3 flex gap-1.5">
-          {site.shopify_verified && (
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-obsidian-950/80 via-obsidian-950/20 to-transparent" />
+        {site.shopify_verified && (
+          <div className="pointer-events-none absolute bottom-3 left-3">
             <Badge variant="default" className="bg-obsidian-950/70 shadow-card">
               Shopify
             </Badge>
-          )}
-          {site.is_featured && (
-            <Badge
-              variant="gold"
-              className="border-champagne-400/40 bg-obsidian-950/70 shadow-card"
-            >
-              {t("community.featured")}
-            </Badge>
-          )}
-          {ad?.estimated && ad.activity_score !== undefined && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div>
-                  <Badge variant="ai">
-                    <Activity className="size-3" />
-                    {ad.activity_score}/100
-                  </Badge>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-[260px]">
-                <p className="font-medium">{t("siteCard.adActivity")}</p>
-                <p className="mt-1 text-white/60">
-                  {t("siteCard.adActivityNote")}
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <h3 className="font-medium text-white truncate">{site.title}</h3>
-            <p className="text-xs text-white/40 truncate">{site.domain}</p>
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
-            {/* "Cómo convierte" — only for Pro+ (canSave) AND when this store
-                actually has a curated teardown. Degrades to hidden otherwise
-                (guardrail 7), never an empty placeholder. */}
-            {canSave && site.teardown && (
-              <TeardownDialog site={site} initialSaved={initialSaved} />
-            )}
-            {canSave && (
-              <SaveButton siteId={site.id} initialSaved={initialSaved} />
-            )}
+      <div className="flex items-start justify-between gap-2 p-4">
+        <div className="min-w-0">
+          <h3 className="font-medium text-white">
+            {/* Stretched link: the ::after covers the whole card (its positioned ancestor). */}
             <a
               href={site.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="size-7 grid place-items-center rounded-md text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
-              onClick={(e) => e.stopPropagation()}
+              aria-label={fill(t("siteCard.opensStore"), { title: site.title, domain: site.domain })}
+              onClick={() =>
+                phCapture("library_store_click", {
+                  domain: site.domain,
+                  niche: site.niche,
+                  position: index + 1,
+                  locked,
+                })
+              }
+              className="block truncate after:absolute after:inset-0 after:content-[''] focus:outline-none"
             >
-              <ExternalLink className="size-3.5" />
+              {site.title}
             </a>
-          </div>
+          </h3>
+          <p className="mt-0.5 truncate text-xs capitalize text-white/45">{site.niche}</p>
+          {ads !== null && (
+            <p className="mt-2 flex items-center gap-1.5 text-[11px] text-white/55">
+              <Megaphone className="size-3 text-signal-300" aria-hidden />
+              {fill(t("siteCard.metaAds"), { n: ads })}
+            </p>
+          )}
         </div>
-
-        <div className="mt-3 grid grid-cols-4 gap-2">
-          {/*
-            On a locked card every figure is an em dash. The server already
-            strips `metrics` (applyMetricsCap), so `m` is empty and these would
-            render "—" anyway — but saying it explicitly means the UI still
-            withholds the number if a future change ever puts the data back on
-            the wire. Defence in depth for a paywall that used to be CSS.
-          */}
-          {(
-            [
-              ["CTR", locked || !m.ctr ? "—" : `${m.ctr.toFixed(1)}%`, false],
-              ["ROI", locked || !m.roi ? "—" : `${m.roi.toFixed(1)}x`, false],
-              // Conversion is the number an operator will challenge first —
-              // flag it explicitly as an estimate with an accessible tooltip
-              // explaining the source. We don't have anyone's Shopify data.
-              [t("siteCard.estConv"), locked || !m.conv_rate ? "—" : `${m.conv_rate.toFixed(1)}%`, true],
-              [t("siteCard.traffic"), locked || !m.traffic_est ? "—" : formatCompact(m.traffic_est), false],
-            ] as const
-          ).map(([label, val, withTip]) => (
-            <div
-              key={label}
-              // `select-none` used to exist so the blurred real numbers
-              // couldn't be selected and copied. There is nothing to protect in
-              // an em dash, so it goes with the blur.
-              className="rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-1.5 text-center"
-            >
-              {withTip && !locked ? (
-                <Tooltip>
-                  <TooltipTrigger
-                    aria-label={t("siteCard.convAria")}
-                    className="mx-auto flex items-center justify-center gap-0.5 rounded text-white/40 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
-                  >
-                    <span className="font-mono text-[10px] uppercase tracking-widest">
-                      {label}
-                    </span>
-                    <Info className="size-2.5" aria-hidden="true" />
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-[220px] text-left">
-                    {t("siteCard.metricsNote")}
-                  </TooltipContent>
-                </Tooltip>
-              ) : (
-                <p className="font-mono text-[10px] uppercase tracking-widest text-white/40">
-                  {label}
-                </p>
-              )}
-              {/*
-                No blur. The figure on a locked card is an em dash and the data
-                is gone from the payload entirely, so there is nothing left to
-                obscure — blurring a dash just reads as a rendering glitch. The
-                lock overlay below ("Unlock metrics with Pro") is what says the
-                card is gated.
-              */}
-              <p className="mt-0.5 text-xs font-medium text-white num">{val}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-3 flex items-center gap-1.5 text-[10px] text-white/40">
-          <TrendingUp className="size-3" />
-          <span className="capitalize">{site.niche}</span>
+        {/* Above the stretched link: ★ save and teardown work without opening the store. */}
+        <div className="relative z-10 flex shrink-0 items-center gap-1">
+          {/* "Cómo convierte" — only for Pro+ (canSave) AND when this store
+              actually has a curated teardown. Degrades to hidden otherwise
+              (guardrail 7), never an empty placeholder. */}
+          {canSave && site.teardown && (
+            <TeardownDialog site={site} initialSaved={initialSaved} />
+          )}
+          {canSave && <SaveButton siteId={site.id} initialSaved={initialSaved} />}
         </div>
       </div>
-
-      {locked && (
-        <div className="absolute inset-0 grid place-items-center bg-obsidian-950/30 backdrop-blur-[2px] opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-          <div className="flex items-center gap-2 rounded-lg bg-obsidian-900/95 px-4 py-2 ring-1 ring-champagne-400/30 shadow-gold">
-            <Lock className="size-3.5 text-champagne-400" />
-            <span className="text-xs text-white">{t("siteCard.unlockPro")}</span>
-          </div>
-        </div>
-      )}
     </motion.div>
   );
 }
