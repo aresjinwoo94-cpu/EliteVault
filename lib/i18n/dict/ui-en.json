@@ -380,8 +380,13 @@
     "scAggr": "Aggr.",
     "compTitle": "Competitor insights",
     "compPro": "Pro",
-    "compYou": "Your store",
-    "compTop": "Top store in your niche"
+    "compTopEnd": "Top store",
+    "compYouEnd": "Your store",
+    "compGap": "The gap",
+    "compReviews": "Reviews",
+    "compBundles": "Bundles",
+    "compShipping": "Shipping promise",
+    "compAria": "Your store against the top store in your niche, on the same axes: the top store rises while yours stays flat"
   },
   "features": {
     "yourStoreAlt": "Your store",

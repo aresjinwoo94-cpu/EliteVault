@@ -380,8 +380,13 @@
     "scAggr": "Agres.",
     "compTitle": "Tu competidor más fuerte",
     "compPro": "Pro",
-    "compYou": "Tu tienda",
-    "compTop": "La tienda líder de tu nicho"
+    "compTopEnd": "La líder",
+    "compYouEnd": "Tu tienda",
+    "compGap": "La brecha",
+    "compReviews": "Reseñas",
+    "compBundles": "Packs",
+    "compShipping": "Envío claro",
+    "compAria": "Tu tienda frente a la líder de tu nicho, en los mismos ejes: la líder sube mientras la tuya se queda plana"
   },
   "features": {
     "yourStoreAlt": "Tu tienda",
