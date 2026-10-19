@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { m as motion } from "framer-motion";
-import { Megaphone } from "lucide-react";
+import Link from "next/link";
+import { Lock, Megaphone } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { SaveButton } from "./save-button";
 import { TeardownDialog } from "./teardown-dialog";
@@ -50,7 +53,98 @@ function thumbSrc(url: string | null | undefined): string | null {
  * with an `after:` pseudo-element, and the ★ save / teardown controls sit above it (`relative z-10`), so using
  * them never opens the store.
  */
-export function SiteCard({
+export function SiteCard(props: SiteCardProps) {
+  // Locked (Free, beyond the preselected winners): a server-reduced shell — see toLockedPayload().
+  return props.site.metrics_locked ? <LockedSiteCard site={props.site} index={props.index ?? 0} /> : <OpenSiteCard {...props} />;
+}
+
+interface SiteCardProps {
+  site: WinningSiteCard;
+  index?: number;
+  /** Whether to show the ★ save button (Pro+). */
+  canSave?: boolean;
+  initialSaved?: boolean;
+}
+
+const PRO_HREF = "/app/checkout?plan=pro&interval=month";
+
+/**
+ * A locked card: blurred low-res thumbnail, a "Pro" chip, and a click that opens the upgrade dialog — it NEVER
+ * opens a store (it has no link, no name and no domain: none of that reached the browser).
+ */
+function LockedSiteCard({ site, index }: { site: WinningSiteCard; index: number }) {
+  const { t } = useT();
+  const [open, setOpen] = useState(false);
+  const src = site.thumbnail_url || null;
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: Math.min(index * 0.04, 0.4), duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      data-library-card
+      data-locked-card
+      className="group relative overflow-hidden rounded-2xl border border-white/[0.04] bg-card/40 transition-all hover:border-champagne-400/25"
+    >
+      <button
+        type="button"
+        onClick={() => {
+          phCapture("library_locked_click", { niche: site.niche, position: index + 1 });
+          setOpen(true);
+        }}
+        aria-label={t("siteCard.lockedCta")}
+        className="block w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-champagne-400/50"
+      >
+        <div className="relative aspect-[4/3] overflow-hidden bg-obsidian-900">
+          {src ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img src={src} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-110 object-cover object-top blur-lg" loading="lazy" />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-obsidian-800 to-obsidian-900">
+              <div className="absolute inset-0 bg-dot-grid opacity-20" />
+            </div>
+          )}
+          <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-obsidian-900/90 px-2.5 py-1 text-[10px] uppercase tracking-widest text-champagne-300 ring-1 ring-champagne-400/30">
+            <Lock className="size-3" />
+            Pro
+          </div>
+        </div>
+        <div className="p-4">
+          <p className="font-medium text-white/80">{t("siteCard.lockedName")}</p>
+          <p className="mt-0.5 truncate text-xs capitalize text-white/45">{site.niche}</p>
+          <p className="mt-2 flex items-center gap-1.5 text-[11px] text-champagne-300">
+            <Lock className="size-3" aria-hidden />
+            {t("siteCard.lockedCta")}
+          </p>
+        </div>
+      </button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-md border-white/[0.08] bg-obsidian-900">
+          <DialogHeader>
+            <DialogTitle className="font-serif text-2xl">{t("siteCard.upgradeTitle")}</DialogTitle>
+            <DialogDescription className="text-white/55">{t("siteCard.upgradeBody")}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2.5">
+            <Link
+              href={PRO_HREF}
+              onClick={() => phCapture("library_upgrade_click", { niche: site.niche, position: index + 1 })}
+              className="block"
+            >
+              <Button variant="primary" size="lg" className="w-full">
+                {t("siteCard.upgradeCta")}
+              </Button>
+            </Link>
+            <button type="button" onClick={() => setOpen(false)} className="w-full text-center text-xs text-white/50 hover:text-white">
+              {t("siteCard.notNow")}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </motion.div>
+  );
+}
+
+function OpenSiteCard({
   site,
   index = 0,
   canSave = false,
@@ -174,7 +268,7 @@ export function SiteCard({
           )}
         </div>
         {/* Above the stretched link: ★ save and teardown work without opening the store. */}
-        <div className="relative z-10 flex shrink-0 items-center gap-1">
+        <div className="relative z-10 flex shrink-0 items-center gap-3">
           {/* "Cómo convierte" — only for Pro+ (canSave) AND when this store
               actually has a curated teardown. Degrades to hidden otherwise
               (guardrail 7), never an empty placeholder. */}

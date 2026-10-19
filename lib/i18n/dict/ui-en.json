@@ -323,7 +323,7 @@
     "eyebrow": "Library",
     "storesCurated": "stores · AI-curated",
     "subPro": "Drop a screenshot of your own store and our AI finds its closest converting siblings. Or search by prompt across all niches.",
-    "subFree": "Browse the curated winners and open any store in one click. Upgrade for AI image search, teardowns and saved collections.",
+    "subFree": "Browse 3 hand-picked winners and open them in one click. Upgrade to see every winning store, plus AI image search, teardowns and saved collections.",
     "auditMine": "Audit my store",
     "all": "All",
     "promptPlaceholder": "Try \"minimal skincare with editorial type\" or \"subscription wellness brands\"",
@@ -337,7 +337,7 @@
     "reranked": "AI re-ranked",
     "noMatches": "No matches. Try a different prompt.",
     "allStores": "All stores",
-    "unlockBody": "Unlock AI image-similarity search, store teardowns and saved collections for $19/mo.",
+    "unlockBody": "Unlock the full Library of winning stores, AI image-similarity search, teardowns and saved collections for $19/mo.",
     "upgradePro": "Upgrade to Pro",
     "saved": "Saved to your collection",
     "removeSaved": "Remove from saved",
@@ -348,7 +348,13 @@
   },
   "siteCard": {
     "metaAds": "{n} active ads on Meta",
-    "opensStore": "{title} ({domain}) — opens the store in a new tab"
+    "opensStore": "{title} ({domain}) — opens the store in a new tab",
+    "lockedName": "Winning store",
+    "lockedCta": "Unlock with Pro",
+    "upgradeTitle": "Unlock the full Library",
+    "upgradeBody": "Pro opens every winning store in one click, adds AI image-similarity search and lets you save your favorites and read their teardowns.",
+    "upgradeCta": "Upgrade to Pro",
+    "notNow": "Not now"
   },
   "collage": {
     "complete": "Audit complete",
@@ -447,7 +453,7 @@
     "q0": "How do you find winning Shopify stores?",
     "a0": "We curate it: an AI assistant proposes candidate stores in each niche, and every one passes automated checks (site live, complete listing, niche fit) before it is published. Each entry shows modeled metrics so you can study what is likely working — they are estimates, not figures reported by the brands, and the library is re-checked periodically rather than in real time.",
     "q1": "Is the winning-stores library free?",
-    "a1": "The Free plan includes 3 hand-picked winning stores with full metrics and the community feed. Pro and Scale unlock the full library, unlimited entries and image-similarity search.",
+    "a1": "The Free plan includes 3 hand-picked winning stores and the community feed. Pro and Scale unlock the full library of winning stores and image-similarity search.",
     "q2": "How is this different from a Shopify spy tool?",
     "a2": "Spy tools dump products and ad creatives. EliteVault is built for conversion: it pairs curated winners with image-similarity search (find the stores structurally closest to yours) and a free audit of your own store, so you copy the principles that actually convert.",
     "q3": "Can I find winners in my specific niche?",

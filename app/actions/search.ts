@@ -8,7 +8,7 @@ import { runSearchAgent } from "@/ai/agents/search-agent";
 import { detectImageNiche, type NicheDetection } from "@/ai/agents/image-niche-detector";
 import { imageHash } from "@/lib/image-hash";
 import { applyMetricsCap } from "@/lib/library/metrics-cap";
-import { toCardPayload } from "@/lib/library/card-payload";
+import { toCardPayload, toLockedPayload } from "@/lib/library/card-payload";
 
 export interface WinningSiteCard {
   id: string;
@@ -140,7 +140,8 @@ export async function searchLibrary(opts: {
     .limit(opts.limit ?? 36);
 
   if (effectiveNiche) q = q.eq("niche", effectiveNiche);
-  if (opts.prompt) {
+  // Free users cannot text-search the Library: a title filter would let them probe names of locked stores.
+  if (opts.prompt && isPaid) {
     const search = opts.prompt.replace(/[^a-z0-9 ]/gi, "").trim();
     if (search) {
       q = q.or(
@@ -206,7 +207,12 @@ export async function searchLibrary(opts: {
 
   // Brief oct-2026 §L3: the card shows an ad count only when it is a REAL Meta Ad Library measurement.
   // Compute it here and drop the raw estimate fields so nothing invented reaches the browser.
-  items = items.map((raw) => toCardPayload(raw as unknown as Record<string, unknown>) as unknown as WinningSiteCard);
+  // Locked rows (Free, beyond the preselected winners) are reduced to an opaque shell on the SERVER; the rest keep
+  // only the derived ad count.
+  items = items.map((raw) => {
+    const r = raw as unknown as Record<string, unknown>;
+    return (r.metrics_locked ? toLockedPayload(r) : toCardPayload(r)) as unknown as WinningSiteCard;
+  });
 
   return {
     items,

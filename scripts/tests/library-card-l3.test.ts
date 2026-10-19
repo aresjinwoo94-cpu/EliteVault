@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { toCardPayload } from "../../lib/library/card-payload";
+import { toCardPayload, toLockedPayload } from "../../lib/library/card-payload";
 import { AD_SOURCE_META } from "../../lib/library/ad-signal";
 import { messages } from "../../lib/i18n/messages";
 
@@ -28,7 +28,7 @@ test("card payload: an ad count reaches the browser ONLY for a real, fresh Meta 
 
 test("the search action sends the derived payload, not the raw ad fields", () => {
   const src = read("app/actions/search.ts");
-  assert.match(src, /toCardPayload\(raw as unknown as Record<string, unknown>\)/);
+  assert.match(src, /toCardPayload\(r\)/);
   assert.ok(src.indexOf("applyMetricsCap(items, plan)") < src.indexOf("toCardPayload("), "the plan gate still runs first");
 });
 
@@ -51,16 +51,73 @@ test("Library card: the whole card is a link to the store (stretched link), save
   assert.match(src, /rel="noopener noreferrer"/);
   assert.match(src, /after:absolute after:inset-0/, "stretched link");
   // the controls sit above the stretched link
-  assert.match(src, /relative z-10 flex shrink-0 items-center gap-1[\s\S]*?<TeardownDialog[\s\S]*?<SaveButton/);
+  assert.match(src, /relative z-10 flex shrink-0 items-center gap-3[\s\S]*?<TeardownDialog[\s\S]*?<SaveButton/);
   // the card root is the positioned ancestor of the ::after
   assert.match(src, /"group relative overflow-hidden rounded-2xl border/);
   assert.match(src, /phCapture\("library_store_click", \{\s*domain: site\.domain,\s*niche: site\.niche,\s*position: index \+ 1,\s*locked,?\s*\}\)/);
 });
 
-test("locked cards carry no overlay at all: nothing on the card is locked any more, so no hover/blur layer can ever swallow the link click", () => {
+test("Free gating is on the SERVER: a locked row is reduced to an opaque shell (no name, link, domain, teardown, badge, ads)", () => {
+  const raw = {
+    id: "abc",
+    niche: "pet",
+    title: "SecretBrand",
+    url: "https://secretbrand.com",
+    domain: "secretbrand.com",
+    description: "secretbrand sells stuff",
+    teardown: { hero: "x" },
+    shopify_verified: true,
+    metrics: { ctr: 3 },
+    thumbnail_url: "https://x.supabase.co/storage/v1/object/public/screenshots/uuid-123.jpg",
+    ad_signals: { source: AD_SOURCE_META, measured_at: NOW, estimated: false },
+    active_ads_count: 50,
+  };
+  const p = toLockedPayload(raw);
+  const json = JSON.stringify(p);
+  for (const leak of ["SecretBrand", "secretbrand", "hero", "stuff"]) assert.ok(!json.toLowerCase().includes(leak.toLowerCase()), `leaks ${leak}`);
+  assert.equal(p.title, "");
+  assert.equal(p.url, "");
+  assert.equal(p.domain, "");
+  assert.equal(p.measured_ads, null);
+  assert.equal(p.metrics_locked, true);
+  assert.equal(p.id, "abc");
+  assert.equal(p.niche, "pet");
+  // only a tiny low-quality render of OUR storage image; external images are dropped
+  assert.match(String(p.thumbnail_url), /\/storage\/v1\/render\/image\/public\/screenshots\/uuid-123\.jpg\?width=80&quality=20$/);
+  assert.equal(toLockedPayload({ ...raw, thumbnail_url: "https://cdn.brand.com/og.png" }).thumbnail_url, null);
+  const src = read("app/actions/search.ts");
+  assert.match(src, /r\.metrics_locked \? toLockedPayload\(r\) : toCardPayload\(r\)/);
+  assert.match(src, /if \(opts\.prompt && isPaid\)/, "no text search on Free (it would probe locked names)");
+});
+
+test("locked card UI: blurred thumbnail + Pro chip + upgrade dialog; it has no link to any store", () => {
   const src = strip(read("components/library/site-card.tsx"));
-  assert.doesNotMatch(src, /data-locked-chip|opacity-0 md:group-hover|backdrop-blur|unlockPro|proChip|<Lock\b/);
-  assert.match(src, /locked,?\s*\}\)/, "locked still travels in the analytics event");
+  const locked = src.slice(src.indexOf("function LockedSiteCard"), src.indexOf("function OpenSiteCard"));
+  assert.match(locked, /blur-lg/);
+  assert.match(locked, /Pro\s*<\/div>/);
+  assert.match(locked, /<Dialog open=\{open\}/);
+  assert.match(locked, /library_locked_click/);
+  assert.match(locked, /PRO_HREF/);
+  assert.doesNotMatch(locked, /site\.url|site\.title|site\.domain|target="_blank"|href=\{site/, "never a store link or name");
+  assert.match(src, /props\.site\.metrics_locked \? <LockedSiteCard/);
+});
+
+test("★ and teardown have a 44px touch target (28px icon + invisible padding)", () => {
+  for (const f of ["components/library/save-button.tsx", "components/library/teardown-dialog.tsx"]) {
+    assert.match(read(f), /size-7[^"]*after:absolute after:-inset-2/, f);
+  }
+  assert.match(strip(read("components/library/site-card.tsx")), /relative z-10 flex shrink-0 items-center gap-3/);
+});
+
+test("plan and Library copy no longer promise 'full metrics' (EN + ES), and say what Free/Pro really get", async () => {
+  const { PLANS } = await import("../../lib/stripe/plans");
+  const feats = (id: "free" | "pro") => PLANS[id].features.map((f) => f.text);
+  assert.ok(feats("free").includes("3 hand-picked winning stores"));
+  assert.ok(feats("pro").includes("Full Library of winning stores"));
+  assert.ok(feats("pro").includes("Image-similarity search"));
+  for (const file of ["lib/stripe/plans.ts", "lib/i18n/messages.ts", "lib/i18n/dict/ui-en.json", "lib/i18n/dict/ui-es.json", "app/llms.txt/route.ts", "app/page.tsx", "lib/support/kb.ts"]) {
+    assert.doesNotMatch(strip(read(file)), /full metrics|métricas completas|con todas sus métricas|with metrics\./i, file);
+  }
 });
 
 test("public niche pages and their data layer carry no invented metrics and no /100", () => {

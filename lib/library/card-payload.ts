@@ -19,3 +19,36 @@ export function toCardPayload<T extends Record<string, unknown>>(
     measured_ads: number | null;
   };
 }
+
+/**
+ * A LOCKED Library card (Free plan, beyond the preselected winners). Gating happens on the SERVER: the name, the
+ * link, the domain, the description, the teardown, the Shopify badge and the ad count are NOT sent at all, so
+ * they cannot be read from devtools. Only an opaque id, the niche and a tiny low-quality thumbnail (blurred in
+ * the UI) remain. External thumbnails cannot be downscaled, so they are dropped (the card shows a placeholder).
+ */
+export const LOCKED_THUMB_PARAMS = "?width=80&quality=20";
+
+export function lockedThumb(url: unknown): string | null {
+  if (typeof url !== "string") return null;
+  const marker = "/storage/v1/object/public/";
+  if (!url.includes(marker)) return null;
+  return `${url.replace(marker, "/storage/v1/render/image/public/").split("?")[0]}${LOCKED_THUMB_PARAMS}`;
+}
+
+export function toLockedPayload(raw: Record<string, unknown>) {
+  return {
+    id: raw.id as string,
+    niche: raw.niche as string,
+    thumbnail_url: lockedThumb(raw.thumbnail_url) as string | null,
+    metrics: null,
+    metrics_locked: true as const,
+    is_featured: false,
+    title: "",
+    url: "",
+    domain: "",
+    description: null,
+    teardown: null,
+    shopify_verified: null,
+    measured_ads: null,
+  };
+}

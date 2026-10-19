@@ -323,7 +323,7 @@
     "eyebrow": "Biblioteca",
     "storesCurated": "tiendas · curadas por IA",
     "subPro": "Sube una captura de tu propia tienda y nuestra IA encuentra sus tiendas hermanas que más convierten. O busca por prompt en todos los nichos.",
-    "subFree": "Explora las ganadoras seleccionadas y abre cualquier tienda con un clic. Mejora tu plan para la búsqueda por imagen con IA, los teardowns y las colecciones guardadas.",
+    "subFree": "Explora 3 ganadoras seleccionadas a mano y ábrelas con un clic. Mejora tu plan para ver todas las tiendas ganadoras, además de la búsqueda por imagen con IA, los teardowns y las colecciones guardadas.",
     "auditMine": "Audita mi tienda",
     "all": "Todas",
     "promptPlaceholder": "Prueba «skincare minimalista con tipografía editorial» o «marcas de bienestar por suscripción»",
@@ -337,7 +337,7 @@
     "reranked": "Reordenado por IA",
     "noMatches": "Sin coincidencias. Prueba con otro prompt.",
     "allStores": "Todas las tiendas",
-    "unlockBody": "Desbloquea la búsqueda por similitud de imagen con IA, los teardowns de tiendas y las colecciones guardadas por 19 $/mes.",
+    "unlockBody": "Desbloquea la Biblioteca completa de tiendas ganadoras, la búsqueda por similitud de imagen con IA, los teardowns y las colecciones guardadas por 19 $/mes.",
     "upgradePro": "Mejorar a Pro",
     "saved": "Guardada en tu colección",
     "removeSaved": "Quitar de guardadas",
@@ -348,7 +348,13 @@
   },
   "siteCard": {
     "metaAds": "{n} anuncios activos en Meta",
-    "opensStore": "{title} ({domain}) — abre la tienda en una pestaña nueva"
+    "opensStore": "{title} ({domain}) — abre la tienda en una pestaña nueva",
+    "lockedName": "Tienda ganadora",
+    "lockedCta": "Desbloquea con Pro",
+    "upgradeTitle": "Desbloquea la Biblioteca completa",
+    "upgradeBody": "Pro abre cada tienda ganadora con un clic, añade la búsqueda por similitud de imagen con IA y te deja guardar tus favoritas y leer sus teardowns.",
+    "upgradeCta": "Pasar a Pro",
+    "notNow": "Ahora no"
   },
   "collage": {
     "complete": "Auditoría completada",
@@ -447,7 +453,7 @@
     "q0": "¿Cómo encontráis tiendas Shopify ganadoras?",
     "a0": "La curamos nosotros: un asistente de IA propone tiendas candidatas en cada nicho y cada una pasa comprobaciones automáticas (sitio activo, ficha completa, encaje con el nicho) antes de publicarse. Cada entrada muestra métricas modeladas para que estudies lo que probablemente funciona: son estimaciones, no cifras reportadas por las marcas, y la biblioteca se revisa periódicamente, no en tiempo real.",
     "q1": "¿La biblioteca de tiendas ganadoras es gratis?",
-    "a1": "El plan Gratis incluye 3 tiendas ganadoras seleccionadas a mano con métricas completas y el feed de la comunidad. Pro y Scale desbloquean la biblioteca completa, entradas ilimitadas y la búsqueda por similitud de imagen.",
+    "a1": "El plan Gratis incluye 3 tiendas ganadoras seleccionadas a mano y el feed de la comunidad. Pro y Scale desbloquean la biblioteca completa, entradas ilimitadas y la búsqueda por similitud de imagen.",
     "q2": "¿En qué se diferencia de una herramienta espía de Shopify?",
     "a2": "Las herramientas espía vuelcan productos y creatividades de anuncios. EliteVault está hecho para la conversión: combina ganadoras curadas con búsqueda por similitud de imagen (encuentra las tiendas estructuralmente más cercanas a la tuya) y una auditoría gratuita de tu propia tienda, para que copies los principios que de verdad convierten.",
     "q3": "¿Puedo encontrar ganadoras de mi nicho concreto?",

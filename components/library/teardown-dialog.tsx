@@ -63,7 +63,7 @@ export function TeardownDialog({
           aria-label={t("library.teardown.cta")}
           title={t("library.teardown.cta")}
           onClick={(e) => e.stopPropagation()}
-          className="size-7 grid place-items-center rounded-md text-white/40 hover:text-champagne-200 hover:bg-champagne-400/10 transition-colors"
+          className="relative size-7 grid place-items-center rounded-md text-white/40 hover:text-champagne-200 hover:bg-champagne-400/10 transition-colors after:absolute after:-inset-2 after:content-['']"
         >
           <Layers className="size-3.5" />
         </button>
