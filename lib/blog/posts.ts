@@ -687,10 +687,10 @@ ${finalVideo}
   },
   {
     slug: "free-website-audit-tools",
-    title: "Free Website Audit Tools (2026): What They Check & Which to Use",
-    h1: "Free website audit tools in 2026: what they actually check (and which to use)",
+    title: "Free Website Audit Tools: What Each Checks, and Its Limits",
+    h1: "Website audit tools at no cost: what each type checks, where it stops and which to use",
     description:
-      "A plain-English guide to free website audit tools and analyzers in 2026 — the three types, what each really checks, and how to run a free conversion audit of your store.",
+      "Free website audit tools by type: speed, SEO, accessibility, behavior and conversion. What each checks, its limits and which to use for your question.",
     keyword: "free website audit tools",
     keywords: [
       "free website audit tools",
@@ -701,60 +701,108 @@ ${finalVideo}
       "website grader",
     ],
     date: "2026-06-17",
-    updated: "2026-10-11",
+    updated: "2026-10-19",
     author: "Ariel Jiménez",
     readingMinutes: 7,
     video: FINAL_VIDEO_META,
     excerpt:
-      "Not all 'free website audit' tools measure the same thing. The three types, what each checks, and which one actually tells you why you're losing sales.",
+      "Five types of website audit, what each really checks, where it stops, and which tool to reach for depending on the problem you are trying to solve.",
     bodyHtml: `
-<p class="lede">Search "free website audit" and you'll get a hundred tools that all promise a score — and measure completely different things. Before you trust any number, you need to know which kind of audit you're running, because a perfect score in one can sit right next to a store that doesn't sell.</p>
-<p>A website audit tool (or website analyzer) reviews a page and reports what's helping or hurting it. The catch: "helping or hurting" depends entirely on the <em>goal</em> the tool was built around. There are three goals, and three corresponding types of tool.</p>
-<h2>The 3 types of website audit tool</h2>
-<table><thead><tr><th>Type</th><th>What it measures</th><th>Best for</th></tr></thead><tbody>
-<tr><td>Speed / performance</td><td>Load time, Core Web Vitals, asset weight</td><td>Engineering fixes</td></tr>
-<tr><td>SEO</td><td>Meta tags, crawlability, links, keywords</td><td>Organic visibility</td></tr>
-<tr><td>Conversion (CRO)</td><td>Offer clarity, trust, layout, what makes people buy</td><td>Turning traffic into sales</td></tr>
-</tbody></table>
-<p>Speed and SEO tools are useful and genuinely free (Google's own PageSpeed Insights and Search Console are the gold standard). But here's the trap most founders fall into: <strong>a fast, SEO-clean store can still convert at near-zero.</strong> Speed and crawlability get visitors <em>to</em> your store. Conversion is whether they buy once they arrive. If you have traffic but no sales, a speed score won't tell you why — see <a href="/blog/shopify-store-analyzer">what a Shopify store analyzer checks</a> beyond speed.</p>
-<blockquote>A 100/100 speed score on a store nobody buys from is a fast way to lose money.</blockquote>
-<h2>What a conversion-focused audit actually checks</h2>
-<p>This is the type that answers "why am I not selling?" — and the one generic analyzers skip. A real conversion audit grades how a buyer experiences your store:</p>
+<p class="lede">Free website audit tools fall into a handful of types, and each one answers a different question: is the site fast, can Google read it, can everyone use it, what do visitors do, and why don't they buy. A top score in one says little about the others. Pick the tool by the question you are trying to answer, not by the word "audit".</p>
+${finalVideo}
+<p>The video above shows why that matters: a real store with weak ad returns compared with a leader in its niche. A speed score wouldn't have explained the gap, but a look at what a shopper sees did. This guide compares the main types, says what each is good for and where it stops, so you can cover the whole picture without paying for tools you don't need. We don't quote prices for anything here, because they change; check each tool's own page.</p>
+
+<h2>What types of website audit tool exist?</h2>
+<p>There are five questions worth auditing for, and each has its own kind of tool. Most founders run the first two and stop, then wonder why traffic still doesn't turn into orders.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 338" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="d7a-title d7a-desc"><title id="d7a-title">Types of website audit and the question each answers</title><desc id="d7a-desc">Five stacked cards. Speed answers whether the site is fast for real users, for example PageSpeed Insights. SEO answers whether Google can find and read it, for example Search Console. Accessibility answers whether everyone can use it, for example WAVE. Behavior answers what visitors do, for example Microsoft Clarity. Conversion answers why visitors don't buy, for example a store analyzer.</desc>
+<rect x="0.5" y="0.5" width="299" height="61" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="22" font-size="14" font-weight="600" fill="#ffffff">Speed</text><text x="14" y="42" font-size="14" fill="rgba(255,255,255,0.6)">Is it fast for real users?</text><text x="286" y="22" text-anchor="end" font-size="14" fill="#2DD4BF">e.g. PageSpeed Insights</text><rect x="0.5" y="68.5" width="299" height="61" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="90" font-size="14" font-weight="600" fill="#ffffff">SEO</text><text x="14" y="110" font-size="14" fill="rgba(255,255,255,0.6)">Can Google find and read it?</text><text x="286" y="90" text-anchor="end" font-size="14" fill="#2DD4BF">e.g. Search Console</text><rect x="0.5" y="136.5" width="299" height="61" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="158" font-size="14" font-weight="600" fill="#ffffff">Accessibility</text><text x="14" y="178" font-size="14" fill="rgba(255,255,255,0.6)">Can everyone use it?</text><text x="286" y="158" text-anchor="end" font-size="14" fill="#2DD4BF">e.g. WAVE</text><rect x="0.5" y="204.5" width="299" height="61" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="226" font-size="14" font-weight="600" fill="#ffffff">Behavior</text><text x="14" y="246" font-size="14" fill="rgba(255,255,255,0.6)">What do visitors do?</text><text x="286" y="226" text-anchor="end" font-size="14" fill="#2DD4BF">e.g. Microsoft Clarity</text><rect x="0.5" y="272.5" width="299" height="61" rx="8" fill="rgba(45,212,191,0.1)" stroke="#2DD4BF"/><text x="14" y="294" font-size="14" font-weight="600" fill="#2DD4BF">Conversion</text><text x="14" y="314" font-size="14" fill="rgba(255,255,255,0.6)">Why don't they buy?</text><text x="286" y="294" text-anchor="end" font-size="14" fill="#2DD4BF">e.g. a store analyzer</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Each type answers one question. A good score in one says little about the others.</figcaption>
+</figure>
+<p>Not sure which one your problem needs? <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=free-website-audit-tools">Run the audit on your store →</a></p>
+
+<h2>Speed and performance: PageSpeed Insights</h2>
+<p><strong>What it checks.</strong> Google's PageSpeed Insights reports on a URL in two ways, per its <a href="https://developers.google.com/speed/docs/insights/v5/about" rel="nofollow">documentation</a>. Lab data comes from a simulated Lighthouse run and scores four categories: Performance, Accessibility, Best Practices and SEO. Field data comes from the Chrome UX Report and reflects real users over the previous 28 days, with the Core Web Vitals (INP, LCP and CLS) deciding whether a page passes.</p>
+<p><strong>Where it stops.</strong> It tells you how fast a page is, not whether anyone wants what is on it. A page can pass every vital and still fail to make an offer clear. Use it to catch slow pages (Google's <a href="https://web.dev/articles/lcp" rel="nofollow">guidance</a> calls an LCP of 2.5 seconds or less good), not to judge selling power.</p>
+
+<h2>SEO: Google Search Console and crawlers</h2>
+<p><strong>What it checks.</strong> <a href="https://support.google.com/webmasters/answer/9128668" rel="nofollow">Google Search Console</a> is a free service from Google that helps you monitor and troubleshoot your site's presence in search: which queries show your pages, how often people click, whether pages are indexed and whether Google's crawlers can reach them. A desktop crawler such as Screaming Frog goes through your own pages like a search engine would; its <a href="https://www.screamingfrog.co.uk/seo-spider/pricing/" rel="nofollow">pricing page</a> lists a crawl limit of 500 URLs for the free version.</p>
+<p><strong>Where it stops.</strong> These tools show whether search engines can find and read your pages, and how people reach them. They say nothing about whether a visitor trusts you or understands the offer. For a store with a few dozen pages the 500-URL limit rarely matters; for a large catalog it does.</p>
+
+<h2>Accessibility: Lighthouse and WAVE</h2>
+<p><strong>What it checks.</strong> Accessibility audits look for barriers for people with disabilities. PageSpeed Insights includes an Accessibility category in its Lighthouse run, and <a href="https://wave.webaim.org/" rel="nofollow">WAVE</a> describes itself as a suite of evaluation tools that helps authors make their content more accessible, working from a page address.</p>
+<p><strong>Where it stops.</strong> Automated checks catch many issues but not all, and WAVE's own page notes it also supports human evaluation. An accessibility pass improves usability for everyone, but it is not a conversion audit.</p>
+
+<h2>Behavior: Microsoft Clarity and Shopify's own reports</h2>
+<p><strong>What it checks.</strong> Behavior tools show what real visitors do. <a href="https://learn.microsoft.com/en-us/clarity/setup-and-installation/about-clarity" rel="nofollow">Microsoft Clarity</a> describes itself as a behavioral analytics tool with session recordings, heatmaps and funnels, and states that it is a free service with no obligation to upgrade. Inside Shopify, the Conversion rate breakdown report shows how sessions move through your store, per <a href="https://help.shopify.com/en/manual/reports-and-analytics/shopify-reports/report-types/default-reports/behaviour-reports" rel="nofollow">Shopify's help page</a>: all sessions, sessions with cart additions, sessions that reached checkout and sessions that completed checkout.</p>
+<p><strong>Where it stops.</strong> Behavior tools need to be installed and need enough traffic to be meaningful. They tell you where visitors go and drop, but you still have to interpret why. A recording of someone leaving doesn't tell you what you should have said.</p>
+
+<h2>Conversion: reading what a shopper sees</h2>
+<p><strong>What it checks.</strong> A conversion-focused audit judges the page the way a first-time buyer would: is the offer clear, is there proof, does the layout lead to one action, do the visuals fit the niche. This is the type that answers "why don't they buy?" and the one generic website graders skip. Ours is the <a href="/">Shopify store audit</a> (full disclosure, EliteVault is our product): it reads a screenshot of your live storefront and returns a score, an annotated screenshot and fixes ranked by impact. The Free plan includes one full audit with one set of fixes unlocked and no card required.</p>
+<p><strong>Where it stops.</strong> Because it works from a screenshot, it judges what a shopper sees. It doesn't read your analytics, your recordings or your checkout flow, so use it alongside the behavior tools above. A score is also only as useful as the ranking behind it: a single grade that averages unrelated factors hides the one problem costing you most.</p>
+
+<h2>Which tool should you use for your question?</h2>
+<p>Start from the symptom, not the tool. The diagram pairs the common ones with where to look first.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 246" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="d7b-title d7b-desc"><title id="d7b-title">Which tool for which symptom</title><desc id="d7b-desc">Four symptoms and the tool to start with. Pages feel slow: PageSpeed Insights. Not showing up in Google: Search Console. Visitors leave and you don't know why: Clarity recordings. Traffic but no sales and no clue where: a conversion audit.</desc>
+<rect x="0.5" y="0.5" width="299" height="53" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="22" font-size="14" fill="#ffffff">If: Pages feel slow</text><text x="14" y="43" font-size="14" font-weight="600" fill="#2DD4BF">→ PageSpeed Insights</text><rect x="0.5" y="64.5" width="299" height="53" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="86" font-size="14" fill="#ffffff">If: Not showing up in Google</text><text x="14" y="107" font-size="14" font-weight="600" fill="#2DD4BF">→ Search Console</text><rect x="0.5" y="128.5" width="299" height="53" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="150" font-size="14" fill="#ffffff">If: Visitors leave, no idea why</text><text x="14" y="171" font-size="14" font-weight="600" fill="#2DD4BF">→ Clarity recordings</text><rect x="0.5" y="192.5" width="299" height="53" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="214" font-size="14" fill="#ffffff">If: Traffic, no sales, no clue where</text><text x="14" y="235" font-size="14" font-weight="600" fill="#2DD4BF">→ A conversion audit</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Start from the symptom you can name, not from the tool list.</figcaption>
+</figure>
+<p>If the symptom is "traffic but no sales," a speed score and an SEO crawl won't help; they check different things. Begin with the funnel report to see where visitors drop, then use a conversion audit for the page they drop on. Our guide to <a href="/blog/shopify-store-analyzer">Shopify store analysis</a> walks through those steps in order, and the <a href="/blog/shopify-cro-audit">Shopify CRO audit checklist</a> goes page by page.</p>
+
+<h2>How do you build a no-cost audit stack in a week?</h2>
+<p>You don't need to run everything at once. A realistic order for a small store is this. On day one, run your home page and best-selling product page through PageSpeed Insights and note the mobile results. On day two, connect Search Console, so data starts accumulating. On day three, install a behavior tool such as Clarity so recordings and heatmaps begin to collect; it needs traffic and time. Then, with that running, use the funnel report and a conversion audit to look at the pages where visitors drop. By the end of the week you have a baseline for each question and a short list of what to fix first, which is more than most stores have.</p>
+<p>One caution on behavior tools: they record what visitors do, so treat consent and privacy seriously. Clarity's documentation includes controls for cookies, consent and masking, and notes that it shouldn't be used on sites aimed at users under 18. Check the rules that apply to your market before you install anything.</p>
+
+<h2>Why do generic website graders mislead?</h2>
+<p>Many "website grade" tools average unrelated factors into one number. A store can score well because its images are compressed and its tags are tidy while the offer is invisible. The number feels like an answer and tells you almost nothing about what to do first. Prefer tools that separate the questions, show their evidence and rank what to change, and be suspicious of any single score that claims to cover everything.</p>
+
+<h2>What limits do all audit tools share?</h2>
 <ul>
-<li><strong>First impression / offer clarity</strong> — can a stranger tell what you sell in 2 seconds?</li>
-<li><strong>Layout & hierarchy</strong> — is the value prop and CTA above the fold?</li>
-<li><strong>Trust & proof</strong> — are reviews, badges and guarantees where buyers look?</li>
-<li><strong>Imagery & niche fit</strong> — do your visuals match what converts in your category?</li>
-<li><strong>CRO principles</strong> — friction, objection handling, the levers that move sales.</li>
-<li><strong>Technical signals</strong> — the speed issues that also leak conversions.</li>
+<li><strong>A score is not a diagnosis.</strong> A number tells you how you did, not what to change first. Prefer tools that rank fixes.</li>
+<li><strong>Tools measure what they were built to measure.</strong> Check the method before you trust the number: lab data and field data differ, and a crawler doesn't see shoppers.</li>
+<li><strong>Free tiers have limits.</strong> Crawl caps, sampling or one run per account are common; read each tool's page before you rely on it.</li>
+<li><strong>No tool tells you how you compare.</strong> The comparison that decides a sale is with the store next to you in the shopper's other tab, which is why we keep coming back to the top store in your niche.</li>
 </ul>
-<div class="callout"><h3>Why generic scores mislead</h3><p>A single "website grade" averaged across unrelated factors hides the one thing you need: <em>which</em> problem is costing you the most. The value isn't a number — it's a ranked list of fixes. A tool that says "73/100" and stops there has told you almost nothing.</p></div>
-<h2>How to run a free conversion audit of your store</h2>
-<p>You can grade the six categories above by hand — but you can't see your own store objectively after staring at it for 300 hours. The fix is a tool that reacts like a first-time visitor. That's exactly what <a href="/free-website-audit">EliteVault's free website audit</a> does: paste your URL and get a conversion score, an annotated screenshot marking each issue, a buyer-persona reaction, and the fixes ranked by impact — free, in under a minute, nothing to install.</p>
-<p>One more note if you're tool-shopping in 2026: some CRO tools are being discontinued. ConvertMate — the AI product-page optimizer for Shopify — has announced it's shutting down; if you relied on it, there's <a href="/convertmate-alternative">a free ConvertMate alternative</a> that covers the same job with a full-store conversion audit.</p>
-<p>Pair it with the free fundamentals — run <strong>PageSpeed Insights</strong> for speed and set up <strong>Google Search Console</strong> for SEO — and you've covered all three audit types for $0. Then fix in order of leverage: usually the conversion findings move revenue fastest. Start with <a href="/blog/how-to-increase-shopify-conversion-rate">the 11 highest-leverage fixes</a>, and if you're running paid traffic, read <a href="/blog/why-meta-ads-arent-converting">why your Meta ads aren't converting</a>. Or skip straight to a <a href="/">free Shopify store audit</a> of your own store.</p>
+
+<h2>Which tool should a Shopify store start with?</h2>
+<p>If you run a Shopify store with traffic but few sales, start with Shopify's own funnel report and a conversion audit, because they point at where and why visitors leave. Add PageSpeed Insights when pages feel slow or your phone sessions look weak, and Search Console once you care about organic traffic. Add a behavior tool when you have enough visits for recordings to show patterns. Accessibility checks are worth doing at some point, but they are rarely the first fix for a store that doesn't convert.</p>
+
+<h2>Related guides</h2>
+<p>If you are weighing paid help, see how much a <a href="/blog/ecommerce-store-audit-vs-consultant">CRO audit costs</a> from freelancers, agencies and tools, and what an <a href="/blog/ecommerce-cro-specialist">ecommerce CRO specialist</a> does. For what Shopify itself added recently, read <a href="/blog/new-free-shopify-tools-2026">new free Shopify tools</a>, and for the numbers behind AI in ecommerce, <a href="/blog/ai-ecommerce-statistics-revenue-impact">AI ecommerce statistics</a>.</p>
+
+<h2>Cover all five questions without overspending</h2>
+<p>You can answer the first four with tools from Google, Microsoft and Shopify at no cost, and the fifth with a conversion audit. Run them in the order of your symptom, fix what each finds and re-check. The store that wins in your niche is not the one with the most tools; it is the one that fixes what matters first. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=free-website-audit-tools">Run the audit on your store →</a></p>
 `.trim(),
     faqs: [
       {
         q: "What is the best free website audit tool?",
-        a: "It depends on your goal. For speed, Google PageSpeed Insights; for SEO, Google Search Console — both free. For conversion (why you're not selling), use a CRO-focused analyzer like EliteVault, which scores your store and ranks the fixes free on the first run.",
+        a: "It depends on the question. For speed, Google's PageSpeed Insights; for search visibility, Google Search Console; for visitor behavior, Microsoft Clarity; for why a store doesn't convert, a conversion-focused analyzer. No single tool covers all of them.",
       },
       {
         q: "Are free website audits accurate?",
-        a: "For what they measure, yes — speed and SEO tools are reliable. The bigger risk is measuring the wrong thing: a clean speed score says nothing about whether your store converts. Use a conversion-focused audit to answer that.",
+        a: "They are accurate for what they measure. The risk is measuring the wrong thing: a clean speed or SEO result says nothing about whether visitors trust the store or understand the offer. Check what a tool measures and what its limits are before you act on its score.",
       },
       {
-        q: "What's the difference between a website analyzer and an SEO tool?",
-        a: "An SEO tool checks whether search engines can find and rank your page. A conversion-focused website analyzer checks whether visitors actually buy once they arrive — offer clarity, trust, layout and CRO. You want both, but conversion is what turns traffic into revenue.",
+        q: "What is the difference between a website audit and an SEO audit?",
+        a: "An SEO audit checks whether search engines can find, crawl and index your pages. A website audit is broader: it can also cover speed, accessibility, visitor behavior and conversion. An SEO audit is one part of it.",
+      },
+      {
+        q: "Do I need more than one audit tool?",
+        a: "Usually yes, because each type answers a different question. A common set is PageSpeed Insights for speed, Search Console for search, a behavior tool such as Clarity and a conversion audit for the page itself. Add others only when a symptom calls for them.",
+      },
+      {
+        q: "How often should I audit my website?",
+        a: "After any significant change to the theme, offer or apps, and at regular intervals so you catch regressions. Monthly is a reasonable habit for an active store; that is advice, not a measured benchmark.",
       },
     ],
   },
   {
     slug: "reverse-engineer-winning-shopify-stores",
-    title: "How to Reverse-Engineer Any Winning Shopify Store (2026 Guide)",
-    h1: "How to reverse-engineer any winning Shopify store (and copy what actually converts)",
+    title: "How to Find Winning Shopify Stores and Reverse-Engineer Them",
+    h1: "How to find winning Shopify stores, take them apart and apply what converts",
     description:
-      "The exact method to reverse-engineer winning Shopify stores — their offer, hero, pricing and trust stack — and copy what converts. No guru course required.",
+      "How to find winning Shopify stores and reverse-engineer them: where to look, how to filter, a six-layer teardown template and how to adapt what you learn.",
     keyword: "how to find winning shopify stores",
     keywords: [
       "how to find winning shopify stores",
@@ -765,70 +813,119 @@ ${finalVideo}
       "winning store teardown",
     ],
     date: "2026-06-17",
+    updated: "2026-10-19",
     author: "Ariel Jiménez",
-    readingMinutes: 9,
+    readingMinutes: 7,
     video: FINAL_VIDEO_META,
     excerpt:
-      "The method gurus charge $997 to teach: break down any converting store, extract the principles, and copy what works — in an afternoon.",
+      "Where to find stores that are really selling, how to filter them, a six-layer teardown you can repeat on any store, and how to adapt the findings to yours.",
     bodyHtml: `
-<p class="lede">There's a quiet reason the "winning product" gurus keep their method behind a $997 paywall: the moment you learn to reverse-engineer winning stores yourself, you stop needing them. So let's burn the playbook in public.</p>
-<p>Every week a new "secret store list" drops in someone's paid Discord. The pitch is always the same — pay the membership, get the winners, follow the leader. But the stores on those lists are public. Their pages are public. Their offers, their hero sections, their pricing ladders, their trust stacks — all of it is sitting on the open internet for anyone willing to look properly.</p>
-<p>What you're actually paying for isn't the list. It's the <em>method</em> for reading a store like an operator instead of a shopper. And that method is learnable in an afternoon. Here it is.</p>
-<h2>Why "copy the winners" beats "test everything"</h2>
-<p>New founders burn months testing random changes — a button color here, a headline there — hoping something sticks. Operators do the opposite. They find stores that are <strong>already converting cold traffic profitably</strong> and treat them as a library of solved problems. If ten skincare brands scaling on Meta all put a founder-story video above the fold, that's not coincidence. That's the niche telling you what works.</p>
-<p>Reverse-engineering isn't theft. You're not lifting copy, images, or brand assets — that's both illegal and useless. You're extracting <em>principles</em>: hierarchy, offer structure, objection handling, trust placement. Those transfer. The execution stays yours.</p>
-<blockquote>You don't copy the paint. You copy the blueprint.</blockquote>
-<h2>Step 1 — Build your shortlist of real winners</h2>
-<p>Before you analyze anything, you need stores that are actually selling — not stores that merely look pretty. A beautiful store doing $0 teaches you nothing. Three reliable sources:</p>
+<p class="lede">How to find winning Shopify stores: start from the ads a brand is running now, filter to stores one or two steps ahead of you, then take each apart in the same six layers and adapt what you find. The list of stores is public. What makes the difference is a repeatable method for reading them.</p>
+${finalVideo}
+<p>The video above is that method in action: a real store with weak ad returns set beside a top store in its niche, to see what separates the two. This guide shows you how to run the same comparison on your own niche, so you aren't guessing which changes would make your store the one shoppers pick.</p>
+
+<h2>Why study winners instead of testing everything?</h2>
+<p>New founders often spend months testing small random changes (a button colour here, a headline there). A faster route is to find stores that already sell to cold traffic in your niche and treat them as a library of solved problems. If several brands in one category open with the same kind of proof or the same kind of offer, the niche is telling you what shoppers expect.</p>
+<p>The line to hold is between principles and assets. You are extracting how a page is organized (hierarchy, offer structure, where trust sits, how objections are answered), not copying text, images or brand assets. Copying those is a different matter, can infringe someone's rights and doesn't work anyway. This is not legal advice, but the rule of thumb is simple: copy the blueprint, not the paint.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 272" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="d8a-title d8a-desc"><title id="d8a-title">Four steps to reverse-engineer a winning store</title><desc id="d8a-desc">Four stacked steps. 1 Find: Ad Library, niche search and curated lists. 2 Filter: stores one or two rungs above you. 3 Take apart: six layers in the same order every time. 4 Apply: adapt, ship one change and re-audit.</desc>
+<rect x="0.5" y="0.5" width="299" height="55" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><circle cx="22" cy="28" r="10" fill="#2DD4BF"/><text x="22" y="33" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">1</text><text x="46" y="24" font-size="14" font-weight="600" fill="#ffffff">Find</text><text x="46" y="44" font-size="14" fill="rgba(255,255,255,0.6)">Ad Library, niche search, curated lists</text><path d="M150 56 L150 67" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 65 L150 72 L155 65 Z" fill="#2DD4BF"/><rect x="0.5" y="72.5" width="299" height="55" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><circle cx="22" cy="100" r="10" fill="#2DD4BF"/><text x="22" y="105" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">2</text><text x="46" y="96" font-size="14" font-weight="600" fill="#ffffff">Filter</text><text x="46" y="116" font-size="14" fill="rgba(255,255,255,0.6)">Stores one or two rungs above you</text><path d="M150 128 L150 139" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 137 L150 144 L155 137 Z" fill="#2DD4BF"/><rect x="0.5" y="144.5" width="299" height="55" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><circle cx="22" cy="172" r="10" fill="#2DD4BF"/><text x="22" y="177" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">3</text><text x="46" y="168" font-size="14" font-weight="600" fill="#ffffff">Take apart</text><text x="46" y="188" font-size="14" fill="rgba(255,255,255,0.6)">Six layers, same order every time</text><path d="M150 200 L150 211" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 209 L150 216 L155 209 Z" fill="#2DD4BF"/><rect x="0.5" y="216.5" width="299" height="55" rx="8" fill="rgba(45,212,191,0.1)" stroke="#2DD4BF"/><circle cx="22" cy="244" r="10" fill="#2DD4BF"/><text x="22" y="249" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">4</text><text x="46" y="240" font-size="14" font-weight="600" fill="#2DD4BF">Apply</text><text x="46" y="260" font-size="14" fill="rgba(255,255,255,0.6)">Adapt, ship one change, re-audit</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Finding is only the first quarter of the work. The value comes from taking one store apart the same way every time.</figcaption>
+</figure>
+<p>Want to see how your own store stacks up before you start studying others? <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=reverse-engineer-winning-shopify-stores">Run the audit on your store →</a></p>
+
+<h2>Step 1: how do you find winning Shopify stores?</h2>
+<p>Nobody outside a store can see its real revenue, so treat every method below as a clue, not proof. Combine two or three.</p>
 <ul>
-<li><strong>Ad libraries.</strong> If a brand has run the same ad creative for 60+ days, it's profitable. Nobody pays to run a losing ad for two months.</li>
-<li><strong>Paid-social cohorts.</strong> Stores actively scaling on Meta and TikTok right now — these are the ones whose decisions are being validated by real spend.</li>
-<li><strong>Curated winner libraries.</strong> Tools that watch revenue signals and surface stores generating sales now, filtered by niche, instead of a stale "top stores" blog post from 2023.</li>
+<li><strong>The Meta Ad Library.</strong> <a href="https://www.shopify.com/blog/ad-library-facebook" rel="nofollow">Shopify describes it</a> as a free research tool for searching the active ads running across Meta technologies, with filters such as advertiser, platform, media type and active status, and with each ad's full copy, creative and landing page link visible. Search your niche's keywords and note which brands run many ads and keep running them.</li>
+<li><strong>Your own feed and search.</strong> Brands that keep reaching you in your niche, on search results or in your social feeds, are spending to be seen. Save them as you go.</li>
+<li><strong>Curated libraries.</strong> A curated set filtered by niche saves hours, as long as it is current. Ours is the <a href="/winning-shopify-stores?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=reverse-engineer-winning-shopify-stores">winning Shopify stores library</a> (full disclosure, we make it): the Free plan includes three hand-picked stores with full metrics, and image-similarity search is on the paid plans.</li>
 </ul>
-<div class="callout"><h3>The trap to avoid</h3><p>Most "top Shopify stores" lists are SEO bait — the same ten mega-brands (Gymshark, Allbirds, Aesop) recycled for years. They're useful as masterclasses but useless as templates: you don't have their budget or brand equity. You want stores one or two rungs above you, not ten.</p></div>
-<h2>Step 2 — The 6-layer teardown</h2>
-<p>Open a winning store and read it in this exact order. Don't browse like a customer. Audit like a media buyer. For each layer, write down what they do and <em>why it might work for their niche</em>.</p>
+<p>One caution about ad longevity. An ad that keeps running tells you the advertiser keeps paying for it, which is suggestive, not proof of profit; we have no way to see their margins. Use it as one signal among several, and prefer stores that show a pattern: several ads, consistent offers and a store that looks maintained.</p>
+<div class="callout"><h3>The list trap</h3><p>Most "top Shopify stores" posts recycle the same mega-brands. They make good masterclasses and poor templates, because you don't have their budget or brand equity. You want stores one or two rungs above you, not ten.</p></div>
+
+<h2>Step 2: how do you filter the shortlist?</h2>
+<p>Before you take anything apart, narrow the list to stores that teach you something you can use:</p>
+<ol>
+<li><strong>Same niche and same price band as you.</strong> What works for a $15 impulse item rarely transfers to a $300 considered purchase.</li>
+<li><strong>Similar structure.</strong> A single-product brand and a 200-item catalog share few lessons. Match the kind of store: one hero product, a small range or a large catalog.</li>
+<li><strong>One or two steps ahead.</strong> You can only copy moves you could realistically build.</li>
+<li><strong>Currently maintained.</strong> Look for recent ads, a live blog or social account and a working checkout. A beautiful store that has been abandoned teaches you little.</li>
+</ol>
+<p>Stop at five to eight stores. More than that and the teardown stops getting done.</p>
+
+<h2>Step 3: how do you take a store apart?</h2>
+<p>Open each shortlisted store and read it in the same six layers, in this order. Don't browse like a customer; audit like a media buyer. For each layer, write what they do and why it might work for their niche.</p>
 <table><thead><tr><th>Layer</th><th>What to extract</th></tr></thead><tbody>
-<tr><td>1. Offer</td><td>What's the actual deal? Bundle, subscription, free-shipping threshold, first-order discount? Is it obvious in 2 seconds?</td></tr>
-<tr><td>2. Hero</td><td>Headline structure, sub-headline, primary CTA, the single image/video. Is the value prop clear before scroll?</td></tr>
-<tr><td>3. Trust stack</td><td>Where do badges, reviews, press logos, guarantees sit? How high on the page?</td></tr>
-<tr><td>4. Product page</td><td>Image count, benefit-led vs feature-led copy, delivery estimates, social-proof density, sticky add-to-cart.</td></tr>
-<tr><td>5. Pricing logic</td><td>Anchor pricing, tiered bundles, "most popular" framing, scarcity/urgency.</td></tr>
-<tr><td>6. Mobile</td><td>Repeat layers 1–5 on a phone. 80%+ of DTC traffic is mobile, and most stores quietly fall apart there.</td></tr>
+<tr><td>1. Offer</td><td>What is the deal? Bundle, subscription, free-shipping threshold, first-order discount? Is it obvious in a few seconds?</td></tr>
+<tr><td>2. Hero</td><td>Headline structure, sub-headline, primary button and the one image or video. Is the value clear before scrolling?</td></tr>
+<tr><td>3. Trust stack</td><td>Where do reviews, press logos, guarantees and payment marks sit, and how high on the page?</td></tr>
+<tr><td>4. Product page</td><td>Image count, benefit-led or feature-led copy, delivery estimate, proof density, sticky add-to-cart.</td></tr>
+<tr><td>5. Pricing logic</td><td>Anchor pricing, tiered bundles, "most popular" framing, any urgency and whether it is honest.</td></tr>
+<tr><td>6. Mobile</td><td>Repeat layers 1 to 5 on a phone. Check your own Sessions by device report to see how many of your visitors use one.</td></tr>
 </tbody></table>
-<p>By the time you've done five stores in your niche this way, patterns scream at you. The winners almost always share the same three or four moves. Those shared moves are your roadmap.</p>
-<h2>Step 3 — Find your store's closest converting "sibling"</h2>
-<p>Here's where most teardowns go wrong: founders copy a store that looks nothing like theirs structurally. A single-product hero brand and a 200-SKU catalog store have almost no transferable lessons for each other.</p>
-<p>The shortcut is <strong>visual-structure matching</strong> — finding the winning stores whose layout and product presentation most resemble yours, then copying their moves. This is exactly why <a href="/winning-shopify-stores?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=reverse-engineer-winning-shopify-stores">EliteVault's image-similarity search</a> exists: drop a screenshot of your store and it surfaces the closest converting siblings by visual structure, not by tags. You skip the guesswork of "which winner is even relevant to me."</p>
-<h2>Step 4 — Translate, don't transplant</h2>
-<p>The mistake that wastes the whole exercise: lifting a winner's tactic without adapting it to your niche. <strong>What converts in skincare can destroy conversion in supplements.</strong> Skincare buyers want sensory, aspirational imagery and a founder story. Supplement buyers want ingredients, dosages, third-party testing, and proof. Same layer, opposite execution.</p>
-<p>So for every pattern you extract, ask: <em>does this work because of the tactic, or because of the audience?</em> Only transplant the ones that survive that question.</p>
-<div class="callout"><h3>Your 30-minute teardown sprint</h3><p>Pick 5 winning stores in your niche. Run all 6 layers on each (5 min/store). Tally the moves that show up 3+ times. Those are your priority changes. Ship them this week, not next quarter.</p></div>
-<h2>The part the gurus don't want you to internalize</h2>
-<p>Once you can do this teardown on autopilot, the entire "secret winners" economy loses its grip on you. You don't need someone else's list — you need a system to read the market yourself and a way to know which winner is relevant to <em>your</em> store. That's the whole game. The community sells dependence; the skill sells freedom.</p>
-<p>And honestly? Doing the 6-layer teardown by hand on 20 stores is slow. That's the one real advantage the paid groups have — speed. So we built the speed into a tool instead of a membership. Next, read <a href="/blog/how-to-increase-shopify-conversion-rate">the 11 highest-leverage fixes</a> and <a href="/blog/why-your-shopify-store-isnt-converting">why stores don't convert</a>.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 306" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="d8b-title d8b-desc"><title id="d8b-title">Teardown template for a leading store</title><desc id="d8b-desc">A two-column template with six layers to fill in: offer, hero, trust, product page, pricing and mobile, each with a line for what you saw. At the bottom, a verdict for each layer: copy, adapt or skip.</desc>
+<text x="0" y="16" font-size="14" font-weight="600" fill="#ffffff">Layer</text><text x="130" y="16" font-size="14" font-weight="600" fill="#ffffff">What I saw</text><line x1="0" y1="26" x2="300" y2="26" stroke="rgba(255,255,255,0.15)"/><text x="0" y="54" font-size="14" fill="rgba(255,255,255,0.85)">1 Offer</text><line x1="130" y1="58" x2="300" y2="58" stroke="rgba(255,255,255,0.25)" stroke-dasharray="4 4"/><text x="0" y="92" font-size="14" fill="rgba(255,255,255,0.85)">2 Hero</text><line x1="130" y1="96" x2="300" y2="96" stroke="rgba(255,255,255,0.25)" stroke-dasharray="4 4"/><text x="0" y="130" font-size="14" fill="rgba(255,255,255,0.85)">3 Trust</text><line x1="130" y1="134" x2="300" y2="134" stroke="rgba(255,255,255,0.25)" stroke-dasharray="4 4"/><text x="0" y="168" font-size="14" fill="rgba(255,255,255,0.85)">4 Product page</text><line x1="130" y1="172" x2="300" y2="172" stroke="rgba(255,255,255,0.25)" stroke-dasharray="4 4"/><text x="0" y="206" font-size="14" fill="rgba(255,255,255,0.85)">5 Pricing</text><line x1="130" y1="210" x2="300" y2="210" stroke="rgba(255,255,255,0.25)" stroke-dasharray="4 4"/><text x="0" y="244" font-size="14" fill="rgba(255,255,255,0.85)">6 Mobile</text><line x1="130" y1="248" x2="300" y2="248" stroke="rgba(255,255,255,0.25)" stroke-dasharray="4 4"/><rect x="0.5" y="262.5" width="299" height="39" rx="8" fill="rgba(45,212,191,0.1)" stroke="#2DD4BF"/><text x="14" y="287" font-size="14" font-weight="600" fill="#2DD4BF">Verdict per layer: copy, adapt or skip</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Copy this into a note. Fill it in for each store, in this order, on a phone and on desktop.</figcaption>
+</figure>
+<p>For the product page layer, our guide to the <a href="/blog/shopify-product-page">Shopify product page</a> lists twelve elements you can use as a checklist. After five stores in your niche, patterns stand out: the winners tend to share three or four moves. Those shared moves are your roadmap.</p>
+
+<h2>An illustrative example of one layer</h2>
+<p>Suppose you are in skincare and, across six stores, you note the following on layer 3 (this is an invented example to show the method). Five show review stars beside the product title, four put a returns promise next to the button, and only one puts a guarantee badge in the header. The first two are shared moves, so they go on your list. The third is a one-off, so you skip it unless it fits your brand. That is the whole technique: count the repeated moves and ignore the outliers.</p>
+
+<h2>Step 4: how do you apply what you found?</h2>
+<p><strong>Translate, don't transplant.</strong> What converts in skincare can hurt in supplements: skincare buyers want sensory imagery and a founder story, supplement buyers want ingredients, dosage and testing. For every pattern you extract, ask whether it works because of the tactic or because of the audience, and only adopt the ones that survive.</p>
+<p>Then ship small. Pick the two or three moves that came up most often and that you can build this week. Change one thing at a time, wait for enough sessions and measure; our guide to <a href="/blog/how-to-increase-shopify-conversion-rate">increasing your Shopify conversion rate</a> explains how to tell whether it worked. Re-run the teardown on your own store every quarter, since leaders change what they do.</p>
+<div class="callout"><h3>Your 30-minute sprint</h3><p>Pick five stores. Run the six layers on each in about five minutes. Tally the moves that appear at least three times. Those are your priority changes for the week.</p></div>
+
+<h2>What if your niche has few visible winners?</h2>
+<p>In a small niche the Ad Library may show only a few advertisers. Widen the search to adjacent niches that sell to the same buyer, or to the same product type at a higher price, and study how they handle the layers that transfer: clarity, proof and the path to purchase. Also look at stores that are not advertising heavily but rank well or have a strong review base, since paid ads aren't the only sign of a healthy store.</p>
+<p>Keep a simple record as you go: store name, date, the six layers and a verdict for each. Dated notes let you see later which leaders changed what, which is itself useful information.</p>
+
+<h2>What mistakes make a teardown useless?</h2>
+<ul>
+<li><strong>Studying only mega-brands.</strong> Their results rest on budget and awareness you don't have.</li>
+<li><strong>Copying the look without the logic.</strong> A page that resembles a leader's but doesn't answer the same questions won't convert like it.</li>
+<li><strong>Treating one store as proof.</strong> One example is an anecdote; five is a pattern.</li>
+<li><strong>Never looking at your own store the same way.</strong> The teardown only pays off when you run the same six layers on yours and see the gap.</li>
+</ul>
+
+<h2>How long should a teardown take, and how often?</h2>
+<p>About five minutes per store per layer pass once you have the template, so roughly half an hour for a five-store sprint. Do a full round when you start, and a lighter one every quarter or whenever you plan a big change such as a new landing page or offer. Leaders change what they do, and a teardown that is a year old describes a store that no longer exists. Keep dated notes so you can see what moved.</p>
+
+<h2>Beat the store you studied</h2>
+<p>Doing the six-layer teardown by hand on twenty stores is slow, and that speed is the real benefit of paid groups and tools. You can get the same read on your own page quickly: our <a href="/">Shopify store audit</a> annotates your pages with the issues from this list and ranks the fixes (ours — full disclosure), so you know which gap with the leader to close first. Then read <a href="/blog/ecommerce-design-trends-2026">which design trends actually convert</a> and what a human must still check when <a href="/blog/ai-shopify-designer">AI helps design your store</a>. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=reverse-engineer-winning-shopify-stores">Run the audit on your store →</a></p>
 `.trim(),
     faqs: [
       {
-        q: "Is reverse-engineering a competitor's store legal?",
-        a: "Yes. Studying public-facing pages, offers and structure is legal and standard practice. You're copying principles and patterns — not assets, copy, or trademarks.",
+        q: "How do I find winning Shopify stores in my niche?",
+        a: "Search the Meta Ad Library for your niche's keywords and note which brands run many ads and keep running them, add the brands that keep reaching you in your feeds, and use a curated library filtered by niche. Treat each as a clue, since no outsider sees real revenue.",
       },
       {
-        q: "How do I find winning Shopify stores in my niche?",
-        a: "Use ad libraries (look for creatives running 60+ days), paid-social cohorts, and curated 'winner' libraries that surface stores generating revenue now, then filter to your niche.",
+        q: "How can I tell if a Shopify store is successful?",
+        a: "You can't be sure from outside. Look for several signals together: an active, varied ad presence, a store that is maintained and fast, a visible review base and a consistent offer. Any one of them can mislead on its own.",
+      },
+      {
+        q: "Is it legal to copy another Shopify store?",
+        a: "Studying public pages is ordinary competitive research. Copying someone's text, images, logos or brand assets is a different matter and can infringe their rights. This is not legal advice; adopt principles such as layout order and where proof sits, and create your own assets.",
       },
       {
         q: "Can I just copy a winning store exactly?",
-        a: "No. Copy the principles — hierarchy, offer clarity, trust placement — not the literal design or copy. What converts in skincare can kill conversion in supplements.",
+        a: "No. Copy the principles, such as hierarchy, offer clarity and trust placement, not the literal design or copy. What converts in one niche can hurt in another, so adapt each move to your buyer.",
+      },
+      {
+        q: "How many stores should I study before changing my own?",
+        a: "Five to eight in your niche is enough to see which moves repeat. Change the two or three that appear most often and that you can build quickly, then measure before adding more.",
       },
     ],
   },
   {
     slug: "ecommerce-store-audit-vs-consultant",
-    title: "CRO Audit Cost: What $2,000 Buys (+ a 60-Second Option)",
-    h1: "How much does a CRO audit cost — and what do you actually get for $2,000?",
+    title: "CRO Audit Cost: What Freelancers, Agencies and Tools Charge",
+    h1: "How much does a CRO audit cost? What freelancers, agencies and tools charge, and what each includes",
     description:
-      "CRO audit cost: a consultant audit runs $1,500–$2,000 per store. What that price covers, the framework they use, and how to run the same checks yourself in about a minute.",
+      "CRO audit cost explained: published price ranges for automated scans, freelancers and agencies, what each includes, and how to choose without overpaying.",
     keyword: "cro audit cost",
     keywords: [
       "cro audit cost",
@@ -838,67 +935,106 @@ ${finalVideo}
       "cro audit vs consultant",
     ],
     date: "2026-06-17",
-    updated: "2026-10-14",
+    updated: "2026-10-19",
     author: "Ariel Jiménez",
-    readingMinutes: 8,
+    readingMinutes: 7,
     video: FINAL_VIDEO_META,
     excerpt:
-      "Consultants charge $1,500–$2,000 to audit your store. The framework was never secret — just slow and manual. Here it is, in the open.",
+      "Published prices run from free to over $10,000. What each tier includes, what to ask before you pay, and when a cheaper option is enough.",
     bodyHtml: `
-<p class="lede">CRO audit cost from a consultant is typically $1,500–$2,000 per store, and for that money you get a diagnosis, evidence and a prioritized punch-list. The uncomfortable truth they'd rather you didn't notice: the entire diagnosis fits on one page — and a machine can now run it in 60 seconds.</p>
-<p>The price depends on scope, on how many pages or steps they review, and on whether implementation is included. The audit itself is usually one store, one moment in time, and about 5–10 business days of turnaround. This post breaks down what that price covers, the framework behind it, and how to run the same checks yourself. If you want the do-it-yourself version first, start with the <a href="/blog/shopify-cro-audit">Shopify CRO audit checklist</a>.</p>
-<p>I'm not anti-consultant. The best ones are worth every dollar for implementation and strategy. But the <em>audit</em> — the part where someone looks at your store and tells you what's broken and in what order to fix it — has been quietly commoditized. The framework was never secret. It was just slow and manual, which is exactly what made it billable.</p>
-<p>So here's the whole thing, in the open: what a CRO audit costs, what it contains, and how to run it on your own store this afternoon.</p>
-<h2>What you're actually paying $2,000 for</h2>
-<p>A senior CRO audit is three deliverables wearing a trench coat:</p>
-<ol>
-<li><strong>A diagnosis.</strong> A score across the levers that move conversion, so you know how far from "good" you are.</li>
-<li><strong>Evidence.</strong> Annotated screenshots pointing at the specific problems, so you can't argue with them.</li>
-<li><strong>A prioritized punch-list.</strong> Fixes ranked by impact, so you don't waste a month on a button color while your offer is invisible.</li>
-</ol>
-<p>That's it. That's the $2k. Everything else is the consultant's time spent doing it by hand. Remove the manual labor and the price collapses.</p>
-<h2>The 7 levers every real audit scores</h2>
-<p>Whether it's a human or an AI doing the work, a credible ecommerce audit grades these seven things. Score each one honestly from 1–10 right now:</p>
-<table><thead><tr><th>Lever</th><th>The question</th><th>Why it matters</th></tr></thead><tbody>
-<tr><td>Offer clarity</td><td>Is the deal obvious in 2 seconds?</td><td>If buyers can't tell what they get, nothing else matters.</td></tr>
-<tr><td>Hero / above-fold</td><td>Value prop + CTA visible without scrolling?</td><td>Most stores bury the CTA below the fold.</td></tr>
-<tr><td>Trust stack</td><td>Reviews, badges, guarantees high on the page?</td><td>Cold traffic doesn't know you. Trust is the bottleneck.</td></tr>
-<tr><td>Product page</td><td>Benefit-led copy, delivery estimates, proof?</td><td>Most visitors leave before add-to-cart.</td></tr>
-<tr><td>Mobile</td><td>Does it hold up on a phone?</td><td>80%+ of DTC traffic is mobile; conversion is typically lower there.</td></tr>
-<tr><td>Speed</td><td>Loads under ~3 seconds?</td><td>A slow load sheds a large share of mobile visitors.</td></tr>
-<tr><td>Checkout</td><td>Minimal fields, guest checkout, visible total?</td><td>Friction here is pure, recoverable lost revenue.</td></tr>
+<p class="lede">CRO audit cost depends less on the store than on who does the work and how deep they go. Published ranges run from nothing for an automated scan, through roughly $1,000 to $1,800 for a freelancer's manual review, to $2,500 and well past $10,000 for a full agency audit. The price is a poor guide on its own: the scope behind it is what you are really buying.</p>
+${finalVideo}
+<p>An audit matters to the extent that it shows where you lose to the stores shoppers compare you with. The video above does that comparison for one store: a real shop with weak ad returns next to a leader in its niche. Keep that in mind while you read the price list, because the cheapest audit that makes this gap visible beats an expensive one that doesn't. Want a first read before you spend anything? <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=ecommerce-store-audit-vs-consultant">Run the audit on your store →</a></p>
+
+<h2>How much does a CRO audit cost?</h2>
+<p>There is no standard price list, and every published figure comes from a company with something to sell. Treat the numbers below as indicative. They are quoted as the publishers state them, with the date where the page gives one.</p>
+<table><thead><tr><th>Option</th><th>Published range</th><th>Source</th></tr></thead><tbody>
+<tr><td>Automated scan (software, no human review)</td><td>$0 to $300</td><td><a href="https://www.anlyto.com/blog/cro-audit-cost" rel="nofollow">Anlyto</a>, Oct 2026</td></tr>
+<tr><td>Independent manual review of one funnel</td><td>$1,000 to $1,800</td><td>Anlyto, Oct 2026</td></tr>
+<tr><td>One-off consultant audit</td><td>$500 to $3,000</td><td><a href="https://www.clyro.com/blog/shopify-cro-agency" rel="nofollow">Clyro</a>, Aug 2026</td></tr>
+<tr><td>Agency audit (research, analytics, roadmap)</td><td>$2,500 to $10,000+</td><td>Anlyto, Oct 2026</td></tr>
+<tr><td>One-time conversion audit, low / average / premium</td><td>$2,500 / $3,500 / $4,500</td><td><a href="https://www.convert.com/blog/a-b-testing/how-much-should-cro-agencies-charge-clients/" rel="nofollow">Convert.com</a>, Apr 2026</td></tr>
+<tr><td>CRO audit as a project</td><td>$6,000 to $12,000+</td><td><a href="https://conversionrate.store/blog/cro-pricing" rel="nofollow">Conversion Rate Store</a></td></tr>
 </tbody></table>
-<p>Total it up. Most stores leave a meaningful share of potential revenue on the table across these levers, and fixing the top findings first is where the leverage is — which is exactly why the audit was worth $2k in the first place.</p>
-<blockquote>The value was never in spotting the problems. It was in spotting them <em>fast</em> and ranking them right.</blockquote>
-<h2>Why "do it yourself" still fails most founders</h2>
-<p>Here's the catch the DIY checklists never admit: <strong>you can't audit your own store objectively.</strong> You've stared at it for 300 hours. You know what every button does. You mentally fill in the gaps a first-time visitor never will. That's the actual thing you're paying a consultant for — a cold, outside set of eyes that reacts the way a stranger with a credit card would. Here is <a href="/blog/shopify-store-analyzer">what a Shopify store analyzer checks</a>, in plain terms.</p>
-<p>This is the gap AI quietly closed. A vision model has never seen your store before. It reacts to your hero exactly like a cold visitor — because to it, every visit is the first.</p>
-<h2>What a 60-second AI audit actually returns</h2>
-<p>This is the part that makes the $2,000 line item hard to defend. Modern AI audits return the same three deliverables — diagnosis, evidence, prioritized fixes — plus things a consultant physically can't do at that speed:</p>
+<p>The spread is the first lesson. Anlyto, which sells measurement audits, puts agency work at $2,500 to $10,000 or more. Clyro, which sells an AI store builder, gives $500 to $3,000 for a consultant's one-off audit. Convert.com, which sells testing software, lists an average of $3,500. Different publishers, different incentives and, above all, different definitions of the word "audit".</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 232" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="d5a-title d5a-desc"><title id="d5a-title">CRO audit options by price and depth</title><desc id="d5a-desc">Three bars of growing length. Automated scan: zero to 300 dollars, a fixed checklist delivered instantly. Freelance review: 1,000 to 1,800 dollars, one funnel step in about a week. Agency audit: 2,500 to 10,000 dollars or more, research and a roadmap over two to four weeks.</desc>
+<rect x="2" y="2" width="96" height="10" rx="5" fill="#2DD4BF" fill-opacity="0.35"/><text x="2" y="36" font-size="14" font-weight="600" fill="#ffffff">Automated scan</text><text x="298" y="36" text-anchor="end" font-size="14" font-weight="600" fill="#2DD4BF">$0–$300</text><text x="2" y="58" font-size="14" fill="rgba(255,255,255,0.6)">Fixed checklist, instant</text><rect x="2" y="84" width="190" height="10" rx="5" fill="#2DD4BF" fill-opacity="0.6"/><text x="2" y="118" font-size="14" font-weight="600" fill="#ffffff">Freelance review</text><text x="298" y="118" text-anchor="end" font-size="14" font-weight="600" fill="#2DD4BF">$1,000–$1,800</text><text x="2" y="140" font-size="14" fill="rgba(255,255,255,0.6)">One funnel step, about a week</text><rect x="2" y="166" width="296" height="10" rx="5" fill="#2DD4BF" fill-opacity="0.85"/><text x="2" y="200" font-size="14" font-weight="600" fill="#ffffff">Agency audit</text><text x="298" y="200" text-anchor="end" font-size="14" font-weight="600" fill="#2DD4BF">$2,500–$10,000+</text><text x="2" y="222" font-size="14" fill="rgba(255,255,255,0.6)">Research and roadmap, 2–4 weeks</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Ranges as published by Anlyto (October 2026), a firm that sells audits. Bar length shows depth, not exact price. Quotes vary widely.</figcaption>
+</figure>
+<p>Hourly and monthly rates sit behind these totals. Clyro's <a href="https://www.clyro.com/blog/shopify-cro-agency" rel="nofollow">rate table</a> lists $75 to $200 per hour for a freelance CRO expert and $2,000 to $10,000 or more per month for an agency retainer, and Convert.com's <a href="https://www.convert.com/blog/a-b-testing/how-much-should-cro-agencies-charge-clients/" rel="nofollow">freelancer figures</a> cite $80 to $200 per hour for experienced freelancers. An audit is the cheap part of a CRO engagement; the work that follows it is not.</p>
+
+<h2>What does each price level actually include?</h2>
+<p>The same label covers very different work. Anlyto describes the tiers this way:</p>
 <ul>
-<li><strong>An overall score</strong> across all seven levers, benchmarked against stores actually scaling in your niche — not a generic ideal.</li>
-<li><strong>Annotated screenshots</strong> marking each issue on your actual page.</li>
-<li><strong>A ranked punch-list</strong> — "move CTA above fold: high impact, &lt;1h" — so you fix in order of leverage.</li>
-<li><strong>Buyer-persona simulation.</strong> Pick a persona and watch them react in their own voice. "I'd bounce — the offer isn't obvious in the first 2 seconds" beats any heatmap, and no consultant runs ten personas for you in a minute.</li>
+<li><strong>Automated scan.</strong> Software runs a fixed checklist against your page. No human reviews it and it arrives instantly. It finds the obvious and can't tell which finding matters for your niche.</li>
+<li><strong>Freelance or independent review.</strong> A person looks manually at one funnel step, usually within a week, and returns a short list of fixes. It is focused and cheap relative to an agency, and it is only as good as the person's experience.</li>
+<li><strong>Agency audit.</strong> Stakeholder interviews, session recording review, an analytics deep-dive and a prioritized test roadmap, typically over two to four weeks. This is the only tier that studies what real visitors did.</li>
 </ul>
-<div class="callout"><h3>Honesty check</h3><p>AI won't replace a great consultant for hands-on implementation, bespoke brand strategy, or untangling a messy backend. But for the <em>diagnosis</em> — the expensive, commoditized part — it now matches a senior first pass. Pay humans for the cure, not the X-ray.</p></div>
-<h2>The math that ends the debate</h2>
-<p>A consultant audit: $1,500–$2,000, one store, one moment in time, 5–10 business days turnaround. An AI audit: under a minute, re-runnable every time you change something, and <a href="/free-website-audit">free on your first run</a>. When you can re-audit after every iteration instead of once a quarter, you don't just save money — you compound improvements faster than a consultant cadence ever allowed. (Not sure what "good" even looks like? See <a href="/blog/good-conversion-rate-for-shopify">what's a good conversion rate for Shopify</a>. Or see <a href="/blog/ecommerce-cro-specialist">what a CRO specialist does</a>, or <a href="/blog/store-audit-review-my-store-feedback">what "review my store" threads keep saying</a>.)</p>
-<p>Want to see what the automated version looks like before paying anyone? Run a <a href="/">free Shopify store audit</a> on your own store and compare it with the framework above.</p>
-<p>That's the real reason this stings for the audit-as-a-service crowd. It's not that AI is cheaper. It's that it removes the artificial scarcity their whole pricing depended on.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 212" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="d5b-title d5b-desc"><title id="d5b-title">What each audit option delivers</title><desc id="d5b-desc">A grid with three columns: tool, solo freelancer and agency. Human review: freelancer and agency. Analytics and session recordings, stakeholder interviews and a test roadmap: agency only. Ready in minutes: tool only.</desc>
+<text x="182" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Tool</text><text x="222" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Solo</text><text x="266" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Agency</text><line x1="0" y1="26" x2="300" y2="26" stroke="rgba(255,255,255,0.12)"/><text x="0" y="52" font-size="14" fill="rgba(255,255,255,0.85)">Human review</text><line x1="177" y1="47" x2="187" y2="47" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><circle cx="222" cy="47" r="11" fill="rgba(45,212,191,0.18)"/><path d="M216 47 l5 5 l9 -11" stroke="#2DD4BF" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="266" cy="47" r="11" fill="rgba(45,212,191,0.18)"/><path d="M260 47 l5 5 l9 -11" stroke="#2DD4BF" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="64" x2="300" y2="64" stroke="rgba(255,255,255,0.06)"/><text x="0" y="88" font-size="14" fill="rgba(255,255,255,0.85)">Analytics, recordings</text><line x1="177" y1="83" x2="187" y2="83" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="217" y1="83" x2="227" y2="83" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><circle cx="266" cy="83" r="11" fill="rgba(45,212,191,0.18)"/><path d="M260 83 l5 5 l9 -11" stroke="#2DD4BF" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="100" x2="300" y2="100" stroke="rgba(255,255,255,0.06)"/><text x="0" y="124" font-size="14" fill="rgba(255,255,255,0.85)">Stakeholder interviews</text><line x1="177" y1="119" x2="187" y2="119" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="217" y1="119" x2="227" y2="119" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><circle cx="266" cy="119" r="11" fill="rgba(45,212,191,0.18)"/><path d="M260 119 l5 5 l9 -11" stroke="#2DD4BF" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="136" x2="300" y2="136" stroke="rgba(255,255,255,0.06)"/><text x="0" y="160" font-size="14" fill="rgba(255,255,255,0.85)">Test roadmap</text><line x1="177" y1="155" x2="187" y2="155" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="217" y1="155" x2="227" y2="155" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><circle cx="266" cy="155" r="11" fill="rgba(45,212,191,0.18)"/><path d="M260 155 l5 5 l9 -11" stroke="#2DD4BF" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="172" x2="300" y2="172" stroke="rgba(255,255,255,0.06)"/><text x="0" y="196" font-size="14" fill="rgba(255,255,255,0.85)">Ready in minutes</text><circle cx="182" cy="191" r="11" fill="rgba(45,212,191,0.18)"/><path d="M176 191 l5 5 l9 -11" stroke="#2DD4BF" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="217" y1="191" x2="227" y2="191" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="261" y1="191" x2="271" y2="191" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="0" y1="208" x2="300" y2="208" stroke="rgba(255,255,255,0.06)"/></svg>
+<figcaption class="mt-3 text-xs text-white/35">Scope as Anlyto describes each tier; individual providers differ, so ask what a quote includes before comparing prices.</figcaption>
+</figure>
+<p>The practical reading: a cheap audit looks at the page, a mid-priced audit looks at the page with a trained eye, and an expensive one looks at your data and your customers as well. If your problem is a page that doesn't make the offer clear, the first two are enough. If your problem is that nobody can tell why a decent page converts badly, you need the data.</p>
+
+<h2>What should a good audit deliver, whatever it costs?</h2>
+<p>Three things, in any tier: a diagnosis of how far you are from a good page, evidence you can see (annotated screenshots or recordings rather than opinions), and a list of fixes ranked by impact. If a quote doesn't say how the fixes will be prioritized, you are paying for a list, not a plan. We cover the page-by-page checklist in our <a href="/blog/shopify-cro-audit">Shopify CRO audit guide</a> and won't repeat it here, but you can use it to judge a provider's output.</p>
+<p>Before you pay, ask each provider five questions:</p>
+<ol>
+<li><strong>Which pages and steps are covered?</strong> One landing page and a whole funnel are not the same price for a reason.</li>
+<li><strong>What data do they need?</strong> If a provider never asks for analytics access, it is judging the page, not the traffic.</li>
+<li><strong>What is the deliverable?</strong> A report, a recorded walkthrough and a ranked backlog are three different things.</li>
+<li><strong>Is implementation included?</strong> Most audits end at the recommendation, and building the changes is a separate bill.</li>
+<li><strong>What happens after?</strong> A re-audit after your changes is how you find out whether they worked.</li>
+</ol>
+
+<h2>What do implementation and retainers add on top?</h2>
+<p>An audit ends with a list; changing the store is another bill. Clyro puts a CRO agency retainer at $2,000 to $10,000 or more per month, and its range for a full program with research, testing and development at larger agencies is $5,000 to $25,000 or more per month. Those figures cover ongoing work, so a $1,500 audit that leads to a $5,000-a-month engagement is a different decision from a standalone report. Decide up front whether you want the diagnosis alone, the diagnosis plus someone to build the changes, or a longer testing program, and compare quotes on that basis.</p>
+
+<h2>Which red flags should you watch for in a quote?</h2>
+<ul>
+<li><strong>A score with no ranking.</strong> A grade out of 100 is not a plan. You need to know which finding to act on first.</li>
+<li><strong>No questions about your traffic or goals.</strong> A provider who quotes without asking how many visitors you get or what you sell is selling a template.</li>
+<li><strong>Guaranteed uplift.</strong> No one can promise a conversion increase before seeing the results of changes on your store.</li>
+<li><strong>A very low hourly rate for "CRO".</strong> Convert.com's <a href="https://www.convert.com/blog/a-b-testing/how-much-should-cro-agencies-charge-clients/" rel="nofollow">pricing roundup</a> notes that people asking as little as $20 an hour are usually doing ad management, not conversion optimization.</li>
+<li><strong>Unclear ownership of the work.</strong> Ask whether you keep the annotated screenshots, the recordings and the backlog if you stop working together.</li>
+</ul>
+
+<h2>When is each option worth paying for?</h2>
+<p>This is our judgment, not a measured rule. With a young store and little traffic, an automated scan or your own checklist is usually enough, because data-heavy audits have nothing to analyze. If you suspect one funnel step (say the product page or the checkout), a freelancer's focused review fits the question. If you have meaningful traffic, an ad budget and a team to act on the findings, an agency audit starts to make sense because the research and roadmap can be tested.</p>
+<p>Whatever you choose, remember what an audit cannot do. It doesn't change your store, it doesn't prove a fix works until you measure it, and on low traffic it can't be validated by testing. The money is in the changes, which is why we'd rather you spend on fixing than on a longer report. If you reach the point of hiring, here is <a href="/blog/ecommerce-cro-specialist">what an ecommerce CRO specialist does</a> and how to judge their work.</p>
+
+<h2>How do you compare two quotes fairly?</h2>
+<p>Put them side by side on the same five lines: pages covered, data used, deliverable, implementation and follow-up. A $1,500 quote that covers one landing page and a $4,000 quote that covers the whole funnel with analytics may cost the same per page. Divide the price by what you actually get and by how likely you are to act on it. A report you never implement costs more than one you do, whatever it cost.</p>
+
+<h2>Where does an automated audit fit?</h2>
+<p>As the first pass. An automated audit is cheap and fast enough to run again after every change, which a quarterly human audit can't match. Its limit is what it sees. Ours (full disclosure, we make it) reads a screenshot of your live storefront, so it judges what a shopper sees: offer, layout, trust cues and imagery. It does not see your analytics, your recordings or your checkout flow, and it is not a replacement for a consultant who can interview customers or implement changes. The Free plan includes one full audit, with your score, an annotated screenshot and one set of fixes unlocked. Our <a href="/">Shopify store audit</a> is the entry point.</p>
+<p>If you are comparing options, our guide to <a href="/blog/free-website-audit-tools">free website audit tools</a> explains what each type of tool checks and where it stops, and <a href="/blog/new-free-shopify-tools-2026">new free Shopify tools</a> covers what Shopify itself added.</p>
+
+<h2>Spend where the gap is</h2>
+<p>An audit is a means. The goal is a store that beats the one next to it in the shopper's other tab, and the best use of any budget is on the gap that comparison reveals. Start cheap, find the biggest difference, fix it and measure. If the findings call for deeper research, you will know what to ask for and what it is worth. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=ecommerce-store-audit-vs-consultant">Run the audit on your store →</a></p>
 `.trim(),
     faqs: [
       {
-        q: "How much does an ecommerce store audit cost?",
-        a: "Professional CRO audits typically run $1,000–$2,500 as a one-time report. AI-powered audits now deliver the same diagnosis — score, annotated screenshot and ranked fixes — in under a minute, often free for the first run.",
+        q: "How much does a CRO audit cost?",
+        a: "Published ranges vary by who does the work. Anlyto lists $0 to $300 for automated scans, $1,000 to $1,800 for independent manual reviews and $2,500 to $10,000 or more for agency audits. Other publishers give different totals, so compare what each quote includes, not just the price.",
       },
       {
-        q: "Is an AI store audit as good as a consultant?",
-        a: "For diagnosis — finding what's wrong and ranking fixes by impact — AI now matches a senior consultant's first pass. Consultants still add value for hands-on implementation and bespoke strategy.",
+        q: "Is a CRO audit worth the money?",
+        a: "It is worth it when it leads to changes you then make and measure. An audit by itself doesn't raise conversion. Choose the depth that matches your traffic: a cheap first pass for small stores, deeper research once you have enough visits to test the findings.",
       },
       {
-        q: "What should an ecommerce audit actually check?",
-        a: "Offer clarity, hero and above-the-fold, trust signals, product-page persuasion, mobile experience, page speed, and checkout friction — each scored and prioritized by revenue impact.",
+        q: "What is included in a CRO audit?",
+        a: "At minimum a diagnosis, evidence such as annotated screenshots, and fixes ranked by impact. Higher tiers add analytics review, session recordings, stakeholder interviews and a test roadmap. Ask each provider which of these are in the quote.",
+      },
+      {
+        q: "How long does a CRO audit take?",
+        a: "It depends on the tier. Per Anlyto, an automated report is instant, a focused freelance review usually arrives within a week and an agency audit takes about two to four weeks.",
+      },
+      {
+        q: "Can I run a CRO audit myself?",
+        a: "Yes, with a checklist, as long as you can look at your store the way a stranger would. That is the hard part, since you have seen your own pages hundreds of times. An outside read, whether a person or a tool, helps fix that blind spot.",
       },
     ],
   },
@@ -1871,10 +2007,10 @@ ${finalVideo}
   },
   {
     slug: "shopify-store-analyzer",
-    title: "Shopify Store Analysis: What to Check, in Order (Step by Step)",
-    h1: "How do you run a Shopify store analysis — and what should you check first?",
+    title: "Shopify Store Analysis: 5 Checks, in Order, Step by Step",
+    h1: "How do you run a Shopify store analysis, and what should you check first?",
     description:
-      "A step-by-step Shopify store analysis: what to check, in what order, how it differs from a speed test — and how to run the full check free.",
+      "Shopify store analysis step by step: five checks in order, how to measure each, and how a speed test, Shopify reports and an analyzer differ.",
     keyword: "shopify store analysis",
     keywords: [
       "shopify store analysis",
@@ -1883,86 +2019,104 @@ ${finalVideo}
       "shopify store analysis checklist",
     ],
     date: "2026-10-04",
-    updated: "2026-10-11",
+    updated: "2026-10-19",
     author: "Ariel Jiménez",
-    readingMinutes: 3,
+    readingMinutes: 7,
     video: FINAL_VIDEO_META,
     excerpt:
-      "How to analyze your Shopify store: the five things to check, in order, how it differs from a speed test, and how to run the full check free.",
+      "The five checks in order, what to look at and how to measure each, and how a speed test, Shopify's reports and a store analyzer answer different questions.",
     bodyHtml: `
-<p class="lede">A <strong>Shopify store analysis</strong> checks five things, in this order: what a visitor sees above the fold, trust signals, the product page, speed and mobile, and checkout friction. Fix the first one that's broken, then check again. It matters because 70.22% of carts are abandoned (Baymard, 2025), and the leaks usually sit in those five places. A speed test covers only one of them.</p>
-<p>You can do the whole check by hand in an afternoon, and the sections below give you the order and the question to ask at each step. If you would rather run it in one pass, the last section shows how.</p>
+<p class="lede">A <strong>Shopify store analysis</strong> checks five things, in this order: what a visitor sees above the fold, trust signals, the product page, speed and mobile, and checkout friction. Fix the first one that fails, then check again. The order matters because each step decides whether shoppers reach the next, and a speed test covers only one of the five.</p>
+${finalVideo}
+<p>The video above runs the same idea on a real store: a weak result set beside a leader in its niche, step by step. An analysis is only useful if it ends in a ranked list of what to change first, so each check below tells you what to look at, how to measure it and what a pass looks like. The aim is a store that is hard to beat in your niche, one change at a time.</p>
 
 <h2>How do you analyze your Shopify store, step by step?</h2>
-<p>Look at your store the way a first-time visitor would, then turn what you see into a short, ordered to-do list. The point is not a vanity score. It is knowing which single change is worth your next hour, so you stop guessing and stop redesigning pages that were never the problem.</p>
-
+<p>Look at the store the way a first-time visitor would, then turn what you see into a short, ordered to-do list. The point is not a vanity score. It is knowing which single change is worth your next hour, so you stop redesigning pages that were never the problem.</p>
 <figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
-<div class="text-sm font-semibold text-white">How a store analyzer works</div>
-<div class="mt-4"><svg viewBox="0 0 340 320" class="w-full h-auto" style="max-width:420px;margin:0 auto;display:block" role="img" aria-label="Flow of a Shopify store analyzer in four steps: 1, store URL, you paste your homepage link; 2, capture, a screenshot of the live storefront; 3, five checks: above the fold, trust signals, product page, speed and mobile, checkout friction; 4, ranked fixes, what to change first by impact."><rect x="10" y="4" width="320" height="58" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><text x="170" y="29" text-anchor="middle" font-size="17" font-weight="600" fill="#ffffff">Store URL</text><text x="170" y="49" text-anchor="middle" font-size="14.5" fill="rgba(255,255,255,0.6)">You paste your homepage link</text><path d="M 170 64 L 170 78" stroke="#2DD4BF" stroke-width="2" /><path d="M 164 72 L 170 80 L 176 72" fill="none" stroke="#2DD4BF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><rect x="10" y="84" width="320" height="58" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><text x="170" y="109" text-anchor="middle" font-size="17" font-weight="600" fill="#ffffff">Capture</text><text x="170" y="129" text-anchor="middle" font-size="14.5" fill="rgba(255,255,255,0.6)">A screenshot of the live storefront</text><path d="M 170 144 L 170 158" stroke="#2DD4BF" stroke-width="2" /><path d="M 164 152 L 170 160 L 176 152" fill="none" stroke="#2DD4BF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><rect x="10" y="164" width="320" height="58" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" /><text x="170" y="189" text-anchor="middle" font-size="17" font-weight="600" fill="#ffffff">5 checks</text><text x="170" y="209" text-anchor="middle" font-size="14.5" fill="rgba(255,255,255,0.6)">Fold · trust · product · speed · checkout</text><path d="M 170 224 L 170 238" stroke="#2DD4BF" stroke-width="2" /><path d="M 164 232 L 170 240 L 176 232" fill="none" stroke="#2DD4BF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><rect x="10" y="244" width="320" height="58" rx="12" fill="rgba(45,212,191,0.12)" stroke="#2DD4BF" stroke-width="1.5" /><text x="170" y="269" text-anchor="middle" font-size="17" font-weight="600" fill="#2DD4BF">Ranked fixes</text><text x="170" y="289" text-anchor="middle" font-size="14.5" fill="rgba(255,255,255,0.6)">What to change first, by impact</text></svg></div>
-<figcaption class="mt-3 text-xs text-white/35">A generic flow; tools differ in what they capture and score.</figcaption>
+<svg viewBox="0 0 300 332" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="d6a-title d6a-desc"><title id="d6a-title">The five checks, in order</title><desc id="d6a-desc">Five stacked steps. 1 above the fold, tested with a five-second test. 2 trust signals, tested by proof next to the button. 3 product page, tested by sessions to cart additions. 4 speed and mobile, tested with PageSpeed and the device report. 5 checkout friction, tested by buying on your phone.</desc>
+<rect x="0.5" y="0.5" width="299" height="51" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><circle cx="22" cy="26" r="10" fill="#2DD4BF"/><text x="22" y="31" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">1</text><text x="46" y="22" font-size="14" font-weight="600" fill="#ffffff">Above the fold</text><text x="46" y="42" font-size="14" fill="rgba(255,255,255,0.6)">Test: the five-second test</text><path d="M150 52 L150 61" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 59 L150 66 L155 59 Z" fill="#2DD4BF"/><rect x="0.5" y="66.5" width="299" height="51" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><circle cx="22" cy="92" r="10" fill="#2DD4BF"/><text x="22" y="97" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">2</text><text x="46" y="88" font-size="14" font-weight="600" fill="#ffffff">Trust signals</text><text x="46" y="108" font-size="14" fill="rgba(255,255,255,0.6)">Test: proof next to the button</text><path d="M150 118 L150 127" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 125 L150 132 L155 125 Z" fill="#2DD4BF"/><rect x="0.5" y="132.5" width="299" height="51" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><circle cx="22" cy="158" r="10" fill="#2DD4BF"/><text x="22" y="163" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">3</text><text x="46" y="154" font-size="14" font-weight="600" fill="#ffffff">Product page</text><text x="46" y="174" font-size="14" fill="rgba(255,255,255,0.6)">Test: sessions to cart additions</text><path d="M150 184 L150 193" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 191 L150 198 L155 191 Z" fill="#2DD4BF"/><rect x="0.5" y="198.5" width="299" height="51" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><circle cx="22" cy="224" r="10" fill="#2DD4BF"/><text x="22" y="229" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">4</text><text x="46" y="220" font-size="14" font-weight="600" fill="#ffffff">Speed and mobile</text><text x="46" y="240" font-size="14" fill="rgba(255,255,255,0.6)">Test: PageSpeed plus device report</text><path d="M150 250 L150 259" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 257 L150 264 L155 257 Z" fill="#2DD4BF"/><rect x="0.5" y="264.5" width="299" height="51" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><circle cx="22" cy="290" r="10" fill="#2DD4BF"/><text x="22" y="295" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">5</text><text x="46" y="286" font-size="14" font-weight="600" fill="#ffffff">Checkout friction</text><text x="46" y="306" font-size="14" fill="rgba(255,255,255,0.6)">Test: buy it on your phone</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Fix the first check that fails, then check again. Earlier steps decide whether anyone reaches the later ones.</figcaption>
 </figure>
+<p>You can run all five by hand in an afternoon. If you would rather get a first read in one pass, <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-store-analyzer">Run the audit on your store →</a></p>
 
-<h2>What should you check, in order?</h2>
-<p>Five areas decide most first visits. A useful analyzer covers all of them, and tells you which one is hurting you most:</p>
+<h2>1. Above the fold: can a stranger tell what you sell?</h2>
+<p><strong>What to look at:</strong> the first screen on a phone: the headline, the offer, the main button and the hero image. <strong>How to measure it:</strong> show the page to someone who has never seen it for five seconds, then ask what you sell and who it is for. Nielsen Norman Group's <a href="https://www.nngroup.com/articles/how-long-do-users-stay-on-web-pages/" rel="nofollow">dwell-time research</a> found that users often leave pages within 10 to 20 seconds, so the page has very little time to make sense. <strong>A pass looks like:</strong> they answer without hesitating. If they can't, fix this before anything below it.</p>
 
-<figure class="my-8">
-<table>
-<thead>
-<tr><th>Check</th><th>What it looks at</th><th>Why it costs sales</th></tr>
-</thead>
-<tbody>
-<tr><td>Above the fold</td><td>Headline, offer, main button</td><td>Visitors can't tell what you sell</td></tr>
-<tr><td>Trust signals</td><td>Reviews, guarantees, policies</td><td>Doubt stops the first purchase</td></tr>
-<tr><td>Product page</td><td>Photos, copy, price, objections</td><td>Questions go unanswered</td></tr>
-<tr><td>Speed &amp; mobile</td><td>Load feel, layout on a phone</td><td>Slow or cramped pages get abandoned</td></tr>
-<tr><td>Checkout friction</td><td>Fees, steps, guest checkout</td><td>Buyers quit at the last step</td></tr>
-</tbody>
-</table>
-</figure>
+<h2>2. Trust signals: is there a reason to believe you?</h2>
+<p><strong>What to look at:</strong> reviews, a returns promise, shipping information, payment marks and contact details, and above all whether they sit near the buy decision. <strong>How to measure it:</strong> on a phone, check whether a shopper can see proof next to the Add to cart button without scrolling. In Baymard's survey, <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">19% of shoppers who abandoned an order</a> said they didn't trust the site with their card details. <strong>A pass looks like:</strong> proof is visible where the decision happens, not only in the footer.</p>
 
-<h2>Is a speed test the same thing?</h2>
-<p>No. A speed test answers "is it fast?" An analyzer answers "why aren't people buying?" A fast store can still convert badly, and an SEO crawler will not notice either, because it checks whether Google can read your pages, not whether a shopper trusts them. Speed tests and crawlers are worth running. They just answer different questions.</p>
+<h2>3. The product page: are the questions answered?</h2>
+<p><strong>What to look at:</strong> photos, benefit-led copy, price, delivery and returns, sizing or specs. <strong>How to measure it:</strong> open Shopify's Conversion rate breakdown report, which <a href="https://help.shopify.com/en/manual/reports-and-analytics/shopify-reports/report-types/default-reports/behaviour-reports" rel="nofollow">Shopify describes</a> as a funnel from all sessions to sessions with cart additions, sessions that reached checkout and sessions that completed checkout. A big drop between sessions and cart additions points at the product page or what brought people to it. <strong>A pass looks like:</strong> a stranger can answer what it is, whether it is for them, what it costs in total, whether to trust the store and when it arrives. Our guide to the <a href="/blog/shopify-product-page">Shopify product page</a> goes element by element.</p>
 
+<h2>4. Speed and mobile: does it hold up on a phone?</h2>
+<p><strong>What to look at:</strong> how fast the page appears and how it lays out on a small screen. <strong>How to measure it:</strong> run your home page and top product page through <a href="https://pagespeed.web.dev/" rel="nofollow">PageSpeed Insights</a>, then check Shopify's Sessions by device report to see how many visitors use phones. Google's <a href="https://web.dev/articles/lcp" rel="nofollow">web.dev guidance</a> treats a Largest Contentful Paint of 2.5 seconds or less as good and more than 4.0 seconds as poor. PageSpeed Insights reports both lab data and, where available, field data from real users over the previous 28 days, so look at both. <strong>A pass looks like:</strong> good vitals on mobile and a layout you can use with a thumb.</p>
+
+<h2>5. Checkout friction: do buyers finish?</h2>
+<p><strong>What to look at:</strong> shipping and total costs, the number of steps and fields, guest checkout and payment options. <strong>How to measure it:</strong> buy something from your own store on a phone and count the taps and surprises, then compare the last two steps of the funnel report. Baymard's list of reasons shoppers left puts <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">extra costs at 40%</a>, a required account at 18% and a checkout that was too long or complicated at 17%. <strong>A pass looks like:</strong> the total is clear before the last step, guest checkout is offered and you reach payment in a few taps.</p>
 <figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
-<div class="text-sm font-semibold text-white">What each tool category covers</div>
-<div class="mt-4"><svg viewBox="0 0 340 258" class="w-full h-auto" style="max-width:420px;margin:0 auto;display:block" role="img" aria-label="Typical coverage by tool category. Speed test: covers page speed only. SEO crawler: covers technical SEO only. Store analyzer: covers page speed, trust and UX, checkout friction, and fixes ranked by sales impact, but not technical SEO."><text x="172" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Speed</text><text x="172" y="34" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">test</text><text x="240" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">SEO</text><text x="240" y="34" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">crawler</text><text x="305" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">Store</text><text x="305" y="34" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">analyzer</text><line x1="0" y1="46" x2="340" y2="46" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="72" font-size="14.5" fill="rgba(255,255,255,0.75)">Page speed</text><circle cx="172" cy="67" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 167 67 L 170.5 71 L 177.5 63" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="235" y1="67" x2="245" y2="67" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="305" cy="67" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 300 67 L 303.5 71 L 310.5 63" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="0" y1="88" x2="340" y2="88" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="114" font-size="14.5" fill="rgba(255,255,255,0.75)">Technical SEO</text><line x1="167" y1="109" x2="177" y2="109" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="240" cy="109" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 235 109 L 238.5 113 L 245.5 105" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="300" y1="109" x2="310" y2="109" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="0" y1="130" x2="340" y2="130" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="156" font-size="14.5" fill="rgba(255,255,255,0.75)">Trust &amp; UX</text><line x1="167" y1="151" x2="177" y2="151" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="235" y1="151" x2="245" y2="151" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="305" cy="151" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 300 151 L 303.5 155 L 310.5 147" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="0" y1="172" x2="340" y2="172" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="198" font-size="14.5" fill="rgba(255,255,255,0.75)">Checkout friction</text><line x1="167" y1="193" x2="177" y2="193" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="235" y1="193" x2="245" y2="193" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="305" cy="193" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 300 193 L 303.5 197 L 310.5 189" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /><line x1="0" y1="214" x2="340" y2="214" stroke="rgba(255,255,255,0.08)" stroke-width="1" shape-rendering="crispEdges" /><text x="0" y="240" font-size="14.5" fill="rgba(255,255,255,0.75)">Ranked fixes</text><line x1="167" y1="235" x2="177" y2="235" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><line x1="235" y1="235" x2="245" y2="235" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" /><circle cx="305" cy="235" r="11" fill="rgba(45,212,191,0.18)" /><path d="M 300 235 L 303.5 239 L 310.5 231" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /></svg></div>
-<figcaption class="mt-3 text-xs text-white/35">Typical coverage by category, not a review of any product.</figcaption>
+<svg viewBox="0 0 300 236" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="d6c-title d6c-desc"><title id="d6c-title">Why shoppers who meant to buy left at checkout</title><desc id="d6c-desc">Bars from Baymard's survey: extra costs 40 percent, delivery too slow 20, card security doubts 19, forced account creation 18, checkout too long 17.</desc>
+<text x="0" y="16" font-size="14" fill="rgba(255,255,255,0.85)">Extra costs at checkout</text><rect x="0" y="24" width="260" height="14" rx="4" fill="#2DD4BF" fill-opacity="1"/><text x="268" y="36" font-size="14" font-weight="600" fill="#ffffff">40%</text><text x="0" y="64" font-size="14" fill="rgba(255,255,255,0.85)">Delivery too slow</text><rect x="0" y="72" width="130" height="14" rx="4" fill="#2DD4BF" fill-opacity="0.55"/><text x="138" y="84" font-size="14" font-weight="600" fill="#ffffff">20%</text><text x="0" y="112" font-size="14" fill="rgba(255,255,255,0.85)">Card security doubts</text><rect x="0" y="120" width="124" height="14" rx="4" fill="#2DD4BF" fill-opacity="0.55"/><text x="131.5" y="132" font-size="14" font-weight="600" fill="#ffffff">19%</text><text x="0" y="160" font-size="14" fill="rgba(255,255,255,0.85)">Forced account creation</text><rect x="0" y="168" width="117" height="14" rx="4" fill="#2DD4BF" fill-opacity="0.55"/><text x="125" y="180" font-size="14" font-weight="600" fill="#ffffff">18%</text><text x="0" y="208" font-size="14" fill="rgba(255,255,255,0.85)">Checkout too long</text><rect x="0" y="216" width="111" height="14" rx="4" fill="#2DD4BF" fill-opacity="0.55"/><text x="118.5" y="228" font-size="14" font-weight="600" fill="#ffffff">17%</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Source: <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">Baymard Institute</a>, shoppers who abandoned for reasons other than just browsing; respondents could pick more than one reason.</figcaption>
 </figure>
 
-<h2>Why does it matter?</h2>
-<p>Because the biggest leaks sit in the places an analyzer checks. These are the top reasons shoppers who meant to buy still left. None of them is about the product itself. They are all friction, the kind of problem a good analyzer helps you spot:</p>
+<h2>An illustrative example of an analysis</h2>
+<p>These numbers are invented to show the method. Suppose a store passes the five-second test, shows reviews next to the button and loads well, but 96 out of every 100 sessions never add an item to the cart. Checks 1, 2 and 4 pass, so the suspect is check 3, the product page. You open the best seller and find supplier copy, one image and no delivery estimate. That becomes the first item on the list. The point of working in order is that you don't spend a week on checkout polish while the product page loses people two steps earlier.</p>
 
+<h2>What mistakes make an analysis useless?</h2>
+<ul>
+<li><strong>Chasing a score.</strong> A higher number isn't the goal; a fix that moves orders is.</li>
+<li><strong>Fixing in the wrong order.</strong> Polishing checkout while the first screen is unclear helps almost no one.</li>
+<li><strong>Judging on your own screen.</strong> Review on a phone, on mobile data, as someone who has never seen the store.</li>
+<li><strong>Changing many things at once.</strong> You can't tell which change helped, or which hurt.</li>
+</ul>
+
+<h2>How do you turn the findings into an ordered list?</h2>
+<p>Write down every failure, then rank them by two questions: how many shoppers does it affect, and how easy is it to fix? A confusing headline on the home page touches every visitor and takes an hour. A slow third-party app may touch many and take a day. A rare checkout error may be painful and rare. Work from the first failing check in the order above, because upstream problems hide downstream ones. After each change, wait for enough sessions and check the funnel report again; our guide to <a href="/blog/how-to-increase-shopify-conversion-rate">increasing your Shopify conversion rate</a> covers how to tell whether a change worked.</p>
+
+<h2>Is a speed test the same thing as a store analysis?</h2>
+<p>No. A speed test answers "is it fast?" Shopify's reports answer "where do visitors drop?" An analyzer that reads the storefront answers "what does a shopper see, and what should I change first?" A fast store can still convert badly, and an SEO crawler checks whether Google can read your pages, not whether a shopper trusts them. They are complementary, and none replaces the others.</p>
 <figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
-<div class="text-sm font-semibold text-white">Why shoppers who intended to buy abandoned checkout</div>
-<div class="mt-4"><svg viewBox="0 0 340 246" class="w-full h-auto" style="max-width:420px;margin:0 auto;display:block" role="img" aria-label="Top reasons shoppers who intended to buy abandoned checkout, per Baymard Institute (updated September 2025): extra costs at checkout 40%; delivery too slow 20%; card security doubts 19%; forced account creation 18%; checkout too long 17%."><text x="0" y="19" font-size="14.5" fill="rgba(255,255,255,0.7)">Extra costs at checkout</text><rect x="0" y="26" width="260" height="15" rx="4" fill="#2DD4BF" /><text x="268" y="39" font-size="15" font-weight="600" fill="#ffffff">40%</text><text x="0" y="67" font-size="14.5" fill="rgba(255,255,255,0.7)">Delivery too slow</text><rect x="0" y="74" width="130" height="15" rx="4" fill="rgba(45,212,191,0.55)" /><text x="138" y="87" font-size="15" font-weight="600" fill="#ffffff">20%</text><text x="0" y="115" font-size="14.5" fill="rgba(255,255,255,0.7)">Card security doubts</text><rect x="0" y="122" width="123.5" height="15" rx="4" fill="rgba(45,212,191,0.55)" /><text x="131.5" y="135" font-size="15" font-weight="600" fill="#ffffff">19%</text><text x="0" y="163" font-size="14.5" fill="rgba(255,255,255,0.7)">Forced account creation</text><rect x="0" y="170" width="117" height="15" rx="4" fill="rgba(45,212,191,0.55)" /><text x="125" y="183" font-size="15" font-weight="600" fill="#ffffff">18%</text><text x="0" y="211" font-size="14.5" fill="rgba(255,255,255,0.7)">Checkout too long</text><rect x="0" y="218" width="110.5" height="15" rx="4" fill="rgba(45,212,191,0.55)" /><text x="118.5" y="231" font-size="15" font-weight="600" fill="#ffffff">17%</text></svg></div>
-<figcaption class="mt-3 text-xs text-white/35">Source: <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">Baymard Institute</a> (updated September 2025). Respondents could pick more than one reason.</figcaption>
+<svg viewBox="0 0 300 184" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="d6b-title d6b-desc"><title id="d6b-title">What a speed test, Shopify reports and a store analyzer can see</title><desc id="d6b-desc">A grid of three columns. Speed test: load time. Shopify reports: funnel drop-offs. Store analyzer: what a shopper sees and ranked fixes.</desc>
+<text x="152" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Speed</text><text x="207" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Reports</text><text x="266" y="16" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">Analyzer</text><line x1="0" y1="26" x2="300" y2="26" stroke="rgba(255,255,255,0.12)"/><text x="0" y="53" font-size="14" fill="rgba(255,255,255,0.85)">Load time</text><circle cx="152" cy="47" r="11" fill="rgba(45,212,191,0.18)"/><path d="M146 47 l5 5 l9 -11" stroke="#2DD4BF" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="202" y1="47" x2="212" y2="47" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="261" y1="47" x2="271" y2="47" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="0" y1="66" x2="300" y2="66" stroke="rgba(255,255,255,0.06)"/><text x="0" y="91" font-size="14" fill="rgba(255,255,255,0.85)">Funnel drop-offs</text><line x1="147" y1="85" x2="157" y2="85" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><circle cx="207" cy="85" r="11" fill="rgba(45,212,191,0.18)"/><path d="M201 85 l5 5 l9 -11" stroke="#2DD4BF" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="261" y1="85" x2="271" y2="85" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="0" y1="104" x2="300" y2="104" stroke="rgba(255,255,255,0.06)"/><text x="0" y="129" font-size="14" fill="rgba(255,255,255,0.85)">What shoppers see</text><line x1="147" y1="123" x2="157" y2="123" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="202" y1="123" x2="212" y2="123" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><circle cx="266" cy="123" r="11" fill="rgba(45,212,191,0.18)"/><path d="M260 123 l5 5 l9 -11" stroke="#2DD4BF" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="142" x2="300" y2="142" stroke="rgba(255,255,255,0.06)"/><text x="0" y="167" font-size="14" fill="rgba(255,255,255,0.85)">Ranked fixes</text><line x1="147" y1="161" x2="157" y2="161" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><line x1="202" y1="161" x2="212" y2="161" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/><circle cx="266" cy="161" r="11" fill="rgba(45,212,191,0.18)"/><path d="M260 161 l5 5 l9 -11" stroke="#2DD4BF" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="180" x2="300" y2="180" stroke="rgba(255,255,255,0.06)"/></svg>
+<figcaption class="mt-3 text-xs text-white/35">Speed is a speed test such as PageSpeed Insights, Reports is Shopify's own analytics, Analyzer is a tool that reads a screenshot of the storefront. Each answers a different question.</figcaption>
 </figure>
+<p>It also helps to know what a given check can't see. Shopify's reports show where visitors drop but not why. A store analyzer works from what a shopper sees, so it can't judge your analytics or what happens inside checkout. If you already read your numbers, <a href="/blog/store-analyzer-vs-shopify-analytics">why owners still pay for someone to interpret them</a> explains the gap between data and diagnosis.</p>
 
-<h2>How do you run the whole check in 60 seconds?</h2>
-<p>A tool that runs all five checks in one pass is a <a href="/">Shopify store analyzer</a>. EliteVault’s free audit works from a screenshot of your live storefront, so it judges what a shopper sees, not your analytics or your checkout flow.</p>
+<h2>How do you run the whole analysis in about a minute?</h2>
+<p>A tool that runs a first pass in one go is a <a href="/">Shopify store analyzer</a>. Ours (full disclosure, EliteVault is our product) works from a screenshot of your live storefront, so it judges what a shopper sees: offer, layout, trust cues and imagery. It does not read your analytics or checkout flow, which is why checks 3 to 5 still need your own reports and a test purchase.</p>
 <ol>
 <li>Paste your store URL into the tool.</li>
 <li>Wait about a minute for the scan and read the ranked list.</li>
-<li>Fix the top-ranked issue first, then re-run to confirm it moved.</li>
+<li>Fix the top-ranked issue first, then run it again to confirm it moved.</li>
 </ol>
-<p><a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-store-analyzer">Analyze your store free →</a> Full disclosure, EliteVault is our tool. For other options, see <a href="/blog/free-website-audit-tools">free website audit tools</a>; for the fixes themselves, <a href="/blog/why-your-shopify-store-isnt-converting">why your Shopify store isn't converting</a>. And if Shopify already tracks your data, <a href="/blog/store-analyzer-vs-shopify-analytics">why owners still pay for someone to read it</a>.</p>
+<p>For other options and where each one stops, see our guide to <a href="/blog/free-website-audit-tools">free website audit tools</a>. If you want to run it as a proper audit with a page-by-page checklist, use the <a href="/blog/shopify-cro-audit">Shopify CRO audit checklist</a>. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-store-analyzer">Run the audit on your store →</a></p>
+
+<h2>What do you do once the analysis is done?</h2>
+<p>Pick the single top item, write down what you expect it to change and by roughly how much, make the change in a duplicate of your theme, and publish it. Then leave it alone long enough to collect sessions, and compare the same funnel step before and after. If it helped, move to the next item; if it didn't, you have learned something cheap. That loop of analyze, change one thing, measure and re-run is what turns an analysis from a one-off report into a habit.</p>
+
+<h2>How often should you analyze your store?</h2>
+<p>After every theme, offer or app change, and at least once a month. That is our advice, not a measured benchmark. The point is to catch regressions before they cost you sales, and to keep comparing yourself with the best store in your niche, because that is the standard your shoppers use.</p>
 `.trim(),
     faqs: [
       {
-        q: "What is a Shopify store analyzer?",
-        a: "A tool that scans your storefront and ranks what's costing you sales, covering trust, speed, product pages and checkout friction rather than a single speed score.",
+        q: "What is a Shopify store analysis?",
+        a: "A structured review of your store that checks what shoppers see and where they drop out, then ranks what to fix first. A useful one covers the first screen, trust signals, product pages, speed on mobile and checkout friction, not a single speed score.",
       },
       {
-        q: "Is there a free Shopify store analyzer?",
-        a: "Yes. Free options exist, including EliteVault's: the free audit page scans your store, and the Free plan includes one full audit with your score, an annotated screenshot and your top-priority fix. The rest of the ranked fixes and unlimited audits need a paid plan.",
+        q: "How do I analyze my Shopify store for free?",
+        a: "Start with Shopify's own Conversion rate breakdown and Sessions by device reports and with PageSpeed Insights, then check the first screen, trust and product pages by hand with the five checks in this guide. Free analyzers, including ours, give a first read of what a shopper sees.",
+      },
+      {
+        q: "What should I check first when analyzing my Shopify store?",
+        a: "Check the first screen first: whether a stranger can tell what you sell in a few seconds. It decides whether visitors stay long enough to see anything else, so a failure there makes the later checks matter less.",
       },
       {
         q: "How is a store analyzer different from Google PageSpeed Insights?",
-        a: "PageSpeed Insights measures how fast a page loads and renders. A store analyzer also judges what a shopper sees: offer clarity, trust signals, product pages and checkout friction, then ranks fixes by impact.",
+        a: "PageSpeed Insights measures how fast a page loads and reports lab and field data on speed and related Lighthouse categories. A store analyzer reads what a shopper sees, such as the offer, trust cues and layout, and ranks what to change. They answer different questions.",
       },
       {
-        q: "How often should I analyze my store?",
-        a: "After every theme or offer change, and at least once a month. That is advice rather than a measured benchmark; the point is to catch regressions before they cost you sales.",
+        q: "How often should I analyze my Shopify store?",
+        a: "After every theme, offer or app change, and at least once a month. That is advice rather than a measured benchmark; the goal is to catch problems before they cost you sales.",
       },
     ],
   },

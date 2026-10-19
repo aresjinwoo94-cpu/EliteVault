@@ -28,6 +28,10 @@ const REFRESHED: Record<string, Tier> = {
   "how-to-increase-shopify-conversion-rate": "T1",
   "is-your-store-ready-for-meta-ads": "T1",
   "why-meta-ads-arent-converting": "T1",
+  "ecommerce-store-audit-vs-consultant": "T1",
+  "shopify-store-analyzer": "T1",
+  "free-website-audit-tools": "T1",
+  "reverse-engineer-winning-shopify-stores": "T1",
 };
 
 /** The only posts allowed to cite Baymard's 70.22% average abandonment rate. */
