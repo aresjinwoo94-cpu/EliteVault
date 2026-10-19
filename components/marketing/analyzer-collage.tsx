@@ -1,4 +1,4 @@
-import { CheckCircle2, Megaphone, Quote, Store, Swords } from "lucide-react";
+import { CheckCircle2, Megaphone, Package, Quote, Star, Swords, Truck } from "lucide-react";
 import { useT } from "@/components/i18n/locale-provider";
 
 /**
@@ -119,10 +119,18 @@ export function AnalyzerCollage() {
                 {t("collage.compPro")}
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-2.5">
-              <StoreTrend side="you" label={t("collage.compYou")} />
-              <StoreTrend side="top" label={t("collage.compTop")} />
-            </div>
+            <CompetitorChart />
+            <ul className="mt-2.5 flex flex-wrap gap-1.5">
+              {CHIPS.map(({ key, Icon }) => (
+                <li
+                  key={key}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-[11px] text-white/75"
+                >
+                  <Icon className="size-3 text-champagne-300" aria-hidden />
+                  {t(key)}
+                </li>
+              ))}
+            </ul>
           </div>
 
           {/* 7-day Meta projection — the last deliverable, kept to a thin strip. */}
@@ -160,51 +168,74 @@ export function AnalyzerCollage() {
   );
 }
 
-/** One side of the two-store comparison: a generic store icon over a tiny trend line (flat/down vs up). */
-function StoreTrend({ side, label }: { side: "you" | "top"; label: string }) {
-  const top = side === "top";
+/** What the top store does that yours does not — three generic icons, 1–2 words each. No brands, no numbers. */
+const CHIPS = [
+  { key: "collage.compReviews", Icon: Star },
+  { key: "collage.compBundles", Icon: Package },
+  { key: "collage.compShipping", Icon: Truck },
+] as const;
+
+/**
+ * Your store vs the top store of the niche, on the SAME axes (6 points, no scale, no figures — it is a picture
+ * of the gap, not data). The top store rises (thick green line + fading fill); yours stays flat/down (dashed
+ * coral). The area between them on the right is shaded and tagged "The gap". Each line is labelled at its end.
+ */
+function CompetitorChart() {
+  const { t } = useT();
+  const X = [8, 53.6, 99.2, 144.8, 190.4, 236];
+  const TOP = [76, 72, 68, 54, 36, 18];
+  const YOU = [64, 66, 68, 72, 76, 80];
+  const pts = (ys: number[]) => ys.map((y, i) => `${X[i]},${y}`).join(" ");
+  const topLine = pts(TOP);
+  const youLine = pts(YOU);
+  const baseline = 92;
+  const topFill = `${X[0]},${baseline} ${topLine} ${X[5]},${baseline}`;
+  // area between the lines over the right half (indices 3..5)
+  const gap = [3, 4, 5].map((i) => `${X[i]},${TOP[i]}`).join(" ") + " " + [5, 4, 3].map((i) => `${X[i]},${YOU[i]}`).join(" ");
+  const gapY = (TOP[4] + YOU[4]) / 2;
   return (
-    <div
-      className={`relative min-w-0 rounded-lg border p-2.5 ${
-        top ? "border-success/25 bg-success/[0.04]" : "border-white/[0.07] bg-white/[0.02]"
-      }`}
+    <svg
+      viewBox="0 0 320 100"
+      className="block h-auto max-h-[112px] w-full"
+      role="img"
+      aria-label={t("collage.compAria")}
     >
-      <div className="flex items-center gap-1.5">
-        <span
-          aria-hidden
-          className={`grid size-6 shrink-0 place-items-center rounded-md ${
-            top ? "bg-success/15 text-success" : "bg-white/[0.06] text-white/55"
-          }`}
-        >
-          <Store className="size-3.5" />
-        </span>
-        <p className="min-w-0 text-[10px] font-medium uppercase leading-tight tracking-wide text-white/65">
-          {label}
-        </p>
-        {top && (
-          <span
-            aria-hidden
-            className="ml-auto grid size-5 shrink-0 place-items-center rounded-full bg-success/20 text-[11px] font-semibold text-success"
-          >
-            $
-          </span>
-        )}
-      </div>
-      <svg viewBox="0 0 100 44" className="mt-2 h-11 w-full" role="img" aria-hidden>
-        <line x1="0" y1="43" x2="100" y2="43" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
-        {top ? (
-          <>
-            <polyline points="0,36 16,32 32,33 50,23 68,16 84,10 100,5" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <circle cx="100" cy="5" r="2.6" fill="#34d399" />
-          </>
-        ) : (
-          <>
-            <polyline points="0,15 18,17 36,16 54,22 72,27 100,34" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.85" />
-            <circle cx="100" cy="34" r="2.6" fill="#f87171" />
-          </>
-        )}
-      </svg>
-    </div>
+      <defs>
+        <linearGradient id="cc-top-fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#34d399" stopOpacity="0.32" />
+          <stop offset="100%" stopColor="#34d399" stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id="cc-gap-fill" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.04" />
+          <stop offset="100%" stopColor="#fbbf24" stopOpacity="0.2" />
+        </linearGradient>
+      </defs>
+      {/* faint X axis, six ticks, no labels */}
+      <line x1="0" y1={baseline} x2="248" y2={baseline} stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+      {X.map((x) => (
+        <line key={x} x1={x} y1={baseline} x2={x} y2={baseline + 3} stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
+      ))}
+      <polygon points={topFill} fill="url(#cc-top-fill)" />
+      <polygon points={gap} fill="url(#cc-gap-fill)" />
+      <polyline points={youLine} fill="none" stroke="#f87171" strokeWidth="2.2" strokeDasharray="5 5" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline points={topLine} fill="none" stroke="#34d399" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+      {/* "The gap" pill where the separation is largest */}
+      <g transform={`translate(${X[4] - 33}, ${gapY - 9})`}>
+        <rect width="66" height="18" rx="9" fill="#0b1210" stroke="rgba(251,191,36,0.55)" />
+        <text x="33" y="12.4" textAnchor="middle" fontSize="9" fontWeight="600" fill="#fcd34d">
+          {t("collage.compGap")}
+        </text>
+      </g>
+      {/* direct end labels (no legend) */}
+      <circle cx={X[5]} cy={TOP[5]} r="4" fill="#34d399" />
+      <text x={X[5] + 9} y={TOP[5] + 3.5} fontSize="10" fontWeight="600" fill="#6ee7b7">
+        {t("collage.compTopEnd")}
+      </text>
+      <circle cx={X[5]} cy={YOU[5]} r="3.5" fill="#f87171" />
+      <text x={X[5] + 9} y={YOU[5] + 3.5} fontSize="10" fontWeight="600" fill="#fca5a5">
+        {t("collage.compYouEnd")}
+      </text>
+    </svg>
   );
 }
 
