@@ -24,6 +24,10 @@ const REFRESHED: Record<string, Tier> = {
   "abandoned-cart-recovery": "T1",
   "shopify-product-page": "T1",
   "shopify-cro-audit": "T1",
+  "why-your-shopify-store-isnt-converting": "T1",
+  "how-to-increase-shopify-conversion-rate": "T1",
+  "is-your-store-ready-for-meta-ads": "T1",
+  "why-meta-ads-arent-converting": "T1",
 };
 
 /** The only posts allowed to cite Baymard's 70.22% average abandonment rate. */
