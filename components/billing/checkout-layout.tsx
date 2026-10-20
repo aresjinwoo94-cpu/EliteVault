@@ -140,7 +140,7 @@ export async function CheckoutLayout({
             {/*
               Trust footer. Previously a `grid grid-cols-2`, which forced two
               equal columns onto two very unequal strings — leaving a big gap
-              after "Cancel anytime", and letting "Credits load instantly" wrap
+              after "Cancel anytime", and letting the second item wrap
               under its own vertically-centred icon. Sizing each item to its
               content and pinning the icon to the first text line keeps them
               aligned at every width.

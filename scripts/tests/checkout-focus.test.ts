@@ -121,3 +121,12 @@ test("the checkout makes no claim it cannot back and no coupon/credits noise", (
   assert.match(layout, /checkout\.outcomeScale/);
   assert.match(layout, /checkout\.instantAccess/);
 });
+
+test("no exit survives on the payment route: the ⌘K palette stays closed, and a signed-in pricing click still reaches checkout", () => {
+  const menu = code("components/dashboard/command-menu-lazy.tsx");
+  assert.match(menu, /usePathname\(\) === "\/app\/checkout"/);
+  assert.match(menu, /armed && !focused/);
+  const mw = code("lib/supabase/middleware.ts");
+  assert.match(mw, /checkoutNextUrl\(\{/);
+  assert.match(mw, /planNext \?\? "\/app\/analyzer"/);
+});
