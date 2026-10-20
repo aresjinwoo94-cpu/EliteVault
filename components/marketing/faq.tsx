@@ -14,6 +14,11 @@ import { getT } from "@/lib/i18n/server";
  */
 export async function FAQ() {
   const { t } = await getT();
+  // t() returns the key itself on a miss, so `t(k) || fallback` never falls back.
+  const pick = (key: string, fallback: string) => {
+    const value = t(key);
+    return value === key ? fallback : value;
+  };
   return (
     <section id="faq" className="section-y border-t border-white/[0.04]">
       <div className="container max-w-3xl">
@@ -28,12 +33,12 @@ export async function FAQ() {
             >
               <summary className="flex w-full cursor-pointer list-none items-center justify-between px-5 py-4 text-left [&::-webkit-details-marker]:hidden">
                 <span className="font-serif text-base">
-                  {t(`faqContent.q${i}`) || item.q}
+                  {pick(`faqContent.q${i}`, item.q)}
                 </span>
                 <ChevronDown className="size-4 shrink-0 text-white/40 transition-transform group-open:rotate-180" />
               </summary>
               <p className="px-5 pb-5 text-sm text-white/55 leading-relaxed">
-                {t(`faqContent.a${i}`) || item.a}
+                {pick(`faqContent.a${i}`, item.a)}
               </p>
             </details>
           ))}

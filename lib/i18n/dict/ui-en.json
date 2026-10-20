@@ -512,7 +512,9 @@
     "q3": "Can I cancel anytime?",
     "a3": "One click in the Stripe Customer Portal. No retention emails, no calls.",
     "q4": "Do my analyses train your AI?",
-    "a4": "No. Your URLs, screenshots and audits are private to your account. We don't train models on customer data, and we don't share screenshots with third parties."
+    "a4": "No. Your URLs, screenshots and audits are private to your account. We don't train models on customer data, and we don't share screenshots with third parties.",
+    "q5": "Can I pay for just one report?",
+    "a5": "Yes. On the Free plan you can unlock the full report of a single audit for a one-time US$7: every fix with its how-to, the buyer-persona simulation, all the fix tracks, one Meta campaign projection for that audit and the winning stores in your niche. No subscription and no card on file. It covers that audit only; new audits, publishing, the Optimizer and the full Library stay with Pro and Scale. If you change your mind, email us within 7 days and we refund it — the report then locks again."
   },
   "supportPage": {
     "eyebrow": "Support",

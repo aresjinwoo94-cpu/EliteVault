@@ -512,7 +512,9 @@
     "q3": "¿Puedo cancelar cuando quiera?",
     "a3": "Con un clic en el Portal de clientes de Stripe. Sin correos de retención ni llamadas.",
     "q4": "¿Mis análisis entrenan vuestra IA?",
-    "a4": "No. Tus URLs, capturas y auditorías son privadas de tu cuenta. No entrenamos modelos con datos de clientes ni compartimos capturas con terceros."
+    "a4": "No. Tus URLs, capturas y auditorías son privadas de tu cuenta. No entrenamos modelos con datos de clientes ni compartimos capturas con terceros.",
+    "q5": "¿Puedo pagar solo por un informe?",
+    "a5": "Sí. En el plan Gratis puedes desbloquear el informe completo de una auditoría por un pago único de US$7: todos los arreglos con su guía, la simulación del buyer persona, todos los grupos de arreglos, una proyección de campaña de Meta para esa auditoría y las tiendas ganadoras de tu nicho. Sin suscripción y sin tarjeta guardada. Cubre solo esa auditoría; las auditorías nuevas, publicar, el Optimizador y la Biblioteca completa siguen en Pro y Scale. Si cambias de opinión, escríbenos en un plazo de 7 días y te lo reembolsamos; el informe vuelve a bloquearse."
   },
   "supportPage": {
     "eyebrow": "Soporte",
