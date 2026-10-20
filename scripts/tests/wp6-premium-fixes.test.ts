@@ -61,16 +61,16 @@ test("the pricing no longer promises a priority queue / priority support (en + e
   }
 });
 
-test("the Free plan describes Fix Tracks: 1 audit + you choose one type of fixes", () => {
+test("the Free plan describes Fix Tracks: 1 audit + 1 set of fixes you choose", () => {
   const free = PLANS.free;
-  assert.ok(free.features.some((f) => /choose one type of fixes/i.test(f.text)));
+  assert.ok(free.features.some((f) => /set of fixes of your choice/i.test(f.text)));
   assert.doesNotMatch(free.description, /#1 priority fix/);
-  assert.match(free.description, /one set of fixes of your choice/);
+  assert.match(free.description, /one set of fixes you choose/);
   const es = (messages.es as unknown as { plans: { free: Record<string, string> } }).plans.free;
-  assert.match(es.f1, /Eliges un tipo de correcciones/);
+  assert.match(es.f2, /grupo de arreglos a tu elección/);
   assert.doesNotMatch(es.desc, /corrección prioritaria nº 1/);
   const en = (messages.en as unknown as { plans: { free: Record<string, string> } }).plans.free;
-  assert.match(en.f1, /choose one type of fixes/i);
+  assert.match(en.f2, /set of fixes of your choice/i);
 });
 
 test("Compare Mode is gated on the SERVER for Pro/Scale (it is sold as Pro/Scale)", () => {

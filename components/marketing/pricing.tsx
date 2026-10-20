@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { m as motion } from "framer-motion";
-import { Check, X, Lock } from "lucide-react";
+import { Check, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataPill } from "@/components/ui/data-pill";
@@ -33,20 +33,6 @@ export function Pricing() {
           <p className="mt-4 text-white/55 leading-relaxed text-lg">
             {t("pricing.subheading")}
           </p>
-          {/* P2.5 — explicit value ladder so the jump between tiers reads at a glance. */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs text-white/45">
-            <span className="rounded-full border border-white/[0.08] bg-white/[0.02] px-3 py-1">
-              {t("plans.free.name")} → <span className="text-white/70">{t("pricing.ladderDiagnose")}</span>
-            </span>
-            <span className="text-white/25">›</span>
-            <span className="rounded-full border border-champagne-400/25 bg-champagne-400/[0.05] px-3 py-1">
-              Pro → <span className="text-champagne-200">{t("pricing.ladderCure")}</span>
-            </span>
-            <span className="text-white/25">›</span>
-            <span className="rounded-full border border-signal-500/25 bg-signal-600/[0.05] px-3 py-1">
-              Scale → <span className="text-signal-200">{t("pricing.ladderVolume")}</span>
-            </span>
-          </div>
         </div>
 
         <div className="mt-10 flex justify-center">
@@ -148,29 +134,27 @@ export function Pricing() {
                 >
                   {plan.id === "free"
                     ? t("pricing.ctaFree")
-                    : `${t("pricing.ctaStart")} ${plan.name}`}
+                    : fill(t("pricing.ctaGet"), { plan: plan.name })}
                 </Button>
               </Link>
+              {plan.id === "pro" && (
+                <p className="mt-3 text-center text-xs text-white/35">
+                  {t("pricing.localCurrencyNote")}
+                </p>
+              )}
 
+              {/* Only what the plan includes: a column of greyed-out ✗ makes
+                  Free look punished, and the neighbouring cards already show
+                  the contrast. */}
               <ul className="mt-7 space-y-3 text-sm">
-                {plan.features.map((f) => (
-                  <li
-                    key={f.text}
-                    className={cn(
-                      "flex gap-2.5",
-                      f.included ? "text-white/80" : "text-white/30",
-                    )}
-                  >
-                    {f.included ? (
-                      <Check
-                        className={cn(
-                          "size-4 shrink-0 mt-0.5",
-                          f.highlight ? "text-champagne-400" : "text-success",
-                        )}
-                      />
-                    ) : (
-                      <X className="size-4 shrink-0 mt-0.5 text-white/20" />
-                    )}
+                {plan.features.filter((f) => f.included).map((f) => (
+                  <li key={f.text} className="flex gap-2.5 text-white/80">
+                    <Check
+                      className={cn(
+                        "size-4 shrink-0 mt-0.5",
+                        f.highlight ? "text-champagne-400" : "text-success",
+                      )}
+                    />
                     <span className={cn(f.highlight && "text-white font-medium")}>
                       {f.text}
                     </span>

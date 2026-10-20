@@ -968,13 +968,13 @@
   },
   "plans": {
     "free": {
-      "tagline": "Empieza con el diagnóstico"
+      "tagline": "Mira dónde estás"
     },
     "pro": {
-      "tagline": "Donde la mayoría de tiendas sube de nivel"
+      "tagline": "Para tiendas que ya venden"
     },
     "scale": {
-      "tagline": "Para marcas que buscan un ROI fuera de serie"
+      "tagline": "Para tiendas con tráfico pagado"
     }
   },
   "pricing": {

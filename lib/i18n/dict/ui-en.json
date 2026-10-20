@@ -968,13 +968,13 @@
   },
   "plans": {
     "free": {
-      "tagline": "Start with the diagnosis"
+      "tagline": "See where you stand"
     },
     "pro": {
-      "tagline": "Where most stores level up"
+      "tagline": "For stores already selling"
     },
     "scale": {
-      "tagline": "For brands hunting outsized ROI"
+      "tagline": "For stores running paid traffic"
     }
   },
   "pricing": {
