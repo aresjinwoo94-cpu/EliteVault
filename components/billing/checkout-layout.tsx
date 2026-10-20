@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 // PLANS lookup below loses its type.
 import { PLANS, type Interval, type PlanFeature } from "@/lib/stripe/plans";
 import type { PlanTier } from "@/lib/supabase/types";
-import { ResultsBars } from "@/components/billing/results-bars";
 import { PaymentMethods } from "@/components/billing/payment-methods";
 import { CheckoutReviews } from "@/components/billing/checkout-reviews";
 import { getT } from "@/lib/i18n/server";
@@ -144,9 +143,6 @@ export async function CheckoutLayout({
                   ))}
               </ul>
             </div>
-
-            {/* Survey proof — self-reported, always captioned as an estimate. */}
-            <ResultsBars />
 
             {/*
               Trust footer. Previously a `grid grid-cols-2`, which forced two
