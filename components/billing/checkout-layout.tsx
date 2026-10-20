@@ -46,11 +46,11 @@ export async function CheckoutLayout({
       <header className="border-b border-white/[0.04] bg-obsidian-900/40">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link
-            href="/app/billing"
+            href="/pricing"
             className="inline-flex items-center gap-1.5 text-xs text-white/45 hover:text-white transition-colors"
           >
             <ArrowLeft className="size-3.5" />
-            {t("checkout.backToBilling")}
+            {t("checkout.back")}
           </Link>
           <div className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-white/30">
             <Lock className="size-3" />
@@ -106,15 +106,8 @@ export async function CheckoutLayout({
                     localized total lives. `plan.price` is no longer read in this
                     file at all; the charge uses the Stripe Price ID via
                     getCheckoutPriceId — untouched. */}
-                <p className="mt-5 text-sm text-white/55 leading-relaxed">
-                  {interval === "year"
-                    ? t("checkout.totalInPanelYear")
-                    : t("checkout.totalInPanel")}
-                  .
-                </p>
-
-                <p className="mt-4 text-sm text-white/65 leading-relaxed">
-                  {plan.description}
+                <p className="mt-5 text-sm text-white/65 leading-relaxed">
+                  {t(planId === "scale" ? "checkout.outcomeScale" : "checkout.outcomePro")}
                 </p>
               </div>
             </div>
@@ -127,7 +120,7 @@ export async function CheckoutLayout({
               <ul className="space-y-2.5">
                 {plan.features
                   .filter((f: PlanFeature) => f.included)
-                  .slice(0, 6)
+                  .slice(0, 5)
                   .map((f: PlanFeature) => (
                     <li
                       key={f.text}
@@ -159,7 +152,7 @@ export async function CheckoutLayout({
               </span>
               <span className="inline-flex items-start gap-2">
                 <Zap className="size-3.5 shrink-0 mt-px text-white/30" />
-                {t("checkout.creditsInstant")}
+                {t("checkout.instantAccess")}
               </span>
             </div>
 

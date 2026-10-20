@@ -47,8 +47,8 @@ const submitMessage = (p: ReturnType<typeof buildCheckoutSessionParams>) =>
 test("the session's custom_text follows the same locale", () => {
   const en = submitMessage(buildCheckoutSessionParams(args("en", "pro")));
   const es = submitMessage(buildCheckoutSessionParams(args("es", "pro")));
-  assert.match(en ?? "", /You're upgrading to EliteVault Pro\. Includes the full Analyzer/);
-  assert.match(es ?? "", /Estás pasando a EliteVault Pro\. Incluye el Analyzer completo/);
+  assert.match(en ?? "", /^Instant access to EliteVault Pro\. Cancel anytime from your account/);
+  assert.match(es ?? "", /^Acceso inmediato a EliteVault Pro\. Cancela cuando quieras desde tu cuenta/);
   const scale = submitMessage(buildCheckoutSessionParams(args("es", "scale")));
   assert.match(scale ?? "", /EliteVault Scale/);
   assert.doesNotMatch(scale ?? "", /\{plan\}|\{includes\}/, "no placeholder may leak");
@@ -60,7 +60,7 @@ test("the locale change touched nothing else on the session", () => {
   assert.equal(p.mode, "subscription");
   assert.deepEqual(p.line_items, [{ price: "price_test", quantity: 1 }]);
   assert.deepEqual(p.adaptive_pricing, { enabled: true });
-  assert.equal(p.allow_promotion_codes, true);
+  assert.equal(p.allow_promotion_codes, false, "no coupon field on the subscription checkout");
   assert.deepEqual(p.metadata, { supabase_user_id: "user_1", plan: "pro" });
   assert.match(p.return_url ?? "", /\/app\/checkout\/return\?session_id=\{CHECKOUT_SESSION_ID\}$/);
 });

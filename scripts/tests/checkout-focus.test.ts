@@ -43,17 +43,14 @@ test("the plan header and price are not repeated on a phone", () => {
   assert.match(layout, /hidden text-\[11px\][^"]*lg:block"\s*>\s*\{t\("checkout\.payment"\)\}/);
 });
 
-test("the app chrome is hidden on the payment route, phones only", () => {
+test("the app chrome (topbar AND sidebar) is hidden on the payment route, at every size", () => {
   const chrome = code("components/dashboard/focus-chrome.tsx");
   assert.match(chrome, /const focused = pathname === "\/app\/checkout"/);
-  // `md:contents` (not `md:block`) so the topbar keeps its own sticky
-  // positioning against the layout's flex column at md and up.
-  assert.match(chrome, /focused \? "hidden md:contents" : "contents"/);
+  assert.match(chrome, /focused \? "hidden" : "contents"/);
+  assert.doesNotMatch(chrome, /md:contents/, "no desktop escape hatch");
   const layout = code("app/(app)/layout.tsx");
   assert.match(layout, /<HideChromeOnCheckout>\s*\n\s*<AppTopbar/, "the topbar is the wrapped chrome");
-  // The sidebar is already hidden below md, so it must NOT be wrapped (that
-  // would hide it on desktop too).
-  assert.doesNotMatch(layout, /<HideChromeOnCheckout>[\s\S]*<AppSidebar/);
+  assert.match(layout, /<HideChromeOnCheckout>\s*\n\s*<AppSidebar/, "the desktop sidebar is wrapped too");
 });
 
 test("the payment route always keeps a way back", () => {
@@ -63,7 +60,8 @@ test("the payment route always keeps a way back", () => {
   const header = layout.match(/<header[^>]*className="([^"]*)"/);
   assert.ok(header, "checkout header");
   assert.doesNotMatch(header![1], /\bhidden\b/, "the checkout header is never hidden");
-  assert.match(layout, /href="\/app\/billing"/);
+  assert.match(layout, /href="\/pricing"/, "a new buyer never saw billing; back goes to the plans");
+  assert.doesNotMatch(layout, /href="\/app\/billing"/);
 
   // And the chrome only goes away on the payment page itself: the return
   // page's "activating your plan" state has no navigation of its own.
@@ -76,7 +74,7 @@ test("the payment route always keeps a way back", () => {
 // vanish silently if a later edit dropped them.
 test("the extraction kept everything the page used to render", () => {
   const layout = code("components/billing/checkout-layout.tsx");
-  for (const piece of ["<ResultsBars", "<PaymentMethods", "<CheckoutReviews", "checkout.whatYouGet"]) {
+  for (const piece of ["<PaymentMethods", "<CheckoutReviews", "checkout.whatYouGet"]) {
     assert.ok(layout.includes(piece), `missing ${piece}`);
   }
   const page = code("app/(app)/app/checkout/page.tsx");
@@ -113,4 +111,13 @@ test("a rejected branding parameter must never cost the sale", () => {
   // The detector must not swallow real payment errors (card, price, customer).
   assert.match(session, /e\?\.param\?\.startsWith\("branding_settings"\)/);
   assert.match(session, /branding_settings\/i\.test/);
+});
+
+test("the checkout makes no claim it cannot back and no coupon/credits noise", () => {
+  const layout = code("components/billing/checkout-layout.tsx");
+  assert.doesNotMatch(layout, /ResultsBars|results-bars/, "survey bars need a real survey (n >= 30)");
+  assert.doesNotMatch(layout, /totalInPanel|creditsInstant/);
+  assert.match(layout, /checkout\.outcomePro/);
+  assert.match(layout, /checkout\.outcomeScale/);
+  assert.match(layout, /checkout\.instantAccess/);
 });
