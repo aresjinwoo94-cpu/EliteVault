@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { type Database, type CookiesToSet } from "./types";
+import { checkoutNextUrl } from "../auth/next-url";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -128,10 +129,16 @@ export async function updateSession(request: NextRequest) {
   if (isAuth && user) {
     const url = request.nextUrl.clone();
     const explicitNext = request.nextUrl.searchParams.get("next");
+    // A signed-in visitor who clicks a pricing CTA (/sign-up?plan=pro&interval=…)
+    // must still reach that checkout, not the analyzer.
+    const planNext = checkoutNextUrl({
+      plan: request.nextUrl.searchParams.get("plan") ?? undefined,
+      interval: request.nextUrl.searchParams.get("interval") ?? undefined,
+    });
     const target =
       explicitNext && explicitNext.startsWith("/app")
         ? explicitNext
-        : "/app/analyzer";
+        : (planNext ?? "/app/analyzer");
     // `next` can carry a query string (…/app/checkout?plan=pro&interval=month).
     // Assigning that to url.pathname percent-encodes the "?" into the path
     // ("/app/checkout%3Fplan=pro") and the following url.search = "" then

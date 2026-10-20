@@ -53,9 +53,9 @@ export const PLANS: Record<PlanTier, Plan> = {
   free: {
     id: "free",
     name: "Free",
-    tagline: "Start with the diagnosis",
+    tagline: "See where you stand",
     description:
-      "Run one free audit of your own store — overall score, annotated screenshot AND one set of fixes of your choice (most urgent, post-purchase, theme & colors or your niche's top store), unlocked, no credit card. Browse 3 hand-picked winning stores and read the community feed. Upgrade to Pro to unlock the rest of your ranked fixes, buyer-persona simulation and unlimited audits.",
+      "One full audit of your store and one set of fixes you choose. No card needed.",
     price: { month: 0, year: 0 },
     stripePriceIds: {},
     // monthlyCredits stays 0: paid plans renew credits monthly via the
@@ -72,22 +72,18 @@ export const PLANS: Record<PlanTier, Plan> = {
     libraryFullMetricsCap: 3,
     quotas: { analysesPerMonth: 1, metaRunsPerMonth: 0 },
     features: [
-      { text: "1 free audit: score + annotated screenshot", included: true, highlight: true },
-      { text: "You choose one type of fixes — unlocked & actionable", included: true, highlight: true },
-      { text: "3 hand-picked winning stores", included: true },
-      { text: "Browse the Community feed", included: true },
-      { text: "The rest of your ranked fixes + buyer-persona simulation", included: false },
-      { text: "AI image & text search across 45+ stores", included: false },
-      { text: "Unlimited audits + publish to Community", included: false },
-      { text: "Meta Scenario Modeler + Ads optimizer + API", included: false },
+      { text: "1 full store audit + your estimated revenue potential", included: true, highlight: true },
+      { text: "Annotated screenshot of your page", included: true },
+      { text: "1 set of fixes of your choice — unlocked", included: true, highlight: true },
+      { text: "3 winning stores to learn from", included: true },
     ],
   },
   pro: {
     id: "pro",
     name: "Pro",
-    tagline: "Where most stores level up",
+    tagline: "For stores already selling",
     description:
-      "Full Library + brutal Analyzer with annotated screenshots, buyer-persona simulations, and the ability to publish your audits to the Community. Includes 1 Meta campaign projection per month.",
+      "Every fix for your store, how your buyer reacts to it, and the winning stores to model.",
     price: { month: 19, year: 180 },
     stripePriceIds: {
       month: process.env.STRIPE_PRICE_PRO_MONTHLY,
@@ -102,35 +98,20 @@ export const PLANS: Record<PlanTier, Plan> = {
     badge: "Most popular",
     highlight: true,
     features: [
-      { text: "Everything in Free", included: true },
-      { text: "Full Library of winning stores", included: true },
-      { text: "Image-similarity search", included: true },
-      {
-        text: "Full Website Analyzer with annotated screenshots",
-        included: true,
-        highlight: true,
-      },
-      { text: "Buyer-persona simulations (all your ranked fixes)", included: true },
-      // Order matters: checkout and plan-card render only the first SIX
-      // included features (.slice(0, 6)), so this highlighted Pro→Scale
-      // bridge has to sit inside that window — below "40 analyses / month"
-      // it was visible on /pricing only.
-      {
-        text: "1 Meta campaign projection / month",
-        included: true,
-        highlight: true,
-      },
-      { text: "40 analyses / month", included: true },
-      { text: "Publish to Community + Compare Mode", included: true },
-      { text: "Unlimited Meta projections + Ads optimizer + REST API", included: false },
+      { text: "Every fix unlocked, ranked by priority", included: true, highlight: true },
+      { text: "Buyer-persona reaction to each fix", included: true, highlight: true },
+      { text: "40 audits / month — re-check after every change or audit competitors", included: true },
+      { text: "Full Library of winning stores + image search", included: true },
+      { text: "1 Meta Ads forecast / month", included: true, highlight: true },
+      { text: "Community publishing + Compare Mode", included: true },
     ],
   },
   scale: {
     id: "scale",
     name: "Scale",
-    tagline: "For brands hunting outsized ROI",
+    tagline: "For stores running paid traffic",
     description:
-      "Diagnosis + cure + crystal ball. Project a 7-day Meta Ads campaign across 3 scenarios before you spend a dollar. Plus Meta Ads optimizer targets and REST API.",
+      "Forecast a 7-day Meta campaign across 3 scenarios before you spend a dollar.",
     price: { month: 29, year: 278 },
     stripePriceIds: {
       month: process.env.STRIPE_PRICE_SCALE_MONTHLY,
@@ -142,21 +123,13 @@ export const PLANS: Record<PlanTier, Plan> = {
     canPublish: true,
     libraryFullMetricsCap: null,
     quotas: { analysesPerMonth: 200, metaRunsPerMonth: null },
-    badge: "For teams",
+    badge: "For Meta Ads spenders",
     features: [
       { text: "Everything in Pro", included: true },
-      {
-        text: "Meta Scenario Modeler: 7-day, 3-scenario AI projection",
-        included: true,
-        highlight: true,
-      },
-      {
-        text: "Meta Ads optimizer: CPC, CPM, CTR & ROAS targets",
-        included: true,
-        highlight: true,
-      },
-      { text: "REST API access (bearer tokens)", included: true, highlight: true },
-      { text: "200 analyses / month", included: true },
+      { text: "Unlimited Meta Ads forecasts — 7 days, 3 scenarios", included: true, highlight: true },
+      { text: "Ads optimizer: CPC, CPM, CTR & ROAS targets", included: true, highlight: true },
+      { text: "200 audits / month", included: true },
+      { text: "API access", included: true },
     ],
   },
 };

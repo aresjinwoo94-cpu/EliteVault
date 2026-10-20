@@ -168,7 +168,7 @@ function CheckoutFrame({
       <div className="rounded-2xl border border-destructive/30 bg-destructive/[0.04] p-6 text-center">
         <p className="text-sm text-destructive">{shownError}</p>
         <button
-          onClick={() => router.push("/app/billing")}
+          onClick={() => router.push("/pricing")}
           className="mt-4 text-xs text-white/55 hover:text-white"
         >
           {t("checkout.backArrow")}

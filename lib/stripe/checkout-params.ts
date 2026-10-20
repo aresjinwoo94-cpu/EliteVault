@@ -42,12 +42,7 @@ export function buildCheckoutSessionParams({
   // Plan-aware copy that Stripe prints ABOVE/BELOW its own payment fields; it
   // is in the site's language like everything else around the form.
   const planLabel = plan === "pro" ? "Pro" : "Scale";
-  const includes = t(
-    plan === "scale" ? "checkout.stripeIncludesScale" : "checkout.stripeIncludesPro",
-  );
-  const submit = t("checkout.stripeSubmit")
-    .replace("{plan}", planLabel)
-    .replace("{includes}", includes);
+  const submit = t("checkout.stripeSubmit").replace("{plan}", planLabel);
 
   return {
     ui_mode: "embedded",
@@ -66,7 +61,9 @@ export function buildCheckoutSessionParams({
     return_url: absoluteUrl(
       "/app/checkout/return?session_id={CHECKOUT_SESSION_ID}",
     ),
-    allow_promotion_codes: true,
+    // No coupon field: a visible "Add code" sends buyers off to search for one.
+    // Turn it back on only when a real promotion exists.
+    allow_promotion_codes: false,
     billing_address_collection: "auto",
 
     // The site's language — never "auto" (see stripeLocale).

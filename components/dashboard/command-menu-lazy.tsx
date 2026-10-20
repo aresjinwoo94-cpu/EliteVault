@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 const CommandMenu = dynamic(
   () => import("@/components/dashboard/command-menu").then((m) => m.CommandMenu),
@@ -16,9 +17,12 @@ const CommandMenu = dynamic(
  */
 export function CommandMenuLazy() {
   const [armed, setArmed] = useState(false);
+  // The payment route is a focus page: the palette links to every app
+  // section, so it stays closed there (see focus-chrome.tsx).
+  const focused = usePathname() === "/app/checkout";
 
   useEffect(() => {
-    if (armed) return;
+    if (armed || focused) return;
     const arm = () => setArmed(true);
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
@@ -32,7 +36,7 @@ export function CommandMenuLazy() {
       document.removeEventListener("keydown", onKey);
       window.removeEventListener("ev:open-command-menu", arm);
     };
-  }, [armed]);
+  }, [armed, focused]);
 
-  return armed ? <CommandMenu defaultOpen /> : null;
+  return armed && !focused ? <CommandMenu defaultOpen /> : null;
 }

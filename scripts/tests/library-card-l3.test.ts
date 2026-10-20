@@ -112,9 +112,8 @@ test("★ and teardown have a 44px touch target (28px icon + invisible padding)"
 test("plan and Library copy no longer promise 'full metrics' (EN + ES), and say what Free/Pro really get", async () => {
   const { PLANS } = await import("../../lib/stripe/plans");
   const feats = (id: "free" | "pro") => PLANS[id].features.map((f) => f.text);
-  assert.ok(feats("free").includes("3 hand-picked winning stores"));
-  assert.ok(feats("pro").includes("Full Library of winning stores"));
-  assert.ok(feats("pro").includes("Image-similarity search"));
+  assert.ok(feats("free").includes("3 winning stores to learn from"));
+  assert.ok(feats("pro").includes("Full Library of winning stores + image search"));
   for (const file of ["lib/stripe/plans.ts", "lib/i18n/messages.ts", "lib/i18n/dict/ui-en.json", "lib/i18n/dict/ui-es.json", "app/llms.txt/route.ts", "app/page.tsx", "lib/support/kb.ts"]) {
     assert.doesNotMatch(strip(read(file)), /full metrics|métricas completas|con todas sus métricas|with metrics\./i, file);
   }
