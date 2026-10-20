@@ -171,13 +171,18 @@ export async function fillOneImage(
 export async function saveHeroImage(
   row: MissingImageRow,
   hero: { buf: Buffer; mediaType: "image/png" | "image/jpeg"; source: ThumbnailSource } | null,
-  opts: { hold?: boolean; failNote?: string; countAttempt?: boolean } = {},
+  opts: { hold?: boolean; failNote?: string; countAttempt?: boolean; setAttempts?: number } = {},
 ): Promise<FillOutcome> {
   const svc = createSupabaseServiceClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const sites = svc.from("winning_sites") as any;
   const stamp = { thumbnail_checked_at: new Date().toISOString() };
-  const attempt = opts.countAttempt === false ? {} : { thumbnail_attempts: (row.thumbnail_attempts ?? 0) + 1 };
+  const attempt =
+    opts.setAttempts !== undefined
+      ? { thumbnail_attempts: opts.setAttempts } // L4: a 403/anti-bot block exhausts the row at once
+      : opts.countAttempt === false
+        ? {}
+        : { thumbnail_attempts: (row.thumbnail_attempts ?? 0) + 1 };
 
   if (!hero) {
     await sites.update({ ...stamp, ...attempt }).eq("id", row.id);
