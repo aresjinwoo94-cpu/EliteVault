@@ -17,29 +17,42 @@
  * but the row is NOT published; its review_reason becomes `image_pending_review` — publication is
  * decided by the quality gate (WP-L2).
  *
+ * Failures (WP-L4): a 403 / anti-bot wall exhausts the row's attempts at once (it goes to the owner's "Sin imagen"
+ * list and is never retried); any other failure counts one attempt (max 3). A failed capture never unpublishes
+ * or edits a published row. `--ci` is for the weekly GitHub Actions run (.github/workflows/library-hero-capture.yml):
+ * keys come from GitHub secrets, Chrome runs with --no-sandbox, and a summary is written to GITHUB_STEP_SUMMARY.
+ *
  * Isolation: no Analyzer provider is used (no ScreenshotOne / thum.io / Microlink / mshots) and
  * nothing runs on Vercel. The browser is the locally installed Chrome (CHROME_PATH to override),
  * started with a throw-away profile; it is closed in a `finally` and, if the process is still alive,
  * ITS OWN process tree (never other Chrome windows) is killed. Nothing is left running.
  */
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 const argv = process.argv.slice(2);
 const arg = (n: string, d: string) => (argv.includes(n) ? argv[argv.indexOf(n) + 1] : d);
-for (const l of readFileSync(arg("--env", ".env.local"), "utf8").split(/\r?\n/)) {
-  const i = l.indexOf("=");
-  if (i > 0 && !l.startsWith("#")) process.env[l.slice(0, i).trim()] ??= l.slice(i + 1).trim().replace(/^["']|["']$/g, "");
+// Locally the keys come from an env file; in CI (--ci) they are GitHub secrets already in process.env.
+const envFile = arg("--env", ".env.local");
+if (existsSync(envFile)) {
+  for (const l of readFileSync(envFile, "utf8").split(/\r?\n/)) {
+    const i = l.indexOf("=");
+    if (i > 0 && !l.startsWith("#")) process.env[l.slice(0, i).trim()] ??= l.slice(i + 1).trim().replace(/^["']|["']$/g, "");
+  }
+}
+const CI = argv.includes("--ci");
+for (const k of ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]) {
+  if (!process.env[k]) throw new Error(`${k} is not set (env file or GitHub secret)`);
 }
 const outDir = arg("--out", "hero-captures");
 const limit = Number(arg("--limit", "100"));
 const only = argv.includes("--only") ? new Set(arg("--only", "").split(",").map((s) => s.trim().toLowerCase())) : null;
 const dry = argv.includes("--dry-run");
 const PAUSE_MS = 6000;
-const CHROME =
-  process.env.CHROME_PATH ?? "C:/Program Files/Google/Chrome/Application/chrome.exe";
+const WIN = process.platform === "win32";
+const CHROME = process.env.CHROME_PATH ?? (WIN ? "C:/Program Files/Google/Chrome/Application/chrome.exe" : "/usr/bin/google-chrome");
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 const W = 1440;
@@ -47,6 +60,7 @@ const H = 900;
 
 mkdirSync(outDir, { recursive: true });
 const { createSupabaseServiceClient } = await import("../../lib/supabase/server");
+const { MAX_CAPTURE_ATTEMPTS, attemptsAfterFailure, classifyCaptureFailure } = await import("../../lib/library/capture-outcome");
 const { saveHeroImage } = await import("../../lib/library/images");
 type Row = import("../../lib/library/images").MissingImageRow;
 
@@ -60,6 +74,7 @@ const { data, error } = await svc
   .eq("review_reason", "no_image")
   .is("thumbnail_url", null)
   .is("thumbnail_source", null)
+  .lt("thumbnail_attempts", MAX_CAPTURE_ATTEMPTS) // exhausted rows (blocked / 3 tries) wait for a manual upload
   .order("niche")
   .order("domain");
 if (error) throw new Error(error.message);
@@ -78,7 +93,15 @@ const browser = await puppeteer.launch({
   executablePath: CHROME,
   headless: true,
   userDataDir: profile,
-  args: ["--no-first-run", "--disable-extensions", "--mute-audio", "--hide-scrollbars", "--disable-background-networking", "--lang=en-US"],
+  args: [
+    "--no-first-run",
+    "--disable-extensions",
+    "--mute-audio",
+    "--hide-scrollbars",
+    "--disable-background-networking",
+    "--lang=en-US",
+    ...(CI ? ["--no-sandbox", "--disable-dev-shm-usage"] : []),
+  ],
   defaultViewport: { width: W, height: H },
 });
 const pid = browser.process()?.pid;
@@ -86,6 +109,10 @@ console.log(`browser started (pid ${pid})`);
 
 function pidAlive(p: number): boolean {
   try {
+    if (!WIN) {
+      process.kill(p, 0);
+      return true;
+    }
     return execFileSync("tasklist", ["/FI", `PID eq ${p}`, "/NH"], { encoding: "utf8" }).includes(String(p));
   } catch {
     return false;
@@ -99,7 +126,8 @@ async function shutdown() {
   }
   if (pid && pidAlive(pid)) {
     try {
-      execFileSync("taskkill", ["/PID", String(pid), "/T", "/F"]);
+      if (WIN) execFileSync("taskkill", ["/PID", String(pid), "/T", "/F"]);
+      else process.kill(pid, "SIGKILL");
     } catch {
       /* gone */
     }
@@ -199,15 +227,17 @@ try {
 
       // 3) viewport screenshot of the hero
       const shot = Buffer.from(await page.screenshot({ type: "jpeg", quality: 85, clip: { x: 0, y: 0, width: W, height: H } }));
-      const saved = await saveHeroImage(row, { buf: shot, mediaType: "image/jpeg", source: "capture" }, { hold: true, countAttempt: false });
+      const saved = await saveHeroImage(row, { buf: shot, mediaType: "image/jpeg", source: "capture" }, { hold: true });
       const file = join(outDir, `${saved.ok ? "ok" : "rej"}_${dom}.jpg`);
       writeFileSync(file, shot);
       res = { domain: dom, ok: saved.ok, note: saved.ok ? "saved (held)" : saved.note ?? "rejected", file };
     } catch (e) {
       const err = e as Error & { reject?: boolean };
-      // a stamp only (no attempt counted): the row stays exactly as it was for a manual upload
-      await saveHeroImage(row, null, { countAttempt: false, failNote: err.message }).catch(() => {});
-      res = { domain: dom, ok: false, note: err.message.split("\n")[0].slice(0, 120) };
+      // 403 / anti-bot wall => attempts exhausted at once (manual upload, never retried in a loop);
+      // anything else counts one attempt. Nothing is ever unpublished: only the counter/stamp change.
+      const kind = classifyCaptureFailure(err.message);
+      await saveHeroImage(row, null, { failNote: err.message, setAttempts: attemptsAfterFailure(row.thumbnail_attempts, kind) }).catch(() => {});
+      res = { domain: dom, ok: false, note: `${kind === "blocked" ? "BLOCKED → manual: " : ""}${err.message.split("\n")[0].slice(0, 110)}` };
     } finally {
       await page.close().catch(() => {});
     }
@@ -220,5 +250,20 @@ try {
 }
 
 writeFileSync(join(outDir, "results.json"), JSON.stringify(results, null, 2));
+if (process.env.GITHUB_STEP_SUMMARY) {
+  const ok = results.filter((r) => r.ok);
+  const bad = results.filter((r) => !r.ok);
+  appendFileSync(
+    process.env.GITHUB_STEP_SUMMARY,
+    [
+      "## Library hero capture",
+      `Captured (held for the quality gate): **${ok.length}** · failed / manual upload: **${bad.length}**`,
+      "",
+      ...ok.map((r) => `- ✅ ${r.domain}`),
+      ...bad.map((r) => `- ❌ ${r.domain} — ${r.note}`),
+      "",
+    ].join("\n"),
+  );
+}
 const left = pid ? pidAlive(pid) : false;
 console.log(`\nDone: ${results.filter((r) => r.ok).length} accepted, ${results.filter((r) => !r.ok).length} failed. Browser process (pid ${pid}) still running: ${left ? "YES" : "no"}.`);

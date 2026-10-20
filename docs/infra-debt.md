@@ -291,3 +291,22 @@ al perder la disputa y avisar al dueño por email (mismo canal que `lib/unlocks/
 Otros P3 de la revisión adversarial del 2026-10-15 (no bloquean): auditoría borrada entre pago y liquidación (FK 23503 →
 500 en bucle sin reembolso; debería reembolsar), `keepRunWithinAllowance` no comprueba el resultado del `update` a
 `failed`, y una página de retorno antigua tras un reembolso muestra "activando" hasta agotar el polling.
+
+### WP-L4 — implementado (2026-10-19, opción B)
+
+Workflow `.github/workflows/library-hero-capture.yml`: cada domingo 05:00 UTC (y a mano desde Actions → *Run workflow*,
+con `limit`, `only` y `dry_run`) ejecuta `scripts/library/capture-heroes.mts --ci` en el Chrome del runner. Reglas:
+
+- Solo toma filas `review_reason = no_image` sin imagen y con `thumbnail_attempts < 3`; una por una, pausa de 6 s,
+  concurrencia 1 del workflow, tope 40 tiendas por corrida.
+- Toda captura aceptada se guarda **retenida** (`thumbnail_source = capture`, `review_reason = image_pending_review`);
+  la publica o no el filtro de calidad (L2), nunca este job. Mismo criterio de aceptación que la captura local
+  (`image-quality.ts` + rechazo de overlays/cookies/popups).
+- **403 / muro anti-bot → intento agotado** (`thumbnail_attempts = 3`): la tienda queda en "Sin imagen" para subida
+  manual y no se reintenta. Otros fallos (timeout, overlay, imagen rechazada) cuentan 1 intento, máximo 3.
+- Nunca despublica ni edita filas publicadas, nunca toca imágenes `owner`, no usa ningún proveedor del Analyzer ni Vercel.
+- Resumen de cada corrida en la pestaña del job (quién entró, quién falló y por qué) y las capturas como artefacto 14 días.
+
+**Acción del dueño (una vez):** GitHub → repo → Settings → Secrets and variables → Actions → *New repository secret*:
+`NEXT_PUBLIC_SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` (los mismos valores que en Vercel). Sin ellos el workflow falla
+al arrancar con un mensaje claro y no toca nada.
