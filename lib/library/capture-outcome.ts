@@ -11,6 +11,12 @@
  * writes attempt counters / the stamp for them.
  */
 export const MAX_CAPTURE_ATTEMPTS = 3;
+/**
+ * The og:image job exhausts a row at MAX_CAPTURE_ATTEMPTS (3) WITHOUT ever taking a viewport capture, so those rows
+ * must still be eligible for ONE capture run. The capture exhausts a row one step further (4): the og job
+ * (`< 3`) and the capture (`< 4`) therefore never pick it again.
+ */
+export const CAPTURE_EXHAUSTED = MAX_CAPTURE_ATTEMPTS + 1;
 
 export type CaptureFailure = "blocked" | "transient";
 
@@ -24,5 +30,5 @@ export function classifyCaptureFailure(message: string): CaptureFailure {
 
 /** The attempt counter after a failed capture. */
 export function attemptsAfterFailure(current: number | null | undefined, kind: CaptureFailure): number {
-  return kind === "blocked" ? MAX_CAPTURE_ATTEMPTS : Math.min(MAX_CAPTURE_ATTEMPTS, (current ?? 0) + 1);
+  return kind === "blocked" ? CAPTURE_EXHAUSTED : Math.min(CAPTURE_EXHAUSTED, (current ?? 0) + 1);
 }
