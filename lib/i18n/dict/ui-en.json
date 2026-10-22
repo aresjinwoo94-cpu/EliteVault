@@ -629,12 +629,12 @@
   "optimizer": {
     "title": "Meta Ads Optimizer",
     "intro": "Targets + creative angles + a sequential testing plan, calibrated to your audit score and niche.",
-    "maxBid": "Max bid",
-    "costK": "Cost / 1k",
+    "maxBid": "Max cost per click",
+    "costK": "Cost per 1,000 views",
     "ctr": "Click rate",
-    "lpConv": "LP conv.",
-    "targetReturn": "Target return",
-    "nicheMedian": "niche median",
+    "lpConv": "Visitors who buy",
+    "targetReturn": "Return on ad spend",
+    "nicheMedian": "Typical in your niche",
     "audienceSeed": "Audience seed",
     "targeting": "Targeting suggestions",
     "interests": "Interests:",
@@ -649,7 +649,16 @@
     "fmtCarousel": "Carousel",
     "fmtUgc": "UGC video",
     "fmtDemo": "Demo video",
-    "lockedTagline": "CPC, CPM, CTR & ROAS targets calibrated to YOUR audit, plus testing plan + creative angles"
+    "lockedTagline": "CPC, CPM, CTR & ROAS targets calibrated to YOUR audit, plus testing plan + creative angles",
+    "cpcLine": "Pay up to this for each click",
+    "cpmLine": "What 1,000 people seeing your ad costs",
+    "ctrLine": "Of 100 who see the ad, how many click",
+    "cvrLine": "Of 100 who land on your store, how many buy",
+    "roasLine": "Sales per $1 spent — {x}× means ${usd} back",
+    "lowerBetter": "lower is better",
+    "higherBetter": "higher is better",
+    "targetsHeading": "Your targets vs. typical in your niche",
+    "marginNote": "Whether a ROAS is profitable depends on your margin: the lower your margin, the higher the ROAS you need."
   },
   "scaleLocked": {
     "seedDemo": "30-45 US/CA · interests in your niche · lookalike of recent purchasers · iOS-tolerant retargeting from day 4",
@@ -864,13 +873,19 @@
     "roadmapFix": "Roadmap fix #{n}"
   },
   "gauges": {
-    "title": "Estimated conversion rate",
-    "aiRanges": "AI estimate · ranges",
-    "note": "Ranges modeled from your niche and audit score — an estimate, not a guarantee.",
-    "organic": "Organic",
-    "metaBad": "Meta — bad creative",
-    "metaRegular": "Meta — regular",
-    "metaGood": "Meta — top buyer"
+    "title": "How many visitors buy",
+    "subtitle": "Out of every 100 visitors, how many are likely to buy — by where they come from.",
+    "aiRanges": "Estimate · ranges",
+    "note": "Estimated from your niche and this audit — not a guarantee. This is not ROAS.",
+    "organic": "Organic · people who already know you",
+    "metaBad": "Meta ads · weak ad",
+    "metaRegular": "Meta ads · average campaign",
+    "metaGood": "Meta ads · well-optimized campaign",
+    "reference": "Reference",
+    "organicNote": "Converts higher because they already searched for you — but brings far fewer visits. Ads bring the volume.",
+    "ofHundred": "≈ {range} of 100",
+    "ofHundredUpTo": "≈ up to {n} of 100",
+    "ofHundredLess": "< 1 of 100"
   },
   "reportNav": {
     "title": "In this report",
