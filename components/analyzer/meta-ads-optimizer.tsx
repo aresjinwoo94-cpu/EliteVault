@@ -46,32 +46,42 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
 
       {/* Targets row. Each target shows its niche median band beneath it —
           a raw number is meaningless without one. If we have no niche band for
-          a metric we DROP that metric rather than show a naked number. */}
-      <div className="mt-6 grid grid-cols-2 md:grid-cols-5 gap-3">
+          a metric we DROP that metric rather than show a naked number. Presentation only
+          (brief oct-2026 metrics clarity): a clear name, one plain line and whether
+          higher or lower is better; the values themselves come from the agent, untouched. */}
+      <p className="mt-6 text-xs font-medium text-white/60">{t("optimizer.targetsHeading")}</p>
+      <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         {(
           [
-            ["CPC", `$${tg.cpc.toFixed(2)}`, t("optimizer.maxBid"), bands && `$${bands.cpc[0].toFixed(2)}–$${bands.cpc[1].toFixed(2)}`],
-            ["CPM", `$${tg.cpm.toFixed(2)}`, t("optimizer.costK"), bands && `$${bands.cpm[0].toFixed(0)}–$${bands.cpm[1].toFixed(0)}`],
-            ["CTR", `${(tg.ctr * 100).toFixed(2)}%`, t("optimizer.ctr"), bands && `${(bands.ctr[0] * 100).toFixed(1)}–${(bands.ctr[1] * 100).toFixed(1)}%`],
-            ["CVR", `${(tg.cvr * 100).toFixed(2)}%`, t("optimizer.lpConv"), bands && `${(bands.cvr[0] * 100).toFixed(1)}–${(bands.cvr[1] * 100).toFixed(1)}%`],
-            ["ROAS", `${tg.roas.toFixed(1)}x`, t("optimizer.targetReturn"), bands && `${bands.roas[0].toFixed(1)}–${bands.roas[1].toFixed(1)}x`],
+            ["CPC", `$${tg.cpc.toFixed(2)}`, "maxBid", "cpcLine", "low", bands && `$${bands.cpc[0].toFixed(2)}–$${bands.cpc[1].toFixed(2)}`],
+            ["CPM", `$${tg.cpm.toFixed(2)}`, "costK", "cpmLine", "low", bands && `$${bands.cpm[0].toFixed(0)}–$${bands.cpm[1].toFixed(0)}`],
+            ["CTR", `${(tg.ctr * 100).toFixed(2)}%`, "ctr", "ctrLine", "high", bands && `${(bands.ctr[0] * 100).toFixed(1)}–${(bands.ctr[1] * 100).toFixed(1)}%`],
+            ["CVR", `${(tg.cvr * 100).toFixed(2)}%`, "lpConv", "cvrLine", "high", bands && `${(bands.cvr[0] * 100).toFixed(1)}–${(bands.cvr[1] * 100).toFixed(1)}%`],
+            ["ROAS", `${tg.roas.toFixed(1)}x`, "targetReturn", "roasLine", "high", bands && `${bands.roas[0].toFixed(1)}–${bands.roas[1].toFixed(1)}x`],
           ] as const
         )
-          .filter(([, , , band]) => band) // drop metrics with no niche band
-          .map(([label, val, sub, band]) => (
+          .filter(([, , , , , band]) => band) // drop metrics with no niche band
+          .map(([label, val, nameKey, lineKey, dir, band]) => (
             <motion.div
               key={label}
+              data-metric={label}
               initial={{ opacity: 0, y: 6 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-center"
+              className="flex flex-col rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 odd:last:col-span-2 md:odd:last:col-span-1"
             >
-              <p className="text-[10px] uppercase tracking-widest text-white/40">
-                {label}
+              <p className="text-xs font-medium leading-tight text-white/80">
+                {t(`optimizer.${nameKey}`)}{" "}
+                <span className="text-[10px] uppercase tracking-widest text-white/35">{label}</span>
               </p>
-              <p className="mt-1 font-mono tabular-nums text-xl tnum text-white">{val}</p>
-              <p className="mt-0.5 text-[10px] text-white/40">{sub}</p>
-              <p className="mt-1.5 border-t border-white/[0.06] pt-1.5 text-[11px] leading-tight text-white/45">
+              <p className="mt-1.5 font-mono tabular-nums text-xl tnum text-white">{val}</p>
+              <p className="mt-1 text-[11px] leading-snug text-white/55">
+                {fill(t(`optimizer.${lineKey}`), { x: tg.roas.toFixed(1), usd: tg.roas.toFixed(2) })}
+              </p>
+              <p className="mt-1 flex-1 text-[10px] text-white/35">
+                {dir === "low" ? "↓ " + t("optimizer.lowerBetter") : "↑ " + t("optimizer.higherBetter")}
+              </p>
+              <p className="mt-2 border-t border-white/[0.06] pt-1.5 text-[11px] leading-tight text-white/45">
                 {t("optimizer.nicheMedian")}
                 <br />
                 <span className="text-white/60">{band}</span>
@@ -79,6 +89,7 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
             </motion.div>
           ))}
       </div>
+      <p className="mt-3 text-[11px] leading-snug text-white/40">{t("optimizer.marginNote")}</p>
 
       {/* Audience + Targeting */}
       <div className="mt-6 grid md:grid-cols-2 gap-4">

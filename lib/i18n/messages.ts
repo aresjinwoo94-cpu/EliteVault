@@ -333,7 +333,7 @@ const en: Dict = {
     handoffAuditToRoadmapV2:
       "Fix #1 and #2 are the ones that move the needle the most.",
     handoffRoadmapToMeta:
-      "Clear these and you shift from “regular” toward “top buyer” up top.",
+      "Clear these and you move up the Meta ads scenarios above.",
     handoffMetaToModeler:
       "With those fixed, this projection stops being optimistic.",
     // One-line teaser under the Growth Map. The two strongest sections sit at
@@ -1273,7 +1273,7 @@ const es: Dict = {
     handoffAuditToRoadmapV2:
       "El fix #1 y el #2 son los que más mueven la aguja.",
     handoffRoadmapToMeta:
-      "Arréglalos y pasas de “regular” hacia “top buyer” allá arriba.",
+      "Arréglalos y subes de escenario en los anuncios de Meta, arriba.",
     handoffMetaToModeler:
       "Con eso corregido, esta proyección deja de ser optimista.",
     // Teaser de una línea bajo el Growth Map. Las dos secciones más fuertes

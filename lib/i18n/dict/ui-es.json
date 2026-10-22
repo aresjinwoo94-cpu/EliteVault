@@ -629,12 +629,12 @@
   "optimizer": {
     "title": "Optimizador de Meta Ads",
     "intro": "Objetivos + ángulos creativos + un plan de pruebas secuencial, calibrados con tu puntuación de auditoría y tu nicho.",
-    "maxBid": "Puja máx.",
-    "costK": "Coste / 1k",
+    "maxBid": "Costo máx. por clic",
+    "costK": "Costo por 1.000 vistas",
     "ctr": "Tasa de clics",
-    "lpConv": "Conv. LP",
-    "targetReturn": "Retorno objetivo",
-    "nicheMedian": "mediana del nicho",
+    "lpConv": "Visitantes que compran",
+    "targetReturn": "Retorno de la inversión",
+    "nicheMedian": "Típico en tu nicho",
     "audienceSeed": "Audiencia semilla",
     "targeting": "Sugerencias de segmentación",
     "interests": "Intereses:",
@@ -649,7 +649,16 @@
     "fmtCarousel": "Carrusel",
     "fmtUgc": "Vídeo UGC",
     "fmtDemo": "Vídeo demo",
-    "lockedTagline": "Objetivos de CPC, CPM, CTR y ROAS calibrados a TU auditoría, más plan de pruebas y ángulos creativos"
+    "lockedTagline": "Objetivos de CPC, CPM, CTR y ROAS calibrados a TU auditoría, más plan de pruebas y ángulos creativos",
+    "cpcLine": "Paga hasta esto por cada clic",
+    "cpmLine": "Lo que cuesta que 1.000 personas vean tu anuncio",
+    "ctrLine": "De 100 que ven el anuncio, cuántos hacen clic",
+    "cvrLine": "De 100 que entran a tu tienda, cuántos compran",
+    "roasLine": "Ventas por cada $1 invertido — {x}× significa ${usd} de vuelta",
+    "lowerBetter": "menor es mejor",
+    "higherBetter": "mayor es mejor",
+    "targetsHeading": "Tus objetivos vs. lo típico en tu nicho",
+    "marginNote": "Si un ROAS es rentable depende de tu margen: cuanto menor tu margen, más ROAS necesitas."
   },
   "scaleLocked": {
     "seedDemo": "30-45 EE. UU./CA · intereses de tu nicho · lookalike de compradores recientes · retargeting tolerante a iOS desde el día 4",
@@ -864,13 +873,19 @@
     "roadmapFix": "Corrección n.º {n} de la hoja de ruta"
   },
   "gauges": {
-    "title": "Tasa de conversión estimada",
-    "aiRanges": "Estimación de IA · rangos",
-    "note": "Rangos modelados con tu nicho y la puntuación de la auditoría: una estimación, no una garantía.",
-    "organic": "Orgánico",
-    "metaBad": "Meta: creatividad mala",
-    "metaRegular": "Meta: normal",
-    "metaGood": "Meta: mejor media buyer"
+    "title": "¿Cuántos visitantes compran?",
+    "subtitle": "De cada 100 visitantes, cuántos probablemente compren — según de dónde vienen.",
+    "aiRanges": "Estimación · rangos",
+    "note": "Estimado según tu nicho y esta auditoría — no es una garantía. Esto no es ROAS.",
+    "organic": "Orgánico · gente que ya te conoce",
+    "metaBad": "Anuncios Meta · anuncio débil",
+    "metaRegular": "Anuncios Meta · campaña promedio",
+    "metaGood": "Anuncios Meta · campaña bien optimizada",
+    "reference": "Referencia",
+    "organicNote": "Convierte más porque ya te buscaron — pero trae muchas menos visitas. Los anuncios traen el volumen.",
+    "ofHundred": "≈ {range} de 100",
+    "ofHundredUpTo": "≈ hasta {n} de 100",
+    "ofHundredLess": "< 1 de 100"
   },
   "reportNav": {
     "title": "En este informe",
