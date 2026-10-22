@@ -1,0 +1,163 @@
+{
+  "generated_at": "2026-10-22T19:10:34.817Z",
+  "method": {
+    "unit": "one store domain = its most recent succeeded audit",
+    "exclusions": {
+      "team_account_audits": 245,
+      "capture_blocked_audits": 43
+    },
+    "succeeded_audits_read": 496,
+    "window": {
+      "from": "2026-06-02",
+      "to": "2026-10-22"
+    },
+    "n_distinct_domains": 140,
+    "issue_themes": "keyword match (regex, see THEMES in a2-aggregates.mjs) over the model-written top_fixes titles; a fix can match several themes. This measures what the audit flagged, not an independent inspection of the store.",
+    "modeled": "roas_* figures use lib/meta/roas-range.ts (score + niche). They are modeled ranges, not campaign results."
+  },
+  "publishable_min_n": 30,
+  "sample_caveat": "Self-selected: these are stores whose owners chose to audit them with EliteVault (often because they suspect a problem). Not a random sample of Shopify stores; never generalize to \"all stores\".",
+  "stats": {
+    "ad_readiness_verdict_share_pct": {
+      "n": 125,
+      "publishable": true,
+      "note": "share of audited stores per verdict",
+      "value": {
+        "ready": 2.4,
+        "almost": 28,
+        "not_ready": 69.6
+      }
+    },
+    "category_scores_0_100": {
+      "n": 140,
+      "publishable": true,
+      "value": {
+        "color_integration": {
+          "mean": 63.2,
+          "median": 70
+        },
+        "layout_proportion": {
+          "mean": 55.8,
+          "median": 62
+        },
+        "image_quality": {
+          "mean": 62.1,
+          "median": 70
+        },
+        "technical_optimization": {
+          "mean": 54.3,
+          "median": 60
+        },
+        "niche_coherence": {
+          "mean": 58.1,
+          "median": 66.5
+        },
+        "cro_principles": {
+          "mean": 39.9,
+          "median": 40
+        }
+      }
+    },
+    "weakest_category_share_pct": {
+      "n": 140,
+      "publishable": true,
+      "note": "share of stores whose LOWEST category score is this one. Caveat: the model scores the CRO category lowest in most audits, so read this as a property of the audit rubric, not as a measurement of store quality.",
+      "value": {
+        "color_integration": 5,
+        "layout_proportion": 2.1,
+        "image_quality": 2.1,
+        "technical_optimization": 7.1,
+        "niche_coherence": 7.9,
+        "cro_principles": 75.7
+      }
+    },
+    "issue_theme_share_pct": {
+      "n": 140,
+      "publishable": true,
+      "note": "share of audits whose top fixes mention the theme",
+      "value": {
+        "trust_and_social_proof": 65.7,
+        "shipping_returns_policies": 22.9,
+        "hero_headline_offer": 65.7,
+        "cta_and_buy_path": 47.1,
+        "product_imagery": 38.6,
+        "product_page_copy": 30.7,
+        "mobile_and_speed": 14.3,
+        "navigation_and_layout": 24.3
+      }
+    },
+    "annotations": {
+      "n": 140,
+      "publishable": true,
+      "value": {
+        "mean_per_audit": 3.4,
+        "share_with_high_severity_pct": 95.7
+      }
+    },
+    "modeled_roas_7d": {
+      "n": 140,
+      "publishable": true,
+      "note": "MODELED from audit score + niche; never a campaign result",
+      "value": {
+        "share_low_end_below_1x_pct": 38.6,
+        "share_ready_to_scale_pct": 54.3,
+        "median_low": 1.05,
+        "median_high": 2.1
+      }
+    },
+    "by_niche": {
+      "home": {
+        "n": 19,
+        "publishable": false
+      },
+      "unclassified": {
+        "n": 37,
+        "publishable": false
+      },
+      "beauty": {
+        "n": 4,
+        "publishable": false
+      },
+      "accessories": {
+        "n": 19,
+        "publishable": false
+      },
+      "apparel": {
+        "n": 25,
+        "publishable": false
+      },
+      "fitness": {
+        "n": 6,
+        "publishable": false
+      },
+      "grooming": {
+        "n": 3,
+        "publishable": false
+      },
+      "footwear": {
+        "n": 2,
+        "publishable": false
+      },
+      "wellness": {
+        "n": 14,
+        "publishable": false
+      },
+      "beverage": {
+        "n": 3,
+        "publishable": false
+      },
+      "skincare": {
+        "n": 5,
+        "publishable": false
+      },
+      "pet": {
+        "n": 2,
+        "publishable": false
+      },
+      "baby": {
+        "n": 1,
+        "publishable": false
+      }
+    }
+  }
+}
