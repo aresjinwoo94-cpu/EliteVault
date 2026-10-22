@@ -60,7 +60,7 @@ const H = 900;
 
 mkdirSync(outDir, { recursive: true });
 const { createSupabaseServiceClient } = await import("../../lib/supabase/server");
-const { MAX_CAPTURE_ATTEMPTS, attemptsAfterFailure, classifyCaptureFailure } = await import("../../lib/library/capture-outcome");
+const { CAPTURE_EXHAUSTED, attemptsAfterFailure, classifyCaptureFailure } = await import("../../lib/library/capture-outcome");
 const { saveHeroImage } = await import("../../lib/library/images");
 type Row = import("../../lib/library/images").MissingImageRow;
 
@@ -74,7 +74,7 @@ const { data, error } = await svc
   .eq("review_reason", "no_image")
   .is("thumbnail_url", null)
   .is("thumbnail_source", null)
-  .lt("thumbnail_attempts", MAX_CAPTURE_ATTEMPTS) // exhausted rows (blocked / 3 tries) wait for a manual upload
+  .lt("thumbnail_attempts", CAPTURE_EXHAUSTED) // exhausted rows (blocked / 3 tries) wait for a manual upload
   .order("niche")
   .order("domain");
 if (error) throw new Error(error.message);

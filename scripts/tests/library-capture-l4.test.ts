@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { MAX_CAPTURE_ATTEMPTS, attemptsAfterFailure, classifyCaptureFailure } from "../../lib/library/capture-outcome";
+import { CAPTURE_EXHAUSTED, MAX_CAPTURE_ATTEMPTS, attemptsAfterFailure, classifyCaptureFailure } from "../../lib/library/capture-outcome";
 import { MAX_IMAGE_ATTEMPTS } from "../../lib/library/images";
 
 /** WP-L4: weekly off-Vercel hero capture. Blocked stores are exhausted at once, nothing is unpublished, no Analyzer provider. */
@@ -19,17 +19,20 @@ test("403 / anti-bot / captcha walls are 'blocked'; timeouts, overlays and store
 });
 
 test("a blocked store is exhausted at once; any other failure counts one attempt and never exceeds the cap", () => {
-  assert.equal(attemptsAfterFailure(0, "blocked"), MAX_CAPTURE_ATTEMPTS);
+  assert.equal(attemptsAfterFailure(0, "blocked"), CAPTURE_EXHAUSTED);
   assert.equal(attemptsAfterFailure(null, "transient"), 1);
   assert.equal(attemptsAfterFailure(1, "transient"), 2);
-  assert.equal(attemptsAfterFailure(MAX_CAPTURE_ATTEMPTS, "transient"), MAX_CAPTURE_ATTEMPTS);
+  assert.equal(attemptsAfterFailure(MAX_CAPTURE_ATTEMPTS, "transient"), CAPTURE_EXHAUSTED);
+  assert.equal(attemptsAfterFailure(CAPTURE_EXHAUSTED, "transient"), CAPTURE_EXHAUSTED);
+  // rows the og:image job gave up on (3) are still eligible for one capture; exhausted ones (4) never are
+  assert.ok(MAX_CAPTURE_ATTEMPTS < CAPTURE_EXHAUSTED);
 });
 
 test("the capture script selects only un-exhausted no_image rows, holds every capture, and records failures via the classifier", () => {
   const src = read("scripts/library/capture-heroes.mts");
   assert.match(src, /\.eq\("review_reason", "no_image"\)/);
   assert.match(src, /\.is\("thumbnail_url", null\)/);
-  assert.match(src, /\.lt\("thumbnail_attempts", MAX_CAPTURE_ATTEMPTS\)/);
+  assert.match(src, /\.lt\("thumbnail_attempts", CAPTURE_EXHAUSTED\)/);
   assert.match(src, /\{ hold: true \}/);
   assert.match(src, /classifyCaptureFailure\(err\.message\)/);
   assert.match(src, /setAttempts: attemptsAfterFailure\(/);
