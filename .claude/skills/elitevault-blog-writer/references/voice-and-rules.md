@@ -46,7 +46,7 @@
   3. Commit the script so the capture is repeatable.
 
 ## 7. CTAs
-- Specific to the topic: "See your store's 7-day ROAS scenarios →", "Find what to redesign first on your store →", "Run the audit on your store →". No "free".
+- Specific to the topic **and true for the plan of entry**. Entry CTAs (anonymous/Free): "See your store's modeled 7-day ROAS range →", "Find what to redesign first on your store →", "Run the audit on your store →". "See your store's 7-day ROAS scenarios →" is only for a reader who already has Pro/Scale or after the post has said that the 3 scenarios need Pro, Scale or the $7 unlock. No "free".
 - Three per post, `utm_content` = `early` (before the first third), `showcase` (right after the in-action block), `end`. UTMs: `utm_source=blog&utm_medium=inline&utm_campaign=<slug>&utm_content=<position>` (`blogCta` writes them).
 - After the showcase, state the honest next step: what unlocks next ($7 unlock for one audit; Pro from $19/mo; Scale $29/mo) and why it would help *this* reader.
 

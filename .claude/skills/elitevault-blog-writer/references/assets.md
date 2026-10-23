@@ -6,7 +6,9 @@ Source of truth: **`docs/blog-assets-inventory.md`** (every plan claim there is 
 | | Anonymous | Free | $7 unlock (one audit) | Pro $19/mo | Scale $29/mo |
 |---|---|---|---|---|---|
 | Audits | 1 per IP per day (default) | 1 lifetime | unlocks an existing audit | 40/mo | 200/mo |
-| Annotated screenshot, fix #1, verdict, $ potential band, modeled ROAS range | yes | yes | yes | yes | yes |
+| Annotated screenshot, fix #1, ad-readiness verdict | yes | yes | yes | yes | yes |
+| Modeled ROAS **range** panel | yes | yes | yes | no (they see the Simulator / gauges) | no |
+| $ potential band | in the report only with `ANALYZER_REPORT_V2` on (default off); dashboard and share image show it | | | | |
 | Fixes #2+ with the how-to, buyer persona, 3 fix tracks, winners in niche | locked (server removes the data) | locked | yes | yes | yes |
 | Meta Campaign Scenario Modeler (3 scenarios) | no | no | **1 projection** for that audit | **1 per month** | unlimited |
 | Meta Ads Optimizer | no | no | no | no (locked preview) | **yes** |
@@ -27,8 +29,8 @@ Rule: a CTA for a Free/anonymous reader promises only audit + verdict + $ band +
 | Generative AI | buyer persona, how the audit reasons | fix `evidence` rule | persona needs unlock/Pro |
 
 ## Real material available in the repo
-- **Own aggregates (n = 140 distinct stores, 2026-06-02 → 2026-10-22, team account and blocked captures excluded):** `docs/blog-data/a2-aggregates.json`. Re-run `node docs/blog-data/a2-aggregates.mjs` for fresh figures. The sample is self-selected. Per-niche cuts are not publishable yet (every niche < 30).
-- **Real loss projection** (home-decor store, score 56, `not_ready`, AOV $35, $100/day; modeled ROAS 0.60x / 0.64x / 0.65x): `docs/blog-data/example-loss-projection.json`.
+- **Own aggregates (values dated: n = 134 distinct stores on 2026-10-22, window 2026-06-02 → 2026-10-22; always re-run and quote the n and window in the JSON, never these numbers):** `docs/blog-data/a2-aggregates.json`. Re-run `node docs/blog-data/a2-aggregates.mjs` for fresh figures. The sample is self-selected. Per-niche cuts are not publishable yet (every niche < 30).
+- **Real loss projection** (home-decor store, score 56, `not_ready`, AOV $35, $100/day; modeled ROAS 0.60x / 0.64x / 0.65x): `docs/blog-data/example-loss-projection.json`. It stores only numbers; render it with `simulatorReplica()` inside `evidenceBlock({ kind: "modeled" })`. Confirm the store is the owner's before quoting its blockers. No stored real Optimizer output exists.
 - **Library:** 97 published, live stores (83 Shopify-verified, 13 with teardowns) as of 2026-10-22.
 - **YouTube:** `docs/blog-youtube-videos.json` (8 videos). Default `43CfVNIds7Q`. No transcripts: attribute nothing beyond title and description.
 

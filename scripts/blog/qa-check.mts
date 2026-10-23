@@ -10,14 +10,22 @@
  * ticked by the reviewer in the PR.
  */
 import { allPosts, type BlogPost } from "../../lib/blog/posts";
-import { CTA_CLASS, EVIDENCE_ATTR } from "../../lib/blog/post-helpers";
+import { CTA_CLASS, EV_OPEN, EV_CLOSE } from "../../lib/blog/post-helpers";
 
 const TIER_RANGE = { T1: [1500, 2200], T2: [1200, 1800], T3: [900, 1300] } as const;
 const ALLOWED_70_22 = new Set(["abandoned-cart-recovery", "why-customers-abandon-cart-2026"]);
 const FINAL_VIDEO_ID = "43CfVNIds7Q";
 
 const words = (html: string) => html.replace(/<svg[\s\S]*?<\/svg>/g, " ").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
-const text = (html: string) => html.replace(/<svg[\s\S]*?<\/svg>/g, " ").replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&");
+/** Plain text of an HTML fragment: SVG dropped, tags removed without splitting words, entities decoded, spaces collapsed. */
+const text = (html: string) =>
+  html
+    .replace(/<svg[\s\S]*?<\/svg>/g, " ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&nbsp;|&#160;/g, " ")
+    .replace(/&#39;|&rsquo;/g, "'")
+    .replace(/\s+/g, " ");
 const norm = (s: string) => s.trim().toLowerCase();
 
 type Row = { check: string; ok: boolean; detail: string };
@@ -65,11 +73,21 @@ function checkPost(p: BlogPost, tier: keyof typeof TIER_RANGE | undefined, isNew
   add("no 'free' in h1 / CTA text", !/\bfree\b/i.test(p.h1) && ctas.every((m) => !/\bfree\b/i.test(text(m[1]))), "");
 
   // evidence + product share
-  const evs = [...html.matchAll(new RegExp(`<figure[^>]*${EVIDENCE_ATTR}="in-action"[\\s\\S]*?</figure>`, "g"))];
+  // Blocks are delimited by the comment markers evidenceBlock() writes, so a nested <figure> (an SVG replica)
+  // inside a block cannot cut it short.
+  const evs: string[][] = [];
+  for (let i = html.indexOf(EV_OPEN); i >= 0; i = html.indexOf(EV_OPEN, i + 1)) {
+    const end = html.indexOf(EV_CLOSE, i);
+    if (end < 0) break;
+    evs.push([html.slice(i, end + EV_CLOSE.length)]);
+  }
   add("≥1 'EliteVault in action' block (ideal 2)", evs.length >= 1, String(evs.length));
   const productWords = evs.reduce((a, m) => a + words(m[0]), 0) + ctas.reduce((a, m) => a + words(m[1]), 0);
-  add("product share ≤ 30% of body", total > 0 && productWords / total <= 0.3, `${Math.round((productWords / total) * 100)}% (${productWords}/${total} words, blocks + CTAs)`);
-  add("every in-action block states its plan", evs.every((m) => /Available on:/.test(m[0])));
+  add("product share ≤ 30% of body", total > 0 && evs.length > 0 && productWords / total <= 0.3, `${Math.round((productWords / total) * 100)}% (${productWords}/${total} words, blocks + CTAs)`);
+  add("every in-action block states its plan", evs.length > 0 && evs.every((m) => /Available on:/.test(m[0])));
+  const showcaseIdx = html.search(/utm_content=showcase/);
+  const firstEvEnd = evs.length ? html.indexOf(EV_CLOSE) : -1;
+  add("showcase CTA comes after the first in-action block", firstEvEnd >= 0 && showcaseIdx > firstEvEnd);
   add("first EliteVault mention carries '(ours — full disclosure)'", /ours — full disclosure/.test(plain));
 
   // visuals
@@ -83,7 +101,8 @@ function checkPost(p: BlogPost, tier: keyof typeof TIER_RANGE | undefined, isNew
   // sources & links
   const ext = [...html.matchAll(/<a href="(https?:\/\/[^"]+)"/g)].map((m) => m[1]);
   add("external sources linked", ext.length >= 3, `${ext.length} links`);
-  add("70.22 only in the two cart posts", !html.includes("70.22") || ALLOWED_70_22.has(p.slug));
+  const everywhere = [html, p.title, p.h1, p.description, p.excerpt, ...(p.faqs ?? []).flatMap((f) => [f.q, f.a])].join(" ");
+  add("70.22 only in the two cart posts (body, title, description, FAQ)", !everywhere.includes("70.22") || ALLOWED_70_22.has(p.slug));
   const internal = [...html.matchAll(/href="(\/blog\/[^"#?]*)/g)].map((m) => m[1].slice(6));
   add("internal /blog/ links exist", internal.every((s) => slugs.has(s)), internal.filter((s) => !slugs.has(s)).join(","));
   const anchors = [...html.matchAll(/<a href="[^"]+"[^>]*>([^<]+)<\/a>/g)].map((m) => m[1]).filter((a) => !a.includes("→"));

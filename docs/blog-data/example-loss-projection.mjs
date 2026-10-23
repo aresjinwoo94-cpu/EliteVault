@@ -14,18 +14,16 @@ const [sim] = await select(
 if (!sim) throw new Error("simulation not found");
 const [audit] = await select("analyses", `select=detected_niche,result&id=eq.${sim.analysis_id}`);
 
+// Only numbers leave this script. The AI-written text (summary, win condition, risks, recommendation) is NOT stored:
+// it characterizes a third-party business and repeats product-internal assumptions (see docs/blog-assets-inventory.md §1.5).
 const scen = (s) => ({
   totals: s.totals,
   days_roas: s.days.map((d) => d.roas),
-  summary: s.summary,
-  win_condition: s.win_condition,
-  risks: s.risks,
-  recommendation: s.recommendation, // shown in the UI under "Tactical move"
 });
 
 const out = {
   provenance:
-    "Real output of EliteVault's Meta Campaign Scenario Modeler for one audited store (identity withheld). MODELED projection, not campaign results. Numbers come from the deterministic engine (lib/meta/simulation-engine.ts); the text around them is written by the AI.",
+    "Real output of EliteVault's Meta Campaign Scenario Modeler for one audited store (identity withheld). MODELED projection, not campaign results. Numbers come from the deterministic engine (lib/meta/simulation-engine.ts); the AI-written text around them is deliberately not stored.",
   date: sim.created_at.slice(0, 10),
   audit: {
     niche: audit.detected_niche,
@@ -33,6 +31,10 @@ const out = {
     ad_readiness: { verdict: audit.result?.ad_readiness?.verdict, blockers: (audit.result?.ad_readiness?.blockers ?? []).map((b) => b.title) },
   },
   inputs: { aov_usd: Number(sim.aov_usd), daily_budget_usd: Number(sim.daily_budget_usd), margin_pct: sim.product_margin_pct, country: "US", product_type: "physical", competitiveness: "medium" },
+  takeaway_paraphrase:
+    "The audit already said not ready (trust and authenticity problems on the page), and the projection agreed: modeled ROAS stayed below 1.0x in all three scenarios, so the sensible move is to fix trust signals and product photography before raising spend.",
+  needs_owner_confirmation:
+    "Confirm the audited store is the owner's (or that its owner agrees) before the blockers are quoted. Until then quote only the numbers, the niche, the score and the verdict.",
   scenarios: { conservative: scen(sim.conservative), balanced: scen(sim.balanced), aggressive: scen(sim.aggressive) },
 };
 fs.writeFileSync(new URL("./example-loss-projection.json", import.meta.url), JSON.stringify(out, null, 2) + "\n");

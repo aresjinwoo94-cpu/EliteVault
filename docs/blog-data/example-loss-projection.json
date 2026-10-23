@@ -1,5 +1,5 @@
 {
-  "provenance": "Real output of EliteVault's Meta Campaign Scenario Modeler for one audited store (identity withheld). MODELED projection, not campaign results. Numbers come from the deterministic engine (lib/meta/simulation-engine.ts); the text around them is written by the AI.",
+  "provenance": "Real output of EliteVault's Meta Campaign Scenario Modeler for one audited store (identity withheld). MODELED projection, not campaign results. Numbers come from the deterministic engine (lib/meta/simulation-engine.ts); the AI-written text around them is deliberately not stored.",
   "date": "2026-10-21",
   "audit": {
     "niche": "home",
@@ -20,6 +20,8 @@
     "product_type": "physical",
     "competitiveness": "medium"
   },
+  "takeaway_paraphrase": "The audit already said not ready (trust and authenticity problems on the page), and the projection agreed: modeled ROAS stayed below 1.0x in all three scenarios, so the sensible move is to fix trust signals and product photography before raising spend.",
+  "needs_owner_confirmation": "Confirm the audited store is the owner's (or that its owner agrees) before the blockers are quoted. Until then quote only the numbers, the niche, the score and the verdict.",
   "scenarios": {
     "conservative": {
       "totals": {
@@ -41,15 +43,7 @@
         0.69,
         0.69,
         0.69
-      ],
-      "summary": "Under the conservative scenario with a spend of $420.00, we project a revenue of $253.20 resulting in 7.23 purchases at a CPA of $58.06. This yields a 0.6x ROAS (range 0.48x-0.72x), reflecting a net loss for week 1.",
-      "win_condition": "Achieve a 1.0x ROAS by day 7 by rapidly killing underperforming creative variants and tightening targeting to core home decor buyers.",
-      "risks": [
-        "Days 1-3 will see high CPA and volatility as the algorithm enters its mandatory learning phase.",
-        "iOS attribution under-reporting will mask true mobile conversion volume, making the net loss look worse on-platform.",
-        "Generic dropshipping store layout and fake countdown timers kill trust instantly among high-intent home buyers."
-      ],
-      "recommendation": "Before increasing spend, fix the store's trust signals by removing fake countdown timers and upgrading product photography. Restrict budget to $420.00 until CPA drops below $40."
+      ]
     },
     "balanced": {
       "totals": {
@@ -71,15 +65,7 @@
         0.73,
         0.73,
         0.73
-      ],
-      "summary": "The balanced scenario projects a spend of $700.00 generating $445.45 in revenue from 12.73 purchases with a CPA of $55.00. This results in a 0.64x ROAS (range 0.48x-0.8x), marking another clear week 1 loss.",
-      "win_condition": "Maintain a stable CPA below $40 while scaling spend to $700.00, requiring at least one creative to drop below a $35 acquisition cost.",
-      "risks": [
-        "Scaling spend too early in the week 1 learning phase will accelerate cash burn without improving conversion rates.",
-        "iOS privacy restrictions will continue to hide actual attributed revenue, skewing internal blended MER calculations.",
-        "Low-trust tactics on the site will repel high-income demographic traffic driven by broader Meta targeting."
-      ],
-      "recommendation": "Keep daily budgets capped and focus entirely on testing lifestyle-oriented video hooks rather than gadget angles to improve the conversion rate."
+      ]
     },
     "aggressive": {
       "totals": {
@@ -101,15 +87,7 @@
         0.74,
         0.74,
         0.74
-      ],
-      "summary": "The aggressive projection allocates $980.00 in spend, returning $634.96 in revenue across 18.14 purchases at a CPA of $54.02. This produces a 0.65x ROAS (range 0.42x-0.87x), confirming a heavy net loss.",
-      "win_condition": "Break even by hitting the upper range 0.87x ROAS, requiring immediate scaling of winning ad variations by day 4.",
-      "risks": [
-        "Aggressive scaling on a site with a 56/100 audit score will rapidly amplify unprofitable traffic acquisition.",
-        "Severe signal loss from iOS attribution will obscure the true profitability of top-of-funnel cold campaigns.",
-        "Fatigue on initial cold ad sets will spike frequency and push CPAs far past the projected $54.02 threshold."
-      ],
-      "recommendation": "Do not run the aggressive budget tier until the store transitions from a dropshipping aggregator to an authentic lifestyle brand with verifiable social proof."
+      ]
     }
   }
 }
