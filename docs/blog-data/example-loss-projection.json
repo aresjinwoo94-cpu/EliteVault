@@ -1,0 +1,93 @@
+{
+  "provenance": "Real output of EliteVault's Meta Campaign Scenario Modeler for one audited store (identity withheld). MODELED projection, not campaign results. Numbers come from the deterministic engine (lib/meta/simulation-engine.ts); the AI-written text around them is deliberately not stored.",
+  "date": "2026-10-21",
+  "audit": {
+    "niche": "home",
+    "score": 56,
+    "ad_readiness": {
+      "verdict": "not_ready",
+      "blockers": [
+        "Remove the fake countdown timer",
+        "Add authentic social proof"
+      ]
+    }
+  },
+  "inputs": {
+    "aov_usd": 35,
+    "daily_budget_usd": 100,
+    "margin_pct": 0,
+    "country": "US",
+    "product_type": "physical",
+    "competitiveness": "medium"
+  },
+  "takeaway_paraphrase": "The audit already said not ready (trust and authenticity problems on the page), and the projection agreed: modeled ROAS stayed below 1.0x in all three scenarios, so the sensible move is to fix trust signals and product photography before raising spend.",
+  "owner_confirmation": "2026-10-22: the owner confirmed the audited store is theirs, so its blockers may be quoted. Never name the domain in a post or a committed file.",
+  "scenarios": {
+    "conservative": {
+      "totals": {
+        "cpa": 58.06,
+        "roas": 0.6,
+        "spend": 420,
+        "revenue": 253.2,
+        "purchases": 7.23,
+        "roas_range": [
+          0.48,
+          0.72
+        ]
+      },
+      "days_roas": [
+        0.33,
+        0.48,
+        0.64,
+        0.69,
+        0.69,
+        0.69,
+        0.69
+      ]
+    },
+    "balanced": {
+      "totals": {
+        "cpa": 55,
+        "roas": 0.64,
+        "spend": 700,
+        "revenue": 445.45,
+        "purchases": 12.73,
+        "roas_range": [
+          0.48,
+          0.8
+        ]
+      },
+      "days_roas": [
+        0.35,
+        0.51,
+        0.68,
+        0.73,
+        0.73,
+        0.73,
+        0.73
+      ]
+    },
+    "aggressive": {
+      "totals": {
+        "cpa": 54.02,
+        "roas": 0.65,
+        "spend": 980,
+        "revenue": 634.96,
+        "purchases": 18.14,
+        "roas_range": [
+          0.42,
+          0.87
+        ]
+      },
+      "days_roas": [
+        0.36,
+        0.52,
+        0.69,
+        0.74,
+        0.74,
+        0.74,
+        0.74
+      ]
+    }
+  }
+}

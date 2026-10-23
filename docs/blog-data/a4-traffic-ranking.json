@@ -1,0 +1,128 @@
+{
+  "source": "first-party page_views (public.page_views). Not PostHog / Vercel / Search Console (inaccessible).",
+  "window_days": 90,
+  "from": "2026-07-25",
+  "to": "2026-10-22",
+  "total_blog_rows": 452,
+  "blog_index": {
+    "unique_visitors": 65,
+    "views": 93
+  },
+  "caveats": [
+    "Very small sample: the busiest post has ~a dozen unique visitors in 90 days. Differences between posts are not statistically meaningful.",
+    "A high views/visitors ratio (many views from few visitors) usually means repeat visits or testing, not reach: rank by unique_visitors.",
+    "Impressions and clicks from Google are not in this data; they decide which posts rank, so this is not a substitute for Search Console."
+  ],
+  "posts": [
+    {
+      "slug": "ai-ecommerce-statistics-revenue-impact",
+      "unique_visitors": 11,
+      "views": 39
+    },
+    {
+      "slug": "shopify-store-analyzer",
+      "unique_visitors": 7,
+      "views": 215
+    },
+    {
+      "slug": "best-shopify-tools-increase-roas-2026",
+      "unique_visitors": 5,
+      "views": 6
+    },
+    {
+      "slug": "ai-shopify-designer",
+      "unique_visitors": 4,
+      "views": 4
+    },
+    {
+      "slug": "free-website-audit-tools",
+      "unique_visitors": 3,
+      "views": 56
+    },
+    {
+      "slug": "store-analyzer-vs-shopify-analytics",
+      "unique_visitors": 3,
+      "views": 9
+    },
+    {
+      "slug": "why-meta-ads-arent-converting",
+      "unique_visitors": 3,
+      "views": 3
+    },
+    {
+      "slug": "shopify-landing-page-specialist",
+      "unique_visitors": 2,
+      "views": 3
+    },
+    {
+      "slug": "abandoned-cart-recovery",
+      "unique_visitors": 2,
+      "views": 2
+    },
+    {
+      "slug": "ecommerce-store-audit-vs-consultant",
+      "unique_visitors": 2,
+      "views": 2
+    },
+    {
+      "slug": "good-conversion-rate-for-shopify",
+      "unique_visitors": 2,
+      "views": 2
+    },
+    {
+      "slug": "ecommerce-design-trends-2026",
+      "unique_visitors": 2,
+      "views": 2
+    },
+    {
+      "slug": "ecommerce-cro-specialist",
+      "unique_visitors": 2,
+      "views": 2
+    },
+    {
+      "slug": "reverse-engineer-winning-shopify-stores",
+      "unique_visitors": 1,
+      "views": 4
+    },
+    {
+      "slug": "how-to-increase-shopify-conversion-rate",
+      "unique_visitors": 1,
+      "views": 4
+    },
+    {
+      "slug": "shopify-cro-audit",
+      "unique_visitors": 1,
+      "views": 1
+    },
+    {
+      "slug": "is-your-store-ready-for-meta-ads",
+      "unique_visitors": 1,
+      "views": 1
+    },
+    {
+      "slug": "why-your-shopify-store-isnt-converting",
+      "unique_visitors": 1,
+      "views": 1
+    },
+    {
+      "slug": "why-customers-abandon-cart-2026",
+      "unique_visitors": 1,
+      "views": 1
+    },
+    {
+      "slug": "new-free-shopify-tools-2026",
+      "unique_visitors": 1,
+      "views": 1
+    },
+    {
+      "slug": "store-audit-review-my-store-feedback",
+      "unique_visitors": 1,
+      "views": 1
+    },
+    {
+      "slug": "shopify-product-page",
+      "unique_visitors": 0,
+      "views": 0
+    }
+  ]
+}
