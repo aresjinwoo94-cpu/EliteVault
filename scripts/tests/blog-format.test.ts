@@ -32,6 +32,9 @@ const REFRESHED: Record<string, Tier> = {
   "shopify-store-analyzer": "T1",
   "free-website-audit-tools": "T1",
   "reverse-engineer-winning-shopify-stores": "T1",
+  "shopify-store-redesign": "T1",
+  "how-to-increase-roas": "T1",
+  "how-to-boost-ecommerce-sales-with-generative-ai": "T1",
 };
 
 /** The only posts allowed to cite Baymard's 70.22% average abandonment rate. */
