@@ -35,6 +35,11 @@ const REFRESHED: Record<string, Tier> = {
   "shopify-store-redesign": "T1",
   "how-to-increase-roas": "T1",
   "how-to-boost-ecommerce-sales-with-generative-ai": "T1",
+  "good-conversion-rate-for-shopify": "T2",
+  "why-customers-abandon-cart-2026": "T2",
+  "best-shopify-tools-increase-roas-2026": "T2",
+  "ecommerce-design-trends-2026": "T2",
+  "ai-ecommerce-statistics-revenue-impact": "T3",
 };
 
 /** The only posts allowed to cite Baymard's 70.22% average abandonment rate. */
