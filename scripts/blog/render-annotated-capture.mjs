@@ -27,7 +27,7 @@ if (meta.width !== 1280 || meta.height !== 900) throw new Error(`unexpected capt
 // findings name (checked by eye). So each pin is placed on the element its finding describes, in capture pixels
 // [left, top, width, height]: 1 countdown timer, 2 hero headline, 3 icon strip, 4 hero image. The caption of the post says so.
 const REGIONS = [
-  [728, 8, 96, 36],
+  [728, 8, 96, 36, 836], // 5th value: pin x (right of the timer so the digits stay readable)
   [80, 222, 520, 160],
   [64, 629, 551, 92],
   [665, 219, 551, 502],
@@ -37,10 +37,10 @@ if (anns.length !== REGIONS.length) throw new Error("annotation count changed: r
 const shapes = anns
   .map((n, i) => {
     const c = COLOR[n.severity] ?? "#EF4444";
-    const [x, y, w, h] = REGIONS[i];
+    const [x, y, w, h, pinX = x] = REGIONS[i];
     return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10" fill="${c}" fill-opacity="0.08" stroke="${c}" stroke-width="3"/>` +
-      `<circle cx="${x}" cy="${Math.max(y, 26)}" r="22" fill="${c}" stroke="#fff" stroke-width="3"/>` +
-      `<text x="${x}" y="${Math.max(y, 26) + 8}" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="24" font-weight="700" fill="#fff">${i + 1}</text>`;
+      `<circle cx="${pinX}" cy="${Math.max(y, 26)}" r="22" fill="${c}" stroke="#fff" stroke-width="3"/>` +
+      `<text x="${pinX}" y="${Math.max(y, 26) + 8}" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="24" font-weight="700" fill="#fff">${i + 1}</text>`;
   })
   .join("");
 const overlay = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="900">${shapes}</svg>`);

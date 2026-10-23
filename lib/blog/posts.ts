@@ -2678,10 +2678,10 @@ ${finalVideo}
   },
   {
     slug: "shopify-store-redesign",
-    title: "Shopify Store Redesign: What to Change First, With Evidence",
+    title: "Shopify Store Redesign: What to Change First",
     h1: "Shopify store redesign: what to change first, when to adjust instead, and how to do it without breaking the store",
     description:
-      "Shopify store redesign without guessing: audit what loses shoppers, decide between an adjustment and a redesign, protect your URLs and speed, and measure the result.",
+      "Shopify store redesign without guessing: audit what loses shoppers, adjust or redesign, protect your URLs and speed, and measure the result.",
     keyword: "shopify store redesign",
     keywords: [
       "shopify store redesign",
@@ -2693,23 +2693,23 @@ ${finalVideo}
     date: "2026-10-22",
     updated: "2026-10-22",
     author: "Ariel Jiménez",
-    readingMinutes: 7,
+    readingMinutes: 8,
     video: FINAL_VIDEO_META,
     excerpt:
       "Audit what loses shoppers before you touch the design, decide whether the answer is an adjustment or a redesign, protect your URLs and speed, and measure before and after.",
     bodyHtml: `
 <p class="lede">A Shopify store redesign works when it starts from evidence: find out what loses shoppers today, change those things first, and keep what already converts and ranks. Redesigning by taste, or all at once, is how stores lose sales and search rankings in the same month. Often the evidence says the answer is a handful of adjustments, not a new theme.</p>
 ${finalVideo}
-<p>The video above compares a real store with weak ad returns to a top store in its niche. That comparison is the right starting point for a redesign too: you are not trying to make your store prettier, you are trying to make it the one shoppers pick over the store next to it. Everything below follows from that.</p>
+<p>In the video, a real store with weak ad returns sits beside a top store in its niche. Use that comparison as the brief for a redesign: you are not trying to make your store prettier, you are trying to make it the one shoppers pick over the store next to it. Everything below follows from that.</p>
 <p class="blog-cta">Want the evidence for your own store before you read on? <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-store-redesign&amp;utm_content=early">Find what to redesign first on your store →</a></p>
 
 <h2>Should you redesign your Shopify store or adjust it?</h2>
-<p>Most stores don't need a new design; they need three or four specific problems fixed. The hard part is knowing which. Baymard Institute's <a href="https://baymard.com/blog/current-state-ecommerce-product-page-ux" rel="nofollow">product page benchmark</a> (updated March 2026, 155+ sites) rated 52% of desktop and 62% of mobile product page experiences as mediocre or worse. That sounds like a case for redesigns, but the same benchmark lists specific, fixable gaps: 57% of sites don't use buttons for size selection, 67% don't show an estimated total order cost near the buy button and 44% don't link or display the return policy on the page. Those are elements, not themes.</p>
+<p>In our experience, many stores need a few specific problems fixed more than they need a new design. The hard part is knowing which. Baymard Institute's <a href="https://baymard.com/blog/current-state-ecommerce-product-page-ux" rel="nofollow">product page benchmark</a> (updated March 2026, 155+ sites) rated 52% of desktop and 62% of mobile product page experiences as mediocre or worse. That sounds like a case for redesigns, but the same benchmark lists specific, fixable gaps: 57% of sites don't use buttons for size selection, 67% don't show an estimated total order cost near the buy button and 44% don't link or display the return policy on the page. Those are elements, not themes.</p>
 <p>Use this rule: adjust when the problem sits in one place, rebuild a template when the theme itself blocks the fix, and redesign the whole journey only when the structure is the problem. Answer the three questions in the diagram in order and stop at the first yes.</p>
 <figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
 <svg viewBox="0 0 300 276" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="rd1-title rd1-desc"><title id="rd1-title">Adjust or redesign? Three questions</title><desc id="rd1-desc">Three questions. Is the leak in one place? If yes, adjust that element or section. Does your theme block the fix? If yes, rebuild that template. Is the whole journey broken? If yes, do a full redesign with URLs protected; if no, keep what converts and adjust.</desc>
 <rect x="0.5" y="0.5" width="299" height="81" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="26" font-size="14" font-weight="600" fill="#ffffff">Is the leak in one place?</text><text x="14" y="50" font-size="14" fill="#2DD4BF">Yes → adjust that element or section</text><text x="14" y="70" font-size="14" fill="rgba(255,255,255,0.6)">No → go to question 2</text><rect x="0.5" y="92.5" width="299" height="81" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="118" font-size="14" font-weight="600" fill="#ffffff">Does your theme block the fix?</text><text x="14" y="142" font-size="14" fill="#2DD4BF">Yes → rebuild that template</text><text x="14" y="162" font-size="14" fill="rgba(255,255,255,0.6)">No → go to question 3</text><rect x="0.5" y="184.5" width="299" height="81" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="210" font-size="14" font-weight="600" fill="#ffffff">Is the whole journey broken?</text><text x="14" y="234" font-size="14" fill="#2DD4BF">Yes → full redesign, URLs protected</text><text x="14" y="254" font-size="14" fill="rgba(255,255,255,0.6)">No → keep what converts, adjust</text></svg>
-<figcaption class="mt-3 text-xs text-white/35">A decision rule, not a measured threshold. Most stores stop at question 1 or 2.</figcaption>
+<figcaption class="mt-3 text-xs text-white/35">A decision rule from experience, not a measured threshold.</figcaption>
 </figure>
 
 <h2>Step 1: audit what loses shoppers today</h2>
@@ -2724,7 +2724,7 @@ ${finalVideo}
 <div class="text-xs font-semibold uppercase tracking-wide text-signal-300">EliteVault in action</div>
 <h3 class="mt-2 text-lg font-semibold text-white">What an audit of a real home page flagged, and what it would take to fix</h3>
 <img src="/blog/shopify-store-redesign/annotated-audit.webp" width="1000" height="609" loading="lazy" alt="Annotated EliteVault audit of a home-decor store's home page with four numbered findings: a countdown timer in the announcement bar, the hero headline, a strip of three vague icons and the hero image" class="mt-3 w-full rounded-xl border border-white/[0.08]">
-<p class="mt-4">This is the home page of one of the owner's own stores (home decor, name hidden), audited on 2026-10-21. EliteVault's verdict was "not ready for paid traffic". Four findings, in the order the audit listed them:</p>
+<p class="mt-4">This is the home page of one of the owner's own stores (home decor, name hidden), audited on 2026-10-21. <em>The numbered boxes were placed by hand on the element each finding names: the audit's own pin coordinates were approximate, so read the finding text, not just the pin.</em> EliteVault's verdict was "not ready for paid traffic". Four findings, in the order the audit listed them:</p>
 <ol>
 <li><strong>High:</strong> a countdown timer in the top bar (it reads 24:00:00) that the audit took for a fake urgency tactic. Fix: remove it.</li>
 <li><strong>High:</strong> the hero headline names an experience but gives no reason to buy this brand. Fix: a benefit-led headline.</li>
@@ -2756,7 +2756,21 @@ ${finalVideo}
 
 <h2>Step 4: build it where it can't hurt you</h2>
 <p>Work on a copy. Per Shopify's help page on <a href="https://help.shopify.com/en/manual/online-store/themes/managing-themes/duplicating-themes" rel="nofollow">duplicating themes</a>, go to Online Store, open the menu of your theme and choose Duplicate; the copy appears as "Copy Of" followed by the original name, and your admin can hold up to 20 themes. Edit the copy, preview it on a real phone, and publish only when it passes your checklist. Change one section at a time so you know which change moved the numbers.</p>
-<p>When you rebuild the product page, which is where most redesign effort pays back, start from what shoppers need to decide. Baymard found 60% of users look for return policy information on the product page, and 42% try to judge size from product images. Our guide to the <a href="/blog/shopify-product-page">Shopify product page</a> goes through the twelve elements one by one.</p>
+<p>When you rebuild the product page, which is where most redesign effort pays back, start from what shoppers need to decide. Baymard's benchmark found that 60% of users look for return policy information on the product page, and that 42% try to judge size from product images. Our guide to the <a href="/blog/shopify-product-page">Shopify product page</a> goes through the twelve elements one by one.</p>
+
+<h2>What should you check before and after you publish?</h2>
+<p>A redesign that changes URLs, titles or templates needs a launch checklist. None of these items needs a tool you don't already have:</p>
+<ol>
+<li><strong>Before:</strong> export the list of your current URLs and note which ones get traffic in Search Console. Those are the pages you must not lose.</li>
+<li><strong>Before:</strong> write down your baseline numbers (conversion rate, add-to-cart rate, mobile share) and your current Largest Contentful Paint.</li>
+<li><strong>Before:</strong> keep page titles, meta descriptions and the main heading of pages that rank, unless you have a reason to change them. Changing them is a separate decision you can measure on its own.</li>
+<li><strong>At launch:</strong> open every redirect you created and confirm it lands on the final page in one hop. Check the checkout, the cart and a test order on a phone.</li>
+<li><strong>After:</strong> resubmit your sitemap, watch Search Console for new errors and compare impressions for the pages you moved. Per Google, keep redirects for at least a year.</li>
+<li><strong>After:</strong> confirm your analytics and ad pixels still fire on every template.</li>
+</ol>
+
+<h2>What drives the cost and time of a redesign?</h2>
+<p>We don't quote prices because they vary by provider and scope (our guide to <a href="/blog/ecommerce-store-audit-vs-consultant">CRO audit cost</a> shows how widely published quotes differ). What decides the bill is the same in every case: how many templates change (home, collection, product, cart), whether you need new photography, whether apps or custom code must be rebuilt, and whether URLs move. A change limited to one section of the product page costs a fraction of a new-theme project, which is the strongest argument for finding out first what actually needs to change.</p>
 
 <h2>Step 5: measure before and after</h2>
 <p>Write down your baseline before you change anything: conversion rate, add-to-cart rate and mobile share from Shopify's reports. After the change, compare equal periods and wait for enough sessions to mean something. Shopify's Conversion rate over time report shows the trend but does not split traffic between versions, so change one thing at a time. Then run the audit again: if the same finding appears, the change didn't fix it.</p>
@@ -2803,7 +2817,7 @@ ${finalVideo}
     title: "How to Increase ROAS: Fix the Page Before the Ad",
     h1: "How to increase ROAS: fix the page before the ad, and model the campaign before you spend",
     description:
-      "How to increase ROAS: the formula, the break-even number, the page-first levers (conversion, order value, ad cost) and how to model a campaign before you spend.",
+      "How to increase ROAS: the formula, your break-even number, the page-first levers and how to model a campaign before you spend.",
     keyword: "how to increase roas",
     keywords: [
       "how to increase roas",
@@ -2815,7 +2829,7 @@ ${finalVideo}
     date: "2026-10-22",
     updated: "2026-10-22",
     author: "Ariel Jiménez",
-    readingMinutes: 8,
+    readingMinutes: 9,
     video: FINAL_VIDEO_META,
     excerpt:
       "ROAS is conversion rate times order value divided by click cost. Fix the page first, know your break-even number and model the campaign before you spend.",
@@ -2841,12 +2855,12 @@ ${finalVideo}
 <rect x="0.5" y="0.5" width="299" height="51" rx="8" fill="rgba(45,212,191,0.1)" stroke="#2DD4BF"/><text x="150" y="32" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">ROAS = CVR × AOV ÷ CPC</text><rect x="0.5" y="68.5" width="95" height="111" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="48" y="92" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">CVR</text><text x="48" y="118" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">page and offer</text><text x="48" y="140" text-anchor="middle" font-size="14" fill="#2DD4BF">trust</text><text x="48" y="160" text-anchor="middle" font-size="14" fill="#2DD4BF">clarity</text><rect x="102.5" y="68.5" width="95" height="111" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="150" y="92" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">AOV</text><text x="150" y="118" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">basket size</text><text x="150" y="140" text-anchor="middle" font-size="14" fill="#2DD4BF">bundles</text><text x="150" y="160" text-anchor="middle" font-size="14" fill="#2DD4BF">thresholds</text><rect x="204.5" y="68.5" width="95" height="111" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="252" y="92" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">CPC</text><text x="252" y="118" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">the ad itself</text><text x="252" y="140" text-anchor="middle" font-size="14" fill="#2DD4BF">creative</text><text x="252" y="160" text-anchor="middle" font-size="14" fill="#2DD4BF">audience</text><text x="150" y="206" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Fix the left side first</text></svg>
 <figcaption class="mt-3 text-xs text-white/35">Revenue per click is CVR × AOV; spend per click is CPC. Divide one by the other and you get ROAS.</figcaption>
 </figure>
-<p>An illustrative example (invented numbers, to show the arithmetic): with an average order value of $50 and a click cost of $1.00, a page that converts 1% of clicks returns $0.50 per $1 spent, a ROAS of 0.5. At 2% it is 1.0 and at 3% it is 1.5. Same ad, same budget, three times the return, because the page changed. Cutting the click cost from $1.00 to $0.75 at 1% would lift the ROAS from 0.5 to 0.67. Both help; the page lever is usually larger and, unlike the auction, entirely in your hands.</p>
+<p>An illustrative example (invented numbers, to show the arithmetic): with an average order value of $50 and a click cost of $1.00, a page that converts 1% of clicks returns $0.50 per $1 spent, a ROAS of 0.5. At 2% it is 1.0 and at 3% it is 1.5. Same ad, same budget, three times the return, because the page changed. Cutting the click cost from $1.00 to $0.75 at 1% would lift the ROAS from 0.5 to 0.67. Both help; the page lever is often the larger one and, unlike the auction, entirely in your hands.</p>
 
 <h3>Lever 1: the conversion rate (the page and the offer)</h3>
-<p>This is where most stores lose money. A stranger from an ad judges the page in seconds, and Nielsen Norman Group's <a href="https://www.nngroup.com/articles/how-long-do-users-stay-on-web-pages/" rel="nofollow">dwell-time research</a> found that users often leave pages within 10 to 20 seconds. Work through the checks in our <a href="/blog/is-your-store-ready-for-meta-ads">6-point readiness check</a>: a clear offer, one action, proof near the buy button, imagery that fits the niche, an easy path to purchase and mobile speed. Speed has a clear target: Google's <a href="https://web.dev/articles/lcp" rel="nofollow">web.dev guidance</a> treats an LCP of 2.5 seconds or less as good. Shipping surprises matter too: in Baymard's <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">survey of why shoppers abandon</a>, 40% cited extra costs such as shipping, tax or fees. For the full stage-by-stage plan see how to <a href="/blog/how-to-increase-shopify-conversion-rate">increase your Shopify conversion rate</a>.</p>
+<p>In our experience this is where many stores lose the most money. A stranger from an ad judges the page in seconds, and Nielsen Norman Group's <a href="https://www.nngroup.com/articles/how-long-do-users-stay-on-web-pages/" rel="nofollow">dwell-time research</a> found that users often leave pages within 10 to 20 seconds. Work through the checks in our <a href="/blog/is-your-store-ready-for-meta-ads">6-point readiness check</a>: a clear offer, one action, proof near the buy button, imagery that fits the niche, an easy path to purchase and mobile speed. Speed has a clear target: Google's <a href="https://web.dev/articles/lcp" rel="nofollow">web.dev guidance</a> treats an LCP of 2.5 seconds or less as good. Shipping surprises matter too: in Baymard's <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">survey of why shoppers abandon</a>, 40% cited extra costs such as shipping, tax or fees. For the full stage-by-stage plan see how to <a href="/blog/how-to-increase-shopify-conversion-rate">increase your Shopify conversion rate</a>.</p>
 <h3>Lever 2: the average order value</h3>
-<p>Raising the basket raises revenue per click without changing the click. The common tools are bundles, a free-shipping threshold a little above your average order and complementary products near the cart. Test them one at a time, and watch the conversion rate: a threshold that is too high can lower the rate by more than it raises the basket.</p>
+<p>Raising the basket raises revenue per click without changing the click. The common tools are bundles, a free-shipping threshold a little above your average order and complementary products near the cart. Test them one at a time and watch the conversion rate: in our reasoning, a threshold set too high can lower the rate by more than it raises the basket.</p>
 <h3>Lever 3: the cost per click (the ad)</h3>
 <p>Creative and audience set the click-through rate and the price of impressions. Test one thing at a time and give each test enough conversions to mean something. Meta documents a <a href="https://www.facebook.com/business/help/112167992830700" rel="nofollow">learning phase</a> in its help center, so read it before you judge a campaign's first days or change it every time a number dips. If clicks are cheap but orders are rare, the problem is lever 1, not this one; our guide to <a href="/blog/why-meta-ads-arent-converting">why Meta ads aren't converting</a> shows how to tell.</p>
 <h3>Lever 4: measurement you can trust</h3>
@@ -2854,6 +2868,16 @@ ${finalVideo}
 
 <h2>How do you model ROAS before you spend?</h2>
 <p>You can do a simple version by hand. Pick a daily budget, a click cost and a conversion rate for your page, and compute spend, clicks, orders, revenue and ROAS. Then repeat with a worse and a better conversion rate, and compare each to your break-even. If even the good case is below break-even, more budget will only lose money faster. It takes ten minutes and prevents the most expensive mistake in paid ads: funding a page that cannot yet convert.</p>
+<p>A worked example with invented numbers. Budget $50 a day, click cost $1.00, average order value $40, gross margin 40%, so break-even ROAS is 2.5. That budget buys about 50 clicks a day.</p>
+<table><thead><tr><th>Case</th><th>Conversion rate</th><th>Orders a day</th><th>Revenue</th><th>ROAS</th><th>Vs. break-even 2.5</th></tr></thead><tbody>
+<tr><td>Worse</td><td>1%</td><td>0.5</td><td>$20</td><td>0.4x</td><td>Loses money</td></tr>
+<tr><td>Expected</td><td>2%</td><td>1</td><td>$40</td><td>0.8x</td><td>Loses money</td></tr>
+<tr><td>Better</td><td>4%</td><td>2</td><td>$80</td><td>1.6x</td><td>Still below</td></tr>
+</tbody></table>
+<p>Even the better case doesn't reach 2.5. At these inputs it takes a conversion rate of about 6.25% (2.5 × $1.00 click cost ÷ $40 order value). The model tells you before you spend that the problem isn't the budget: the conversion rate has to climb a long way, the order value has to rise, the click has to get cheaper or the margin has to improve. Changing one input at a time shows which lever gets you across the line most cheaply.</p>
+<h3>Why repeat purchases change the number you need</h3>
+<p>Break-even ROAS above is for the first order. If customers buy again, the lifetime profit per customer is higher than the first order's, and you can accept a lower first-order ROAS. That only holds if repeat purchases are real and measured: use the repeat rate you see in your own orders, not a hoped-for one, and keep the first-order break-even as your safety line until you have the data.</p>
+<p>The hard part is making the three cases realistic: they depend on your niche, your country, the competition and, above all, how good your page really is. That is what EliteVault's modeler does from an audit of your store, and the stored example below shows what it returns.</p>
 <p>The hard part is making the three cases realistic: they depend on your niche, your country, the competition and, above all, how good your page really is. That is what EliteVault's modeler does from an audit of your store, and the stored example below shows what it returns.</p>
 <!--ev--><figure class="my-8 rounded-2xl border border-signal-500/25 bg-card p-5 md:p-6" data-ev="in-action">
 <div class="text-xs font-semibold uppercase tracking-wide text-signal-300">EliteVault in action</div>
@@ -2861,20 +2885,20 @@ ${finalVideo}
 <p class="mt-3">One of the owner's own stores (home decor, name hidden) was audited on 2026-10-21: the verdict was <strong>not ready for paid traffic</strong>, with two blockers, a fake-looking countdown timer and no authentic social proof. Then we ran EliteVault's Meta Campaign Scenario Modeler with an average order value of $35 and a budget of $100 a day, for a physical product sold in the US with medium competition.</p>
 <table><thead><tr><th>Scenario</th><th>Spend</th><th>Revenue</th><th>Sales</th><th>7-day ROAS (range)</th></tr></thead><tbody><tr><td>Conservative</td><td>$420</td><td>$253</td><td>7</td><td>0.60x (0.48–0.72x)</td></tr><tr><td>Balanced</td><td>$700</td><td>$445</td><td>13</td><td>0.64x (0.48–0.80x)</td></tr><tr><td>Aggressive</td><td>$980</td><td>$635</td><td>18</td><td>0.65x (0.42–0.87x)</td></tr></tbody></table>
 <figure class="my-4">
-<svg viewBox="0 0 300 206" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="ro-sim-title ro-sim-desc"><title id="ro-sim-title">Modeled 7-day ROAS by day, three scenarios</title><desc id="ro-sim-desc">Day-by-day modeled ROAS for the conservative, balanced and aggressive scenarios. A dashed line marks 1.0x, where revenue equals ad spend.</desc>
+<svg viewBox="0 0 300 214" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="ro-sim-title ro-sim-desc"><title id="ro-sim-title">Modeled 7-day ROAS by day, three scenarios</title><desc id="ro-sim-desc">Day-by-day modeled ROAS for the conservative, balanced and aggressive scenarios. A dashed line marks 1.0x, where revenue equals ad spend.</desc>
 <line x1="24" y1="37.0" x2="284" y2="37.0" stroke="rgba(255,255,255,0.35)" stroke-dasharray="4 4"/>
 <text x="26" y="33.0" font-size="14" fill="rgba(255,255,255,0.6)">1.0x = revenue equals ad spend</text>
 <polyline fill="none" stroke="#2DD4BF" stroke-width="2.5" points="24.0,120.8 67.3,102.0 110.7,82.0 154.0,75.8 197.3,75.8 240.7,75.8 284.0,75.8"/><polyline fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2.5" points="24.0,118.2 67.3,98.3 110.7,77.0 154.0,70.8 197.3,70.8 240.7,70.8 284.0,70.8"/><polyline fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2.5" points="24.0,117.0 67.3,97.0 110.7,75.8 154.0,69.5 197.3,69.5 240.7,69.5 284.0,69.5"/>
 <text x="24" y="180" font-size="14" fill="rgba(255,255,255,0.6)">Day 1</text><text x="284" y="180" text-anchor="end" font-size="14" fill="rgba(255,255,255,0.6)">Day 7</text>
-<text x="24" y="196" font-size="14" fill="#2DD4BF">Conservative</text><text x="116" y="196" font-size="14" fill="rgba(255,255,255,0.75)">Balanced</text><text x="208" y="196" font-size="14" fill="rgba(255,255,255,0.4)">Aggressive</text></svg>
+<text x="24" y="206" font-size="14" fill="#2DD4BF">Conservative</text><text x="116" y="206" font-size="14" fill="rgba(255,255,255,0.75)">Balanced</text><text x="208" y="206" font-size="14" fill="rgba(255,255,255,0.4)">Aggressive</text></svg>
 <figcaption class="mt-2 text-xs text-white/35">Inputs: average order value $35, $100 a day. Days 1–3 are modeled as Meta's learning phase.</figcaption>
 </figure>
-<p>All three scenarios projected a loss: ROAS stayed below 1.0x, so every dollar of ads returned less than a dollar of revenue before any product cost. Spending more did not help: the aggressive scenario spends $980 to return $635. The tactical move EliteVault recommended was to fix the trust problems and the product photography before raising the budget. The model ranked this correctly: the bottleneck was the page, not the ad.</p>
+<p>All three scenarios projected a loss: ROAS stayed below 1.0x, so every dollar of ads returned less than a dollar of revenue before any product cost. Spending more did not help: the aggressive scenario spends $980 to return $635. The conservative scenario's recommendation was to fix the trust problems and the product photography before raising the budget, which matches what the audit had already flagged. The balanced scenario's advice was different: it focused on testing ad creative. That mix is a reminder that the text around the numbers is guidance to check against your own data, not a verdict.</p>
 <p>These numbers are modeled, not results. The model assumes days 1 to 3 convert worse (Meta's learning phase), that the conservative, balanced and aggressive scenarios spend 60%, 100% and 140% of the stated budget, and that a weak audit score caps the ROAS a store can reach. They are EliteVault's own modeling assumptions, so treat the output as a way to compare scenarios and see the break-even gap, not as a forecast.</p>
 <figcaption class="mt-3 text-xs text-white/35">From an EliteVault audit (modeled projection, not a result). Available on: Pro (1 projection a month) and Scale (unlimited); a one-time $7 unlock gives 1 projection for that audit. Anonymous and Free accounts get the modeled 7-day ROAS range from the audit instead.</figcaption>
 </figure><!--/ev-->
 <p class="blog-cta">The modeled range appears with every audit: <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=how-to-increase-roas&amp;utm_content=showcase">See your store's modeled 7-day ROAS range →</a></p>
-<p>What this means for you: the projection and the audit agreed, and both pointed at the page. The honest next step after a free audit is to fix what the audit flags; if you want the three-scenario projection for that audit, a one-time $7 unlock includes one projection, and Pro ($19 a month) includes one projection every month. Scale ($29 a month) removes the limit and adds the Ads Optimizer, which proposes CPC, CPM, CTR and ROAS targets for your niche. The numbers in all of these are modeled estimates, not guarantees.</p>
+<p>What this means for you: the numbers and the audit's blockers pointed the same way, at the page. The honest next step after a free audit is to fix what the audit flags; if you want the three-scenario projection for that audit, a one-time $7 unlock includes one projection, and Pro ($19 a month) includes one projection every month. Scale ($29 a month) removes the limit and adds the Ads Optimizer, which proposes CPC, CPM, CTR and ROAS targets for your niche. The numbers in all of these are modeled estimates, not guarantees.</p>
 
 <h2>Where does ROAS leak between click and purchase?</h2>
 <table><thead><tr><th>What you see</th><th>Where the leak is</th></tr></thead><tbody>
@@ -2926,10 +2950,10 @@ ${finalVideo}
   },
   {
     slug: "how-to-boost-ecommerce-sales-with-generative-ai",
-    title: "How to Boost Ecommerce Sales With Generative AI: 5 Uses and the Checks",
+    title: "How to Boost Ecommerce Sales With Generative AI",
     h1: "How to boost ecommerce sales with generative AI: five uses that work, and the checks that keep them honest",
     description:
-      "How to boost ecommerce sales with generative AI: five uses (product content, images, support, store diagnosis, AI search), what Google and Shopify say, and how to check results.",
+      "How to boost ecommerce sales with generative AI: five uses, what Google and Shopify say about each, and how to check the results.",
     keyword: "how to boost ecommerce sales with generative AI",
     keywords: [
       "how to boost ecommerce sales with generative AI",
@@ -2941,14 +2965,14 @@ ${finalVideo}
     date: "2026-10-22",
     updated: "2026-10-22",
     author: "Ariel Jiménez",
-    readingMinutes: 7,
+    readingMinutes: 8,
     video: FINAL_VIDEO_META,
     excerpt:
       "Five places generative AI can help an online store sell more, what Google and Shopify say about each, the review loop that keeps outputs honest and how to measure the result.",
     bodyHtml: `
 <p class="lede">How to boost ecommerce sales with generative AI: use it where it removes work or answers a shopper's question faster, check every output against the real product before it goes live, and measure the result against a baseline. Generative AI doesn't create demand by itself; it makes good practices cheaper to do, and it makes careless ones cheaper too.</p>
 ${finalVideo}
-<p>The video above shows a store losing to a stronger competitor in its own niche. AI is useful for exactly that fight when it helps you see and fix the gap faster; it is harmful when it only helps you publish more pages that look like everyone else's. The sections below are the uses that hold up, what Google and Shopify say about each, and the review loop that decides whether they help.</p>
+<p>In the video, a store loses to a stronger competitor in its own niche. AI is useful for exactly that fight when it helps you see and fix the gap faster; it is harmful when it only helps you publish more pages that look like everyone else's. The sections below are the uses that hold up, what Google and Shopify say about each, and the review loop that decides whether they help.</p>
 <p class="blog-cta">Want to see what a first-time visitor would flag on your store? <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=how-to-boost-ecommerce-sales-with-generative-ai&amp;utm_content=early">Run the audit on your store →</a></p>
 
 <h2>Where does generative AI actually help an online store?</h2>
@@ -2973,10 +2997,19 @@ ${finalVideo}
 <p>Images carry the decision, since shoppers can't touch the product. Shopify's page says you can replace an image's background with a colour in the file editor, and that Sidekick can change an image from a text prompt. Google says AI-generated images in Merchant Center need IPTC metadata marking them as "TrainedAlgorithmicMedia". Our own rule is simple: an AI-edited image must still show the real product accurately. Changing a background is retouching; inventing details the product doesn't have is a refund waiting to happen.</p>
 
 <h2>Use 3: answer questions before they are asked</h2>
+<p>A practical way to start without any new tool: export a month of support emails and chat questions, group them by product and look for the question that appears more than twice. For each one, write the answer once, in plain words, and put it where the shopper decides: in the description, an FAQ or next to the buy button. A general AI assistant is useful here for grouping and for drafting a first version of each answer from your notes, as long as you supply the facts.</p>
 <p>Support conversations are a source of truth about what your pages leave unclear. Shopify's page lists suggested replies in Shopify Inbox among its AI features. Use them to speed up answers, with a person reading each reply, and use the questions themselves to fix the product page: every question asked twice belongs in an FAQ or in the description. Our guide to the <a href="/blog/shopify-product-page">Shopify product page</a> shows where.</p>
 
 <h2>Use 4: diagnose your own store like a first-time visitor</h2>
 <p>This is the use where AI is hardest to replace by hand, because you cannot see your own store with fresh eyes. An AI that reads a screenshot of the page can play the stranger, name what it doesn't understand and point at the element that caused the doubt. It is also the use where the model's output most needs checking, because a confident wrong diagnosis sends you to fix the wrong thing.</p>
+<p>You can try a version of this yourself with any general AI assistant that accepts images. Give it a screenshot of one page and ask it to answer as a first-time visitor who has never heard of your brand. Then constrain it so the answer is useful:</p>
+<ul>
+<li>Ask for <strong>specific findings</strong>, each naming the exact element it refers to (a headline, a button, an image), not general advice.</li>
+<li>Ask what it would need to see <strong>before paying</strong>, and what it would do next if it doesn't find it.</li>
+<li>Ask it to separate what it can see on the page from what it is guessing about the business.</li>
+<li>Discard anything generic ("improve your trust signals") and check every specific claim against the page yourself.</li>
+</ul>
+<p>The weakness of the do-it-yourself version is consistency: every run returns a different list, and nothing checks it for you. That is the gap a purpose-built tool fills.</p>
 <!--ev--><figure class="my-8 rounded-2xl border border-signal-500/25 bg-card p-5 md:p-6" data-ev="in-action">
 <div class="text-xs font-semibold uppercase tracking-wide text-signal-300">EliteVault in action</div>
 <h3 class="mt-2 text-lg font-semibold text-white">A simulated shopper reads a real store</h3>
@@ -2988,10 +3021,10 @@ ${finalVideo}
 <li>I like the aesthetic of the products, but I have no idea if they are actually high quality.</li>
 </ul>
 <p>The model's verdict: would not buy. These are <strong>simulated reactions</strong>, not a real customer's words, so treat them as a hypothesis to test. What makes them useful is that they are specific to the page: the audit tied the doubt to a countdown timer, to the absence of reviews and to a hero that gave no reason to trust the brand. That is a list of things to check by hand in ten minutes.</p>
-<p>How the AI is kept honest matters more than the AI itself. EliteVault does not hand you the model's raw text. In its Fix Tracks, every suggested fix must cite evidence from the page being audited, and fixes that are generic ("improve your CRO") or that contain invented percentages or dollar figures are dropped in code before you see them. The score and the dollar potential band are computed by code, not typed by the model. The same principle works in your own process: ask the AI for findings that point at something you can verify, and discard the rest.</p>
+<p>How the AI is kept honest matters more than the AI itself. EliteVault does not hand you the model's raw text. In its Fix Tracks, every suggested fix must come with evidence tied to the page being audited, and fixes that are generic ("improve your CRO") or that contain invented percentages or dollar figures are dropped in code before you see them. The score and the dollar potential band are computed by code, not typed by the model. The same principle works in your own process: ask the AI for findings that point at something you can verify, and discard the rest.</p>
 <figcaption class="mt-3 text-xs text-white/35">From an EliteVault audit. Available on: the buyer-persona reaction opens with a one-time $7 unlock for that audit, or with Pro and Scale; anonymous and Free accounts see the annotated screenshot, the problems and the first fix.</figcaption>
 </figure><!--/ev-->
-<p class="blog-cta">Run the same read on your page. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=how-to-boost-ecommerce-sales-with-generative-ai&amp;utm_content=showcase">See what a first-time visitor would flag on your store →</a></p>
+<p class="blog-cta">Run the audit on your own page to see the problems a first-time visitor would hit: <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=how-to-boost-ecommerce-sales-with-generative-ai&amp;utm_content=showcase">See what a first-time visitor would flag on your store →</a></p>
 <p>On the plan question: an anonymous or Free audit gives you the annotated screenshot, every problem it found and the first fix, which already shows you whether the diagnosis is credible. The buyer-persona reaction, all the fixes with their how-to and the three fix tracks open with a one-time $7 unlock for that audit; Pro ($19 a month) includes them for every audit, with 40 audits a month. Our <a href="/">Shopify store audit</a> (ours — full disclosure) is the entry point.</p>
 
 <h2>Use 5: be easy for AI search to find and describe</h2>
