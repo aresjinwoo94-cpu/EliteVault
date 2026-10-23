@@ -30,7 +30,7 @@ Rule: a CTA for a Free/anonymous reader promises only audit + verdict + $ band +
 
 ## Real material available in the repo
 - **Own aggregates (values dated: n = 134 distinct stores on 2026-10-22, window 2026-06-02 → 2026-10-22; always re-run and quote the n and window in the JSON, never these numbers):** `docs/blog-data/a2-aggregates.json`. Re-run `node docs/blog-data/a2-aggregates.mjs` for fresh figures. The sample is self-selected. Per-niche cuts are not publishable yet (every niche < 30).
-- **Real loss projection** (home-decor store, score 56, `not_ready`, AOV $35, $100/day; modeled ROAS 0.60x / 0.64x / 0.65x): `docs/blog-data/example-loss-projection.json`. It stores only numbers; render it with `simulatorReplica()` inside `evidenceBlock({ kind: "modeled" })`. Confirm the store is the owner's before quoting its blockers. No stored real Optimizer output exists.
+- **Real loss projection** (home-decor store, score 56, `not_ready`, AOV $35, $100/day; modeled ROAS 0.60x / 0.64x / 0.65x): `docs/blog-data/example-loss-projection.json`. It stores only numbers; render it with `simulatorReplica()` inside `evidenceBlock({ kind: "modeled" })`. The owner confirmed (2026-10-22) the store is theirs: its blockers may be quoted; never name the domain. No stored real Optimizer output exists.
 - **Library:** 97 published, live stores (83 Shopify-verified, 13 with teardowns) as of 2026-10-22.
 - **YouTube:** `docs/blog-youtube-videos.json` (8 videos). Default `43CfVNIds7Q`. No transcripts: attribute nothing beyond title and description.
 

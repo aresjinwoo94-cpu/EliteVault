@@ -33,8 +33,8 @@ const out = {
   inputs: { aov_usd: Number(sim.aov_usd), daily_budget_usd: Number(sim.daily_budget_usd), margin_pct: sim.product_margin_pct, country: "US", product_type: "physical", competitiveness: "medium" },
   takeaway_paraphrase:
     "The audit already said not ready (trust and authenticity problems on the page), and the projection agreed: modeled ROAS stayed below 1.0x in all three scenarios, so the sensible move is to fix trust signals and product photography before raising spend.",
-  needs_owner_confirmation:
-    "Confirm the audited store is the owner's (or that its owner agrees) before the blockers are quoted. Until then quote only the numbers, the niche, the score and the verdict.",
+  owner_confirmation:
+    "2026-10-22: the owner confirmed the audited store is theirs, so its blockers may be quoted. Never name the domain in a post or a committed file.",
   scenarios: { conservative: scen(sim.conservative), balanced: scen(sim.balanced), aggressive: scen(sim.aggressive) },
 };
 fs.writeFileSync(new URL("./example-loss-projection.json", import.meta.url), JSON.stringify(out, null, 2) + "\n");
