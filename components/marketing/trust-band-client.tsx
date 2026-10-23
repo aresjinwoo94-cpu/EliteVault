@@ -20,10 +20,15 @@ export function TrustReveal({
   return (
     <motion.div
       className={className}
-      initial={reduce ? false : { opacity: 0, y: 14 }}
+      // The server cannot know prefers-reduced-motion, so the SSR markup always
+      // starts hidden; for reduced-motion visitors the reveal is simply instant
+      // (no fade, no slide, no stagger).
+      initial={{ opacity: 0, y: 14 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay }}
+      transition={
+        reduce ? { duration: 0 } : { duration: 0.5, ease: [0.22, 1, 0.36, 1], delay }
+      }
     >
       {children}
     </motion.div>

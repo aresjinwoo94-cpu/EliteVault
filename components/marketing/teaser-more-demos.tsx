@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Gem, Play } from "lucide-react";
 import { useT } from "@/components/i18n/locale-provider";
 import {
@@ -27,9 +27,14 @@ export function TeaserMoreDemos() {
   const { t } = useT();
   const teasers = readySecondaryTeasers();
   const [openId, setOpenId] = useState<Teaser["id"] | null>(null);
+  // Keep the last-opened teaser mounted while the dialog plays its exit
+  // animation (no empty box flashing); playback itself stops the instant
+  // openId clears (TeaserFrame pauses + rewinds when autoPlay goes false).
+  const [shownId, setShownId] = useState<Teaser["id"] | null>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
   if (teasers.length === 0) return null;
 
-  const open = teasers.find((x) => x.id === openId) ?? null;
+  const open = teasers.find((x) => x.id === (openId ?? shownId)) ?? null;
 
   return (
     // On lg the row hangs below the player OUT of the flow, so the main player
@@ -44,8 +49,10 @@ export function TeaserMoreDemos() {
           <li key={x.id} className={teasers.length === 1 ? "col-span-2" : undefined}>
             <button
               type="button"
-              onClick={() => {
+              onClick={(e) => {
                 phCapture("teaser_open", { id: x.id });
+                triggerRef.current = e.currentTarget;
+                setShownId(x.id);
                 setOpenId(x.id);
               }}
               className="group flex w-full flex-col gap-2 rounded-xl border border-white/[0.06] bg-white/[0.015] p-2.5 text-left transition-colors hover:bg-white/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-500/50 sm:flex-row sm:items-center sm:gap-3"
@@ -90,8 +97,15 @@ export function TeaserMoreDemos() {
         ))}
       </ul>
 
-      <Dialog open={open !== null} onOpenChange={(v) => !v && setOpenId(null)}>
-        <DialogContent className="max-w-3xl gap-3 p-3 sm:p-4">
+      <Dialog open={openId !== null} onOpenChange={(v) => !v && setOpenId(null)}>
+        <DialogContent
+          className="max-w-3xl gap-3 p-3 sm:p-4"
+          onCloseAutoFocus={(e) => {
+            // Controlled dialog (no <DialogTrigger>): hand focus back to the card.
+            e.preventDefault();
+            triggerRef.current?.focus();
+          }}
+        >
           {open && (
             <>
               <div className="pr-8">
@@ -99,12 +113,13 @@ export function TeaserMoreDemos() {
                 <DialogDescription className="mt-0.5">{t(open.subKey)}</DialogDescription>
               </div>
               <TeaserFrame
+                key={open.id}
                 teaser={open}
                 ariaLabel={t(open.titleKey)}
                 playLabel={t("analyzerDemo.videoPlay")}
                 durationLabel={t(open.durationLabelKey)}
                 preload="none"
-                autoPlay
+                autoPlay={openId !== null}
               />
             </>
           )}
