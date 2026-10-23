@@ -71,7 +71,7 @@ export const dynamic = "force-dynamic";
 
 import { Hero } from "@/components/marketing/hero";
 import { SocialStrip } from "@/components/marketing/social-strip";
-import { WhoFor } from "@/components/marketing/who-for";
+import { TrustBand } from "@/components/marketing/trust-band";
 import { ScanDivider } from "@/components/marketing/scan-field";
 import { FeaturesShowcase } from "@/components/marketing/features-showcase";
 import { ComparisonTable } from "@/components/marketing/comparison-table";
@@ -222,7 +222,7 @@ export default async function HomePage() {
       <main className="relative">
         <Hero />
         <SocialStrip />
-        <WhoFor />
+        <TrustBand />
         <AnalyzerDemo reportV2={reportV2} />
         <ScanDivider />
         <TwoPaths />

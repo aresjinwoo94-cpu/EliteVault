@@ -119,10 +119,9 @@ test("the repositioned copy exists in both locales", () => {
   assert.equal(en.socialStrip.b4Title, "How to win in your niche");
   assert.equal(es.socialStrip.b4Title, "Cómo triunfar en tu nicho");
 
-  // Audience is defined by ad spend now, not by team size.
-  assert.match(en.whoFor.body, /ecommerce owners already investing in acquisition/);
-  assert.match(es.whoFor.body, /ya invierten en adquisición/);
-  for (const [locale, ns] of [["en", en], ["es", es]] as const) {
-    assert.doesNotMatch(ns.whoFor.heading + ns.whoFor.body, /solo founders|en solitario/i, locale);
-  }
+  // "Who it's for" was replaced by the trust band (landing teasers/trust brief).
+  assert.equal("whoFor" in en, false);
+  assert.equal("whoFor" in es, false);
+  assert.equal(en.trustBand.heading, "Built on market data, not on guesses.");
+  assert.equal(es.trustBand.heading, "Construido sobre datos de mercado, no sobre suposiciones.");
 });
