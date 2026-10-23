@@ -364,7 +364,7 @@ ${finalVideo}
 
 <h2>How does your product page compare to the top store in your niche?</h2>
 <p>A checklist tells you what a good page contains. It doesn't tell you what the store beating you does differently, and that is what decides who a shopper picks. The video above makes that comparison: a real store with a weak return on ad spend, side by side with a stronger one.</p>
-<p>You can do a rough version by hand: open your best-selling product next to a leader in your niche, and answer the five questions on each, in ten seconds, as a stranger. Or let the analyzer do it. Our <a href="/">Shopify store audit</a> scores your pages and ranks what to fix first (ours — full disclosure). For a broader plan, see <a href="/blog/how-to-increase-shopify-conversion-rate">how to increase your Shopify conversion rate</a> and the <a href="/blog/shopify-cro-audit">Shopify CRO audit checklist</a>. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-product-page">Run the audit on your store →</a></p>
+<p>You can do a rough version by hand: open your best-selling product next to a leader in your niche, and answer the five questions on each, in ten seconds, as a stranger. Or let the analyzer do it. Our <a href="/">Shopify store audit</a> scores your pages and ranks what to fix first (ours — full disclosure). For a broader plan, see <a href="/blog/how-to-increase-shopify-conversion-rate">how to increase your Shopify conversion rate</a> and the <a href="/blog/shopify-cro-audit">Shopify CRO audit checklist</a>. If you are weighing a bigger change than editing this page, read <a href="/blog/shopify-store-redesign">Shopify store redesign</a>. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-product-page">Run the audit on your store →</a></p>
 `.trim(),
     faqs: [
       {
@@ -657,7 +657,7 @@ ${finalVideo}
 <p>Each check leaves a trace you can find after launch, which is why the scorecard is worth keeping. A fail on check 6 shows up as many link clicks and far fewer landing page views. A fail on checks 1 to 4 shows up as landing page views with almost no add-to-carts. A fail on check 5 shows up as add-to-carts and checkout starts that never become orders. If your results later match one of those patterns, you already know which line of the scorecard to reopen.</p>
 
 <h2>What if the store passes and the ads still don't convert?</h2>
-<p>Then the diagnosis changes. Meta documents a <a href="https://www.facebook.com/business/help/112167992830700" rel="nofollow">learning phase</a> in its help center. Read what it says before you judge a campaign's first days, and check that the Pixel and server events match your real orders. If clicks keep coming without sales after that, work through <a href="/blog/why-meta-ads-arent-converting">why Meta ads aren't converting</a>, which separates ad problems from page problems, and look at the <a href="/blog/best-shopify-tools-increase-roas-2026">Shopify tools that raise ROAS</a> for the part of the stack that is weakest.</p>
+<p>Then the diagnosis changes. Meta documents a <a href="https://www.facebook.com/business/help/112167992830700" rel="nofollow">learning phase</a> in its help center. Read what it says before you judge a campaign's first days, and check that the Pixel and server events match your real orders. If clicks keep coming without sales after that, work through <a href="/blog/why-meta-ads-arent-converting">why Meta ads aren't converting</a>, which separates ad problems from page problems, and look at the <a href="/blog/best-shopify-tools-increase-roas-2026">Shopify tools that raise ROAS</a> for the part of the stack that is weakest. To raise ROAS in the first place, see <a href="/blog/how-to-increase-roas">how to increase ROAS</a>.</p>
 
 <h2>Make your store the one cold shoppers choose</h2>
 <p>Passing the checklist makes you ready, not unbeatable. What sets a store apart is what it makes easier than the one next to it, so keep the comparison going: put your page next to the top store in your niche, on a phone, and write down what they do better. Our <a href="/">Shopify store audit</a> annotates your pages with the issues from this list and ranks the fixes by impact (ours — full disclosure). <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=is-your-store-ready-for-meta-ads">Run the audit on your store →</a></p>
@@ -769,7 +769,7 @@ ${finalVideo}
 <p>If you run a Shopify store with traffic but few sales, start with Shopify's own funnel report and a conversion audit, because they point at where and why visitors leave. Add PageSpeed Insights when pages feel slow or your phone sessions look weak, and Search Console once you care about organic traffic. Add a behavior tool when you have enough visits for recordings to show patterns. Accessibility checks are worth doing at some point, but they are rarely the first fix for a store that doesn't convert.</p>
 
 <h2>Related guides</h2>
-<p>If you are weighing paid help, see how much a <a href="/blog/ecommerce-store-audit-vs-consultant">CRO audit costs</a> from freelancers, agencies and tools, and what an <a href="/blog/ecommerce-cro-specialist">ecommerce CRO specialist</a> does. For what Shopify itself added recently, read <a href="/blog/new-free-shopify-tools-2026">new free Shopify tools</a>, and for the numbers behind AI in ecommerce, <a href="/blog/ai-ecommerce-statistics-revenue-impact">AI ecommerce statistics</a>.</p>
+<p>If you are weighing paid help, see how much a <a href="/blog/ecommerce-store-audit-vs-consultant">CRO audit costs</a> from freelancers, agencies and tools, and what an <a href="/blog/ecommerce-cro-specialist">ecommerce CRO specialist</a> does. For what Shopify itself added recently, read <a href="/blog/new-free-shopify-tools-2026">new free Shopify tools</a>, and for the numbers behind AI in ecommerce, <a href="/blog/ai-ecommerce-statistics-revenue-impact">AI ecommerce statistics</a>. To put AI to work in your store, see <a href="/blog/how-to-boost-ecommerce-sales-with-generative-ai">how to boost ecommerce sales with generative AI</a>.</p>
 
 <h2>Cover all five questions without overspending</h2>
 <p>You can answer the first four with the no-cost tools above, and the fifth with a conversion audit. Run them in the order of your symptom, fix what each finds and re-check. The store that wins in your niche is not the one with the most tools; it is the one that fixes what matters first. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=free-website-audit-tools">Run the audit on your store →</a></p>
@@ -1486,8 +1486,6 @@ ${finalVideo}
       "AI personalization ecommerce statistics",
       "best ecommerce niches for AI",
       "AI conversion rate ecommerce",
-      "shopify AI optimization",
-      "AI lead generation ecommerce",
     ],
     date: "2026-08-15",
     author: "Ariel Jiménez",
@@ -1573,6 +1571,8 @@ ${finalVideo}
 <p>You can do step one right now: <a href="/free-website-audit">audit your Shopify store free</a> and get a score, an annotated screenshot, and a buyer-persona simulation of how a real shopper reacts to your page — before deciding which AI tool is actually worth paying for.</p>
 
 <p><em>A note on honesty: the figures in this article are ranges and averages reported publicly by the cited sources — they are not EliteVault's own proprietary data. Niche conversion benchmarks are industry averages; use the <a href="/winning-shopify-stores">winning stores library</a> or your own <a href="/free-website-audit">free audit</a> to compare against your specific category instead of a blended figure.</em></p>
+
+<p>This article is about the numbers. For the how-to side, see <a href="/blog/how-to-boost-ecommerce-sales-with-generative-ai">how to boost ecommerce sales with generative AI</a>, which covers five uses, what Google and Shopify say about each and how to check the results.</p>
 `.trim(),
     faqs: [
       {
@@ -1724,9 +1724,7 @@ ${finalVideo}
     keywords: [
       "best shopify tools to increase roas",
       "shopify roas tools 2026",
-      "increase meta ads roas shopify",
       "shopify apps for roas",
-      "how to improve roas shopify",
     ],
     date: "2026-09-02",
     updated: "2026-09-02",
@@ -1794,6 +1792,8 @@ ${finalVideo}
 <p>Here's the uncomfortable pattern: most of this stack measures or optimizes <em>after</em> the money is spent. Attribution tells you which campaign wasted it. AI optimization reallocates within the same pool. Tracking makes the reporting honest. All useful — none of it changes the page where the visitor decides.</p>
 <p>Only two entries in that table touch the page itself, and they touch a slice of it: Loox adds photo reviews to product pages, and Klaviyo works the audience after the visit. Neither tells you that your price is invisible above the fold or that your checkout leaks. That's the gap worth naming, because it's where most of a stuck 2.5x actually lives. The store gets the click and loses the sale, and no tool in the ad stack can see it. Fixing the landing experience is also the only lever that improves email, organic and every other channel at the same time — which is why it belongs before the next budget increase, not after.</p>
 <p>If you're about to scale, two things are worth ten minutes: the <a href="/blog/is-your-store-ready-for-meta-ads">six-point readiness check</a> before you fund a campaign, and a <a href="/meta-ads-forecast?utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=best-shopify-tools-increase-roas-2026">forecast of what your store could realistically return</a> at your AOV and budget — conservative, balanced and aggressive cases, free, before you commit the spend. Knowing the floor beats discovering it.</p>
+
+<p>Tools are the last step. The method behind them (the formula, your break-even number and the page-first levers) is in <a href="/blog/how-to-increase-roas">how to increase ROAS</a>.</p>
 `.trim(),
     faqs: [
       {
@@ -2673,6 +2673,413 @@ ${finalVideo}
       {
         q: "Can a store audit test my cart and checkout?",
         a: "Not with EliteVault. It reads a screenshot of your live storefront, so it judges what a shopper sees, but it can't click through a cart or checkout. Test that by hand.",
+      },
+    ],
+  },
+  {
+    slug: "shopify-store-redesign",
+    title: "Shopify Store Redesign: What to Change First",
+    h1: "Shopify store redesign: what to change first, when to adjust instead, and how to do it without breaking the store",
+    description:
+      "Shopify store redesign without guessing: audit what loses shoppers, adjust or redesign, protect your URLs and speed, and measure the result.",
+    keyword: "shopify store redesign",
+    keywords: [
+      "shopify store redesign",
+      "shopify redesign checklist",
+      "redesign shopify store without losing sales",
+      "shopify theme redesign seo",
+      "shopify website redesign",
+    ],
+    date: "2026-10-22",
+    updated: "2026-10-22",
+    author: "Ariel Jiménez",
+    readingMinutes: 8,
+    video: FINAL_VIDEO_META,
+    excerpt:
+      "Audit what loses shoppers before you touch the design, decide whether the answer is an adjustment or a redesign, protect your URLs and speed, and measure before and after.",
+    bodyHtml: `
+<p class="lede">A Shopify store redesign works when it starts from evidence: find out what loses shoppers today, change those things first, and keep what already converts and ranks. Redesigning by taste, or all at once, is how stores lose sales and search rankings in the same month. Often the evidence says the answer is a handful of adjustments, not a new theme.</p>
+${finalVideo}
+<p>In the video, a real store with weak ad returns sits beside a top store in its niche. Use that comparison as the brief for a redesign: you are not trying to make your store prettier, you are trying to make it the one shoppers pick over the store next to it. Everything below follows from that.</p>
+<p class="blog-cta">Want the evidence for your own store before you read on? <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-store-redesign&amp;utm_content=early">Find what to redesign first on your store →</a></p>
+
+<h2>Should you redesign your Shopify store or adjust it?</h2>
+<p>In our experience, many stores need a few specific problems fixed more than they need a new design. The hard part is knowing which. Baymard Institute's <a href="https://baymard.com/blog/current-state-ecommerce-product-page-ux" rel="nofollow">product page benchmark</a> (updated March 2026, 155+ sites) rated 52% of desktop and 62% of mobile product page experiences as mediocre or worse. That sounds like a case for redesigns, but the same benchmark lists specific, fixable gaps: 57% of sites don't use buttons for size selection, 67% don't show an estimated total order cost near the buy button and 44% don't link or display the return policy on the page. Those are elements, not themes.</p>
+<p>Use this rule: adjust when the problem sits in one place, rebuild a template when the theme itself blocks the fix, and redesign the whole journey only when the structure is the problem. Answer the three questions in the diagram in order and stop at the first yes.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 276" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="rd1-title rd1-desc"><title id="rd1-title">Adjust or redesign? Three questions</title><desc id="rd1-desc">Three questions. Is the leak in one place? If yes, adjust that element or section. Does your theme block the fix? If yes, rebuild that template. Is the whole journey broken? If yes, do a full redesign with URLs protected; if no, keep what converts and adjust.</desc>
+<rect x="0.5" y="0.5" width="299" height="81" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="26" font-size="14" font-weight="600" fill="#ffffff">Is the leak in one place?</text><text x="14" y="50" font-size="14" fill="#2DD4BF">Yes → adjust that element or section</text><text x="14" y="70" font-size="14" fill="rgba(255,255,255,0.6)">No → go to question 2</text><rect x="0.5" y="92.5" width="299" height="81" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="118" font-size="14" font-weight="600" fill="#ffffff">Does your theme block the fix?</text><text x="14" y="142" font-size="14" fill="#2DD4BF">Yes → rebuild that template</text><text x="14" y="162" font-size="14" fill="rgba(255,255,255,0.6)">No → go to question 3</text><rect x="0.5" y="184.5" width="299" height="81" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="210" font-size="14" font-weight="600" fill="#ffffff">Is the whole journey broken?</text><text x="14" y="234" font-size="14" fill="#2DD4BF">Yes → full redesign, URLs protected</text><text x="14" y="254" font-size="14" fill="rgba(255,255,255,0.6)">No → keep what converts, adjust</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">A decision rule from experience, not a measured threshold.</figcaption>
+</figure>
+
+<h2>Step 1: audit what loses shoppers today</h2>
+<p>Evidence before taste. You need to know where shoppers drop and what they see when they do. By hand, that takes three things:</p>
+<ul>
+<li><strong>The funnel.</strong> In Shopify's Conversion rate breakdown report, <a href="https://help.shopify.com/en/manual/reports-and-analytics/shopify-reports/report-types/default-reports/behaviour-reports" rel="nofollow">described by Shopify</a> as a funnel from all sessions to sessions that completed checkout, find the step with the biggest drop. Check Sessions by device too: a drop that only happens on phones points at the mobile layout, not the brand.</li>
+<li><strong>The first screen.</strong> Hand a phone to someone who doesn't know the store, let them look for five seconds and ask what it sells and for whom.</li>
+<li><strong>The store next to you.</strong> Open your best seller beside the leader in your niche, on a phone, and write down what they make easier. That list is your redesign brief.</li>
+</ul>
+<p>The hard part by hand is the third one: seeing your own page as a stranger would. You have looked at it too many times. That is where an outside read helps.</p>
+<!--ev--><figure class="my-8 rounded-2xl border border-signal-500/25 bg-card p-5 md:p-6" data-ev="in-action">
+<div class="text-xs font-semibold uppercase tracking-wide text-signal-300">EliteVault in action</div>
+<h3 class="mt-2 text-lg font-semibold text-white">What an audit of a real home page flagged, and what it would take to fix</h3>
+<img src="/blog/shopify-store-redesign/annotated-audit.webp" width="1000" height="609" loading="lazy" alt="Annotated EliteVault audit of a home-decor store's home page with four numbered findings: a countdown timer in the announcement bar, the hero headline, a strip of three vague icons and the hero image" class="mt-3 w-full rounded-xl border border-white/[0.08]">
+<p class="mt-4">This is the home page of one of the owner's own stores (home decor, name hidden), audited on 2026-10-21. <em>The numbered boxes were placed by hand on the element each finding names: the audit's own pin coordinates were approximate, so read the finding text, not just the pin.</em> EliteVault's verdict was "not ready for paid traffic". Four findings, in the order the audit listed them:</p>
+<ol>
+<li><strong>High:</strong> a countdown timer in the top bar (it reads 24:00:00) that the audit took for a fake urgency tactic. Fix: remove it.</li>
+<li><strong>High:</strong> the hero headline names an experience but gives no reason to buy this brand. Fix: a benefit-led headline.</li>
+<li><strong>Medium:</strong> three icons labeled "Functional", "Sensory" and "Atmosphere" say nothing concrete. Fix: replace them with real product benefits.</li>
+<li><strong>Medium:</strong> the hero photo shows the product alone, not in a real room. Fix: lifestyle photography.</li>
+</ol>
+<p>Notice what the list does not contain: a new theme, a new layout or a new navigation. All four findings are changes to elements on the existing page. This is the point of auditing first: on this store the right answer was an adjustment, not a redesign. The audit ranks the findings by severity; the effort is our own estimate. Removing the timer and rewriting the headline and the icon labels is an afternoon of work. The photography needs a shoot, so it is the only expensive item, and it can wait while the other three ship.</p>
+<figcaption class="mt-3 text-xs text-white/35">From an EliteVault audit. Available on: anonymous and Free accounts: the annotated screenshot, every problem and the first fix. A $7 unlock, Pro or Scale: every fix with its how-to.</figcaption>
+</figure><!--/ev-->
+<p class="blog-cta">Run the same check on your own page. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-store-redesign&amp;utm_content=showcase">See what an audit flags on your store →</a></p>
+<p>On the plan question: anonymous visitors and Free accounts get the annotated screenshot, every problem and the first fix, which is enough to answer "adjust or redesign?". The rest of the fixes and their how-to open with a one-time $7 unlock for that audit, or with Pro ($19 a month) if you audit several stores or re-check after every change.</p>
+
+<h2>Step 2: rank the changes by impact and effort</h2>
+<p>Take your findings and put each in one of three buckets: quick (an afternoon), medium (a few days) or heavy (needs new photos, a new template or development). Ship the quick, high-impact ones first. In the audit above that is the timer and the headline; the photography goes on the list for later. Nothing is lost by waiting, and you will see whether the quick changes moved the numbers before you pay for the expensive one.</p>
+<p>If you are tempted by a full redesign, check it against the ladder below. Every level up adds something you must protect.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 282" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="rd2-title rd2-desc"><title id="rd2-title">How big is the change? Four levels of scope and what to protect</title><desc id="rd2-desc">Four levels of growing scope. Change one element: protect your baseline numbers. Rebuild a section or template: protect speed on mobile. Switch to a new theme: protect apps and tracking. New URLs or a new platform: protect URLs and redirects.</desc>
+<rect x="2" y="2" width="80" height="10" rx="5" fill="#2DD4BF" fill-opacity="0.3"/><text x="2" y="36" font-size="14" font-weight="600" fill="#ffffff">1. Change one element</text><text x="2" y="58" font-size="14" fill="rgba(255,255,255,0.6)">Protect: your baseline numbers</text><rect x="2" y="72" width="150" height="10" rx="5" fill="#2DD4BF" fill-opacity="0.52"/><text x="2" y="106" font-size="14" font-weight="600" fill="#ffffff">2. Rebuild a section or template</text><text x="2" y="128" font-size="14" fill="rgba(255,255,255,0.6)">Protect: speed on mobile</text><rect x="2" y="142" width="220" height="10" rx="5" fill="#2DD4BF" fill-opacity="0.74"/><text x="2" y="176" font-size="14" font-weight="600" fill="#ffffff">3. Switch to a new theme</text><text x="2" y="198" font-size="14" fill="rgba(255,255,255,0.6)">Protect: apps and tracking</text><rect x="2" y="212" width="296" height="10" rx="5" fill="#2DD4BF" fill-opacity="0.96"/><text x="2" y="246" font-size="14" font-weight="600" fill="#ffffff">4. New URLs or a new platform</text><text x="2" y="268" font-size="14" fill="rgba(255,255,255,0.6)">Protect: URLs and redirects</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">The bigger the change, the more there is to protect. Start at the lowest level that fixes what the evidence shows.</figcaption>
+</figure>
+
+<h2>Step 3: protect what already works</h2>
+<p>A redesign can break three things quietly: your search visibility, your speed and your tracking.</p>
+<ul>
+<li><strong>URLs.</strong> A new theme alone does not change your URLs. If your redesign changes them (new collections structure, renamed products), follow Google's guidance in <a href="https://developers.google.com/search/docs/crawling-indexing/site-move-with-url-changes" rel="nofollow">How to move a site</a>: map every old URL to its new one, use permanent server-side redirects straight to the final destination (no chains), keep them for as long as possible (generally at least a year), and verify the site in Search Console. In Shopify, redirects live under <a href="https://help.shopify.com/en/manual/online-store/menus-and-links/url-redirect" rel="nofollow">Content, Menus, View URL Redirects</a>; the page notes you can bulk-import them from a CSV and that a standard store can hold up to 100,000.</li>
+<li><strong>Speed.</strong> New visuals and apps are the usual cause of a slower store. Test before and after in <a href="https://pagespeed.web.dev/" rel="nofollow">PageSpeed Insights</a>; Google's <a href="https://web.dev/articles/lcp" rel="nofollow">web.dev guidance</a> treats a Largest Contentful Paint of 2.5 seconds or less as good.</li>
+<li><strong>Tracking.</strong> Confirm your analytics and ad pixels still fire on the new templates before you send traffic.</li>
+</ul>
+
+<h2>Step 4: build it where it can't hurt you</h2>
+<p>Work on a copy. Per Shopify's help page on <a href="https://help.shopify.com/en/manual/online-store/themes/managing-themes/duplicating-themes" rel="nofollow">duplicating themes</a>, go to Online Store, open the menu of your theme and choose Duplicate; the copy appears as "Copy Of" followed by the original name, and your admin can hold up to 20 themes. Edit the copy, preview it on a real phone, and publish only when it passes your checklist. Change one section at a time so you know which change moved the numbers.</p>
+<p>When you rebuild the product page, which is where most redesign effort pays back, start from what shoppers need to decide. Baymard's benchmark found that 60% of users look for return policy information on the product page, and that 42% try to judge size from product images. Our guide to the <a href="/blog/shopify-product-page">Shopify product page</a> goes through the twelve elements one by one.</p>
+
+<h2>What should you check before and after you publish?</h2>
+<p>A redesign that changes URLs, titles or templates needs a launch checklist. None of these items needs a tool you don't already have:</p>
+<ol>
+<li><strong>Before:</strong> export the list of your current URLs and note which ones get traffic in Search Console. Those are the pages you must not lose.</li>
+<li><strong>Before:</strong> write down your baseline numbers (conversion rate, add-to-cart rate, mobile share) and your current Largest Contentful Paint.</li>
+<li><strong>Before:</strong> keep page titles, meta descriptions and the main heading of pages that rank, unless you have a reason to change them. Changing them is a separate decision you can measure on its own.</li>
+<li><strong>At launch:</strong> open every redirect you created and confirm it lands on the final page in one hop. Check the checkout, the cart and a test order on a phone.</li>
+<li><strong>After:</strong> resubmit your sitemap, watch Search Console for new errors and compare impressions for the pages you moved. Per Google, keep redirects for at least a year.</li>
+<li><strong>After:</strong> confirm your analytics and ad pixels still fire on every template.</li>
+</ol>
+
+<h2>What drives the cost and time of a redesign?</h2>
+<p>We don't quote prices because they vary by provider and scope (our guide to <a href="/blog/ecommerce-store-audit-vs-consultant">CRO audit cost</a> shows how widely published quotes differ). What decides the bill is the same in every case: how many templates change (home, collection, product, cart), whether you need new photography, whether apps or custom code must be rebuilt, and whether URLs move. A change limited to one section of the product page costs a fraction of a new-theme project, which is the strongest argument for finding out first what actually needs to change.</p>
+
+<h2>Step 5: measure before and after</h2>
+<p>Write down your baseline before you change anything: conversion rate, add-to-cart rate and mobile share from Shopify's reports. After the change, compare equal periods and wait for enough sessions to mean something. Shopify's Conversion rate over time report shows the trend but does not split traffic between versions, so change one thing at a time. Then run the audit again: if the same finding appears, the change didn't fix it.</p>
+
+<h2>Which redesign mistakes cost the most?</h2>
+<ul>
+<li><strong>Starting from a template you like.</strong> A good-looking theme can still hide your offer or slow the page.</li>
+<li><strong>Changing everything at once.</strong> You cannot tell what helped, or what hurt.</li>
+<li><strong>Forgetting the URLs.</strong> Rankings you built over months can vanish when pages move without redirects.</li>
+<li><strong>Copying the leader's look instead of its logic.</strong> What counts is clarity, proof and ease. Our guide to <a href="/blog/reverse-engineer-winning-shopify-stores">reverse-engineering winning Shopify stores</a> shows how to take a leader apart without copying it.</li>
+<li><strong>Ignoring phones.</strong> Check every change on a real phone, not a resized window.</li>
+</ul>
+<p>Design trends are a separate question: see <a href="/blog/ecommerce-design-trends-2026">which ecommerce design trends actually convert</a> before adopting one, and <a href="/blog/ai-shopify-designer">what a human must still check</a> if AI builds part of the new design.</p>
+
+<h2>Redesign to beat the store next to you</h2>
+<p>The goal of a redesign is not a new look; it is a store that is easier to understand and trust than the one a shopper has open in the next tab. Audit first, change the highest-impact things, protect what works and measure. Our <a href="/">Shopify store audit</a> (ours — full disclosure) does the first step for you: it reads your page like a first-time visitor and shows what to change first. If you suspect the problem goes beyond design, start with <a href="/blog/why-your-shopify-store-isnt-converting">why your Shopify store isn't converting</a>, and use the <a href="/blog/shopify-cro-audit">Shopify CRO audit checklist</a> for a page-by-page check.</p>
+<p class="blog-cta"><a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-store-redesign&amp;utm_content=end">Run the audit on your store →</a></p>
+`.trim(),
+    faqs: [
+      {
+        q: "How do I know if my Shopify store needs a redesign?",
+        a: "Look for evidence, not taste. If the funnel report shows shoppers dropping at one step, or an audit flags specific elements such as an unclear headline, hidden proof or a slow page, you probably need adjustments. A redesign makes sense when the structure of the journey itself is broken.",
+      },
+      {
+        q: "Will redesigning my Shopify store hurt my SEO?",
+        a: "It can if URLs change without redirects. Google recommends mapping every old URL to a new one, using permanent redirects straight to the final destination, keeping them for at least a year and verifying the site in Search Console. A new theme alone does not change your URLs.",
+      },
+      {
+        q: "How do I redesign my Shopify store without losing sales?",
+        a: "Work on a duplicate of your theme, change one section at a time, check each change on a real phone and compare conversion rate over equal periods before and after. Keep a record of your baseline numbers before you start.",
+      },
+      {
+        q: "What should I change first in a Shopify redesign?",
+        a: "Start with what the evidence ranks highest and is cheapest to fix: usually the first screen (a clear offer), proof near the buy button and shipping and returns information. Leave expensive items such as new photography for after the quick fixes show results.",
+      },
+      {
+        q: "How often should I redesign my Shopify store?",
+        a: "There is no schedule that works for every store. Redesign when the evidence says the current structure is holding sales back, not on a calendar. Small, measured adjustments after each audit are safer than infrequent large redesigns.",
+      },
+    ],
+  },
+  {
+    slug: "how-to-increase-roas",
+    title: "How to Increase ROAS: Fix the Page Before the Ad",
+    h1: "How to increase ROAS: fix the page before the ad, and model the campaign before you spend",
+    description:
+      "How to increase ROAS: the formula, your break-even number, the page-first levers and how to model a campaign before you spend.",
+    keyword: "how to increase roas",
+    keywords: [
+      "how to increase roas",
+      "increase roas shopify",
+      "break even roas",
+      "how to improve roas",
+      "roas formula",
+    ],
+    date: "2026-10-22",
+    updated: "2026-10-22",
+    author: "Ariel Jiménez",
+    readingMinutes: 9,
+    video: FINAL_VIDEO_META,
+    excerpt:
+      "ROAS is conversion rate times order value divided by click cost. Fix the page first, know your break-even number and model the campaign before you spend.",
+    bodyHtml: `
+<p class="lede">How to increase ROAS: raise the revenue each click earns (a better page and offer) or lower what each click costs (a better ad), in that order, because the page multiplies everything the ad does. ROAS, return on ad spend, is revenue from ads divided by ad spend. Before you change anything, find your break-even ROAS, because that number tells you whether a campaign is working at all.</p>
+${finalVideo}
+<p>The video above shows the page side of the story: a real Shopify store with weak ad returns, set beside a leader in its niche. Same kind of ads, different destination. That is the idea of this guide: the stores that win on ROAS are rarely the ones with cleverer ads, they are the ones whose page turns a click into an order more often than the competition does.</p>
+<p class="blog-cta">Want to see where your store stands before you spend? <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=how-to-increase-roas&amp;utm_content=early">See your store's modeled 7-day ROAS range →</a></p>
+
+<h2>What is ROAS, and what ROAS do you need?</h2>
+<p>ROAS is revenue from ads divided by ad spend: as an invented example, $1,000 of ad spend that brings $3,000 of revenue is a ROAS of 3. The number alone says nothing about profit. What matters is your <strong>break-even ROAS</strong>. Per Shopify's <a href="https://www.shopify.com/blog/break-even-roas-calculator" rel="nofollow">break-even ROAS guide</a>, gross profit margin is revenue minus variable costs (product, shipping, payment processing, pick and pack) divided by revenue, and break-even ROAS is 1 divided by that margin. Shopify's example: a $100 product with $60 of variable costs has a 40% margin, so break-even ROAS is 2.5: you need $2.50 of revenue per $1 of ads just to cover costs.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 264" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="ro2-title ro2-desc"><title id="ro2-title">Break-even ROAS by gross margin</title><desc id="ro2-desc">Break-even ROAS is one divided by gross margin: 20 percent margin needs 5 times, 30 percent 3.33, 40 percent 2.5, 50 percent 2.0, 60 percent 1.67.</desc>
+<text x="0" y="16" font-size="14" fill="rgba(255,255,255,0.6)">Gross margin</text><text x="300" y="16" text-anchor="end" font-size="14" fill="rgba(255,255,255,0.6)">Break-even ROAS</text><text x="0" y="56" font-size="14" font-weight="600" fill="#ffffff">20%</text><rect x="52" y="40" width="190" height="22" rx="5" fill="#2DD4BF" fill-opacity="0.85"/><text x="298" y="56" text-anchor="end" font-size="14" font-weight="600" fill="#ffffff">5.0x</text><text x="0" y="100" font-size="14" font-weight="600" fill="#ffffff">30%</text><rect x="52" y="84" width="127" height="22" rx="5" fill="#2DD4BF" fill-opacity="0.683"/><text x="298" y="100" text-anchor="end" font-size="14" font-weight="600" fill="#ffffff">3.33x</text><text x="0" y="144" font-size="14" font-weight="600" fill="#ffffff">40%</text><rect x="52" y="128" width="95" height="22" rx="5" fill="#2DD4BF" fill-opacity="0.6"/><text x="298" y="144" text-anchor="end" font-size="14" font-weight="600" fill="#ffffff">2.5x</text><text x="0" y="188" font-size="14" font-weight="600" fill="#ffffff">50%</text><rect x="52" y="172" width="76" height="22" rx="5" fill="#2DD4BF" fill-opacity="0.55"/><text x="298" y="188" text-anchor="end" font-size="14" font-weight="600" fill="#ffffff">2.0x</text><text x="0" y="232" font-size="14" font-weight="600" fill="#ffffff">60%</text><rect x="52" y="216" width="63" height="22" rx="5" fill="#2DD4BF" fill-opacity="0.5169999999999999"/><text x="298" y="232" text-anchor="end" font-size="14" font-weight="600" fill="#ffffff">1.67x</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Break-even ROAS = 1 ÷ gross profit margin, the formula in Shopify's break-even ROAS guide. Variable costs (product, shipping, payment fees) go into the margin.</figcaption>
+</figure>
+<p>That is why there is no universal "good ROAS". A store with a 60% margin breaks even at about 1.7x; a store with a 20% margin needs 5x. Write your own number down before you read any benchmark, and measure every campaign against it.</p>
+
+<h2>How do you raise ROAS? Split it into three levers</h2>
+<p>Revenue per click is the conversion rate times the average order value; spend per click is the cost per click. So ROAS = conversion rate × order value ÷ cost per click. Three levers, and they are not equal in how much control you have.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 222" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="ro1-title ro1-desc"><title id="ro1-title">ROAS splits into conversion rate, order value and click cost</title><desc id="ro1-desc">ROAS equals conversion rate times average order value divided by cost per click. Conversion rate is driven by the page and the offer: trust, clarity, speed. Order value is driven by basket size: bundles and thresholds. Cost per click is driven by the ad: creative and audience. Fix the left side first.</desc>
+<rect x="0.5" y="0.5" width="299" height="51" rx="8" fill="rgba(45,212,191,0.1)" stroke="#2DD4BF"/><text x="150" y="32" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">ROAS = CVR × AOV ÷ CPC</text><rect x="0.5" y="68.5" width="95" height="111" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="48" y="92" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">CVR</text><text x="48" y="118" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">page and offer</text><text x="48" y="140" text-anchor="middle" font-size="14" fill="#2DD4BF">trust</text><text x="48" y="160" text-anchor="middle" font-size="14" fill="#2DD4BF">clarity</text><rect x="102.5" y="68.5" width="95" height="111" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="150" y="92" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">AOV</text><text x="150" y="118" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">basket size</text><text x="150" y="140" text-anchor="middle" font-size="14" fill="#2DD4BF">bundles</text><text x="150" y="160" text-anchor="middle" font-size="14" fill="#2DD4BF">thresholds</text><rect x="204.5" y="68.5" width="95" height="111" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="252" y="92" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">CPC</text><text x="252" y="118" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">the ad itself</text><text x="252" y="140" text-anchor="middle" font-size="14" fill="#2DD4BF">creative</text><text x="252" y="160" text-anchor="middle" font-size="14" fill="#2DD4BF">audience</text><text x="150" y="206" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Fix the left side first</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Revenue per click is CVR × AOV; spend per click is CPC. Divide one by the other and you get ROAS.</figcaption>
+</figure>
+<p>An illustrative example (invented numbers, to show the arithmetic): with an average order value of $50 and a click cost of $1.00, a page that converts 1% of clicks returns $0.50 per $1 spent, a ROAS of 0.5. At 2% it is 1.0 and at 3% it is 1.5. Same ad, same budget, three times the return, because the page changed. Cutting the click cost from $1.00 to $0.75 at 1% would lift the ROAS from 0.5 to 0.67. Both help; the page lever is often the larger one and, unlike the auction, entirely in your hands.</p>
+
+<h3>Lever 1: the conversion rate (the page and the offer)</h3>
+<p>In our experience this is where many stores lose the most money. A stranger from an ad judges the page in seconds, and Nielsen Norman Group's <a href="https://www.nngroup.com/articles/how-long-do-users-stay-on-web-pages/" rel="nofollow">dwell-time research</a> found that users often leave pages within 10 to 20 seconds. Work through the checks in our <a href="/blog/is-your-store-ready-for-meta-ads">6-point readiness check</a>: a clear offer, one action, proof near the buy button, imagery that fits the niche, an easy path to purchase and mobile speed. Speed has a clear target: Google's <a href="https://web.dev/articles/lcp" rel="nofollow">web.dev guidance</a> treats an LCP of 2.5 seconds or less as good. Shipping surprises matter too: in Baymard's <a href="https://baymard.com/lists/cart-abandonment-rate" rel="nofollow">survey of why shoppers abandon</a>, 40% cited extra costs such as shipping, tax or fees. For the full stage-by-stage plan see how to <a href="/blog/how-to-increase-shopify-conversion-rate">increase your Shopify conversion rate</a>.</p>
+<h3>Lever 2: the average order value</h3>
+<p>Raising the basket raises revenue per click without changing the click. The common tools are bundles, a free-shipping threshold a little above your average order and complementary products near the cart. Test them one at a time and watch the conversion rate: in our reasoning, a threshold set too high can lower the rate by more than it raises the basket.</p>
+<h3>Lever 3: the cost per click (the ad)</h3>
+<p>Creative and audience set the click-through rate and the price of impressions. Test one thing at a time and give each test enough conversions to mean something. Meta documents a <a href="https://www.facebook.com/business/help/112167992830700" rel="nofollow">learning phase</a> in its help center, so read it before you judge a campaign's first days or change it every time a number dips. If clicks are cheap but orders are rare, the problem is lever 1, not this one; our guide to <a href="/blog/why-meta-ads-arent-converting">why Meta ads aren't converting</a> shows how to tell.</p>
+<h3>Lever 4: measurement you can trust</h3>
+<p>A ROAS you cannot trust is a guess. Install the Meta Pixel following Meta's <a href="https://www.facebook.com/business/help/952192354843755" rel="nofollow">setup guide</a> and consider the <a href="https://developers.facebook.com/docs/marketing-api/conversions-api/" rel="nofollow">Conversions API</a>, which Meta describes as a connection between your marketing data and Meta that can run alongside the Pixel. Then compare the purchases Meta reports with your Shopify orders over the same period.</p>
+
+<h2>How do you model ROAS before you spend?</h2>
+<p>You can do a simple version by hand. Pick a daily budget, a click cost and a conversion rate for your page, and compute spend, clicks, orders, revenue and ROAS. Then repeat with a worse and a better conversion rate, and compare each to your break-even. If even the good case is below break-even, more budget will only lose money faster. It takes ten minutes and prevents the most expensive mistake in paid ads: funding a page that cannot yet convert.</p>
+<p>A worked example with invented numbers. Budget $50 a day, click cost $1.00, average order value $40, gross margin 40%, so break-even ROAS is 2.5. That budget buys about 50 clicks a day.</p>
+<table><thead><tr><th>Case</th><th>Conversion rate</th><th>Orders a day</th><th>Revenue</th><th>ROAS</th><th>Vs. break-even 2.5</th></tr></thead><tbody>
+<tr><td>Worse</td><td>1%</td><td>0.5</td><td>$20</td><td>0.4x</td><td>Loses money</td></tr>
+<tr><td>Expected</td><td>2%</td><td>1</td><td>$40</td><td>0.8x</td><td>Loses money</td></tr>
+<tr><td>Better</td><td>4%</td><td>2</td><td>$80</td><td>1.6x</td><td>Still below</td></tr>
+</tbody></table>
+<p>Even the better case doesn't reach 2.5. At these inputs it takes a conversion rate of about 6.25% (2.5 × $1.00 click cost ÷ $40 order value). The model tells you before you spend that the problem isn't the budget: the conversion rate has to climb a long way, the order value has to rise, the click has to get cheaper or the margin has to improve. Changing one input at a time shows which lever gets you across the line most cheaply.</p>
+<h3>Why repeat purchases change the number you need</h3>
+<p>Break-even ROAS above is for the first order. If customers buy again, the lifetime profit per customer is higher than the first order's, and you can accept a lower first-order ROAS. That only holds if repeat purchases are real and measured: use the repeat rate you see in your own orders, not a hoped-for one, and keep the first-order break-even as your safety line until you have the data.</p>
+<p>The hard part is making the three cases realistic: they depend on your niche, your country, the competition and, above all, how good your page really is. That is what EliteVault's modeler does from an audit of your store, and the stored example below shows what it returns.</p>
+<p>The hard part is making the three cases realistic: they depend on your niche, your country, the competition and, above all, how good your page really is. That is what EliteVault's modeler does from an audit of your store, and the stored example below shows what it returns.</p>
+<!--ev--><figure class="my-8 rounded-2xl border border-signal-500/25 bg-card p-5 md:p-6" data-ev="in-action">
+<div class="text-xs font-semibold uppercase tracking-wide text-signal-300">EliteVault in action</div>
+<h3 class="mt-2 text-lg font-semibold text-white">A projection that said: do not spend yet</h3>
+<p class="mt-3">One of the owner's own stores (home decor, name hidden) was audited on 2026-10-21: the verdict was <strong>not ready for paid traffic</strong>, with two blockers, a fake-looking countdown timer and no authentic social proof. Then we ran EliteVault's Meta Campaign Scenario Modeler with an average order value of $35 and a budget of $100 a day, for a physical product sold in the US with medium competition.</p>
+<table><thead><tr><th>Scenario</th><th>Spend</th><th>Revenue</th><th>Sales</th><th>7-day ROAS (range)</th></tr></thead><tbody><tr><td>Conservative</td><td>$420</td><td>$253</td><td>7</td><td>0.60x (0.48–0.72x)</td></tr><tr><td>Balanced</td><td>$700</td><td>$445</td><td>13</td><td>0.64x (0.48–0.80x)</td></tr><tr><td>Aggressive</td><td>$980</td><td>$635</td><td>18</td><td>0.65x (0.42–0.87x)</td></tr></tbody></table>
+<figure class="my-4">
+<svg viewBox="0 0 300 214" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="ro-sim-title ro-sim-desc"><title id="ro-sim-title">Modeled 7-day ROAS by day, three scenarios</title><desc id="ro-sim-desc">Day-by-day modeled ROAS for the conservative, balanced and aggressive scenarios. A dashed line marks 1.0x, where revenue equals ad spend.</desc>
+<line x1="24" y1="37.0" x2="284" y2="37.0" stroke="rgba(255,255,255,0.35)" stroke-dasharray="4 4"/>
+<text x="26" y="33.0" font-size="14" fill="rgba(255,255,255,0.6)">1.0x = revenue equals ad spend</text>
+<polyline fill="none" stroke="#2DD4BF" stroke-width="2.5" points="24.0,120.8 67.3,102.0 110.7,82.0 154.0,75.8 197.3,75.8 240.7,75.8 284.0,75.8"/><polyline fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2.5" points="24.0,118.2 67.3,98.3 110.7,77.0 154.0,70.8 197.3,70.8 240.7,70.8 284.0,70.8"/><polyline fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2.5" points="24.0,117.0 67.3,97.0 110.7,75.8 154.0,69.5 197.3,69.5 240.7,69.5 284.0,69.5"/>
+<text x="24" y="180" font-size="14" fill="rgba(255,255,255,0.6)">Day 1</text><text x="284" y="180" text-anchor="end" font-size="14" fill="rgba(255,255,255,0.6)">Day 7</text>
+<text x="24" y="206" font-size="14" fill="#2DD4BF">Conservative</text><text x="116" y="206" font-size="14" fill="rgba(255,255,255,0.75)">Balanced</text><text x="208" y="206" font-size="14" fill="rgba(255,255,255,0.4)">Aggressive</text></svg>
+<figcaption class="mt-2 text-xs text-white/35">Inputs: average order value $35, $100 a day. Days 1–3 are modeled as Meta's learning phase.</figcaption>
+</figure>
+<p>All three scenarios projected a loss: ROAS stayed below 1.0x, so every dollar of ads returned less than a dollar of revenue before any product cost. Spending more did not help: the aggressive scenario spends $980 to return $635. The conservative scenario's recommendation was to fix the trust problems and the product photography before raising the budget, which matches what the audit had already flagged. The balanced scenario's advice was different: it focused on testing ad creative. That mix is a reminder that the text around the numbers is guidance to check against your own data, not a verdict.</p>
+<p>These numbers are modeled, not results. The model assumes days 1 to 3 convert worse (Meta's learning phase), that the conservative, balanced and aggressive scenarios spend 60%, 100% and 140% of the stated budget, and that a weak audit score caps the ROAS a store can reach. They are EliteVault's own modeling assumptions, so treat the output as a way to compare scenarios and see the break-even gap, not as a forecast.</p>
+<figcaption class="mt-3 text-xs text-white/35">From an EliteVault audit (modeled projection, not a result). Available on: Pro (1 projection a month) and Scale (unlimited); a one-time $7 unlock gives 1 projection for that audit. Anonymous and Free accounts get the modeled 7-day ROAS range from the audit instead.</figcaption>
+</figure><!--/ev-->
+<p class="blog-cta">The modeled range appears with every audit: <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=how-to-increase-roas&amp;utm_content=showcase">See your store's modeled 7-day ROAS range →</a></p>
+<p>What this means for you: the numbers and the audit's blockers pointed the same way, at the page. The honest next step after a free audit is to fix what the audit flags; if you want the three-scenario projection for that audit, a one-time $7 unlock includes one projection, and Pro ($19 a month) includes one projection every month. Scale ($29 a month) removes the limit and adds the Ads Optimizer, which proposes CPC, CPM, CTR and ROAS targets for your niche. The numbers in all of these are modeled estimates, not guarantees.</p>
+
+<h2>Where does ROAS leak between click and purchase?</h2>
+<table><thead><tr><th>What you see</th><th>Where the leak is</th></tr></thead><tbody>
+<tr><td>Low click-through rate, expensive clicks</td><td>The ad: creative or audience</td></tr>
+<tr><td>Many link clicks, far fewer landing page views</td><td>Speed or tracking: people click and never see the page. Meta introduced <a href="https://about.fb.com/news/2017/06/better-understand-interactions/" rel="nofollow">landing page views</a> to count visitors who actually arrive after a click</td></tr>
+<tr><td>Landing page views, few add-to-carts</td><td>Offer, trust or product page</td></tr>
+<tr><td>Add-to-carts, few checkouts</td><td>Surprise costs or a confusing cart</td></tr>
+<tr><td>Checkouts, few purchases</td><td>Checkout friction or trust</td></tr>
+</tbody></table>
+
+<h2>When should you scale spend?</h2>
+<p>Scale what is above break-even, and only that. Scaling a campaign that sits below your break-even number scales the loss. Raise the budget in steps, watch whether the ROAS holds as spend grows, and keep fixing the page while you do: every point of conversion you add makes every future dollar of ads worth more. If you want to compare tools for the stack around this, see the <a href="/blog/best-shopify-tools-increase-roas-2026">best Shopify tools to increase ROAS</a>.</p>
+
+<h2>Common mistakes when trying to raise ROAS</h2>
+<ul>
+<li><strong>Chasing a benchmark instead of your break-even.</strong> A 3x ROAS can lose money at a thin margin.</li>
+<li><strong>Testing creative on a page that doesn't convert.</strong> You learn that nothing works.</li>
+<li><strong>Judging a campaign in its first days.</strong> Read what Meta says about the learning phase first.</li>
+<li><strong>Trusting an unchecked pixel.</strong> Reconcile reported purchases with your real orders.</li>
+<li><strong>Raising budget before fixing the leak.</strong> Money into a leak leaves faster.</li>
+</ul>
+
+<h2>Make your page the one that earns more per click</h2>
+<p>The advertiser with the better page can bid more for the same click and still profit, which is the real advantage. Check how your store compares with the best one in your niche, fix the biggest gap first and model before you fund. Our <a href="/">Shopify store audit</a> (ours — full disclosure) shows what a cold click sees and ranks what to fix; the <a href="/meta-ads-forecast">Meta Ads scenario modeler</a> page explains the forecast.</p>
+<p class="blog-cta"><a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=how-to-increase-roas&amp;utm_content=end">Run the audit on your store →</a></p>
+`.trim(),
+    faqs: [
+      {
+        q: "What is a good ROAS?",
+        a: "It depends on your margin. Break-even ROAS is 1 divided by your gross profit margin, so a 40% margin needs 2.5x and a 20% margin needs 5x. Anything above your own break-even number earns a gross profit; benchmarks from other stores say little about yours.",
+      },
+      {
+        q: "How do I calculate break-even ROAS?",
+        a: "Compute your gross profit margin as revenue minus variable costs (product, shipping, payment fees, pick and pack) divided by revenue, then divide 1 by that margin. Shopify's example: a $100 product with $60 of variable costs has a 40% margin and a break-even ROAS of 2.5.",
+      },
+      {
+        q: "What is the fastest way to increase ROAS?",
+        a: "Usually the page, not the ad: a clearer offer, proof near the buy button, honest shipping information and faster mobile loading raise the conversion rate, and a higher conversion rate raises ROAS without changing your ad spend. Check the page before you test new creative.",
+      },
+      {
+        q: "Why is my ROAS low even though my ads get clicks?",
+        a: "Clicks without orders usually mean the problem is after the click: an unclear offer, missing trust, a slow mobile page or a checkout with surprises. Compare link clicks with landing page views and with add-to-carts to find the step that loses the most people.",
+      },
+      {
+        q: "Does a higher average order value raise ROAS?",
+        a: "Yes, because revenue per click is conversion rate times average order value. Bundles, a free-shipping threshold slightly above your average order and complementary products can raise it, but test them one at a time and watch that the conversion rate does not fall.",
+      },
+    ],
+  },
+  {
+    slug: "how-to-boost-ecommerce-sales-with-generative-ai",
+    title: "How to Boost Ecommerce Sales With Generative AI",
+    h1: "How to boost ecommerce sales with generative AI: five uses that work, and the checks that keep them honest",
+    description:
+      "How to boost ecommerce sales with generative AI: five uses, what Google and Shopify say about each, and how to check the results.",
+    keyword: "how to boost ecommerce sales with generative AI",
+    keywords: [
+      "how to boost ecommerce sales with generative AI",
+      "generative ai ecommerce",
+      "generative AI for online stores",
+      "use generative AI to increase ecommerce sales",
+      "AI product descriptions shopify",
+    ],
+    date: "2026-10-22",
+    updated: "2026-10-22",
+    author: "Ariel Jiménez",
+    readingMinutes: 8,
+    video: FINAL_VIDEO_META,
+    excerpt:
+      "Five places generative AI can help an online store sell more, what Google and Shopify say about each, the review loop that keeps outputs honest and how to measure the result.",
+    bodyHtml: `
+<p class="lede">How to boost ecommerce sales with generative AI: use it where it removes work or answers a shopper's question faster, check every output against the real product before it goes live, and measure the result against a baseline. Generative AI doesn't create demand by itself; it makes good practices cheaper to do, and it makes careless ones cheaper too.</p>
+${finalVideo}
+<p>In the video, a store loses to a stronger competitor in its own niche. AI is useful for exactly that fight when it helps you see and fix the gap faster; it is harmful when it only helps you publish more pages that look like everyone else's. The sections below are the uses that hold up, what Google and Shopify say about each, and the review loop that decides whether they help.</p>
+<p class="blog-cta">Want to see what a first-time visitor would flag on your store? <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=how-to-boost-ecommerce-sales-with-generative-ai&amp;utm_content=early">Run the audit on your store →</a></p>
+
+<h2>Where does generative AI actually help an online store?</h2>
+<p>Think of the shopper's path: they find you, decide, buy and sometimes ask a question. Generative AI can help at each step, and each has its own way to go wrong.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 306" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="ai1-title ai1-desc"><title id="ai1-title">Where generative AI fits along the shopper's path</title><desc id="ai1-desc">Four stages. Find: AI answers and search; check that the page is indexed and snippet-eligible. Decide: product copy and images; check facts, labels and no spam. Buy: store diagnosis and tests; measure against a baseline. Ask: support replies and FAQ; a person reviews them.</desc>
+<rect x="0.5" y="0.5" width="299" height="65" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="24" font-size="14" font-weight="600" fill="#ffffff">Find</text><text x="80" y="24" font-size="14" fill="#2DD4BF">AI answers and search</text><text x="14" y="52" font-size="14" fill="rgba(255,255,255,0.6)">Check: indexed, snippet-eligible</text><path d="M150 66 L150 75" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 73 L150 80 L155 73 Z" fill="#2DD4BF"/><rect x="0.5" y="80.5" width="299" height="65" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="104" font-size="14" font-weight="600" fill="#ffffff">Decide</text><text x="80" y="104" font-size="14" fill="#2DD4BF">Product copy and images</text><text x="14" y="132" font-size="14" fill="rgba(255,255,255,0.6)">Check: facts, labels, no spam</text><path d="M150 146 L150 155" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 153 L150 160 L155 153 Z" fill="#2DD4BF"/><rect x="0.5" y="160.5" width="299" height="65" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="184" font-size="14" font-weight="600" fill="#ffffff">Buy</text><text x="80" y="184" font-size="14" fill="#2DD4BF">Store diagnosis and tests</text><text x="14" y="212" font-size="14" fill="rgba(255,255,255,0.6)">Check: measure against a baseline</text><path d="M150 226 L150 235" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 233 L150 240 L155 233 Z" fill="#2DD4BF"/><rect x="0.5" y="240.5" width="299" height="65" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="14" y="264" font-size="14" font-weight="600" fill="#ffffff">Ask</text><text x="80" y="264" font-size="14" fill="#2DD4BF">Support replies and FAQ</text><text x="14" y="292" font-size="14" fill="rgba(255,255,255,0.6)">Check: a person reviews them</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Each use has a different failure mode, so each has its own check.</figcaption>
+</figure>
+<p>In the results we reviewed, most guides on this topic came from vendors that sell an AI tool, so their lists of "ten ways" are broad and light on what can go wrong. The sections below are narrower: five uses, each with the official guidance behind it. For market numbers, see our roundup of <a href="/blog/ai-ecommerce-statistics-revenue-impact">AI in ecommerce statistics</a>; this guide is about doing, not counting.</p>
+
+<h2>Use 1: write and improve product content</h2>
+<p>This is the most common starting point because the work is repetitive. Shopify's <a href="https://help.shopify.com/en/manual/shopify-admin/productivity-tools/shopify-magic" rel="nofollow">AI-powered tools</a> page says Sidekick writes product descriptions when you click the Generate text icon in the product editor, and also drafts blog posts, store pages and email text. Shopify adds that availability can vary by plan, device and language, and that "AI outputs can contain errors, so review anything a tool creates or changes".</p>
+<p>Google's guidance is the other half. In its page on <a href="https://developers.google.com/search/docs/fundamentals/using-gen-ai-content" rel="nofollow">generative AI content</a>, Google says generative AI can be useful when researching a topic and to add structure to original content, warns that generating many pages without adding value for users may violate its spam policy on scaled content abuse, and says it is critical to fact-check and review AI-generated content, including metadata such as titles, meta descriptions and image alt text. For Merchant Center, Google says AI-generated product titles and descriptions must be specified separately. In practice:</p>
+<ul>
+<li>Use AI to draft from facts you provide (materials, dimensions, what the product does), not to invent them.</li>
+<li>Rewrite for your buyer's questions. A generic description is not a reason to choose you.</li>
+<li>Don't publish hundreds of near-identical pages. Fewer, better pages beat many thin ones.</li>
+</ul>
+
+<h2>Use 2: improve product imagery</h2>
+<p>Images carry the decision, since shoppers can't touch the product. Shopify's page says you can replace an image's background with a colour in the file editor, and that Sidekick can change an image from a text prompt. Google says AI-generated images in Merchant Center need IPTC metadata marking them as "TrainedAlgorithmicMedia". Our own rule is simple: an AI-edited image must still show the real product accurately. Changing a background is retouching; inventing details the product doesn't have is a refund waiting to happen.</p>
+
+<h2>Use 3: answer questions before they are asked</h2>
+<p>A practical way to start without any new tool: export a month of support emails and chat questions, group them by product and look for the question that appears more than twice. For each one, write the answer once, in plain words, and put it where the shopper decides: in the description, an FAQ or next to the buy button. A general AI assistant is useful here for grouping and for drafting a first version of each answer from your notes, as long as you supply the facts.</p>
+<p>Support conversations are a source of truth about what your pages leave unclear. Shopify's page lists suggested replies in Shopify Inbox among its AI features. Use them to speed up answers, with a person reading each reply, and use the questions themselves to fix the product page: every question asked twice belongs in an FAQ or in the description. Our guide to the <a href="/blog/shopify-product-page">Shopify product page</a> shows where.</p>
+
+<h2>Use 4: diagnose your own store like a first-time visitor</h2>
+<p>This is the use where AI is hardest to replace by hand, because you cannot see your own store with fresh eyes. An AI that reads a screenshot of the page can play the stranger, name what it doesn't understand and point at the element that caused the doubt. It is also the use where the model's output most needs checking, because a confident wrong diagnosis sends you to fix the wrong thing.</p>
+<p>You can try a version of this yourself with any general AI assistant that accepts images. Give it a screenshot of one page and ask it to answer as a first-time visitor who has never heard of your brand. Then constrain it so the answer is useful:</p>
+<ul>
+<li>Ask for <strong>specific findings</strong>, each naming the exact element it refers to (a headline, a button, an image), not general advice.</li>
+<li>Ask what it would need to see <strong>before paying</strong>, and what it would do next if it doesn't find it.</li>
+<li>Ask it to separate what it can see on the page from what it is guessing about the business.</li>
+<li>Discard anything generic ("improve your trust signals") and check every specific claim against the page yourself.</li>
+</ul>
+<p>The weakness of the do-it-yourself version is consistency: every run returns a different list, and nothing checks it for you. That is the gap a purpose-built tool fills.</p>
+<!--ev--><figure class="my-8 rounded-2xl border border-signal-500/25 bg-card p-5 md:p-6" data-ev="in-action">
+<div class="text-xs font-semibold uppercase tracking-wide text-signal-300">EliteVault in action</div>
+<h3 class="mt-2 text-lg font-semibold text-white">A simulated shopper reads a real store</h3>
+<p class="mt-3">EliteVault's audit reads a screenshot of the live storefront and answers as a first-time visitor with a buyer profile. Here is the real output for one of the owner's own stores (home decor, name hidden), audited on 2026-10-21, with the profile the audit used: age 28 to 45, urban, interested in productivity and luxury, high income.</p>
+<blockquote><strong>This feels like a generic dropshipping site, not a curated luxury brand.</strong></blockquote>
+<ul>
+<li>Is this a real company or just a random collection of AliExpress gadgets?</li>
+<li>The '24:00:00' countdown timer is clearly fake, which makes me trust the site even less.</li>
+<li>I like the aesthetic of the products, but I have no idea if they are actually high quality.</li>
+</ul>
+<p>The model's verdict: would not buy. These are <strong>simulated reactions</strong>, not a real customer's words, so treat them as a hypothesis to test. What makes them useful is that they are specific to the page: the audit tied the doubt to a countdown timer, to the absence of reviews and to a hero that gave no reason to trust the brand. That is a list of things to check by hand in ten minutes.</p>
+<p>How the AI is kept honest matters more than the AI itself. EliteVault does not hand you the model's raw text. In its Fix Tracks, every suggested fix must come with evidence tied to the page being audited, and fixes that are generic ("improve your CRO") or that contain invented percentages or dollar figures are dropped in code before you see them. The score and the dollar potential band are computed by code, not typed by the model. The same principle works in your own process: ask the AI for findings that point at something you can verify, and discard the rest.</p>
+<figcaption class="mt-3 text-xs text-white/35">From an EliteVault audit. Available on: the buyer-persona reaction opens with a one-time $7 unlock for that audit, or with Pro and Scale; anonymous and Free accounts see the annotated screenshot, the problems and the first fix.</figcaption>
+</figure><!--/ev-->
+<p class="blog-cta">Run the audit on your own page to see the problems a first-time visitor would hit: <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=how-to-boost-ecommerce-sales-with-generative-ai&amp;utm_content=showcase">See what a first-time visitor would flag on your store →</a></p>
+<p>On the plan question: an anonymous or Free audit gives you the annotated screenshot, every problem it found and the first fix, which already shows you whether the diagnosis is credible. The buyer-persona reaction, all the fixes with their how-to and the three fix tracks open with a one-time $7 unlock for that audit; Pro ($19 a month) includes them for every audit, with 40 audits a month. Our <a href="/">Shopify store audit</a> (ours — full disclosure) is the entry point.</p>
+
+<h2>Use 5: be easy for AI search to find and describe</h2>
+<p>AI-powered search features are one more place shoppers may find you. For Google's AI features, the official line is unglamorous. Google's page on <a href="https://developers.google.com/search/docs/appearance/ai-features" rel="nofollow">AI features and your website</a> says there are no additional requirements to appear in AI Overviews or AI Mode and no special optimizations necessary: a page must be indexed and eligible to be shown with a snippet, and the best practices for SEO remain relevant, such as allowing crawling, using internal links and keeping structured data consistent with the visible text. It also says that indexing and serving is not guaranteed. So the work is the same as before: clear product pages, accurate structured data and a site that Google can crawl. We make no claims about how other assistants choose what to recommend, because there is no official guidance to cite.</p>
+
+<h2>How do you keep AI output honest?</h2>
+<p>Every use above needs the same loop. Speed comes from the first step; trust comes from the other four.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 246" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="ai2-title ai2-desc"><title id="ai2-title">A review loop for every AI output</title><desc id="ai2-desc">Five steps: generate a draft, fact-check every claim, compare with the real product, publish one change, measure against the baseline.</desc>
+<rect x="0.5" y="0.5" width="299" height="39" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><circle cx="22" cy="20" r="10" fill="#2DD4BF"/><text x="22" y="25" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">1</text><text x="46" y="25" font-size="14" font-weight="600" fill="#ffffff">Generate a draft</text><path d="M150 40 L150 49" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 47 L150 54 L155 47 Z" fill="#2DD4BF"/><rect x="0.5" y="54.5" width="299" height="39" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><circle cx="22" cy="74" r="10" fill="#2DD4BF"/><text x="22" y="79" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">2</text><text x="46" y="79" font-size="14" font-weight="600" fill="#ffffff">Fact-check every claim</text><path d="M150 94 L150 103" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 101 L150 108 L155 101 Z" fill="#2DD4BF"/><rect x="0.5" y="108.5" width="299" height="39" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><circle cx="22" cy="128" r="10" fill="#2DD4BF"/><text x="22" y="133" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">3</text><text x="46" y="133" font-size="14" font-weight="600" fill="#ffffff">Compare with the real product</text><path d="M150 148 L150 157" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 155 L150 162 L155 155 Z" fill="#2DD4BF"/><rect x="0.5" y="162.5" width="299" height="39" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><circle cx="22" cy="182" r="10" fill="#2DD4BF"/><text x="22" y="187" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">4</text><text x="46" y="187" font-size="14" font-weight="600" fill="#ffffff">Publish one change</text><path d="M150 202 L150 211" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 209 L150 216 L155 209 Z" fill="#2DD4BF"/><rect x="0.5" y="216.5" width="299" height="39" rx="8" fill="rgba(45,212,191,0.1)" stroke="#2DD4BF"/><circle cx="22" cy="236" r="10" fill="#2DD4BF"/><text x="22" y="241" text-anchor="middle" font-size="14" font-weight="700" fill="#04302c">5</text><text x="46" y="241" font-size="14" font-weight="600" fill="#2DD4BF">Measure against the baseline</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Speed comes from the first step; trust and results come from the other four.</figcaption>
+</figure>
+<ul>
+<li><strong>Fact-check every claim.</strong> Dimensions, materials, shipping times and warranty terms must come from you, not the model.</li>
+<li><strong>Compare with the real product.</strong> Text and images must match what arrives in the box.</li>
+<li><strong>Don't mass-publish.</strong> Google's scaled-content warning exists for a reason.</li>
+<li><strong>Label where required.</strong> Merchant Center asks for AI-generated product data to be specified, and AI images to carry metadata.</li>
+<li><strong>Keep a person in the loop for anything a shopper reads as a promise.</strong></li>
+</ul>
+
+<h2>How do you know generative AI is helping sales?</h2>
+<p>Write down a baseline first: conversion rate, add-to-cart rate and, for support, response time. Change one thing at a time. After the change, compare equal periods in Shopify's Conversion rate over time report; it shows the trend but does not split traffic between versions. Be careful with small samples: a handful of orders cannot confirm that a new description works. If a change doesn't show up in the numbers after enough sessions, it was an efficiency gain at best. That is still worth having, as long as quality didn't fall.</p>
+
+<h2>Which mistakes make AI hurt instead of help?</h2>
+<ul>
+<li><strong>Publishing a drafted description unread.</strong> One wrong claim costs more than the time you saved.</li>
+<li><strong>Using AI to write reviews or testimonials.</strong> The trust problem it creates is worse than the one it solves.</li>
+<li><strong>Starting with the tool instead of the problem.</strong> Find the step where shoppers drop, then pick the use that fits it.</li>
+<li><strong>Changing ten things at once.</strong> You can't tell what worked. Our guide on <a href="/blog/ai-shopify-designer">the AI Shopify designer</a> covers what a human must still check before you publish.</li>
+</ul>
+
+<h2>Use AI to beat the store next to you</h2>
+<p>The stores that win with generative AI use it for the unglamorous parts: faster, more accurate product content, quicker answers and sharper diagnosis of their own weak spots. Start where the evidence says shoppers drop, apply one use, review it and measure. To compare the tools around this, see our guide to <a href="/blog/free-website-audit-tools">website audit tools</a>, and if you are ready to hire help, what an <a href="/blog/ecommerce-cro-specialist">ecommerce CRO specialist</a> does.</p>
+<p class="blog-cta"><a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=how-to-boost-ecommerce-sales-with-generative-ai&amp;utm_content=end">Run the audit on your store →</a></p>
+`.trim(),
+    faqs: [
+      {
+        q: "Can generative AI write my Shopify product descriptions?",
+        a: "Yes. Shopify's Sidekick can write product descriptions from the product editor, but Shopify itself says AI outputs can contain errors and should be reviewed. Give it facts you have checked, rewrite for your buyer's questions and compare the result with the real product before publishing.",
+      },
+      {
+        q: "Will Google penalize AI-generated content on my store?",
+        a: "Google does not ban AI content, but it warns that using AI to generate many pages without adding value for users may violate its spam policy on scaled content abuse, and it says to fact-check and review AI-generated content, including metadata. Quality and accuracy matter more than how the text was produced.",
+      },
+      {
+        q: "Is AI-generated product imagery allowed?",
+        a: "For Google Merchant Center, AI-generated images need IPTC metadata marking them as TrainedAlgorithmicMedia, and AI-generated product titles and descriptions must be specified separately. Whatever the rules, the image should show the real product accurately.",
+      },
+      {
+        q: "How do I know if generative AI is increasing my sales?",
+        a: "Record a baseline before you change anything, then change one thing at a time and compare equal periods in Shopify's Conversion rate over time report. Wait for enough sessions, because a few orders cannot confirm a change. If sales don't move, count it as a time saving only if quality held.",
+      },
+      {
+        q: "Which generative AI use should I start with?",
+        a: "Start with the step where your data shows shoppers drop. If product pages are unclear, begin with product content and questions. If you don't know where the leak is, begin by diagnosing the store, because that tells you which of the other uses is worth your time.",
       },
     ],
   },

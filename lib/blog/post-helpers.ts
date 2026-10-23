@@ -135,10 +135,10 @@ export function simulatorReplica(s: SimReplicaInput): string {
     .join("");
   const one = y(1);
   const legend = keys
-    .map((k, i) => `<text x="${24 + i * 92}" y="196" font-size="14" fill="${colors[k]}">${NAMES[k]}</text>`)
+    .map((k, i) => `<text x="${24 + i * 92}" y="206" font-size="14" fill="${colors[k]}">${NAMES[k]}</text>`)
     .join("");
   const svg = `<figure class="my-4">
-<svg viewBox="0 0 300 206" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="${s.id}-title ${s.id}-desc"><title id="${s.id}-title">Modeled 7-day ROAS by day, three scenarios</title><desc id="${s.id}-desc">Day-by-day modeled ROAS for the conservative, balanced and aggressive scenarios. A dashed line marks 1.0x, where revenue equals ad spend.</desc>
+<svg viewBox="0 0 300 214" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="${s.id}-title ${s.id}-desc"><title id="${s.id}-title">Modeled 7-day ROAS by day, three scenarios</title><desc id="${s.id}-desc">Day-by-day modeled ROAS for the conservative, balanced and aggressive scenarios. A dashed line marks 1.0x, where revenue equals ad spend.</desc>
 <line x1="24" y1="${one.toFixed(1)}" x2="284" y2="${one.toFixed(1)}" stroke="rgba(255,255,255,0.35)" stroke-dasharray="4 4"/>
 <text x="26" y="${(one - 4).toFixed(1)}" font-size="14" fill="rgba(255,255,255,0.6)">1.0x = revenue equals ad spend</text>
 ${lines}
