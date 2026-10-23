@@ -107,6 +107,16 @@ const en: Dict = {
     proNote:
       "Want the full cure — every fix, your buyer-persona reaction and the 7-day Meta projection? Unlock it any time with Pro or Scale.",
   },
+  // Landing "More demos" row under the hero player (components/marketing/teasers.ts).
+  teasers: {
+    moreDemos: "More demos",
+    proTitle: "Pro features in action",
+    proSub: "Niche winners · more fix tracks · buyer persona · campaigns modeled on your store",
+    proDuration: "~1 min · sound on",
+    simulatorTitle: "The campaign simulator",
+    simulatorSub: "Model a 7-day Meta campaign before you spend",
+    simulatorDuration: "~1 min · sound on",
+  },
   // "Who EliteVault is for" — persona self-identification + niche long-tail SEO.
   whoFor: {
     eyebrow: "Who it's for",
@@ -1066,6 +1076,16 @@ const es: Dict = {
       "Crea una cuenta gratis para conservar este informe, hacer otra auditoría y explorar la Library de tiendas que ya están convirtiendo en tu nicho.",
     proNote:
       "¿Quieres la cura completa — todos los fixes, la reacción de tu buyer-persona y la proyección Meta de 7 días? Desbloquéala cuando quieras con Pro o Scale.",
+  },
+  // Fila "Más demos" bajo el player del hero (components/marketing/teasers.ts).
+  teasers: {
+    moreDemos: "Más demos",
+    proTitle: "Funciones Pro en acción",
+    proSub: "Tiendas ganadoras · más tracks de fixes · buyer persona · campañas modeladas sobre tu tienda",
+    proDuration: "~1 min · con sonido",
+    simulatorTitle: "El simulador de campañas",
+    simulatorSub: "Modela una campaña de Meta de 7 días antes de gastar",
+    simulatorDuration: "~1 min · con sonido",
   },
   // "¿Para quién es EliteVault?" — self-identificación del persona + long-tail.
   whoFor: {

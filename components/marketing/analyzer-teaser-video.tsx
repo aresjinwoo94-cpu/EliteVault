@@ -1,49 +1,29 @@
 "use client";
 
-import { useRef, useState } from "react";
 import { Play } from "lucide-react";
 import { useT } from "@/components/i18n/locale-provider";
+import { TeaserFrame } from "./teaser-frame";
+import { TeaserMoreDemos } from "./teaser-more-demos";
+import { MAIN_TEASER } from "./teasers";
 
 /**
  * Real teaser video of the analyzer, shown as the hero visual.
  *
- * Behavior:
- *   • Click-to-play WITH sound — no autoplay. The poster (a real frame of
- *     the analyzer) + a play button carry the visual until the visitor
- *     opts in, which also makes unmuted playback reliable in every
- *     browser (user-gesture requirement) and inherently respects
- *     prefers-reduced-motion.
- *   • preload="none" only — a few KB up front; the stream starts on
- *     click, so the video never competes with the page's LCP.
- *   • Native controls appear once playing (pause / seek / volume); when
- *     the teaser ends it resets back to the poster + play button.
- *   • playsInline keeps iOS embedded; the 1080×512 aspect ratio is
- *     reserved up front so there's no layout shift.
+ * The player itself (chrome + click-to-play video) lives in TeaserFrame so the
+ * "More demos" modal can reuse the exact same look. This component keeps the
+ * hero-only dressing: the invitation title above, the ambient glow, and — only
+ * when a secondary teaser is marked `ready` in teasers.ts — the mini-teaser row
+ * underneath. With none ready, the DOM is the single-teaser hero as before.
  *
- * The video file is pre-cropped: the screen recording's browser URL bar
- * is cut off because this component draws its own chrome bar on top.
+ * Behavior of the main player (unchanged):
+ *   • Click-to-play WITH sound — no autoplay; preload="metadata" keeps the
+ *     poster paint cheap and the stream starts on click, so the video never
+ *     competes with the page's LCP.
+ *   • The video file is pre-cropped: the screen recording's browser URL bar is
+ *     cut off because the frame draws its own chrome bar on top.
  */
-
-const VIDEO_WEBM = "/videos/analyzer-teaser.webm";
-const VIDEO_MP4 = "/videos/analyzer-teaser.mp4";
-const POSTER = "/videos/analyzer-teaser-poster.jpg";
-
 export function AnalyzerTeaserVideo() {
   const { t } = useT();
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [started, setStarted] = useState(false);
-
-  const start = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.play().catch(() => {});
-  };
-
-  const reset = () => {
-    const video = videoRef.current;
-    setStarted(false);
-    if (video) video.currentTime = 0;
-  };
 
   return (
     <div className="relative">
@@ -58,61 +38,15 @@ export function AnalyzerTeaserVideo() {
       {/* Ambient glow — teal (signal) is the AI/data accent for this surface */}
       <div className="absolute -inset-4 top-6 rounded-3xl bg-gradient-to-tr from-signal-600/20 via-transparent to-signal-400/15 blur-2xl pointer-events-none" />
 
-      <div className="relative glass-strong rounded-2xl overflow-hidden shadow-2xl">
-        {/* Browser chrome */}
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5 bg-obsidian-900/60">
-          <div className="flex gap-1.5">
-            <span className="size-2.5 rounded-full bg-white/10" />
-            <span className="size-2.5 rounded-full bg-white/10" />
-            <span className="size-2.5 rounded-full bg-white/10" />
-          </div>
-          <div className="ml-3 flex-1 rounded-md bg-white/[0.04] px-3 py-1 text-xs text-white/40 font-mono">
-            elitevaultapp.com/app/analyzer
-          </div>
-          <div className="flex items-center gap-1.5 text-[11px] text-white/30 uppercase tracking-widest">
-            <span className="size-1.5 rounded-full bg-success animate-pulse motion-reduce:animate-none" />
-            {t("common.liveDemo")}
-          </div>
-        </div>
+      <TeaserFrame
+        teaser={MAIN_TEASER}
+        ariaLabel={t("analyzerDemo.videoAria")}
+        playLabel={t("analyzerDemo.videoPlay")}
+        durationLabel={t("hero.teaserDuration")}
+        preload="metadata"
+      />
 
-        {/* aspect matches the encoded video (1080×512) exactly */}
-        <div className="relative aspect-[1080/512] bg-obsidian-900">
-          <video
-            ref={videoRef}
-            className="absolute inset-0 h-full w-full"
-            controls={started}
-            playsInline
-            preload="metadata"
-            poster={POSTER}
-            aria-label={t("analyzerDemo.videoAria")}
-            onPlay={() => setStarted(true)}
-            onEnded={reset}
-          >
-            <source src={VIDEO_WEBM} type="video/webm" />
-            <source src={VIDEO_MP4} type="video/mp4" />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={POSTER} alt={t("analyzerDemo.videoAria")} />
-          </video>
-
-          {!started && (
-            <button
-              type="button"
-              onClick={start}
-              aria-label={t("analyzerDemo.videoPlay")}
-              className="group absolute inset-0 grid place-items-center bg-obsidian-950/30 transition-colors hover:bg-obsidian-950/15"
-            >
-              <span className="flex flex-col items-center gap-3">
-                <span className="flex size-16 items-center justify-center rounded-full bg-obsidian-950/70 ring-1 ring-white/20 backdrop-blur-sm transition-transform group-hover:scale-105">
-                  <Play className="size-6 translate-x-0.5 text-white" fill="currentColor" />
-                </span>
-                <span className="rounded-full bg-obsidian-950/60 px-3 py-1 text-[11px] text-white/70 backdrop-blur-sm">
-                  {t("hero.teaserDuration")}
-                </span>
-              </span>
-            </button>
-          )}
-        </div>
-      </div>
+      <TeaserMoreDemos />
     </div>
   );
 }

@@ -152,9 +152,16 @@ test("phones: big blurs and backdrop-filter are switched off in CSS, desktop unt
 
 test("the teaser video does not preload and does not autoplay", () => {
   const v = code("components/marketing/analyzer-teaser-video.tsx");
-  assert.match(v, /preload="none"/);
+  const frame = code("components/marketing/teaser-frame.tsx");
+  // hero player: poster-only metadata preload, never autoplay
+  assert.match(v, /preload="metadata"/);
   assert.doesNotMatch(v, /autoPlay/);
-  assert.match(v, /poster=/);
+  assert.match(frame, /poster=\{teaser\.poster\}/);
+  assert.match(frame, /autoPlay = false/);
+  // secondary teasers only mount inside the modal and preload nothing
+  const more = code("components/marketing/teaser-more-demos.tsx");
+  assert.match(more, /preload="none"/);
+  assert.match(more, /loading="lazy"/);
 });
 
 test("the analyzer pipeline and its progress screen are untouched by this PR", () => {
