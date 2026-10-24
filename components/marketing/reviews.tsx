@@ -3,13 +3,8 @@ import {
   ReviewCard,
   Stars,
   MIN_FOR_AGGREGATE,
-  MIN_REVIEWS_TO_SHOW,
 } from "@/components/reviews/review-card";
-import {
-  getReviewSettings,
-  getPublicReviews,
-  getReviewStats,
-} from "@/lib/reviews/data";
+import { getReviewsVisibility } from "@/lib/reviews/visibility";
 import { getT } from "@/lib/i18n/server";
 
 /**
@@ -30,24 +25,19 @@ import { getT } from "@/lib/i18n/server";
  * and is shared with the checkout's reviews section.
  */
 export async function Reviews() {
-  const settings = await getReviewSettings();
-  if (!settings.enabled || !settings.show_list) return null;
-
-  const [reviews, stats] = await Promise.all([
-    getPublicReviews(settings),
-    getReviewStats(),
-  ]);
-
-  // Gate on real social proof: hide the whole section until we have at
-  // least MIN_REVIEWS_TO_SHOW approved reviews.
-  if (reviews.length < MIN_REVIEWS_TO_SHOW) return null;
+  // The visibility rule (switches + MIN_REVIEWS_TO_SHOW) lives in ONE helper
+  // shared with TrustBand's "#reviews" chip, so the chip can't link to a section
+  // that isn't rendered.
+  const visibility = await getReviewsVisibility();
+  if (!visibility.show) return null;
+  const { settings, reviews, stats } = visibility;
 
   const { t } = await getT();
   const heading = settings.heading?.trim() || t("reviews.heading");
   const subheading = settings.subheading?.trim() || t("reviews.subheading");
 
   return (
-    <section id="reviews" className="section-y relative">
+    <section id="reviews" className="section-y relative scroll-mt-20">
       <div className="container max-w-5xl">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="max-w-2xl">

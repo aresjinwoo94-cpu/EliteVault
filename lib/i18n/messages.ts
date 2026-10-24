@@ -109,16 +109,57 @@ const en: Dict = {
     proNote:
       "Want the full cure — every fix, your buyer-persona reaction and the 7-day Meta projection? Unlock it any time with Pro or Scale.",
   },
-  // "Who EliteVault is for" — persona self-identification + niche long-tail SEO.
-  whoFor: {
-    eyebrow: "Who it's for",
-    // WP-D — the audience is defined by spend, not by team size: someone
-    // already buying traffic has something to lose on every wasted click.
-    heading: "Built for ecommerce owners scaling paid traffic",
-    body:
-      "For ecommerce owners already investing in acquisition who want to scale without wasting traffic.",
-    niches:
-      "Accessories, Jewelry, Fashion, Home decor, Beauty, Gadgets, Skincare, Supplements",
+  // Landing "More demos" row under the hero player (components/marketing/teasers.ts).
+  teasers: {
+    moreDemos: "More demos",
+    proTitle: "Pro features in action",
+    proSub: "Niche winners · more fix tracks · buyer persona · campaigns modeled on your store",
+    proDuration: "~1 min · sound on",
+    simulatorTitle: "The campaign simulator",
+    simulatorSub: "Model a 7-day Meta campaign before you spend",
+    simulatorDuration: "~1 min · sound on",
+  },
+  // Landing trust band (replaces "Who it's for"): trust in the METHOD and the
+  // DATA. Every claim maps to a verified fact in
+  // docs/brief-2026-10-landing-teasers-trust.md §1 — keep it that way. Server
+  // component, so this namespace is NOT in client-namespaces.ts.
+  trustBand: {
+    eyebrow: "Why the numbers hold up",
+    heading: "Built on market data, not on guesses.",
+    howLabel: "How?",
+    s1Title: "Niche benchmarks 2024-25",
+    s1Sub: "CPM, CTR, ROAS and conversion bands for 11 ecommerce niches.",
+    s1How: "Reference bands per niche. They are not data from your own ad account.",
+    s2Title: "Meta Ad Library signals",
+    s2Sub: "Public data on which brands are actively running ads.",
+    s2How:
+      "Public signals from the Meta Ad Library (EU/UK reach), refreshed in background jobs. An extra signal that can be missing; it is not connected to your Meta account.",
+    s3Title: "Winning-stores database",
+    s3Sub: "Your store is compared with real top stores in your niche.",
+    s3Count: "{n}+ stores",
+    s3How:
+      "Traffic and conversion figures on those stores are editorial estimates, not numbers reported by the brands.",
+    s4Title: "Deterministic campaign engine",
+    s4Sub:
+      "Campaign numbers come from formulas — country CPMs, iOS attribution loss, seasonality — not invented by an AI.",
+    s4How: "The AI only writes the narrative around numbers the formulas already computed.",
+    s5Title: "Reads your real page",
+    s5Sub: "AI vision on a live screenshot of your store, every issue pinned on it.",
+    s6Title: "Honest by design",
+    s6Sub: "Ranges, not promises. If your store isn't ready, it projects a loss.",
+    s6How: "Estimates, not predictions or guarantees.",
+    vsHeading: "EliteVault vs. a generic AI chat",
+    vsGeneric: "A generic AI chat",
+    vsUs: "EliteVault",
+    vs1Generic: "Reads the text you paste in.",
+    vs1Us: "Renders and looks at your real page.",
+    vs2Generic: "Makes up plausible-sounding numbers.",
+    vs2Us: "Calculates with benchmarks and a deterministic engine.",
+    vs3Generic: "Gives generic best practices.",
+    vs3Us: "Compares you with stores already winning in your niche.",
+    chipAggregate: "{avg} · {count} reviews — read them",
+    chipPlain: "Read verified reviews",
+    chipAria: "Jump to customer reviews",
   },
   // Analyzer upgrade paywall — the thin modal layer on top of the inline locks
   // (Tarea 3). Honest pressure only: the loss framing is used ONLY when the
@@ -1050,16 +1091,56 @@ const es: Dict = {
     proNote:
       "¿Quieres la cura completa — todos los fixes, la reacción de tu buyer-persona y la proyección Meta de 7 días? Desbloquéala cuando quieras con Pro o Scale.",
   },
-  // "¿Para quién es EliteVault?" — self-identificación del persona + long-tail.
-  whoFor: {
-    eyebrow: "Para quién es",
-    // WP-D — el público se define por la inversión, no por el tamaño del
-    // equipo: quien ya compra tráfico pierde dinero en cada clic desperdiciado.
-    heading: "Hecho para dueños de ecommerce que escalan tráfico pago",
-    body:
-      "Para dueños de ecommerce que ya invierten en adquisición y quieren escalar sin desperdiciar tráfico de pago.",
-    niches:
-      "Accesorios, Joyería, Moda, Decoración, Belleza, Gadgets, Skincare, Suplementos",
+  // Fila "Más demos" bajo el player del hero (components/marketing/teasers.ts).
+  teasers: {
+    moreDemos: "Más demos",
+    proTitle: "Funciones Pro en acción",
+    proSub: "Tiendas ganadoras · más tracks de fixes · buyer persona · campañas modeladas sobre tu tienda",
+    proDuration: "~1 min · con sonido",
+    simulatorTitle: "El simulador de campañas",
+    simulatorSub: "Modela una campaña de Meta de 7 días antes de gastar",
+    simulatorDuration: "~1 min · con sonido",
+  },
+  // Franja de confianza (reemplaza "Para quién es"): confianza en el MÉTODO y
+  // los DATOS. Cada afirmación sale de un hecho verificado en
+  // docs/brief-2026-10-landing-teasers-trust.md §1. Componente de servidor.
+  trustBand: {
+    eyebrow: "Por qué puedes creer en los números",
+    heading: "Construido sobre datos de mercado, no sobre suposiciones.",
+    howLabel: "¿Cómo?",
+    s1Title: "Benchmarks por nicho 2024-25",
+    s1Sub: "Bandas de CPM, CTR, ROAS y conversión para 11 nichos de ecommerce.",
+    s1How: "Bandas de referencia por nicho. No son datos de tu propia cuenta de anuncios.",
+    s2Title: "Señales de la Meta Ad Library",
+    s2Sub: "Datos públicos sobre qué marcas están anunciando activamente.",
+    s2How:
+      "Señales públicas de la Meta Ad Library (alcance UE/UK), actualizadas en procesos en segundo plano. Es una señal extra que puede faltar; no está conectada a tu cuenta de Meta.",
+    s3Title: "Base de datos de tiendas ganadoras",
+    s3Sub: "Tu tienda se compara con tiendas top reales de tu nicho.",
+    s3Count: "{n}+ tiendas",
+    s3How:
+      "Las cifras de tráfico y conversión de esas tiendas son estimaciones editoriales, no números reportados por las marcas.",
+    s4Title: "Motor de campañas determinista",
+    s4Sub:
+      "Los números de campaña salen de fórmulas — CPM por país, pérdida de atribución de iOS, estacionalidad — no los inventa una IA.",
+    s4How: "La IA solo redacta la narrativa alrededor de números que las fórmulas ya calcularon.",
+    s5Title: "Lee tu página real",
+    s5Sub: "IA de visión sobre una captura real de tu tienda, con cada problema marcado.",
+    s6Title: "Honesto por diseño",
+    s6Sub: "Rangos, no promesas. Si tu tienda no está lista, proyecta una pérdida.",
+    s6How: "Estimaciones, no predicciones ni garantías.",
+    vsHeading: "EliteVault vs. un chat de IA genérico",
+    vsGeneric: "Un chat de IA genérico",
+    vsUs: "EliteVault",
+    vs1Generic: "Lee el texto que le pegas.",
+    vs1Us: "Renderiza y mira tu página real.",
+    vs2Generic: "Inventa cifras que suenan plausibles.",
+    vs2Us: "Calcula con benchmarks y un motor determinista.",
+    vs3Generic: "Da buenas prácticas genéricas.",
+    vs3Us: "Te compara con tiendas que ya ganan en tu nicho.",
+    chipAggregate: "{avg} · {count} reseñas — léelas",
+    chipPlain: "Lee reseñas verificadas",
+    chipAria: "Ir a las reseñas de clientes",
   },
   // Paywall del analyzer — la capa fina de modales sobre los locks inline
   // (Tarea 3). Presión honesta: el framing de pérdida SOLO cuando el rango

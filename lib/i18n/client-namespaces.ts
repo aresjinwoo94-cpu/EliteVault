@@ -40,8 +40,8 @@ export const CORE_NAMESPACES = [
   "social",
   "socialStrip",
   "supportChat",
+  "teasers",
   "twoPaths",
-  "whoFor",
 ] as const;
 
 export const APP_NAMESPACES = [
