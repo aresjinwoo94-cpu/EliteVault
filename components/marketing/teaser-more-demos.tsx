@@ -3,15 +3,13 @@
 import { useRef, useState } from "react";
 import { Gem, Play } from "lucide-react";
 import { useT } from "@/components/i18n/locale-provider";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import dynamic from "next/dynamic";
 import { phCapture } from "@/lib/analytics/posthog";
-import { TeaserFrame } from "./teaser-frame";
 import { readySecondaryTeasers, type Teaser } from "./teasers";
+
+// Radix Dialog + player markup load only when a card is first opened.
+const loadModal = () => import("./teaser-modal").then((m) => m.TeaserModal);
+const TeaserModal = dynamic(loadModal, { ssr: false });
 
 /**
  * "More demos" — the secondary teasers, shown as compact chapter cards under
@@ -49,6 +47,8 @@ export function TeaserMoreDemos() {
           <li key={x.id} className={teasers.length === 1 ? "col-span-2" : undefined}>
             <button
               type="button"
+              onPointerEnter={() => void loadModal()}
+              onFocus={() => void loadModal()}
               onClick={(e) => {
                 phCapture("teaser_open", { id: x.id });
                 triggerRef.current = e.currentTarget;
@@ -60,7 +60,8 @@ export function TeaserMoreDemos() {
               <span className="relative block aspect-[1080/512] w-full shrink-0 overflow-hidden rounded-md bg-obsidian-900 sm:w-28">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={x.poster}
+                  src={x.thumb ?? x.poster}
+                  fetchPriority="low"
                   alt=""
                   loading="lazy"
                   decoding="async"
@@ -97,34 +98,18 @@ export function TeaserMoreDemos() {
         ))}
       </ul>
 
-      <Dialog open={openId !== null} onOpenChange={(v) => !v && setOpenId(null)}>
-        <DialogContent
-          className="max-w-3xl gap-3 p-3 sm:p-4"
+      {shownId !== null && (
+        <TeaserModal
+          teaser={open}
+          open={openId !== null}
+          onClose={() => setOpenId(null)}
           onCloseAutoFocus={(e) => {
             // Controlled dialog (no <DialogTrigger>): hand focus back to the card.
             e.preventDefault();
             triggerRef.current?.focus();
           }}
-        >
-          {open && (
-            <>
-              <div className="pr-8">
-                <DialogTitle>{t(open.titleKey)}</DialogTitle>
-                <DialogDescription className="mt-0.5">{t(open.subKey)}</DialogDescription>
-              </div>
-              <TeaserFrame
-                key={open.id}
-                teaser={open}
-                ariaLabel={t(open.titleKey)}
-                playLabel={t("analyzerDemo.videoPlay")}
-                durationLabel={t(open.durationLabelKey)}
-                preload="none"
-                autoPlay={openId !== null}
-              />
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+        />
+      )}
     </div>
   );
 }

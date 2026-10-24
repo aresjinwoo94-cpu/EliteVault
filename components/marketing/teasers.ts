@@ -29,6 +29,8 @@ export interface Teaser {
   webm: string;
   mp4: string;
   poster: string;
+  /** Small (240px) thumbnail for the "More demos" card; the full poster is for the modal player. */
+  thumb?: string;
   /** i18n key (CORE namespace `teasers`) for the card title. */
   titleKey: string;
   /** i18n key for the one-line sub shown in the modal. */
@@ -58,6 +60,7 @@ export const SECONDARY_TEASERS: Teaser[] = [
     webm: "/videos/analyzer-pro-teaser.webm",
     mp4: "/videos/analyzer-pro-teaser.mp4",
     poster: "/videos/analyzer-pro-teaser-poster.jpg",
+    thumb: "/videos/analyzer-pro-teaser-thumb.jpg",
     titleKey: "teasers.proTitle",
     subKey: "teasers.proSub",
     durationLabelKey: "teasers.proDuration",
@@ -69,6 +72,7 @@ export const SECONDARY_TEASERS: Teaser[] = [
     webm: "/videos/simulator-teaser.webm",
     mp4: "/videos/simulator-teaser.mp4",
     poster: "/videos/simulator-teaser-poster.jpg",
+    thumb: "/videos/simulator-teaser-thumb.jpg",
     titleKey: "teasers.simulatorTitle",
     subKey: "teasers.simulatorSub",
     durationLabelKey: "teasers.simulatorDuration",
