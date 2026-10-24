@@ -62,7 +62,7 @@ export const SECONDARY_TEASERS: Teaser[] = [
     subKey: "teasers.proSub",
     durationLabelKey: "teasers.proDuration",
     badge: "pro",
-    ready: false,
+    ready: true,
   },
   {
     id: "simulator",
@@ -73,7 +73,7 @@ export const SECONDARY_TEASERS: Teaser[] = [
     subKey: "teasers.simulatorSub",
     durationLabelKey: "teasers.simulatorDuration",
     badge: "diamond",
-    ready: false,
+    ready: true,
   },
 ];
 
