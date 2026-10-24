@@ -46,15 +46,6 @@ type Events = {
       notes?: string | null;
     };
   };
-  // Phase 2 — manual trigger to refresh the weekly Trends cache on demand
-  // (the same function also runs on a weekly cron). Optional fields let an
-  // operator target a single niche or force a re-run of the current week.
-  "trends/refresh.requested": {
-    data: {
-      nicheSlug?: string | null;
-      force?: boolean;
-    };
-  };
   // Library — manual trigger to refresh liveness + momentum on demand (the
   // same function also runs on a weekly cron). Optional fields let an operator
   // tune the chunk sizes for a targeted or heavier run.
@@ -64,6 +55,11 @@ type Events = {
       momentumChunk?: number;
       maxChunks?: number;
     };
+  };
+  // Library — manual trigger for the low-priority image job (same function
+  // also runs on a cron). Optional `limit` = stores to attempt this run.
+  "library/images.requested": {
+    data: { limit?: number };
   };
   // Phase 5 — fired the first time a user gets a successful audit. Kicks off
   // the delayed activation follow-up email.

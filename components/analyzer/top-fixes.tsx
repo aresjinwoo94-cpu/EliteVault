@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useT } from "@/components/i18n/locale-provider";
 import { fill } from "@/lib/i18n/lookup";
 import { themeBySlug } from "@/lib/analyzer/shopify-themes";
+import { ReportUnlockCard, useUnlockOffer } from "@/components/analyzer/unlock-offer";
 
 interface Fix {
   title: string;
@@ -24,6 +25,8 @@ interface Fix {
   evidence?: string | null;
   /** Fix Tracks (theme_colors) — slug from lib/analyzer/shopify-themes.ts. */
   theme_slug?: string | null;
+  /** WP-1 — set by the server for fixes #2+ of a viewer without the full report. */
+  locked?: boolean;
 }
 
 /**
@@ -61,6 +64,7 @@ export function TopFixes({
   children?: React.ReactNode;
 }) {
   const { t } = useT();
+  const unlock = useUnlockOffer(); // enabled only behind REPORT_UNLOCK, for viewers without the full report
   const total = fixes?.length ?? 0;
   const lockedCount = Math.max(0, total - unlockedCount);
 
@@ -82,8 +86,22 @@ export function TopFixes({
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
+              {...(locked && unlock.enabled
+                ? {
+                    role: "button",
+                    tabIndex: 0,
+                    onClick: () => unlock.open("fix"),
+                    onKeyDown: (e: React.KeyboardEvent) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        unlock.open("fix");
+                      }
+                    },
+                  }
+                : {})}
               className={cn(
                 "flex items-start gap-3 rounded-xl border p-3.5 transition-colors",
+                locked && unlock.enabled && "cursor-pointer hover:border-champagne-400/30",
                 locked
                   ? "border-white/[0.04] bg-white/[0.015]"
                   : "border-white/[0.04] bg-white/[0.02] hover:border-white/[0.1]",
@@ -122,7 +140,7 @@ export function TopFixes({
                     <ExternalLink className="size-3" />
                   </a>
                 )}
-                {f.why?.trim() && (
+                {(f.why?.trim() || locked) && (
                   <p
                     className={cn(
                       "mt-1.5 text-xs leading-relaxed text-white/55",
@@ -130,7 +148,9 @@ export function TopFixes({
                     )}
                     aria-hidden={locked || undefined}
                   >
-                    {f.why}
+                    {/* Locked rows carry no real `why` (WP-1): a static placeholder
+                        keeps the blurred-card look without shipping the answer. */}
+                    {locked ? t("topFixes.lockedWhy") : f.why}
                   </p>
                 )}
                 <div
@@ -160,7 +180,7 @@ export function TopFixes({
                 {locked && (
                   <div className="mt-1 flex items-center gap-1.5 text-[10px] text-champagne-300/80">
                     <Lock className="size-3" />
-                    {t("topFixes.unlockHow")}
+                    {unlock.enabled ? t("unlock.rowHow") : t("topFixes.unlockHow")}
                   </div>
                 )}
               </div>
@@ -176,7 +196,8 @@ export function TopFixes({
       {children}
 
       {/* Free-tier upsell footer — counter of what's still locked + CTA. */}
-      {lockedCount > 0 && (
+      {lockedCount > 0 && unlock.enabled && <ReportUnlockCard />}
+      {lockedCount > 0 && !unlock.enabled && (
         <div className="mt-4 rounded-xl border border-champagne-400/15 bg-gradient-to-br from-champagne-400/[0.05] to-signal-600/[0.04] p-4 text-center">
           <p className="text-sm font-medium text-white">
             {fill(t(lockedCount === 1 ? "topFixes.moreOne" : "topFixes.moreMany"), {

@@ -83,6 +83,7 @@ const NICHE_KEYWORDS: { slug: string; keywords: string[] }[] = [
   { slug: "baby", keywords: ["baby", "infant", "toddler", "parenting", "nursery", "stroller"] },
   { slug: "accessories", keywords: ["accessor", "wallet", "backpack", "watch", "jewel", "jewellery", "edc", "handbag"] },
   { slug: "home", keywords: ["home", "decor", "furniture", "kitchen", "bedding", "mattress", "sleep", "blanket", "linen", "pillow"] },
+  { slug: "food", keywords: ["cereal", "snack", "granola", "sauce", "pantry", "olive oil", "chili", "chocolate", "jerky", "pasta", "food"] },
   { slug: "beverage", keywords: ["beverage", "soda", "coffee", "tea", "cereal", "snack", "drink", "juice", "food"] },
   { slug: "apparel", keywords: ["apparel", "clothing", "fashion", "dress", "denim", "hoodie", "t-shirt", "tee", "womenswear", "menswear", "outfit", "knitwear"] },
 ];
@@ -105,7 +106,8 @@ const RELATED_NICHES: Record<string, string[]> = {
   home: ["baby"],
   baby: ["home", "pet"],
   pet: ["home"],
-  beverage: ["wellness"],
+  beverage: ["wellness", "food"],
+  food: ["beverage", "wellness"],
 };
 
 /**

@@ -9,6 +9,7 @@ import { phCapture } from "@/lib/analytics/posthog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useT } from "@/components/i18n/locale-provider";
+import { trackAuditStarted } from "@/lib/analytics/audit-events";
 import { createAnonAnalysis } from "@/app/actions/anon-analyzer";
 import { cn } from "@/lib/utils";
 
@@ -142,11 +143,11 @@ export function AnonAuditBox({
           router.push(`/app/analyzer?url=${encodeURIComponent(value)}`);
           return;
         }
-        // Over the daily limit → nudge to a free account, don't just error.
+        // Over the anonymous limit → nudge to an account, don't just error.
         if (res.limited) {
           toast(res.error, {
             action: {
-              label: t("anonGate.ctaPrimary"),
+              label: t("anonGate.ctaLimit"),
               onClick: () => router.push("/sign-up?next=/app/analyzer"),
             },
           });
@@ -155,6 +156,7 @@ export function AnonAuditBox({
         }
         return;
       }
+      trackAuditStarted({ analysisId: res.id, anonymous: true });
       router.push(`/audit/${res.id}`);
     });
   }

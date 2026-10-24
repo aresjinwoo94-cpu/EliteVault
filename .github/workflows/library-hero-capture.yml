@@ -1,0 +1,69 @@
+# WP-L4 — weekly hero captures for Library stores that still have no image.
+#
+# Runs scripts/library/capture-heroes.mts in the runner's own headless Chrome (one store at a time, pause between
+# stores). It uses NO Analyzer provider (ScreenshotOne / thum.io / Microlink / mshots) and nothing runs on Vercel.
+#
+#  - Captures are stored HELD (thumbnail_source = capture, review_reason = image_pending_review): the L2 quality
+#    gate decides publication, never this job.
+#  - GitHub runners are datacenter IPs: many stores answer 403 / anti-bot. Those count as an exhausted attempt and
+#    go to the owner's "Sin imagen" list for a manual upload; they are never retried in a loop.
+#  - The job never unpublishes or edits a published row, and never touches an owner image.
+#
+# Required repository secrets (Settings -> Secrets and variables -> Actions): NEXT_PUBLIC_SUPABASE_URL and
+# SUPABASE_SERVICE_ROLE_KEY. See docs/infra-debt.md (WP-L4).
+name: Library hero capture
+
+on:
+  schedule:
+    - cron: "0 5 * * 0" # Sundays 05:00 UTC
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Max stores this run"
+        default: "40"
+      only:
+        description: "Comma-separated domains (optional)"
+        default: ""
+      dry_run:
+        description: "List the stores without capturing"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: library-hero-capture
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Capture heroes
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          CHROME_PATH: /usr/bin/google-chrome
+          LIMIT: ${{ inputs.limit || '40' }}
+          ONLY: ${{ inputs.only }}
+          DRY: ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: |
+          ARGS="--ci --out hero-captures --limit $LIMIT $DRY"
+          if [ -n "$ONLY" ]; then ARGS="$ARGS --only $ONLY"; fi
+          npx tsx --tsconfig scripts/tests/tsconfig.json --conditions=react-server scripts/library/capture-heroes.mts $ARGS
+      - name: Keep the captures for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hero-captures
+          path: hero-captures
+          retention-days: 14
+          if-no-files-found: ignore

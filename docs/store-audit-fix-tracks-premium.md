@@ -498,16 +498,34 @@ Estas decisiones **prevalecen** sobre lo escrito arriba donde difieran.
    - Mientras el nicho del análisis no tenga un ganador con teardown, el botón `competitor` se ve **deshabilitado** con "Pronto en tu nicho / Coming soon for your niche" y no se puede elegir (hecho en WP-3).
 5. **Pruebas end-to-end con cuentas reales:** al final de WP-6, **una sola tienda, una corrida por plan** (anónimo, free, pro, scale). No repetir sin necesidad (cuota de Gemini).
 
-### Estado de los WPs
+### Estado final (2026-10-11) — todo en main
 | WP | Estado |
 |---|---|
 | WP-0 línea base de latencia | mergeado (#87) |
 | WP-1 H1 "store audit" | mergeado (#88) |
-| WP-2 Fix Tracks backend + migración 0036 (aplicada en prod 2026-10-09) | mergeado (#90) |
+| WP-2 Fix Tracks backend + migración 0036 | mergeado (#90) |
 | WP-3 Fix Tracks UI + tarjetas landing | mergeado (#92), flag `ANALYZER_FIX_TRACKS` ON |
-| WP-4 auditoría premium | informe en #93 |
-| WP-5 simulador determinista + Optimizer Scale-only | PR abierto |
-| WP-6 winners → tienda, Library, pricing, cobertura, E2E por plan | pendiente |
+| WP-4 auditoría premium | informe mergeado (#93) |
+| WP-5 simulador determinista + Optimizer Scale-only | mergeado (#95) |
+| WP-6 Library filtrada + RLS (mig. 0037), pricing, cobertura/teardowns | mergeado (#97, #100) |
+| Guard de clave de jobs (`GEMINI_API_KEY_JOBS`) | mergeado (#98) |
+| Proveedor de captura en timings + tabla en el informe de latencia | mergeado (#99) |
+| Badge "N anuncios activos" solo con medición real de Meta | mergeado (#101) |
+| "Más urgente" preseleccionado y gratis para anónimo/free (mig. 0038) | mergeado (#102) |
+
+**Migraciones aplicadas en prod:** 0036 (fix_tracks), 0037 (RLS winning_sites publicado+vivo), 0038 (urgent no consume free_choice).
+
+**Regla final de Fix Tracks (free/anónimo):** "Más urgente" siempre visible y no gasta la elección; puede elegir UNO de los otros 3 tipos; un segundo tipo distinto queda bloqueado sin llamar a la IA. Pro/Scale sin cambios. Competidor sin teardown en el nicho: botón deshabilitado "Pronto en tu nicho" y no consume la elección.
+
+**E2E por plan (una tienda, bearaby.com, una corrida por plan):** 62/62 comprobaciones — `scripts/e2e/plan-matrix.mts` (identidad mockeada en proceso, clave de jobs, filas borradas al final).
+
+**Latencia en prod (flag ON):** p50 18 s (n=18, desde 2026-10-09), p50 20 s (n=65, desde 2026-10-02); p90 43 s / 42 s; refunds 0/18. Umbral de apagado (~22 s) no alcanzado → flag se mantiene ON. La tabla "por proveedor de captura" aún tiene pocos datos (13 sin proveedor = anteriores a #99, 5 caché); re-medir con tráfico real.
+
+**Pendientes (del dueño / externos):**
+- Token de Meta Ad Library vencido (ver `docs/meta-ad-library-token.md`); lo renueva el dueño. Hasta entonces ningún badge de anuncios activos se muestra.
+- Cuota de ScreenshotOne agotada (100/100): la cadena gratuita (thum.io → Microlink → mshots → og) está activa; decidir reseteo/upgrade.
+- Verificar en vivo `captureProvider` cuando haya nuevo tráfico (límite anónimo 1/IP/día).
+- Métricas de ingresos/conversión de la Library son estimaciones modeladas (etiquetadas); quedan líneas de marketing "validado" más suaves en posts del blog.
 
 ### Notas de implementación WP-5
 - Motor determinista en `lib/meta/simulation-engine.ts`; la IA solo escribe la narrativa en **1** llamada (`ai/agents/meta-scenario-narrative-agent.ts`) con respaldo determinista. Invariantes cubiertos por tests de propiedades (`scripts/tests/meta-simulation-engine.test.ts`).

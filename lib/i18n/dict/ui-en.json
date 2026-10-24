@@ -90,7 +90,7 @@
     "analyzerPlan": "The Analyzer isn't available on your plan. Upgrade to start auditing your store.",
     "verifyEmail": "Verify your email to claim your free audit. Check your inbox for the confirmation link, then try again.",
     "alreadySignedIn": "You're already signed in — running this in your account.",
-    "anonLimit": "You've used your free audit for today. Create a free account to run more — no card needed.",
+    "anonLimit": "You've already run your audit without an account. Create an account to save your report and run one more audit.",
     "apiScale": "API access is a Scale-plan feature. Upgrade at /app/billing.",
     "validEmail": "Please enter a valid email.",
     "passwordShort": "Password must be at least 8 characters.",
@@ -323,7 +323,7 @@
     "eyebrow": "Library",
     "storesCurated": "stores · AI-curated",
     "subPro": "Drop a screenshot of your own store and our AI finds its closest converting siblings. Or search by prompt across all niches.",
-    "subFree": "Browse 3 hand-picked winners with full metrics. Upgrade to unlock 40+ more + AI image search + saved collections.",
+    "subFree": "Browse 3 hand-picked winners and open them in one click. Upgrade to see every winning store, plus AI image search, teardowns and saved collections.",
     "auditMine": "Audit my store",
     "all": "All",
     "promptPlaceholder": "Try \"minimal skincare with editorial type\" or \"subscription wellness brands\"",
@@ -336,9 +336,8 @@
     "pro": "Pro",
     "reranked": "AI re-ranked",
     "noMatches": "No matches. Try a different prompt.",
-    "metricsNote": "Metrics are estimated by modeling public traffic and behavior signals. They are not figures reported by the brands themselves.",
     "allStores": "All stores",
-    "unlockBody": "Unlock metrics on every store, AI image-similarity search, and saved collections for $19/mo.",
+    "unlockBody": "Unlock the full Library of winning stores, AI image-similarity search, teardowns and saved collections for $19/mo.",
     "upgradePro": "Upgrade to Pro",
     "saved": "Saved to your collection",
     "removeSaved": "Remove from saved",
@@ -348,54 +347,14 @@
     "winnersOnFree": "3 winners on Free — {n}+ more on Pro"
   },
   "siteCard": {
-    "adActivity": "Ad Activity Score",
-    "adActivityNote": "AI estimate modeled from public niche signals — not a live Meta Ad Library count. Higher = likely spending harder.",
-    "estConv": "Est. conv.",
-    "traffic": "Traffic",
-    "convAria": "Estimated conversion rate — modeled from public signals, not brand-reported.",
-    "metricsNote": "Estimated from public traffic & behavior signals — not an official figure reported by the brand.",
-    "unlockPro": "Unlock metrics with Pro"
-  },
-  "trendsBoard": {
-    "searchNiche": "Search your niche…",
-    "firstWeek": "first week",
-    "aiEstimated": "AI-estimated",
-    "weekOf": "week of",
-    "wkWk": "wk / wk",
-    "auditAgainst": "Audit against this",
-    "movers": "Movers this week",
-    "sort": "Sort",
-    "sortMovers": "Biggest movers",
-    "sortNewest": "Newest",
-    "filter": "Filter",
-    "rising": "Rising",
-    "cooling": "Cooling",
-    "subNiches": "Sub-niches & themes",
-    "nothing": "Nothing matches this filter.",
-    "products": "Trending products",
-    "nounProduct": "product",
-    "nounAngle": "angle",
-    "todoCooling": "Cooling — hold spend here; validate demand before committing more.",
-    "todoNew": "New signal — worth a fast test: spin up a {noun} and audit it.",
-    "todoRising": "Heating up — double down: build a {noun} around this and audit it.",
-    "todoSteady": "Steady demand — a dependable bet; refresh creative and re-audit.",
-    "statusNew": "New",
-    "statusSteady": "Steady",
-    "noNiches": "No niches match “{q}”.",
-    "weekOfCap": "Week of",
-    "source": "Source:"
-  },
-  "trendsPage": {
-    "eyebrow": "Retention · refreshed weekly",
-    "title": "Trends",
-    "sub": "What's rising and falling in your niche this week — sub-niches and products with momentum, so you know what to stock, test, and audit against.",
-    "pick": "Pick your niche above to see what's trending this week.",
-    "notRefreshed": "Trends for this niche haven't been refreshed yet. The weekly job lands fresh signals every Monday — check back soon.",
-    "yourNiche": "Your niche",
-    "auditAgainst": "Audit your store against this trend",
-    "note": "These are <b>AI estimates</b> from market knowledge, refreshed once a week and cached — not live scraped data. Use them as directional signal, not precise stats.",
-    "autoSelected": "Auto-selected from your store · change above",
-    "counts": "{a} sub-niches · {b} products"
+    "metaAds": "{n} active ads on Meta",
+    "opensStore": "{title} ({domain}) — opens the store in a new tab",
+    "lockedName": "Winning store",
+    "lockedCta": "Unlock with Pro",
+    "upgradeTitle": "Unlock the full Library",
+    "upgradeBody": "Pro opens every winning store in one click, adds AI image-similarity search and lets you save your favorites and read their teardowns.",
+    "upgradeCta": "Upgrade to Pro",
+    "notNow": "Not now"
   },
   "collage": {
     "complete": "Audit complete",
@@ -404,10 +363,8 @@
     "niche": "Fitness",
     "notReady": "Not ad-ready · 3 fixes",
     "verdict": "verdict",
-    "overall": "overall",
     "quote": "“Cute product, but typos and a random catalog raise red flags.”",
     "persona": "Buyer-persona reaction · F 28–34 · US",
-    "topFixes": "Top fixes — ranked by leverage",
     "meta7": "7-day Meta",
     "leaking": "Where you’re leaking sales",
     "sixDims": "Six conversion dimensions — lowest = where cold traffic slips away.",
@@ -418,12 +375,18 @@
     "dimTech": "Tech",
     "dimNiche": "Niche fit",
     "dimCro": "CRO",
-    "fix1": "Typos in product titles kill trust on arrival",
-    "fix2": "Fake 24:00:00 timer reads as a cheap urgency trick",
-    "fix3": "Generic “Buy Now” hero adds friction before value",
     "scCons": "Cons.",
     "scBal": "Bal.",
-    "scAggr": "Aggr."
+    "scAggr": "Aggr.",
+    "compTitle": "Competitor insights",
+    "compPro": "Pro",
+    "compTopEnd": "Top store",
+    "compYouEnd": "Your store",
+    "compGap": "The gap",
+    "compReviews": "Reviews",
+    "compBundles": "Bundles",
+    "compShipping": "Shipping promise",
+    "compAria": "Your store against the top store in your niche, on the same axes: the top store rises while yours stays flat"
   },
   "features": {
     "yourStoreAlt": "Your store",
@@ -495,7 +458,7 @@
     "q0": "How do you find winning Shopify stores?",
     "a0": "We curate it: an AI assistant proposes candidate stores in each niche, and every one passes automated checks (site live, complete listing, niche fit) before it is published. Each entry shows modeled metrics so you can study what is likely working — they are estimates, not figures reported by the brands, and the library is re-checked periodically rather than in real time.",
     "q1": "Is the winning-stores library free?",
-    "a1": "The Free plan includes 3 hand-picked winning stores with full metrics and the community feed. Pro and Scale unlock the full library, unlimited entries and image-similarity search.",
+    "a1": "The Free plan includes 3 hand-picked winning stores and the community feed. Pro and Scale unlock the full library of winning stores and image-similarity search.",
     "q2": "How is this different from a Shopify spy tool?",
     "a2": "Spy tools dump products and ad creatives. EliteVault is built for conversion: it pairs curated winners with image-similarity search (find the stores structurally closest to yours) and a free audit of your own store, so you copy the principles that actually convert.",
     "q3": "Can I find winners in my specific niche?",
@@ -522,25 +485,20 @@
     "winnersPill": "{n} {label} WINNERS",
     "h1": "Winning {label} Shopify stores, curated.",
     "intro": "These {n} {plural} were proposed by an AI assistant and passed automated checks, not picked for looks",
-    "avg": "(they average a <b>{pct}% conversion rate</b>)",
     "introEnd": ". Study how they structure their hero, trust and offer — then run the same audit on your own store, free.",
     "cta": "Audit my store free",
     "caption": "60 seconds · no card",
     "thumbAlt": "{title} — winning {label} Shopify store",
-    "estConv": "est. conv. rate",
-    "metrics": "Metrics",
-    "estimateNote": "Conversion figures are estimated by modeling public traffic and behavior signals. They are not numbers reported by the brands.",
-    "fullMetrics": "Full metrics, image search, and every niche.",
-    "libraryBody": "The Library tracks all winners with conversion rate, CTR and traffic — filterable by niche, searchable by image similarity.",
+    "fullMetrics": "The full Library, image search, and every niche.",
+    "libraryBody": "The Library tracks all winners, filterable by niche and searchable by image similarity.",
     "login": "Log in to browse the full Library",
     "faqTitle": "Winning {label} stores — FAQ",
-    "faqAvg": ", and they average a {pct}% conversion rate",
     "faqQ0": "What makes a winning {label} Shopify store?",
-    "faqA0": "In {label}, the stores that convert pair instant offer clarity with category-appropriate trust: strong above-the-fold imagery, visible social proof, and a checkout with no surprises. The {n} {plural} in this list were chosen by an AI assistant and passed automated checks — not picked for looks{avg}.",
+    "faqA0": "In {label}, the stores that convert pair instant offer clarity with category-appropriate trust: strong above-the-fold imagery, visible social proof, and a checkout with no surprises. The {n} {plural} in this list were chosen by an AI assistant and passed automated checks — not picked for looks.",
     "faqQ1": "How do you verify these {plural} are actually winning?",
-    "faqA1": "We don't claim to audit their books. Candidate stores are proposed by an AI assistant and published only after automated checks (site live, complete listing, niche fit). Conversion rate, CTR and traffic are estimates modeled from public signals — not numbers reported by the brands — and we label them as such.",
+    "faqA1": "We don't claim to audit their books. Candidate stores are proposed by an AI assistant and published only after automated checks (site live, complete listing, niche fit). When we show an ad count it is a real Meta Ad Library measurement; we show no conversion or traffic figures we can't verify.",
     "faqQ2": "Can I compare my store against these {plural}?",
-    "faqA2": "Yes — run a free EliteVault audit on your own URL. You get a conversion score, an annotated screenshot and ranked fixes, plus where you stand against your niche's average. No credit card, nothing to install.",
+    "faqA2": "Yes — run an EliteVault audit on your own URL. You get an annotated screenshot and ranked fixes, plus which store in your niche is ahead of you and what it does differently. No credit card, nothing to install.",
     "others": "Winners in other niches",
     "allWinners": "All winning stores →"
   },
@@ -554,7 +512,9 @@
     "q3": "Can I cancel anytime?",
     "a3": "One click in the Stripe Customer Portal. No retention emails, no calls.",
     "q4": "Do my analyses train your AI?",
-    "a4": "No. Your URLs, screenshots and audits are private to your account. We don't train models on customer data, and we don't share screenshots with third parties."
+    "a4": "No. Your URLs, screenshots and audits are private to your account. We don't train models on customer data, and we don't share screenshots with third parties.",
+    "q5": "Can I pay for just one report?",
+    "a5": "Yes. On the Free plan you can unlock the full report of a single audit for a one-time US$7: every fix with its how-to, the buyer-persona simulation, all the fix tracks, one Meta campaign projection for that audit and the winning stores in your niche. No subscription and no card on file. It covers that audit only; new audits, publishing, the Optimizer and the full Library stay with Pro and Scale. If you change your mind, email us within 7 days and we refund it — the report then locks again."
   },
   "supportPage": {
     "eyebrow": "Support",
@@ -566,7 +526,6 @@
     "billingBody": "Plans are billed in advance through Stripe and renew until cancelled. Manage or cancel anytime in the Stripe Customer Portal (Billing → Manage subscription) — you keep access until the end of the period you paid for. Full details in our <l>Refund & Cancellation Policy</l>.",
     "limits": "Usage limits by plan",
     "auditsMo": "Audits / mo",
-    "trackedNiches": "Tracked niches",
     "limitsNote": "Limits are enforced per billing period. Need more? <l>Compare plans</l>.",
     "score": "Reading your score",
     "scoreBody": "Your overall score (0–100) is a fast conversion estimate built from six category scores — color, layout, imagery, technical, niche fit, and CRO principles. It's a <b>directional estimate</b>, not a guarantee. Use the ranked fixes to find the highest-leverage changes first.",
@@ -670,12 +629,12 @@
   "optimizer": {
     "title": "Meta Ads Optimizer",
     "intro": "Targets + creative angles + a sequential testing plan, calibrated to your audit score and niche.",
-    "maxBid": "Max bid",
-    "costK": "Cost / 1k",
+    "maxBid": "Max cost per click",
+    "costK": "Cost per 1,000 views",
     "ctr": "Click rate",
-    "lpConv": "LP conv.",
-    "targetReturn": "Target return",
-    "nicheMedian": "niche median",
+    "lpConv": "Visitors who buy",
+    "targetReturn": "Return on ad spend",
+    "nicheMedian": "Typical in your niche",
     "audienceSeed": "Audience seed",
     "targeting": "Targeting suggestions",
     "interests": "Interests:",
@@ -690,7 +649,16 @@
     "fmtCarousel": "Carousel",
     "fmtUgc": "UGC video",
     "fmtDemo": "Demo video",
-    "lockedTagline": "CPC, CPM, CTR & ROAS targets calibrated to YOUR audit, plus testing plan + creative angles"
+    "lockedTagline": "CPC, CPM, CTR & ROAS targets calibrated to YOUR audit, plus testing plan + creative angles",
+    "cpcLine": "Pay up to this for each click",
+    "cpmLine": "What 1,000 people seeing your ad costs",
+    "ctrLine": "Of 100 who see the ad, how many click",
+    "cvrLine": "Of 100 who land on your store, how many buy",
+    "roasLine": "Sales per $1 spent — {x}× means ${usd} back",
+    "lowerBetter": "lower is better",
+    "higherBetter": "higher is better",
+    "targetsHeading": "Your targets vs. typical in your niche",
+    "marginNote": "Whether a ROAS is profitable depends on your margin: the lower your margin, the higher the ROAS you need."
   },
   "scaleLocked": {
     "seedDemo": "30-45 US/CA · interests in your niche · lookalike of recent purchasers · iOS-tolerant retargeting from day 4",
@@ -710,6 +678,8 @@
     "refining": "Refining the full audit — annotations, persona & fixes…",
     "stillGoing": "Still going — the AI provider is busy right now, which is the usual reason a run takes longer. If it can't finish, your credit is refunded automatically.",
     "typical": "Typical analyses complete in 30-90 seconds. If anything fails, your credit is refunded automatically.",
+    "typicalAnon": "Typical analyses complete in 30-90 seconds. If it fails, it does not count as your free audit — you can try again right away.",
+    "stillGoingAnon": "Still going — the AI provider is busy right now, which is the usual reason a run takes longer. If it can't finish, it does not count as your free audit and you can try again.",
     "shotAlt": "Screenshot captured from your store, being analyzed",
     "captured": "Captured — reading the page now",
     "detected": "Detected so far",
@@ -792,7 +762,8 @@
     "adsAria": "{n} active ads — measured in the Meta Ad Library (EU)",
     "revAria": "Estimated revenue ~${low} to ${high} per month — AI estimate",
     "unlockAllN": "Unlock all {n} winners in your niche",
-    "visitStore": "Visit their store"
+    "visitStore": "Visit their store",
+    "yourNiche": "Your niche"
   },
   "annotations": {
     "title": "Annotated audit",
@@ -810,7 +781,8 @@
     "issueAria": "Issue {n}: {msg}",
     "fixNum": "Fix #{n}",
     "lowSev": "Low",
-    "defaultAlt": "Audit screenshot"
+    "defaultAlt": "Audit screenshot",
+    "fixLocked": "Unlock the fix"
   },
   "position": {
     "title": "Where you stand",
@@ -835,7 +807,8 @@
     "effortS": "<1h",
     "effortL": ">4h",
     "moreOne": "+{n} more fix — unlock with Pro",
-    "moreMany": "+{n} more fixes — unlock with Pro"
+    "moreMany": "+{n} more fixes — unlock with Pro",
+    "lockedWhy": "A step-by-step change tailored to this page: what to move, what to rewrite and why it recovers sales on your store."
   },
   "rewrite": {
     "title": "Auto-Rewrite",
@@ -900,13 +873,19 @@
     "roadmapFix": "Roadmap fix #{n}"
   },
   "gauges": {
-    "title": "Estimated conversion rate",
-    "aiRanges": "AI estimate · ranges",
-    "note": "Ranges modeled from your niche and audit score — an estimate, not a guarantee.",
-    "organic": "Organic",
-    "metaBad": "Meta — bad creative",
-    "metaRegular": "Meta — regular",
-    "metaGood": "Meta — top buyer"
+    "title": "How many visitors buy",
+    "subtitle": "Out of every 100 visitors, how many are likely to buy — by where they come from.",
+    "aiRanges": "Estimate · ranges",
+    "note": "Estimated from your niche and this audit — not a guarantee. This is not ROAS.",
+    "organic": "Organic · people who already know you",
+    "metaBad": "Meta ads · weak ad",
+    "metaRegular": "Meta ads · average campaign",
+    "metaGood": "Meta ads · well-optimized campaign",
+    "reference": "Reference",
+    "organicNote": "Converts higher because they already searched for you — but brings far fewer visits. Ads bring the volume.",
+    "ofHundred": "≈ {range} of 100",
+    "ofHundredUpTo": "≈ up to {n} of 100",
+    "ofHundredLess": "< 1 of 100"
   },
   "reportNav": {
     "title": "In this report",
@@ -925,7 +904,11 @@
   },
   "lockedCure": {
     "title": "Unlock your fixes with Pro",
-    "body": "Your diagnosis is free. Pro reveals the prioritized cure for this audit — instantly, no re-analysis — plus unlimited audits."
+    "body": "Your diagnosis is free. Pro reveals the prioritized cure for this audit — instantly, no re-analysis — plus unlimited audits.",
+    "personaHeadline": "I like the product, but I'm not sure I can trust this store yet.",
+    "personaQuote1": "Where are the reviews? I can't tell if other people bought this.",
+    "personaQuote2": "I'd need to see shipping and returns before I add anything to the cart.",
+    "personaReason": "Trust signals are too far down the page to reassure a first-time visitor."
   },
   "personaResponse": {
     "title": "Buyer-persona response",
@@ -994,19 +977,19 @@
     "theComparison": "THE COMPARISON",
     "noContest": "NO CONTEST",
     "pricing": "PRICING",
-    "freeDiagnosis": "FREE DIAGNOSIS",
+    "freeDiagnosis": "THE DIAGNOSIS",
     "fromLibrary": "FROM THE LIBRARY",
     "realStores": "REAL STORES"
   },
   "plans": {
     "free": {
-      "tagline": "Audit your store free"
+      "tagline": "See where you stand"
     },
     "pro": {
-      "tagline": "Where most stores level up"
+      "tagline": "For stores already selling"
     },
     "scale": {
-      "tagline": "For brands hunting outsized ROI"
+      "tagline": "For stores running paid traffic"
     }
   },
   "pricing": {
@@ -1041,5 +1024,46 @@
     "themeFree": "free",
     "openStore": "Open",
     "comingSoon": "Coming soon for your niche"
+  },
+  "unlock": {
+    "submit": "One-time payment. Unlocks the full report for {domain}. No subscription.",
+    "backToReport": "Back to my report",
+    "secure": "Secure checkout",
+    "eyebrow": "Unlock the full report",
+    "includesTitle": "What you get for this audit",
+    "i1": "Every top fix, ranked, with the how-to",
+    "i2": "The buyer-persona simulation",
+    "i3": "All 3 fix tracks, generated for your store",
+    "i4": "1 Meta campaign projection for this audit",
+    "i5": "Winners in your niche, with links to each store",
+    "oneTime": "One-time payment · no subscription · no card on file",
+    "proNote": "Auditing several stores? Pro starts at $19/mo.",
+    "preparing": "Preparing secure checkout…",
+    "activating": "Payment received — activating your report…",
+    "activatingSub": "This usually takes a few seconds. You can keep this page open.",
+    "pendingTitle": "Your payment is processing",
+    "pendingSub": "Your bank has not confirmed it yet. Your report unlocks on its own as soon as the payment is confirmed — you can close this page.",
+    "activatingSlow": "It's taking longer than usual. Your payment is safe — refresh in a minute or contact support.",
+    "openReport": "Open my report",
+    "canceledTitle": "No charge was made",
+    "canceledBody": "The checkout was canceled, so nothing was charged. Your report is still here.",
+    "cardTitleOne": "Unlock the remaining fix in this report",
+    "cardTitleMany": "Unlock the {n} remaining fixes in this report",
+    "cardPrice": "US$7 · one-time · no subscription",
+    "cardCta": "Unlock for US$7",
+    "cardCtaAnon": "Create an account to unlock",
+    "modalTitle": "Unlock the full report",
+    "modalBody": "One payment opens everything for this audit. No subscription.",
+    "modalCta": "Unlock for US$7",
+    "modalCtaAnon": "Create an account to continue",
+    "notNow": "Not now",
+    "proLink": "Auditing several stores? Pro from $19/mo",
+    "lockedTitle": "Unlock the full report",
+    "lockedBody": "Your diagnosis is free. One payment opens the buyer-persona reaction, every fix and the how-to for this audit.",
+    "bannerUnlocked": "Report unlocked ✓ — every fix, the buyer persona, all 3 fix tracks and 1 Meta projection are open for this audit.",
+    "bannerCanceled": "The checkout was canceled — nothing was charged.",
+    "simIncluded": "1 projection included in this report",
+    "simUsed": "You've used the projection included in this report",
+    "rowHow": "Unlock the how-to"
   }
 }

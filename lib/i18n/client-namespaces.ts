@@ -80,8 +80,7 @@ export const APP_NAMESPACES = [
   "siteCard",
   "topFixes",
   "topbar",
-  "trendsBoard",
-  "trendsPage",
+  "unlock",
 ] as const;
 
 export const CLIENT_NAMESPACES = [...CORE_NAMESPACES, ...APP_NAMESPACES] as const;

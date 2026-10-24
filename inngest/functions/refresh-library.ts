@@ -5,8 +5,7 @@ import { verifyBatch, momentumBatch } from "@/lib/library/refresh";
  * Weekly Library refresh — keeps the "Winners in your niche" module honest.
  *
  * Triggers:
- *   • cron  "0 5 * * 0"  → every Sunday 05:00 UTC (a different slot from the
- *     Monday trends refresh, so the two system jobs don't overlap). Feeds a
+ *   • cron  "0 5 * * 0"  → every Sunday 05:00 UTC. Feeds a
  *     freshly-verified Library into the week.
  *   • event "library/refresh.requested" → manual/on-demand.
  *

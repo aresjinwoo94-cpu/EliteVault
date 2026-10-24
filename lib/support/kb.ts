@@ -1,6 +1,7 @@
 import { PLANS } from "@/lib/stripe/plans";
 import { COMPANY } from "@/lib/company";
 import { FAQ_ITEMS } from "@/lib/content/faq";
+import { reportUnlockEnabled } from "@/lib/flags";
 
 /**
  * Support knowledge base (Phase 5). The ONLY facts the chatbot may answer
@@ -45,7 +46,7 @@ const CURATED: KbEntry[] = [
     id: "refund",
     category: "billing",
     q: "Do you offer refunds?",
-    a: "EliteVault is a digital service delivered immediately, so payments are non-refundable and all sales are final, including partial or unused periods. When you cancel you are not charged again, but the current period is not refunded. See the Refund & Cancellation Policy at /legal/refunds.",
+    a: `EliteVault is a digital service delivered immediately, so subscription payments are non-refundable and all sales are final, including partial or unused periods. When you cancel you are not charged again, but the current period is not refunded.${reportUnlockEnabled() ? " The one-time US$7 report unlock is the exception: ask for a refund within 7 days and that report locks again." : ""} See the Refund & Cancellation Policy at /legal/refunds.`,
     keywords: ["refund", "refunds", "money back", "reimburse", "chargeback"],
   },
   {
@@ -81,7 +82,7 @@ const CURATED: KbEntry[] = [
     id: "free",
     category: "product",
     q: "Is there a free plan?",
-    a: `Yes. Free includes one audit of your own store (score, annotated screenshot, one set of fixes of your choice unlocked and a modeled ROAS range) plus 3 curated winning stores with full metrics. Pro unlocks the rest of your fixes, unlimited audits and 1 Meta campaign projection/month; Scale adds unlimited projections and the REST API.`,
+    a: `Yes. Free includes one audit of your own store (score, annotated screenshot, one set of fixes of your choice unlocked and a modeled ROAS range) plus 3 curated winning stores. Pro unlocks the rest of your fixes, unlimited audits and 1 Meta campaign projection/month; Scale adds unlimited projections and the REST API.`,
     keywords: ["free", "free plan", "free trial", "trial", "no card"],
   },
   // ── Legal / data ───────────────────────────────────────────────────────

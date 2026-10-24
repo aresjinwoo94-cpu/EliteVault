@@ -200,3 +200,113 @@ discard it deliberately; don't leave it sitting there.
 
 The working tree was clean when this branch was cut, so nothing was at risk.
 This section is the process that keeps it that way.
+
+## Oct 2026 — deuda anotada (brief unlock/trends/library/landing)
+
+- **Tablas de Trends huérfanas (§T).** Se quitó la feature (página, cron `refresh-trends`,
+  acciones, nav, i18n, cuota `trackedNiches`) pero **no se borraron** `niches`, `trend_signals`
+  (migración 0011) ni `tracked_niches` si existe: borrar es irreversible y no aporta al usuario.
+  Antes de un borrado futuro, grep de que la Library / niche pages no usan `niches`
+  (hoy usan `lib/library/niches.ts`). En Inngest, comprobar que `refresh-trends` desapareció
+  tras el deploy (no debe quedar un cron huérfano).
+- **P3 — `share_slug` lo elige el cliente.** `app/actions/share.ts` escribe `share_slug` con el
+  cliente del usuario (es una de las dos columnas que la migración 0039 deja escribir a
+  `authenticated`), así que alguien con la anon key puede fijar un slug arbitrario en su propia
+  auditoría (squatting / slug adivinable; el índice único limita el daño). Arreglo futuro:
+  generar el slug en el servidor con el service client y quitar `share_slug`/`shared_at` de la
+  allowlist de `tg_protect_analyses_columns`. No se arregla ahora.
+- **Cuenta de pruebas `test-pro@elitevault.local`** (perfil `dc38b1a8…`): plan pro sin cliente
+  Stripe ni suscripción; la usa `scripts/e2e/plan-matrix.mts`. Pendiente de decisión del dueño.
+
+### Decisiones y pendientes (WP-1 → WP-2)
+
+- **Community se queda como está (decisión consciente, a revisar).** `community/[slug]` y
+  `community/compare` muestran fixes y respuesta de persona completos de tiendas AJENAS publicadas a
+  cualquier usuario con sesión, también free. Es contenido que otro usuario eligió publicar y sirve de
+  incentivo para publicar; no es el reporte del viewer. Revisar si el desbloqueo de $7 cambia esta
+  lectura (hoy un free puede leer fixes+persona completos ajenos).
+- **WP-2 — no perder:** en `app/(app)/app/analyzer/[id]/page.tsx` derivar `isPaid`/la UI de bloqueo de
+  `hasFullReport({ plan, unlocked })`, y en `app/api/analyses/[id]/growth-map/route.ts` pasar
+  `hasFullReport` (no `plan !== "free"`) a `gateForViewer`. Si no, un reporte desbloqueado recibiría el
+  payload completo pero la UI de bloqueo. Cuidado: el unlock NO debe dar las capacidades de Pro
+  (`canPublish`, Optimizer, auditorías nuevas): separar "ve el reporte completo" de "es de pago".
+- **`annotations[].fix`** (WP-1): se retira del payload para viewers sin reporte completo; el pin, la
+  posición y el texto del problema (`message`) siguen visibles. En WP-4 el placeholder "Desbloquea la
+  solución" del overlay debe abrir el modal de desbloqueo.
+
+### Plan WP-L2 (gate de calidad) — requisitos anotados en WP-L1
+
+- **(a) `active_ads_count` estimado por IA no es señal real.** Las 46 tiendas añadidas el 2026-10-10 llevan
+  conteos redondos inventados por el agente (210, 180, 320…) y `judgeStore` los aceptó como "señal". El
+  filtro solo debe contar como señal un conteo medido (`ads_last_checked_at` + `ad_signals.measured`, ver #101)
+  o un `internal_score` real; y la UI no puede mostrar un conteo estimado como medición.
+- **(b) "Shopify verificado" (brief §L.5).** Revisar si `onepeloton.com` y similares (Peloton, Lululemon,
+  Gymshark, Crocs, Vans, Hoka… marcas grandes) son tiendas Shopify; muchas no lo son (plataformas propias).
+  Aplicar el criterio (cdn.shopify.com / `Shopify.theme` / `/cart.js`) antes de publicar.
+- **(c) Dominio ≠ marca.** `bala.com` es una web universitaria, no la marca de fitness Bala (`shopbala.com`);
+  `athleticgreens.com` también. El og:image lo delató. Comprobar que el título/og:site_name de la home coincide
+  con el nombre guardado. Marcada hoy con `review_reason = 'wrong_domain'`.
+
+### WP-L1 — límites conocidos del job de imágenes
+
+- El job automático usa solo el `og:image` de la tienda (thum.io, Microlink y ScreenshotOne son del Analyzer y
+  comparten sus límites). Rinde poco (~16 % en el primer ciclo: muchas tiendas devuelven 403/anti-bot) y el
+  criterio rechaza logos sobre fondo plano. Las que no se recuperan quedan en la lista "Sin imagen" del monitor
+  para subida manual. Alternativa pendiente de decidir: capturas de viewport del hero desde una máquina local
+  (otra IP) con `scripts/library/fill-images.mts`-style, o un proveedor propio.
+
+### WP-L4 — captura de heros para tiendas nuevas SIN depender de la máquina del dueño (propuesta, NO implementada)
+
+**Problema.** El job automático (`fill-library-images`) solo puede usar el `og:image` de la tienda (~16 % de éxito:
+muchas devuelven 403 o un logo), porque thum.io / Microlink / ScreenshotOne son del Analyzer y comparten sus límites.
+Las capturas buenas hoy salen de `scripts/library/capture-heroes.mts` (Chrome local). L4 necesita un navegador propio,
+gratis o casi, que no pase por ningún proveedor del Analyzer ni por Vercel Hobby (60 s por step, sin Chromium).
+
+Volumen real: ~25–40 altas/semana ⇒ ~40 capturas/semana, ~15–25 s cada una, secuenciales. Es una carga minúscula.
+
+| Opción | Coste | Esfuerzo | Pros | Contras |
+|---|---|---|---|---|
+| **A. Cloud Run job con Chromium** (recomendada) | $0 (free tier: 180 000 vCPU-s/mes; esto usa ~1 000) | Medio: imagen Docker con Playwright (la misma que ya sirve la app Shopify) + Cloud Scheduler/Inngest que lo dispara | Ya tenemos GCP y un Cloud Run a $0; escala a cero; sin mantener una VM; secretos en Secret Manager | Una imagen más que mantener; IP de datacenter (algunas tiendas la bloquean igual que a Vercel) |
+| **B. GitHub Actions programado** | $0 (2 000 min/mes en privado; usa ~15) | Bajo: un workflow semanal con `playwright install chromium` + el mismo código de `capture-heroes.mts`, secretos de Supabase en GitHub | Cero infraestructura, runners con Chrome, logs y reintentos a mano | IP de datacenter; el dueño debe guardar la service key como secreto de GitHub; no es "bajo demanda" (cron + `workflow_dispatch`) |
+| **C. VM gratuita (Oracle Cloud Always Free ARM)** | $0 | Alto: mantener SO, Chromium, systemd/cron, parches | Control total; IP propia fija | Mantenimiento permanente, capacidad ARM a veces agotada, un punto único de fallo |
+| **D. Cloudflare Browser Rendering** | $0 en el plan gratis (minutos/día limitados) | Medio: un Worker | Sin servidor propio | Cuota diaria baja y cambiante; ata el Library a otro proveedor |
+
+**Recomendación.** Empezar por **B** (una tarde, $0, reutiliza el script ya probado) y, si el volumen o la fiabilidad lo
+piden, mover el mismo código a **A**. En ambos casos: concurrencia 1, pausa entre tiendas, el mismo criterio de
+aceptación (`lib/library/image-quality.ts` + overlays), `--hold` por defecto (la publicación la decide el filtro de L2),
+y nunca `captureScreenshot` ni los proveedores del Analyzer. Las tiendas que sigan bloqueando (403/anti-bot) se
+quedan en "Sin imagen" para subida manual. Decisión del dueño antes de implementar.
+
+**Decisión (2026-10-13): B aprobado como plan** (GitHub Actions semanal). Los runners de GitHub también son IPs de
+datacenter: esperar los mismos 403 anti-bot que Vercel. Esas tiendas **pasan a subida manual (lista "Sin imagen" del
+monitor) y NO se reintentan en bucle**: un fallo por 403/anti-bot cuenta como intento agotado, no como error transitorio.
+
+## Desbloqueo de $7: disputas (contracargos) no re-bloquean el reporte (P3, anotado 2026-10-15)
+
+`charge.refunded` re-bloquea el reporte, pero un contracargo (`charge.dispute.created` / `charge.dispute.closed` con
+resultado perdido) **no** toca `analysis_unlocks`: el comprador conserva el reporte aunque Stripe le devuelva el dinero.
+Volumen esperado bajo (pago único de $7). Para después: suscribirse a `charge.dispute.*`, marcar la fila como `refunded`
+al perder la disputa y avisar al dueño por email (mismo canal que `lib/unlocks/alerts.ts`).
+
+Otros P3 de la revisión adversarial del 2026-10-15 (no bloquean): auditoría borrada entre pago y liquidación (FK 23503 →
+500 en bucle sin reembolso; debería reembolsar), `keepRunWithinAllowance` no comprueba el resultado del `update` a
+`failed`, y una página de retorno antigua tras un reembolso muestra "activando" hasta agotar el polling.
+
+### WP-L4 — implementado (2026-10-19, opción B)
+
+Workflow `.github/workflows/library-hero-capture.yml`: cada domingo 05:00 UTC (y a mano desde Actions → *Run workflow*,
+con `limit`, `only` y `dry_run`) ejecuta `scripts/library/capture-heroes.mts --ci` en el Chrome del runner. Reglas:
+
+- Solo toma filas `review_reason = no_image` sin imagen y con `thumbnail_attempts < 4` (el job de og:image agota en 3 sin haber capturado nunca, así que esas filas aún tienen una captura; la captura agota en 4); una por una, pausa de 6 s,
+  concurrencia 1 del workflow, tope 40 tiendas por corrida.
+- Toda captura aceptada se guarda **retenida** (`thumbnail_source = capture`, `review_reason = image_pending_review`);
+  la publica o no el filtro de calidad (L2), nunca este job. Mismo criterio de aceptación que la captura local
+  (`image-quality.ts` + rechazo de overlays/cookies/popups).
+- **403 / muro anti-bot → intento agotado** (`thumbnail_attempts = 4`): la tienda queda en "Sin imagen" para subida
+  manual y no se reintenta. Otros fallos (timeout, overlay, imagen rechazada) cuentan 1 intento, máximo 3.
+- Nunca despublica ni edita filas publicadas, nunca toca imágenes `owner`, no usa ningún proveedor del Analyzer ni Vercel.
+- Resumen de cada corrida en la pestaña del job (quién entró, quién falló y por qué) y las capturas como artefacto 14 días.
+
+**Acción del dueño (una vez):** GitHub → repo → Settings → Secrets and variables → Actions → *New repository secret*:
+`NEXT_PUBLIC_SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` (los mismos valores que en Vercel). Sin ellos el workflow falla
+al arrancar con un mensaje claro y no toca nada.

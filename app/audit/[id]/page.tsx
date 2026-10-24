@@ -15,6 +15,7 @@ import {
 import { parseState } from "@/lib/analyzer/fix-tracks";
 import { resolveCompetitor } from "@/lib/analyzer/fix-tracks-data";
 import { toClientAnalysis } from "@/lib/analyzer/client-payload";
+import { reportUnlockEnabled } from "@/lib/flags";
 import type { DiscoverySignals } from "@/lib/analyzer/discovery-signals";
 
 /**
@@ -126,13 +127,15 @@ async function AnonAuditPageInner({
     <AnalysisView
       // Server-side gate: the stored niche winners (real stores + revenue) are
       // read above for the locked card and never leave the server.
-      initial={toClientAnalysis(row, { canSeeOptimizer: false }) as never}
+      initial={toClientAnalysis(row, { canSeeOptimizer: false, hasFullReport: false }) as never}
       viewer={{
         canPublish: false,
         publishedSlug: null,
         fullName: null,
         isScale: false,
         isPaid: false,
+        // WP-4: anonymous visitors see the unlock offer too (the CTA goes through sign-up first)
+        unlockOffer: reportUnlockEnabled(),
         canRunMeta: false,
         metaLimit: 0,
         metaUsed: 0,

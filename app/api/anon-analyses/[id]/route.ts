@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { getAnonToken } from "@/lib/anon/session";
+import { refundAnalysis } from "@/lib/credits";
 import { getT } from "@/lib/i18n/server";
 
 /**
@@ -110,10 +111,10 @@ export async function GET(
       status = "refunded";
       errMsg =
         t("actionErr.anonTimedOut");
-      await service
-        .from("analyses")
-        .update({ status: "refunded", error: errMsg, finished_at: new Date().toISOString() })
-        .eq("id", id);
+      // same atomic transition as the owned path (no credit exists to refund on an anonymous audit)
+      await refundAnalysis(service, id, errMsg).catch((e) =>
+        console.warn("[anon-analyses] stale refund failed:", (e as Error).message),
+      );
     }
   }
 

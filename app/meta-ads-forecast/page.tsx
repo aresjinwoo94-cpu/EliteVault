@@ -20,7 +20,7 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 export const metadata: Metadata = {
   title: "Meta Ads Simulator — Model Your ROAS Before You Spend",
   description:
-    "Free Meta Ads simulator: model your campaign's ROAS across conservative, balanced and aggressive cases from your budget and AOV — before you spend a dollar. No card to start.",
+    "Meta Ads simulator: model your campaign's ROAS across conservative, balanced and aggressive cases from your budget and AOV — before you spend a dollar. Modeled estimates, not guarantees.",
   keywords: [
     // Group 2 — Meta Ads simulator cluster.
     "meta ads simulator",

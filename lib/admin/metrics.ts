@@ -4,6 +4,7 @@ import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { stripe } from "@/lib/stripe/server";
 import { PLANS } from "@/lib/stripe/plans";
 import type { PlanTier } from "@/lib/supabase/types";
+import { REPORT_UNLOCK_USD_CENTS } from "@/lib/unlocks/report-unlock";
 import * as fp from "@/lib/admin/firstparty";
 import { countryLabel } from "@/lib/admin/geo";
 import { authProviderLabel, originSummary } from "@/lib/admin/trace";
@@ -12,7 +13,9 @@ import { clampToReset } from "@/lib/admin/reset-core";
 import { type Bounds, type Range, RANGES, bucketIndex, bucketLabel, guayaquilDay, rangeBounds } from "@/lib/admin/time";
 import {
   abandonedAmountUsd,
+  isUnlockSession,
   isValidSubStatus,
+  summarizeUnlocks,
   revenueFromBalanceTransactions,
   type BalanceTxn,
   type Revenue,
@@ -138,17 +141,44 @@ async function revenueOver(gte: number, lte: number, b?: Bounds): Promise<Revenu
   return rev;
 }
 
-async function checkoutStats(gte: number, lte: number): Promise<{ created: number; completed: number }> {
-  let created = 0, completed = 0, n = 0;
+/** Plan checkouts only: the $7 one-time unlock sessions are counted apart (WP-5) so they never read as subscriptions. */
+async function checkoutStats(
+  gte: number,
+  lte: number,
+): Promise<{ created: number; completed: number; unlockCreated: number; unlockCompleted: number }> {
+  let created = 0, completed = 0, unlockCreated = 0, unlockCompleted = 0, n = 0;
   try {
     const w = await clamp(gte, lte);
     for await (const s of stripe.checkout.sessions.list({ created: { gte: Math.floor(w.gte / 1000), lte: Math.floor(w.lte / 1000) }, limit: 100 })) {
-      created++;
-      if (s.status === "complete" || s.payment_status === "paid") completed++;
+      const done = s.status === "complete" || s.payment_status === "paid";
+      if (isUnlockSession(s)) {
+        unlockCreated++;
+        if (done) unlockCompleted++;
+      } else {
+        created++;
+        if (done) completed++;
+      }
       if (++n >= STRIPE_CAP) break;
     }
   } catch { /* degradar */ }
-  return { created, completed };
+  return { created, completed, unlockCreated, unlockCompleted };
+}
+
+/** "Desbloqueos ($7)": one-time report unlocks created in the window (count + revenue), apart from subscriptions. */
+async function unlockStats(gte: number, lte: number) {
+  try {
+    const supa = createSupabaseServiceClient();
+    const w = await clamp(gte, lte);
+    const { data } = await supa
+      .from("analysis_unlocks")
+      .select("status")
+      .gte("created_at", iso(w.gte))
+      .lt("created_at", iso(w.lte))
+      .limit(5000);
+    return summarizeUnlocks((data ?? []) as { status: string }[], REPORT_UNLOCK_USD_CENTS);
+  } catch {
+    return summarizeUnlocks([], REPORT_UNLOCK_USD_CENTS);
+  }
 }
 
 /* ============================================================================
@@ -156,21 +186,25 @@ async function checkoutStats(gte: number, lte: number): Promise<{ created: numbe
    ============================================================================ */
 export async function getKpis(range: Range) {
   const b = rangeBounds(range);
-  const [rev, prevRev, orders, signups, prevOrders, prevSignups] = await Promise.all([
+  const [rev, prevRev, orders, signups, prevOrders, prevSignups, unlocks, prevUnlocks, co] = await Promise.all([
     revenueOver(b.gte, b.lte), revenueOver(b.prevGte, b.prevLte),
     countSubs(b.gte, b.lte), countProfiles(b.gte, b.lte),
     countSubs(b.prevGte, b.prevLte), countProfiles(b.prevGte, b.prevLte),
+    unlockStats(b.gte, b.lte), unlockStats(b.prevGte, b.prevLte), checkoutStats(b.gte, b.lte),
   ]);
+  // The total money is unchanged (it comes from balance transactions and includes the $7 unlocks).
   const revenue = rev.total, prevRevenue = prevRev.total;
   // Ingreso por nueva suscripción (NO es ARPU: ARPU real = MRR / suscriptores activos, ver business-state).
-  const revenuePerSub = orders ? revenue / orders : 0;
-  const prevPerSub = prevOrders ? prevRevenue / prevOrders : 0;
+  // Unlock charges are NOT subscription revenue: take them out of this ratio.
+  const revenuePerSub = orders ? Math.max(0, revenue - unlocks.grossUsd) / orders : 0;
+  const prevPerSub = prevOrders ? Math.max(0, prevRevenue - prevUnlocks.grossUsd) / prevOrders : 0;
   const conv = signups ? (orders / signups) * 100 : 0; // registro → suscripción de pago
   const prevConv = prevSignups ? (prevOrders / prevSignups) * 100 : 0;
   const d = (a: number, p: number) => (p ? ((a - p) / p) * 100 : 0);
   return {
     revenue, orders, revenuePerSub, conversionRate: conv,
-    deltas: { revenue: d(revenue, prevRevenue), orders: d(orders, prevOrders), revenuePerSub: d(revenuePerSub, prevPerSub), conversionRate: conv - prevConv },
+    unlocks: { count: unlocks.paid, refunded: unlocks.refunded, revenue: unlocks.netUsd, checkouts: co.unlockCreated, completed: co.unlockCompleted },
+    deltas: { revenue: d(revenue, prevRevenue), orders: d(orders, prevOrders), revenuePerSub: d(revenuePerSub, prevPerSub), conversionRate: conv - prevConv, unlocks: d(unlocks.paid, prevUnlocks.paid) },
   };
 }
 
@@ -231,6 +265,7 @@ export async function getAlmostBuyers(range: Range) {
       expand: ["data.line_items"],
     })) {
       if (s.status === "complete" || s.payment_status === "paid") continue;
+      if (isUnlockSession(s)) continue; // the $7 unlock is not a plan: it is not an "almost subscriber"
       sessions.push(s);
       if (++n >= 60) break;
     }

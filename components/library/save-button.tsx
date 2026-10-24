@@ -43,7 +43,7 @@ export function SaveButton({
       onClick={toggle}
       disabled={isPending}
       className={cn(
-        "size-7 grid place-items-center rounded-md transition-all",
+        "relative size-7 grid place-items-center rounded-md transition-all after:absolute after:-inset-2 after:content-['']", // 28px icon + 8px invisible padding = 44px hit area
         saved
           ? "text-champagne-400 bg-champagne-400/10 hover:bg-champagne-400/20"
           : "text-white/40 hover:text-white hover:bg-white/[0.06]",

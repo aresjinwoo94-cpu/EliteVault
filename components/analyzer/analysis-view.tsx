@@ -26,6 +26,8 @@ import { ConversionGauges } from "./conversion-gauges";
 import { CategoryRadar } from "./category-radar";
 import { AnnotationsOverlay } from "./annotations-overlay";
 import { PersonaResponse } from "./persona-response";
+import { trackAuditTerminal } from "@/lib/analytics/audit-events";
+import { UnlockNotices, UnlockOfferProvider } from "@/components/analyzer/unlock-offer";
 import { TopFixes } from "./top-fixes";
 import { FixTracks } from "./fix-tracks";
 import type { Track } from "@/lib/analyzer/fix-track-ids";
@@ -133,6 +135,13 @@ interface ViewerCtx {
    * simulation) is rendered blurred behind a Pro upgrade CTA.
    */
   isPaid: boolean;
+  /** Full cure of THIS audit (paid plan or one-time unlock). Defaults to `isPaid`. */
+  fullReport?: boolean;
+  /**
+   * WP-4 — offer the one-time unlock (flag REPORT_UNLOCK, resolved server-side). Only meaningful for a viewer
+   * WITHOUT the full report on a succeeded audit; absent/false ⇒ the report is byte-identical to before.
+   */
+  unlockOffer?: boolean;
   /**
    * P1-7 — whether this plan can run the Meta Campaign Scenario Modeler.
    * Pro (1/mo) and Scale (unlimited) can; Free cannot. `metaLimit` is the
@@ -143,6 +152,8 @@ interface ViewerCtx {
   canRunMeta: boolean;
   metaLimit: number | null;
   metaUsed: number;
+  /** WP-4 — the single projection is included in an unlocked report (limit is per report, not per month). */
+  metaPerReport?: boolean;
   /**
    * Master brief §B/§C — "map as the spine" UI (flag ANALYZER_MAP_SPINE, resolved
    * server-side and threaded here since client components can't read the env
@@ -243,6 +254,7 @@ export function AnalysisView({
           next.status !== "queued" && next.status !== "running";
         setData(next);
         if (wasRunning && becameTerminal) {
+          trackAuditTerminal({ analysisId: next.id, status: next.status, error: next.error, anonymous: false });
           // re-fetch server data (credit counts, sidebar) when job finishes
           router.refresh();
         }
@@ -340,7 +352,13 @@ export function AnalysisView({
   // is still canRunMeta, and the data they receive is gated server-side.
   // Under v2 the stepper's diamond icon owns simulator discovery, so the promo
   // teaser/rail/bottom-bar stand down to avoid two competing indexes.
-  const metaPromo = !v2 && (viewer.metaPromo ?? false);
+  // WP-4 — the one-time unlock offer: only for a viewer without the full report, on a finished audit whose
+  // capture was real, with REPORT_UNLOCK on. Everything else renders exactly as before.
+  const fullReportNow = viewer.fullReport ?? viewer.isPaid;
+  const unlockOn = (viewer.unlockOffer ?? false) && !fullReportNow && isDone && !captureBlocked.blocked;
+  const lockedFixCount = Math.max(0, (data.result?.top_fixes?.length ?? 0) - 1);
+  // With the unlock offer on, the Pro-first promo bar/rail stands down: one offer at a time.
+  const metaPromo = !v2 && !unlockOn && (viewer.metaPromo ?? false);
   const promoTier = metaPromoTier({
     isAnon,
     isPaid: viewer.isPaid,
@@ -463,7 +481,7 @@ export function AnalysisView({
             <MetaCampaignSimulator
               analysisId={data.id}
               initial={initialSimulation ?? null}
-              quota={{ limit: viewer.metaLimit, used: viewer.metaUsed }}
+              quota={{ limit: viewer.metaLimit, used: viewer.metaUsed, perReport: viewer.metaPerReport }}
             />
           </div>
         ) : (
@@ -481,7 +499,7 @@ export function AnalysisView({
             <MetaCampaignSimulator
               analysisId={data.id}
               initial={initialSimulation ?? null}
-              quota={{ limit: viewer.metaLimit, used: viewer.metaUsed }}
+              quota={{ limit: viewer.metaLimit, used: viewer.metaUsed, perReport: viewer.metaPerReport }}
             />
           </>
         )
@@ -497,7 +515,10 @@ export function AnalysisView({
     </div>
   );
 
+
   return (
+    <UnlockOfferProvider enabled={unlockOn} analysisId={data.id} isAnon={isAnon} lockedFixes={lockedFixCount}>
+      <UnlockNotices unlocked={fullReportNow && !viewer.isPaid} offerEnabled={unlockOn} />
     <div
       className={`p-6 md:p-8 max-w-7xl mx-auto space-y-6${
         // WP-4 (C) — room for the bottom bar so it never covers the report
@@ -668,6 +689,7 @@ export function AnalysisView({
           url={data.url}
           vendor={captureBlocked.vendor}
           reason={captureBlocked.reason}
+          creditReturned={!isAnon}
         />
       )}
 
@@ -762,7 +784,7 @@ export function AnalysisView({
                   analysisId={data.id}
                   result={data.result}
                   url={data.url}
-                  isPaid={viewer.isPaid}
+                  isPaid={viewer.fullReport ?? viewer.isPaid}
                   mapSpine={viewer.mapSpine ?? false}
                   storedPageKind={data.discovery_signals?.pageKind}
                 />
@@ -890,7 +912,7 @@ export function AnalysisView({
                     <FixTracks
                       analysisId={data.id}
                       urgentFixes={data.result.top_fixes}
-                      isPaid={viewer.isPaid}
+                      isPaid={viewer.fullReport ?? viewer.isPaid}
                       isAnon={isAnon}
                       initialChoice={viewer.fixTracks.choice}
                       competitorAvailable={viewer.fixTracks.competitorAvailable}
@@ -898,7 +920,7 @@ export function AnalysisView({
                   ) : (
                     <TopFixes
                       fixes={data.result.top_fixes}
-                      unlockedCount={viewer.isPaid ? undefined : 1}
+                      unlockedCount={(viewer.fullReport ?? viewer.isPaid) ? undefined : 1}
                     />
                   );
                 return winnersCard ? (
@@ -973,15 +995,24 @@ export function AnalysisView({
               behind a Pro upgrade CTA (their real computed response).
             */}
             <div id="section-persona" className={anchorOffset}>
-              {viewer.isPaid ? (
+              {(viewer.fullReport ?? viewer.isPaid) ? (
                 <PersonaResponse response={data.result.buyer_persona_response} />
               ) : (
                 <FreeLockedCure
                   title={t("analysisView.personaSim")}
                   tagline="Hear exactly how your target buyer reacts to your store — what makes them hesitate, and whether they'd buy."
                 >
+                  {/* WP-1: the real response never reaches a viewer without the
+                      full report — the card blurs a static placeholder. */}
                   <PersonaResponse
-                    response={data.result.buyer_persona_response}
+                    response={
+                      data.result.buyer_persona_response ?? {
+                        headline: t("lockedCure.personaHeadline"),
+                        quotes: [t("lockedCure.personaQuote1"), t("lockedCure.personaQuote2")],
+                        would_buy: false,
+                        reasons: [t("lockedCure.personaReason")],
+                      }
+                    }
                   />
                 </FreeLockedCure>
               )}
@@ -1031,8 +1062,9 @@ export function AnalysisView({
               instead, so the pre-login experience stays a serious tool with one
               gentle prompt — the inline "$19/mo" locks still carry the Pro push.
             */}
-            {!viewer.isPaid &&
+            {!(viewer.fullReport ?? viewer.isPaid) &&
               !isAnon &&
+              !unlockOn && // D2: with the unlock offer on, nothing pops up on its own
               (() => {
                 const lockedFixes = Math.max(
                   0,
@@ -1087,6 +1119,7 @@ export function AnalysisView({
         />
       )}
     </div>
+    </UnlockOfferProvider>
   );
 }
 

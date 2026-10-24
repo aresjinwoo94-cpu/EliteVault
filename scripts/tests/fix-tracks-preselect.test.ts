@@ -47,8 +47,9 @@ for (const locale of ["en", "es"] as const) {
       assert.doesNotMatch(html, /<p[^>]*blur-sm[^>]*>WHY-ONE<\/p>/);
       assert.match(html, /Add trust badges near the CTA/);
       assert.match(html, /Compress the product images/);
-      assert.match(html, /<p[^>]*blur-sm[^>]*>WHY-TWO<\/p>/);
-      assert.match(html, /<p[^>]*blur-sm[^>]*>WHY-THREE<\/p>/);
+      // WP-1: the server strips `why` from locked rows, so a static placeholder is blurred instead.
+      assert.ok(!html.includes("WHY-TWO") && !html.includes("WHY-THREE"), "locked why is never rendered");
+      assert.match(html, /<p[^>]*blur-sm[^>]*>[^<]*<\/p>/);
       // the reminder that ONE more type is included, and no lock/pick screen
       assert.ok(html.includes(t.fixTracks.pickPrompt), "reminder: pick one of the others");
       assert.ok(!html.includes(t.fixTracks.lockedTitle), "no locked screen");

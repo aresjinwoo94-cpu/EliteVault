@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { AnalyzingState } from "./analyzing-state";
 import { useT } from "@/components/i18n/locale-provider";
 import type { DiscoverySignals } from "@/lib/analyzer/discovery-signals";
+import { trackAuditTerminal } from "@/lib/analytics/audit-events";
 
 /**
  * Pending / failed state for an anonymous audit. While the audit runs it polls
@@ -62,6 +63,7 @@ export function AnonPending({
         if (!res.ok) return;
         const next = (await res.json()) as {
           status: string;
+          error?: string | null;
           screenshot_url?: string | null;
           discovery_signals?: DiscoverySignals | null;
         };
@@ -74,6 +76,7 @@ export function AnonPending({
         }));
         if (next.status !== "queued" && next.status !== "running") {
           // Terminal — let the server page re-render (succeeded → AnalysisView).
+          trackAuditTerminal({ analysisId: initial.id, status: next.status, error: next.error, anonymous: true });
           router.refresh();
         }
       } catch {
@@ -110,6 +113,7 @@ export function AnonPending({
           previewSummary={initial.preview_summary}
           screenshotUrl={live.screenshotUrl}
           signals={live.signals}
+          anonymous
         />
       )}
 

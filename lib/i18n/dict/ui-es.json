@@ -90,7 +90,7 @@
     "analyzerPlan": "El Analyzer no está disponible en tu plan. Mejora tu plan para empezar a auditar tu tienda.",
     "verifyEmail": "Verifica tu correo para reclamar tu auditoría gratis. Revisa tu bandeja de entrada, confirma el enlace y vuelve a intentarlo.",
     "alreadySignedIn": "Ya iniciaste sesión: lo ejecutamos en tu cuenta.",
-    "anonLimit": "Ya usaste tu auditoría gratis de hoy. Crea una cuenta gratis para hacer más, sin tarjeta.",
+    "anonLimit": "Ya hiciste tu auditoría sin cuenta. Crea tu cuenta para guardar tu reporte y hacer una auditoría más.",
     "apiScale": "El acceso a la API es una función del plan Scale. Mejora tu plan en /app/billing.",
     "validEmail": "Introduce un correo válido.",
     "passwordShort": "La contraseña debe tener al menos 8 caracteres.",
@@ -323,7 +323,7 @@
     "eyebrow": "Biblioteca",
     "storesCurated": "tiendas · curadas por IA",
     "subPro": "Sube una captura de tu propia tienda y nuestra IA encuentra sus tiendas hermanas que más convierten. O busca por prompt en todos los nichos.",
-    "subFree": "Explora 3 ganadoras seleccionadas a mano con métricas completas. Mejora tu plan para desbloquear más de 40 + búsqueda por imagen con IA + colecciones guardadas.",
+    "subFree": "Explora 3 ganadoras seleccionadas a mano y ábrelas con un clic. Mejora tu plan para ver todas las tiendas ganadoras, además de la búsqueda por imagen con IA, los teardowns y las colecciones guardadas.",
     "auditMine": "Audita mi tienda",
     "all": "Todas",
     "promptPlaceholder": "Prueba «skincare minimalista con tipografía editorial» o «marcas de bienestar por suscripción»",
@@ -336,9 +336,8 @@
     "pro": "Pro",
     "reranked": "Reordenado por IA",
     "noMatches": "Sin coincidencias. Prueba con otro prompt.",
-    "metricsNote": "Las métricas son estimaciones modeladas con señales públicas de tráfico y comportamiento. No son cifras reportadas por las propias marcas.",
     "allStores": "Todas las tiendas",
-    "unlockBody": "Desbloquea las métricas de cada tienda, la búsqueda por similitud de imagen con IA y las colecciones guardadas por 19 $/mes.",
+    "unlockBody": "Desbloquea la Biblioteca completa de tiendas ganadoras, la búsqueda por similitud de imagen con IA, los teardowns y las colecciones guardadas por 19 $/mes.",
     "upgradePro": "Mejorar a Pro",
     "saved": "Guardada en tu colección",
     "removeSaved": "Quitar de guardadas",
@@ -348,54 +347,14 @@
     "winnersOnFree": "3 ganadoras en Gratis — más de {n} en Pro"
   },
   "siteCard": {
-    "adActivity": "Puntuación de actividad publicitaria",
-    "adActivityNote": "Estimación de IA modelada con señales públicas del nicho; no es un recuento en vivo de la Meta Ad Library. Más alta = probablemente invierte más.",
-    "estConv": "Conv. est.",
-    "traffic": "Tráfico",
-    "convAria": "Tasa de conversión estimada: modelada con señales públicas, no reportada por la marca.",
-    "metricsNote": "Estimada con señales públicas de tráfico y comportamiento; no es una cifra oficial de la marca.",
-    "unlockPro": "Desbloquea las métricas con Pro"
-  },
-  "trendsBoard": {
-    "searchNiche": "Busca tu nicho…",
-    "firstWeek": "primera semana",
-    "aiEstimated": "estimado por IA",
-    "weekOf": "semana del",
-    "wkWk": "sem / sem",
-    "auditAgainst": "Audita contra esto",
-    "movers": "Movimientos de esta semana",
-    "sort": "Ordenar",
-    "sortMovers": "Mayores cambios",
-    "sortNewest": "Más nuevos",
-    "filter": "Filtrar",
-    "rising": "En alza",
-    "cooling": "Enfriándose",
-    "subNiches": "Subnichos y temas",
-    "nothing": "Nada coincide con este filtro.",
-    "products": "Productos en tendencia",
-    "nounProduct": "producto",
-    "nounAngle": "ángulo",
-    "todoCooling": "Enfriándose: frena la inversión aquí; valida la demanda antes de comprometer más.",
-    "todoNew": "Señal nueva: merece una prueba rápida; monta un {noun} y audítalo.",
-    "todoRising": "Está subiendo: apuesta más; crea un {noun} alrededor de esto y audítalo.",
-    "todoSteady": "Demanda estable: una apuesta fiable; renueva el creativo y vuelve a auditar.",
-    "statusNew": "Nuevo",
-    "statusSteady": "Estable",
-    "noNiches": "Ningún nicho coincide con «{q}».",
-    "weekOfCap": "Semana del",
-    "source": "Fuente:"
-  },
-  "trendsPage": {
-    "eyebrow": "Retención · se actualiza cada semana",
-    "title": "Tendencias",
-    "sub": "Qué sube y qué baja en tu nicho esta semana: subnichos y productos con impulso, para que sepas qué stockear, probar y contra qué auditar.",
-    "pick": "Elige tu nicho arriba para ver qué está en tendencia esta semana.",
-    "notRefreshed": "Las tendencias de este nicho aún no se han actualizado. El proceso semanal trae señales nuevas cada lunes: vuelve pronto.",
-    "yourNiche": "Tu nicho",
-    "auditAgainst": "Audita tu tienda contra esta tendencia",
-    "note": "Son <b>estimaciones de IA</b> a partir del conocimiento del mercado, actualizadas una vez por semana y guardadas en caché; no son datos extraídos en vivo. Úsalas como señal orientativa, no como cifras exactas.",
-    "autoSelected": "Seleccionado automáticamente según tu tienda · cámbialo arriba",
-    "counts": "{a} subnichos · {b} productos"
+    "metaAds": "{n} anuncios activos en Meta",
+    "opensStore": "{title} ({domain}) — abre la tienda en una pestaña nueva",
+    "lockedName": "Tienda ganadora",
+    "lockedCta": "Desbloquea con Pro",
+    "upgradeTitle": "Desbloquea la Biblioteca completa",
+    "upgradeBody": "Pro abre cada tienda ganadora con un clic, añade la búsqueda por similitud de imagen con IA y te deja guardar tus favoritas y leer sus teardowns.",
+    "upgradeCta": "Pasar a Pro",
+    "notNow": "Ahora no"
   },
   "collage": {
     "complete": "Auditoría completada",
@@ -404,10 +363,8 @@
     "niche": "Fitness",
     "notReady": "No lista para anuncios · 3 correcciones",
     "verdict": "veredicto",
-    "overall": "global",
     "quote": "“Producto simpático, pero las erratas y un catálogo aleatorio levantan sospechas.”",
     "persona": "Reacción del buyer persona · M 28–34 · EE. UU.",
-    "topFixes": "Principales correcciones, ordenadas por impacto",
     "meta7": "Meta a 7 días",
     "leaking": "Dónde pierdes ventas",
     "sixDims": "Seis dimensiones de conversión: la más baja es por donde se escapa el tráfico frío.",
@@ -418,12 +375,18 @@
     "dimTech": "Técnica",
     "dimNiche": "Nicho",
     "dimCro": "CRO",
-    "fix1": "Las erratas en los títulos de producto matan la confianza al llegar",
-    "fix2": "Un temporizador falso de 24:00:00 parece un truco barato de urgencia",
-    "fix3": "Un hero genérico de «Comprar ahora» añade fricción antes de aportar valor",
     "scCons": "Cons.",
     "scBal": "Equil.",
-    "scAggr": "Agres."
+    "scAggr": "Agres.",
+    "compTitle": "Tu competidor más fuerte",
+    "compPro": "Pro",
+    "compTopEnd": "La líder",
+    "compYouEnd": "Tu tienda",
+    "compGap": "La brecha",
+    "compReviews": "Reseñas",
+    "compBundles": "Packs",
+    "compShipping": "Envío claro",
+    "compAria": "Tu tienda frente a la líder de tu nicho, en los mismos ejes: la líder sube mientras la tuya se queda plana"
   },
   "features": {
     "yourStoreAlt": "Tu tienda",
@@ -495,7 +458,7 @@
     "q0": "¿Cómo encontráis tiendas Shopify ganadoras?",
     "a0": "La curamos nosotros: un asistente de IA propone tiendas candidatas en cada nicho y cada una pasa comprobaciones automáticas (sitio activo, ficha completa, encaje con el nicho) antes de publicarse. Cada entrada muestra métricas modeladas para que estudies lo que probablemente funciona: son estimaciones, no cifras reportadas por las marcas, y la biblioteca se revisa periódicamente, no en tiempo real.",
     "q1": "¿La biblioteca de tiendas ganadoras es gratis?",
-    "a1": "El plan Gratis incluye 3 tiendas ganadoras seleccionadas a mano con métricas completas y el feed de la comunidad. Pro y Scale desbloquean la biblioteca completa, entradas ilimitadas y la búsqueda por similitud de imagen.",
+    "a1": "El plan Gratis incluye 3 tiendas ganadoras seleccionadas a mano y el feed de la comunidad. Pro y Scale desbloquean la biblioteca completa, entradas ilimitadas y la búsqueda por similitud de imagen.",
     "q2": "¿En qué se diferencia de una herramienta espía de Shopify?",
     "a2": "Las herramientas espía vuelcan productos y creatividades de anuncios. EliteVault está hecho para la conversión: combina ganadoras curadas con búsqueda por similitud de imagen (encuentra las tiendas estructuralmente más cercanas a la tuya) y una auditoría gratuita de tu propia tienda, para que copies los principios que de verdad convierten.",
     "q3": "¿Puedo encontrar ganadoras de mi nicho concreto?",
@@ -522,25 +485,20 @@
     "winnersPill": "{n} GANADORAS DE {label}",
     "h1": "Tiendas Shopify ganadoras de {label}, curadas.",
     "intro": "Estas {n} tiendas ({plural}) las propuso un asistente de IA y pasaron comprobaciones automáticas; no se eligieron por su aspecto",
-    "avg": "(promedian una <b>tasa de conversión del {pct} %</b>)",
     "introEnd": ". Estudia cómo estructuran su hero, la confianza y la oferta, y luego haz la misma auditoría en tu propia tienda, gratis.",
     "cta": "Audita mi tienda gratis",
     "caption": "60 segundos · sin tarjeta",
     "thumbAlt": "{title} — tienda Shopify ganadora de {label}",
-    "estConv": "tasa conv. est.",
-    "metrics": "Métricas",
-    "estimateNote": "Las cifras de conversión son estimaciones modeladas con señales públicas de tráfico y comportamiento. No son números reportados por las marcas.",
-    "fullMetrics": "Métricas completas, búsqueda por imagen y todos los nichos.",
-    "libraryBody": "La Biblioteca sigue a todas las ganadoras con tasa de conversión, CTR y tráfico: filtrable por nicho y con búsqueda por similitud de imagen.",
+    "fullMetrics": "La Biblioteca completa, búsqueda por imagen y todos los nichos.",
+    "libraryBody": "La Biblioteca sigue a todas las ganadoras: filtrable por nicho y con búsqueda por similitud de imagen.",
     "login": "Inicia sesión para explorar la Biblioteca completa",
     "faqTitle": "Tiendas ganadoras de {label} — Preguntas frecuentes",
-    "faqAvg": ", y promedian una tasa de conversión del {pct} %",
     "faqQ0": "¿Qué hace que una tienda Shopify de {label} sea ganadora?",
-    "faqA0": "En {label}, las tiendas que convierten combinan una oferta clara al instante con la confianza propia de la categoría: imágenes potentes above the fold, prueba social visible y un checkout sin sorpresas. Las {n} tiendas ({plural}) de esta lista las propuso un asistente de IA y pasaron comprobaciones automáticas, no se eligieron por su aspecto{avg}.",
+    "faqA0": "En {label}, las tiendas que convierten combinan una oferta clara al instante con la confianza propia de la categoría: imágenes potentes above the fold, prueba social visible y un checkout sin sorpresas. Las {n} tiendas ({plural}) de esta lista las eligió un asistente de IA y pasaron comprobaciones automáticas, no se escogieron por su aspecto.",
     "faqQ1": "¿Cómo verificáis que estas tiendas ({plural}) realmente ganan?",
-    "faqA1": "No afirmamos auditar sus cuentas. Un asistente de IA propone tiendas candidatas y solo se publican tras comprobaciones automáticas (sitio activo, ficha completa, encaje con el nicho). La tasa de conversión, el CTR y el tráfico son estimaciones modeladas con señales públicas, no cifras reportadas por las marcas, y las etiquetamos como tales.",
+    "faqA1": "No afirmamos auditar sus cuentas. Un asistente de IA propone tiendas candidatas y solo se publican tras comprobaciones automáticas (sitio activo, ficha completa, encaje con el nicho). Cuando mostramos un número de anuncios es una medición real de la Meta Ad Library; no mostramos cifras de conversión ni de tráfico que no podamos verificar.",
     "faqQ2": "¿Puedo comparar mi tienda con estas ({plural})?",
-    "faqA2": "Sí: haz una auditoría gratuita de EliteVault con tu propia URL. Recibes una puntuación de conversión, una captura anotada y correcciones ordenadas, además de dónde estás frente a la media de tu nicho. Sin tarjeta de crédito y sin instalar nada.",
+    "faqA2": "Sí: haz una auditoría de EliteVault en tu propia URL. Recibes una captura anotada y arreglos ordenados, además de qué tienda de tu nicho va por delante y qué hace distinto. Sin tarjeta, sin instalar nada.",
     "others": "Ganadoras en otros nichos",
     "allWinners": "Todas las tiendas ganadoras →"
   },
@@ -554,7 +512,9 @@
     "q3": "¿Puedo cancelar cuando quiera?",
     "a3": "Con un clic en el Portal de clientes de Stripe. Sin correos de retención ni llamadas.",
     "q4": "¿Mis análisis entrenan vuestra IA?",
-    "a4": "No. Tus URLs, capturas y auditorías son privadas de tu cuenta. No entrenamos modelos con datos de clientes ni compartimos capturas con terceros."
+    "a4": "No. Tus URLs, capturas y auditorías son privadas de tu cuenta. No entrenamos modelos con datos de clientes ni compartimos capturas con terceros.",
+    "q5": "¿Puedo pagar solo por un informe?",
+    "a5": "Sí. En el plan Gratis puedes desbloquear el informe completo de una auditoría por un pago único de US$7: todos los arreglos con su guía, la simulación del buyer persona, todos los grupos de arreglos, una proyección de campaña de Meta para esa auditoría y las tiendas ganadoras de tu nicho. Sin suscripción y sin tarjeta guardada. Cubre solo esa auditoría; las auditorías nuevas, publicar, el Optimizador y la Biblioteca completa siguen en Pro y Scale. Si cambias de opinión, escríbenos en un plazo de 7 días y te lo reembolsamos; el informe vuelve a bloquearse."
   },
   "supportPage": {
     "eyebrow": "Soporte",
@@ -566,7 +526,6 @@
     "billingBody": "Los planes se facturan por adelantado a través de Stripe y se renuevan hasta que se cancelan. Gestiona o cancela cuando quieras en el Portal de clientes de Stripe (Facturación → Gestionar suscripción): conservas el acceso hasta el final del periodo pagado. Todos los detalles en nuestra <l>Política de reembolsos y cancelación</l>.",
     "limits": "Límites de uso por plan",
     "auditsMo": "Auditorías / mes",
-    "trackedNiches": "Nichos seguidos",
     "limitsNote": "Los límites se aplican por periodo de facturación. ¿Necesitas más? <l>Compara planes</l>.",
     "score": "Cómo leer tu puntuación",
     "scoreBody": "Tu puntuación global (0–100) es una estimación rápida de conversión construida con seis puntuaciones por categoría: color, diseño, imágenes, técnica, encaje con el nicho y principios de CRO. Es una <b>estimación orientativa</b>, no una garantía. Usa las correcciones ordenadas para encontrar primero los cambios de mayor impacto.",
@@ -670,12 +629,12 @@
   "optimizer": {
     "title": "Optimizador de Meta Ads",
     "intro": "Objetivos + ángulos creativos + un plan de pruebas secuencial, calibrados con tu puntuación de auditoría y tu nicho.",
-    "maxBid": "Puja máx.",
-    "costK": "Coste / 1k",
+    "maxBid": "Costo máx. por clic",
+    "costK": "Costo por 1.000 vistas",
     "ctr": "Tasa de clics",
-    "lpConv": "Conv. LP",
-    "targetReturn": "Retorno objetivo",
-    "nicheMedian": "mediana del nicho",
+    "lpConv": "Visitantes que compran",
+    "targetReturn": "Retorno de la inversión",
+    "nicheMedian": "Típico en tu nicho",
     "audienceSeed": "Audiencia semilla",
     "targeting": "Sugerencias de segmentación",
     "interests": "Intereses:",
@@ -690,7 +649,16 @@
     "fmtCarousel": "Carrusel",
     "fmtUgc": "Vídeo UGC",
     "fmtDemo": "Vídeo demo",
-    "lockedTagline": "Objetivos de CPC, CPM, CTR y ROAS calibrados a TU auditoría, más plan de pruebas y ángulos creativos"
+    "lockedTagline": "Objetivos de CPC, CPM, CTR y ROAS calibrados a TU auditoría, más plan de pruebas y ángulos creativos",
+    "cpcLine": "Paga hasta esto por cada clic",
+    "cpmLine": "Lo que cuesta que 1.000 personas vean tu anuncio",
+    "ctrLine": "De 100 que ven el anuncio, cuántos hacen clic",
+    "cvrLine": "De 100 que entran a tu tienda, cuántos compran",
+    "roasLine": "Ventas por cada $1 invertido — {x}× significa ${usd} de vuelta",
+    "lowerBetter": "menor es mejor",
+    "higherBetter": "mayor es mejor",
+    "targetsHeading": "Tus objetivos vs. lo típico en tu nicho",
+    "marginNote": "Si un ROAS es rentable depende de tu margen: cuanto menor tu margen, más ROAS necesitas."
   },
   "scaleLocked": {
     "seedDemo": "30-45 EE. UU./CA · intereses de tu nicho · lookalike de compradores recientes · retargeting tolerante a iOS desde el día 4",
@@ -710,6 +678,8 @@
     "refining": "Afinando la auditoría completa: anotaciones, persona y correcciones…",
     "stillGoing": "Sigue en marcha: el proveedor de IA está ocupado ahora mismo, que es el motivo habitual de que una ejecución tarde más. Si no puede terminar, tu crédito se devuelve automáticamente.",
     "typical": "Los análisis normales terminan en 30-90 segundos. Si algo falla, tu crédito se devuelve automáticamente.",
+    "typicalAnon": "Los análisis normales terminan en 30-90 segundos. Si falla, no cuenta como tu auditoría gratis: puedes volver a intentarlo enseguida.",
+    "stillGoingAnon": "Sigue en marcha: el proveedor de IA está ocupado ahora mismo, que es el motivo habitual de que una ejecución tarde más. Si no puede terminar, no cuenta como tu auditoría gratis y puedes volver a intentarlo.",
     "shotAlt": "Captura de tu tienda, en análisis",
     "captured": "Capturada: leyendo la página ahora",
     "detected": "Detectado hasta ahora",
@@ -792,7 +762,8 @@
     "adsAria": "{n} anuncios activos: medidos en la Meta Ad Library (UE)",
     "revAria": "Ingresos estimados de ~{low} $ a {high} $ al mes: estimación de IA",
     "unlockAllN": "Desbloquea las {n} ganadoras de tu nicho",
-    "visitStore": "Visitar su tienda"
+    "visitStore": "Visitar su tienda",
+    "yourNiche": "Tu nicho"
   },
   "annotations": {
     "title": "Auditoría anotada",
@@ -810,7 +781,8 @@
     "issueAria": "Problema {n}: {msg}",
     "fixNum": "Corrección n.º {n}",
     "lowSev": "Baja",
-    "defaultAlt": "Captura de la auditoría"
+    "defaultAlt": "Captura de la auditoría",
+    "fixLocked": "Desbloquea la solución"
   },
   "position": {
     "title": "Dónde estás",
@@ -835,7 +807,8 @@
     "effortS": "<1 h",
     "effortL": ">4 h",
     "moreOne": "+{n} corrección más: desbloquéala con Pro",
-    "moreMany": "+{n} correcciones más: desbloquéalas con Pro"
+    "moreMany": "+{n} correcciones más: desbloquéalas con Pro",
+    "lockedWhy": "Un cambio paso a paso adaptado a esta página: qué mover, qué reescribir y por qué recupera ventas en tu tienda."
   },
   "rewrite": {
     "title": "Reescritura automática",
@@ -900,13 +873,19 @@
     "roadmapFix": "Corrección n.º {n} de la hoja de ruta"
   },
   "gauges": {
-    "title": "Tasa de conversión estimada",
-    "aiRanges": "Estimación de IA · rangos",
-    "note": "Rangos modelados con tu nicho y la puntuación de la auditoría: una estimación, no una garantía.",
-    "organic": "Orgánico",
-    "metaBad": "Meta: creatividad mala",
-    "metaRegular": "Meta: normal",
-    "metaGood": "Meta: mejor media buyer"
+    "title": "¿Cuántos visitantes compran?",
+    "subtitle": "De cada 100 visitantes, cuántos probablemente compren — según de dónde vienen.",
+    "aiRanges": "Estimación · rangos",
+    "note": "Estimado según tu nicho y esta auditoría — no es una garantía. Esto no es ROAS.",
+    "organic": "Orgánico · gente que ya te conoce",
+    "metaBad": "Anuncios Meta · anuncio débil",
+    "metaRegular": "Anuncios Meta · campaña promedio",
+    "metaGood": "Anuncios Meta · campaña bien optimizada",
+    "reference": "Referencia",
+    "organicNote": "Convierte más porque ya te buscaron — pero trae muchas menos visitas. Los anuncios traen el volumen.",
+    "ofHundred": "≈ {range} de 100",
+    "ofHundredUpTo": "≈ hasta {n} de 100",
+    "ofHundredLess": "< 1 de 100"
   },
   "reportNav": {
     "title": "En este informe",
@@ -925,7 +904,11 @@
   },
   "lockedCure": {
     "title": "Desbloquea tus correcciones con Pro",
-    "body": "Tu diagnóstico es gratis. Pro revela la cura priorizada de esta auditoría al instante, sin volver a analizar, además de auditorías ilimitadas."
+    "body": "Tu diagnóstico es gratis. Pro revela la cura priorizada de esta auditoría al instante, sin volver a analizar, además de auditorías ilimitadas.",
+    "personaHeadline": "Me gusta el producto, pero todavía no estoy seguro de poder confiar en esta tienda.",
+    "personaQuote1": "¿Dónde están las reseñas? No sé si otras personas han comprado esto.",
+    "personaQuote2": "Necesitaría ver envíos y devoluciones antes de añadir nada al carrito.",
+    "personaReason": "Las señales de confianza están demasiado abajo para tranquilizar a un visitante nuevo."
   },
   "personaResponse": {
     "title": "Respuesta del buyer persona",
@@ -994,19 +977,19 @@
     "theComparison": "LA COMPARACIÓN",
     "noContest": "SIN COMPETENCIA",
     "pricing": "PRECIOS",
-    "freeDiagnosis": "DIAGNÓSTICO GRATIS",
+    "freeDiagnosis": "EL DIAGNÓSTICO",
     "fromLibrary": "DE LA BIBLIOTECA",
     "realStores": "TIENDAS REALES"
   },
   "plans": {
     "free": {
-      "tagline": "Audita tu tienda gratis"
+      "tagline": "Mira dónde estás"
     },
     "pro": {
-      "tagline": "Donde la mayoría de tiendas sube de nivel"
+      "tagline": "Para tiendas que ya venden"
     },
     "scale": {
-      "tagline": "Para marcas que buscan un ROI fuera de serie"
+      "tagline": "Para tiendas con tráfico pagado"
     }
   },
   "pricing": {
@@ -1041,5 +1024,46 @@
     "themeFree": "gratis",
     "openStore": "Abrir",
     "comingSoon": "Pronto en tu nicho"
+  },
+  "unlock": {
+    "submit": "Pago único. Desbloquea el reporte completo de {domain}. Sin suscripción.",
+    "backToReport": "Volver a mi reporte",
+    "secure": "Pago seguro",
+    "eyebrow": "Desbloquea el reporte completo",
+    "includesTitle": "Qué obtienes de esta auditoría",
+    "i1": "Todos los fixes priorizados, con el cómo hacerlo",
+    "i2": "La simulación del buyer persona",
+    "i3": "Los 3 fix tracks generados para tu tienda",
+    "i4": "1 proyección de campaña de Meta para esta auditoría",
+    "i5": "Ganadoras de tu nicho, con enlace a cada tienda",
+    "oneTime": "Pago único · sin suscripción · sin guardar tu tarjeta",
+    "proNote": "¿Auditas varias tiendas? Pro desde $19/mes.",
+    "preparing": "Preparando el pago seguro…",
+    "activating": "Pago recibido — activando tu reporte…",
+    "activatingSub": "Suele tardar unos segundos. Puedes dejar esta página abierta.",
+    "pendingTitle": "Tu pago está en proceso",
+    "pendingSub": "Tu banco aún no lo ha confirmado. Tu reporte se desbloquea solo en cuanto se confirme el pago; puedes cerrar esta página.",
+    "activatingSlow": "Está tardando más de lo normal. Tu pago está seguro: recarga en un minuto o contacta a soporte.",
+    "openReport": "Abrir mi reporte",
+    "canceledTitle": "No se hizo ningún cobro",
+    "canceledBody": "El pago se canceló, así que no se cobró nada. Tu reporte sigue aquí.",
+    "cardTitleOne": "Desbloquea el fix restante de este reporte",
+    "cardTitleMany": "Desbloquea los {n} fixes restantes de este reporte",
+    "cardPrice": "US$7 · pago único · sin suscripción",
+    "cardCta": "Desbloquear por US$7",
+    "cardCtaAnon": "Crea tu cuenta para desbloquear",
+    "modalTitle": "Desbloquea el reporte completo",
+    "modalBody": "Un solo pago abre todo de esta auditoría. Sin suscripción.",
+    "modalCta": "Desbloquear por US$7",
+    "modalCtaAnon": "Crea tu cuenta para continuar",
+    "notNow": "Ahora no",
+    "proLink": "¿Varias tiendas? Pro desde $19/mes",
+    "lockedTitle": "Desbloquea el reporte completo",
+    "lockedBody": "Tu diagnóstico es gratis. Un solo pago abre la reacción del buyer persona, todos los fixes y el cómo hacerlo de esta auditoría.",
+    "bannerUnlocked": "Reporte desbloqueado ✓ — todos los fixes, el buyer persona, los 3 fix tracks y 1 proyección de Meta están abiertos para esta auditoría.",
+    "bannerCanceled": "El pago se canceló — no se cobró nada.",
+    "simIncluded": "1 proyección incluida en este reporte",
+    "simUsed": "Ya usaste la proyección incluida en este reporte",
+    "rowHow": "Desbloquea el cómo hacerlo"
   }
 }

@@ -204,10 +204,11 @@ for (const niche of niches) {
       sub_niche: c.subNiche,
       tags: c.tags,
       metrics: c.metrics ?? {},
-      // Legacy NOT NULL column: the verify/thumbs jobs replace this with a real
-      // capture. An empty string would render a broken tile, so we point at the
-      // same mshots placeholder the existing seeds use.
-      thumbnail_url: `https://s.wordpress.com/mshots/v1/${encodeURIComponent(c.url)}?w=800&h=560`,
+      // No placeholder image: a row without a REAL image is never published
+      // (migration 0040 + judgeStore). The low-priority image job
+      // (inngest/functions/fill-library-images.ts) fetches a real one.
+      thumbnail_url: null,
+      review_reason: "no_image",
       favicon_url: faviconUrl(c.domain),
       active_ads_count: c.activeAds,
       // Never stamped here: a discovered/seeded count is not a measurement (only `momentum` proves one).
@@ -226,7 +227,7 @@ for (const niche of niches) {
 
     const { error } = await svc
       .from("winning_sites")
-      .upsert(row, { onConflict: "url" });
+      .upsert(row, { onConflict: "url", ignoreDuplicates: true });
     if (error) {
       console.log(`  ✗ ${c.domain.padEnd(30)} ${error.message}`);
       failed++;

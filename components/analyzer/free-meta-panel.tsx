@@ -9,6 +9,7 @@ import { roasRangeForAudit } from "@/lib/meta/roas-range";
 import { useT } from "@/components/i18n/locale-provider";
 import { Rich } from "@/components/i18n/rich";
 import { fill } from "@/lib/i18n/lookup";
+import { useUnlockOffer } from "@/components/analyzer/unlock-offer";
 
 /**
  * Free post-audit Meta panel (Fase 2 P0-3).
@@ -46,6 +47,7 @@ export function FreeMetaPanel({
   hideScore?: boolean;
 }) {
   const { t } = useT();
+  const unlock = useUnlockOffer();
   const range = roasRangeForAudit(score, niche);
   const roundedScore = Math.round(score > 1 ? score : score * 100);
 
@@ -129,15 +131,24 @@ export function FreeMetaPanel({
             </p>
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
-              <Link href="/app/checkout?plan=pro&interval=month">
-                <Button variant="primary" size="lg">
+              {unlock.enabled ? (
+                // WP-4: the projection is part of the unlock — the CTA opens the modal (click only).
+                <Button variant="primary" size="lg" onClick={() => unlock.open("simulator")}>
                   <Sparkles className="size-4" />
-                  {range.ready
-                    ? t("freeMeta.unlockProj")
-                    : t("freeMeta.unlockBoth")}
+                  {t("unlock.cardCta")}
                   <ArrowRight className="size-4" />
                 </Button>
-              </Link>
+              ) : (
+                <Link href="/app/checkout?plan=pro&interval=month">
+                  <Button variant="primary" size="lg">
+                    <Sparkles className="size-4" />
+                    {range.ready
+                      ? t("freeMeta.unlockProj")
+                      : t("freeMeta.unlockBoth")}
+                    <ArrowRight className="size-4" />
+                  </Button>
+                </Link>
+              )}
               <Link
                 href="/pricing"
                 className="text-sm text-white/55 underline-offset-4 hover:text-white/80 hover:underline"

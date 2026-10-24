@@ -8,19 +8,27 @@ import { sendEmail } from "@/lib/email/resend";
 import { buildReceipt } from "@/lib/email/receipt";
 import { buildPaymentFailed } from "@/lib/email/payment-failed";
 import { buildCancellation } from "@/lib/email/cancellation";
+import { createUnlockStore } from "@/lib/unlocks/settle-store";
+import { EV_ASYNC_FAILED, EV_ASYNC_OK, isUnlockEvent, processUnlockEvent } from "@/lib/unlocks/process-event";
+import { sendUnlockAlert } from "@/lib/unlocks/alerts";
 
 export const runtime = "nodejs";
 
 // Base URL for links inside transactional emails.
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
-const RELEVANT_EVENTS = new Set([
+const RELEVANT_EVENTS = new Set<string>([
   "checkout.session.completed",
   "customer.subscription.created",
   "customer.subscription.updated",
   "customer.subscription.deleted",
   "invoice.payment_succeeded",
   "invoice.payment_failed",
+  // One-time report unlock (mode: "payment"). `checkout.session.completed` is the usual one; the async
+  // pair covers delayed methods; `charge.refunded` re-locks a refunded unlock.
+  EV_ASYNC_OK,
+  EV_ASYNC_FAILED,
+  "charge.refunded",
 ]);
 
 export async function POST(req: NextRequest) {
@@ -75,6 +83,29 @@ export async function POST(req: NextRequest) {
 
   const service = createSupabaseServiceClient();
 
+  // One-time report unlock events (and refunded charges) skip the pre-insert dedupe below: the event is recorded
+  // only AFTER it was fully processed, so a crash mid-settlement can never make Stripe's retry a no-op.
+  if (isUnlockEvent(event)) {
+    try {
+      await processUnlockEvent(event, {
+        store: createUnlockStore(),
+        retrieveSession: (id) => stripe.checkout.sessions.retrieve(id),
+        relockRefunded: (charge) => relockRefundedCharge(charge, service),
+        markProcessed: async (e) => {
+          const { error } = await service
+            .from("stripe_events")
+            .insert({ id: e.id, type: e.type, payload: e as unknown as Record<string, unknown> });
+          if (error && error.code !== "23505") throw new Error(error.message);
+        },
+        alert: sendUnlockAlert,
+      });
+      return NextResponse.json({ received: true });
+    } catch (err) {
+      console.error("[stripe webhook] unlock", event.type, err);
+      return NextResponse.json({ error: (err as Error).message }, { status: 500 });
+    }
+  }
+
   // ── Idempotency: dedupe by event.id ──
   // UNIQUE constraint on stripe_events.id makes the second delivery a no-op.
   const { error: dupErr } = await service.from("stripe_events").insert({
@@ -91,6 +122,12 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // (Report-unlock sessions never get here: they were fully handled above, and must NEVER reach
+    // syncSubscription / onInvoicePaid — they would be treated as a plan change.)
+    if (event.type === EV_ASYNC_FAILED || event.type === EV_ASYNC_OK) {
+      console.warn("[webhook] async payment event (not an unlock) ignored:", event.type, (event.data.object as Stripe.Checkout.Session).id);
+      return NextResponse.json({ received: true });
+    }
     switch (event.type) {
       case "checkout.session.completed":
       case "customer.subscription.created":
@@ -113,6 +150,24 @@ export async function POST(req: NextRequest) {
       { status: 500 },
     );
   }
+}
+
+/** A fully refunded unlock payment re-locks that report. Other refunds (e.g. our automatic duplicate refund) match no row. */
+async function relockRefundedCharge(
+  charge: Stripe.Charge,
+  service: ReturnType<typeof createSupabaseServiceClient>,
+) {
+  if (charge.refunded !== true) return; // partial refund: the report stays unlocked
+  const pi = typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent?.id;
+  if (!pi) return;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (service as any)
+    .from("analysis_unlocks")
+    .update({ status: "refunded", refunded_at: new Date().toISOString() })
+    .eq("stripe_payment_intent", pi)
+    .eq("status", "paid");
+  // Never swallow it: a failed re-lock must surface (500) so Stripe retries instead of leaving a refunded unlock open.
+  if (error) throw new Error(`relockRefundedCharge: ${error.message}`);
 }
 
 async function syncSubscription(

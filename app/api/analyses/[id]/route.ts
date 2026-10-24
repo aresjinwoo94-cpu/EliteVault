@@ -3,7 +3,9 @@ import {
   createSupabaseServerClient,
   createSupabaseServiceClient,
 } from "@/lib/supabase/server";
-import { gateMetaAds } from "@/lib/analyzer/client-payload";
+import { gateMetaAds, gateRowResult } from "@/lib/analyzer/client-payload";
+import { refundAnalysis } from "@/lib/credits";
+import { resolveFullReport } from "@/lib/unlocks/entitlement";
 import { PLANS } from "@/lib/stripe/plans";
 import type { PlanTier } from "@/lib/supabase/types";
 import { getT } from "@/lib/i18n/server";
@@ -119,8 +121,9 @@ export async function GET(
   // The Meta Ads Optimizer payload only goes to Scale viewers (see
   // lib/analyzer/client-payload.ts). Only look the plan up when there is
   // something to withhold — almost every poll has meta_ads = null.
+  // WP-1: a finished `result` also needs the plan (its paid cure is gated).
   let payload: typeof row = row;
-  if (row.meta_ads != null) {
+  if (row.meta_ads != null || row.result != null) {
     const { data: prof } = await supabase
       .from("profiles")
       .select("plan")
@@ -129,6 +132,8 @@ export async function GET(
     const planKey = (prof as { plan?: string } | null)?.plan;
     const plan = planKey && planKey in PLANS ? PLANS[planKey as PlanTier] : null;
     payload = gateMetaAds(row, plan != null && plan.unlocksScale);
+    // Fails closed: an unresolved plan is treated as "no full report".
+    payload = gateRowResult(payload, await resolveFullReport({ analysisId: id, userId: user.id, plan: planKey, email: user.email }));
   }
 
   // Stale-job detection
@@ -137,28 +142,11 @@ export async function GET(
     const age = Date.now() - new Date(startedRef).getTime();
     if (age > STALE_THRESHOLD_MS) {
       const service = createSupabaseServiceClient();
-      await service
-        .from("analyses")
-        .update({
-          status: "refunded",
-          error:
-            t("actionErr.analysisTimedOut"),
-          finished_at: new Date().toISOString(),
-        })
-        .eq("id", id);
-
-      // refund the credit
-      const { data: prof } = await service
-        .from("profiles")
-        .select("credits")
-        .eq("id", user.id)
-        .single();
-      if (prof) {
-        await service
-          .from("profiles")
-          .update({ credits: prof.credits + (row.credits_charged ?? 1) })
-          .eq("id", user.id);
-      }
+      // Exactly-once refund (migration 0042): if Inngest's onFailure, another poll or anything else
+      // already refunded this audit, this is a no-op instead of a second credit.
+      await refundAnalysis(service, id, t("actionErr.analysisTimedOut")).catch((e) =>
+        console.warn("[analyses] stale refund failed:", (e as Error).message),
+      );
 
       return NextResponse.json(
         {

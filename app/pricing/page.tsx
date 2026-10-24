@@ -15,7 +15,7 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Simple, transparent pricing for EliteVault. Free tier: one full audit with one set of fixes of your choice unlocked + 3 hand-picked winning stores. Pro at $19/mo for the full analyzer. Scale at $29/mo for Meta Ads optimization + 7-day scenario modeler + REST API.",
+    "EliteVault pricing. Free: one full store audit and one set of fixes you choose, no card needed. Pro at $19/mo: every fix ranked by priority, your buyer's reaction to each one and the full Library of winning stores. Scale at $29/mo: unlimited Meta Ads forecasts and the ads optimizer.",
   keywords: [
     "elitevault pricing",
     "ecommerce audit pricing",
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Pricing — EliteVault",
     description:
-      "Free / Pro $19 / Scale $29. AI audit, library of winning stores, Meta Ads scenario modeler.",
+      "Free / Pro $19 / Scale $29. Full store audit, every fix ranked, winning stores to model, Meta Ads forecasts.",
     type: "website",
   },
 };
@@ -46,7 +46,7 @@ export default function PricingPage() {
     "@type": "Product",
     name: "EliteVault",
     description:
-      "AI conversion audits for ecommerce — CRO score, annotated screenshot, buyer-persona simulation and a 7-day Meta Ads scenario modeler.",
+      "AI conversion audits for ecommerce — annotated screenshot, ranked fixes, buyer-persona reaction and a 7-day Meta Ads forecast.",
     brand: { "@type": "Brand", name: "EliteVault" },
     url: `${baseUrl}/pricing`,
     offers: Object.values(PLANS).map((plan) => ({

@@ -185,3 +185,30 @@ export function autoLocaleEnabled(): boolean {
 export function analyzerFixTracksEnabled(): boolean {
   return enabled("ANALYZER_FIX_TRACKS", true);
 }
+
+/**
+ * One-time "unlock this report" purchase ($7, brief oct-2026 §10). ON by default in code since the 2026-10 launch (set REPORT_UNLOCK=false in the environment to switch it off without a deploy). While off, nothing in
+ * the product offers or honours an unlock and the report is exactly what a Free/Pro/Scale viewer saw before.
+ * The owner flips the default here (a code change), not in Vercel, after testing in Stripe test mode.
+ */
+export function reportUnlockEnabled(): boolean {
+  return enabled("REPORT_UNLOCK", true);
+}
+
+/**
+ * Production test list for the unlock (brief oct-2026 §10): while the GLOBAL flag is off, these accounts — and only
+ * these — see and can use the unlock, so the owner can run one real $7 purchase + refund before launch. Emails in
+ * code, compared lowercase; empty the list (or turn the global flag on) when the test is over.
+ */
+export const REPORT_UNLOCK_TEST_EMAILS: readonly string[] = [];
+
+/**
+ * The flag as seen by ONE viewer: the global flag, or an allow-listed account. Everything that decides what a
+ * signed-in viewer sees (offer, checkout page, entitlement, the included projection) goes through this.
+ * Anonymous viewers have no email, so they only ever see the global flag.
+ */
+export function reportUnlockEnabledFor(email: string | null | undefined): boolean {
+  if (reportUnlockEnabled()) return true;
+  const e = email?.trim().toLowerCase();
+  return !!e && REPORT_UNLOCK_TEST_EMAILS.includes(e);
+}

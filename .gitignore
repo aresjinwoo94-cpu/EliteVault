@@ -13,8 +13,9 @@ next-env.d.ts
 .vscode
 coverage
 
-# Local dev tooling (machine-specific paths + secrets)
-.claude/
+# Local dev tooling (machine-specific paths + secrets). Project skills are tracked; the rest of .claude/ is not.
+.claude/*
+!.claude/skills/
 scripts/stripe-listen.cmd
 scripts/dev.cmd
 scripts/inngest-dev.cmd

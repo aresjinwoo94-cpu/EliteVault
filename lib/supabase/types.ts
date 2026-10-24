@@ -72,7 +72,9 @@ export interface Annotation {
   height?: number;
   severity: "low" | "medium" | "high";
   message: string;  // short why
-  fix: string;      // actionable suggestion
+  fix: string;      // actionable suggestion ("" + fix_locked when the viewer lacks the full report)
+  /** WP-1 — set by the server: the "how" is withheld; the UI shows an unlock placeholder. */
+  fix_locked?: boolean;
 }
 
 export interface AnalysisResult {

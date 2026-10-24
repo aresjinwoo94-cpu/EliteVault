@@ -8,6 +8,7 @@ import { runSearchAgent } from "@/ai/agents/search-agent";
 import { detectImageNiche, type NicheDetection } from "@/ai/agents/image-niche-detector";
 import { imageHash } from "@/lib/image-hash";
 import { applyMetricsCap } from "@/lib/library/metrics-cap";
+import { toCardPayload, toLockedPayload } from "@/lib/library/card-payload";
 
 export interface WinningSiteCard {
   id: string;
@@ -25,10 +26,16 @@ export interface WinningSiteCard {
   description?: string | null;
   is_featured: boolean;
   is_preselected?: boolean;
-  ad_signals?: Record<string, unknown> | null;
+  /**
+   * Active Meta ads — present ONLY for a real, fresh Meta Ad Library measurement (measuredActiveAds()).
+   * The raw `ad_signals` / `active_ads_count` (seeds and AI estimates) never leave the server.
+   */
+  measured_ads?: number | null;
   ai_reason?: string;
   metrics_locked?: boolean;
   teardown?: import("@/lib/supabase/types").Teardown | null;
+  /** The home was read and shows Shopify signals (store_checks). Only drives a badge — never a gate. */
+  shopify_verified?: boolean | null;
 }
 
 /**
@@ -122,7 +129,7 @@ export async function searchLibrary(opts: {
   let q = supabase
     .from("winning_sites")
     .select(
-      "id, url, domain, title, niche, thumbnail_url, metrics, description, is_featured, is_preselected, ad_signals, teardown",
+      "id, url, domain, title, niche, thumbnail_url, metrics, description, is_featured, is_preselected, ad_signals, active_ads_count, teardown, shopify_verified",
     )
     // Only stores that passed the publication gate AND are alive (owner decision 2026-10-09;
     // the RLS policy enforces the same — see migration 0037).
@@ -133,7 +140,8 @@ export async function searchLibrary(opts: {
     .limit(opts.limit ?? 36);
 
   if (effectiveNiche) q = q.eq("niche", effectiveNiche);
-  if (opts.prompt) {
+  // Free users cannot text-search the Library: a title filter would let them probe names of locked stores.
+  if (opts.prompt && isPaid) {
     const search = opts.prompt.replace(/[^a-z0-9 ]/gi, "").trim();
     if (search) {
       q = q.or(
@@ -196,6 +204,15 @@ export async function searchLibrary(opts: {
   // directly — `plan` above is still resolved from the session, never from the
   // caller, which is what keeps the gate unspoofable.
   items = applyMetricsCap(items, plan);
+
+  // Brief oct-2026 §L3: the card shows an ad count only when it is a REAL Meta Ad Library measurement.
+  // Compute it here and drop the raw estimate fields so nothing invented reaches the browser.
+  // Locked rows (Free, beyond the preselected winners) are reduced to an opaque shell on the SERVER; the rest keep
+  // only the derived ad count.
+  items = items.map((raw) => {
+    const r = raw as unknown as Record<string, unknown>;
+    return (r.metrics_locked ? toLockedPayload(r) : toCardPayload(r)) as unknown as WinningSiteCard;
+  });
 
   return {
     items,

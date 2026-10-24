@@ -13,6 +13,8 @@ import {
 import { parseState } from "@/lib/analyzer/fix-tracks";
 import { resolveCompetitor } from "@/lib/analyzer/fix-tracks-data";
 import { toClientAnalysis } from "@/lib/analyzer/client-payload";
+import { resolveFullReport } from "@/lib/unlocks/entitlement";
+import { reportUnlockEnabledFor } from "@/lib/flags";
 
 export const dynamic = "force-dynamic";
 
@@ -84,9 +86,14 @@ export default async function AnalysisPage({
   }
 
   const plan = PLANS[profile?.plan ?? "free"];
+  // WP-2: "sees the full report of THIS audit" = paid plan OR a one-time unlock (REPORT_UNLOCK flag).
+  // It drives the report's locks/cure; plan-only capabilities (publish, Optimizer, new audits) stay plan-based.
+  const fullReport = await resolveFullReport({ analysisId: id, userId: user.id, plan: profile?.plan ?? "free", email: user.email });
+  // WP-4: a Free viewer who unlocked THIS report gets exactly ONE Meta projection for it (not a Pro quota).
+  const unlockedFree = fullReport && (profile?.plan ?? "free") === "free";
   // P1-7 — the Campaign Scenario Modeler is now available to Pro (1/mo) AND
   // Scale (unlimited). Free (metaRunsPerMonth = 0) can't run it.
-  const canRunMeta = (plan.quotas.metaRunsPerMonth ?? 1) !== 0;
+  const canRunMeta = (plan.quotas.metaRunsPerMonth ?? 1) !== 0 || unlockedFree;
 
   // Latest Meta Campaign Scenario Modeler run for this analysis, plus the
   // month's usage counter. Fetch for anyone who CAN run the Meta block (Pro
@@ -110,19 +117,31 @@ export default async function AnalysisPage({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     initialSimulation = (simRow as any) ?? null;
     metaUsage = usage;
+    if (unlockedFree) {
+      // per-REPORT allowance: runs of THIS audit that count (queued|running|succeeded), limit 1
+      const { count } = await supabase
+        .from("meta_simulations")
+        .select("id", { count: "exact", head: true })
+        .eq("analysis_id", id)
+        .eq("user_id", user.id)
+        .in("status", ["queued", "running", "succeeded"]);
+      metaUsage = { limit: 1, used: count ?? 0 };
+    }
   }
 
   // Change 3 — "Winners in your niche". A pure enrichment: loadNicheWinnersModule
   // resolves to null on ANY failure (no niche, empty Library, DB error) so the
   // report always renders without it. Free viewers get `locked` and a row
   // count — the real stores never enter this page's payload.
+  // `isPaid` stays plan-based (Meta panel, promo tier…): a one-time unlock does NOT make a Free user a Pro.
   const isPaid = (profile?.plan ?? "free") !== "free";
   const analysisResult = analysis.result as { summary?: string } | null;
   const nicheWinners = await loadNicheWinnersModule({
     status: analysis.status,
     url: analysis.url,
     summary: analysisResult?.summary ?? null,
-    isPaid,
+    // D1 (brief §9): the unlock includes Winners in your niche for THIS audit.
+    isPaid: fullReport,
     // Preferred: the real, variable-match winners the pipeline computed from
     // THIS store's screenshot (migration 0022). Falls back to the live path
     // for audits created before it existed.
@@ -140,7 +159,7 @@ export default async function AnalysisPage({
       // Server-side gate: the stored niche winners never leave the server, and
       // the Meta Ads Optimizer payload only reaches plans that can run Meta
       // (the only viewers the report renders it for).
-      initial={toClientAnalysis(analysis, { canSeeOptimizer: plan.unlocksScale }) as never}
+      initial={toClientAnalysis(analysis, { canSeeOptimizer: plan.unlocksScale, hasFullReport: fullReport }) as never}
       viewer={{
         canPublish: plan.canPublish,
         publishedSlug,
@@ -148,10 +167,17 @@ export default async function AnalysisPage({
         isScale: plan.unlocksScale,
         // P0.2 — Pro/Scale see the full "cure"; Free sees it blurred.
         isPaid,
+        // WP-2: sees the full cure of THIS audit (paid plan OR one-time unlock) — drives the fixes, persona,
+        // fix tracks and growth-map locks. Plan-only capabilities keep reading `isPaid`.
+        fullReport,
+        // WP-4 — offer the one-time unlock (REPORT_UNLOCK flag; the view still requires "no full report").
+        unlockOffer: reportUnlockEnabledFor(user.email),
         // P1-7 — Meta block access + monthly quota (null limit = unlimited).
         canRunMeta,
         metaLimit: metaUsage.limit,
         metaUsed: metaUsage.used,
+        // per-report allowance label ("1 projection included in this report") for the unlocked Free viewer
+        metaPerReport: unlockedFree,
         // Master brief §B/§C — "map as the spine" reframe (server-resolved flag).
         mapSpine: analyzerMapSpineEnabled(),
         // WP-4 — promote the Meta Campaign Simulator (server-resolved flag).

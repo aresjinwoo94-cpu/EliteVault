@@ -36,10 +36,12 @@ export default async function AppLayout({
         plan={profile?.plan ?? "free"}
         fullName={profile?.full_name ?? null}
       />
-      <AppSidebar profile={profile ?? null} />
+      <HideChromeOnCheckout>
+        <AppSidebar profile={profile ?? null} />
+      </HideChromeOnCheckout>
       <div className="flex-1 flex flex-col min-w-0">
-        {/* §5.1 — the payment route drops the chrome on phones; see the
-            component. Everywhere else, and on desktop, this is a no-op. */}
+        {/* The payment route drops the chrome at every size; see the
+            component. Everywhere else this is a no-op. */}
         <HideChromeOnCheckout>
           <AppTopbar profile={profile ?? null} />
         </HideChromeOnCheckout>

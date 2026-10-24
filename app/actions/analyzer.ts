@@ -3,11 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  createSupabaseServerClient,
+  createSupabaseServiceClient,
+} from "@/lib/supabase/server";
 import { inngest } from "@/inngest/client";
 import { normalizeUrl } from "@/lib/utils";
 import { BuyerPersonaSchema } from "@/ai/schemas";
 import { PLANS } from "@/lib/stripe/plans";
+import { chargeAndCreateAnalysis, refundAnalysis } from "@/lib/credits";
 import { assertQuota } from "@/lib/quota/guard";
 import { findReusableAnalysis } from "@/lib/analysis/reuse";
 import { validatePublicStoreUrl } from "@/lib/security/url-guard";
@@ -134,36 +138,30 @@ export async function createAnalysis(
     return { ok: false, error: quota.reason };
   }
 
-  // Deduct credit BEFORE queueing; refunded by Inngest on failure.
-  const { error: decErr } = await supabase
-    .from("profiles")
-    .update({ credits: profile.credits - 1 })
-    .eq("id", user.id);
-  if (decErr) return { ok: false, error: decErr.message };
-
-  // Create row
-  const { data: row, error: insErr } = await supabase
-    .from("analyses")
-    .insert({
-      user_id: user.id,
-      url,
-      screenshot_url: parsed.data.screenshotUrl ?? null,
-      buyer_persona: parsed.data.persona ?? null,
-      status: "queued",
-      credits_charged: 1,
-    })
-    .select("id")
-    .single();
-  if (insErr || !row) {
-    // Refund on failure
-    await supabase
-      .from("profiles")
-      .update({ credits: profile.credits })
-      .eq("id", user.id);
-    return { ok: false, error: insErr?.message ?? t("actionErr.createFailed") };
+  // Charge + create the audit in ONE atomic step (migration 0042): one credit is debited only if the
+  // user still has one, and the audit exists only if the debit happened. A failure later is refunded
+  // exactly once by refund_analysis (Inngest onFailure / the stale-run poller).
+  const service = createSupabaseServiceClient();
+  let analysisId: string | null;
+  try {
+    analysisId = await chargeAndCreateAnalysis(service, {
+      userId: user.id,
+      url: url ?? null,
+      screenshotUrl: parsed.data.screenshotUrl ?? null,
+      persona: parsed.data.persona ?? null,
+    });
+  } catch (e) {
+    return { ok: false, error: (e as Error).message || t("actionErr.createFailed") };
   }
+  if (!analysisId) {
+    // Lost a race for the last credit (assertQuota passed a moment ago): same message as the quota gate.
+    const again = await assertQuota(user.id, "analysis");
+    return { ok: false, error: again.ok ? t("actionErr.createFailed") : again.reason };
+  }
+  const row = { id: analysisId };
 
   // Kick the Inngest pipeline
+  try {
   await inngest.send({
     name: "analysis/requested",
     data: {
@@ -182,6 +180,11 @@ export async function createAnalysis(
       fast: isFree,
     },
   });
+  } catch (e) {
+    // The audit was charged but never queued: refund it now (exactly once) instead of waiting for a poll that may never come.
+    await refundAnalysis(service, row.id, t("actionErr.createFailed")).catch(() => {});
+    return { ok: false, error: (e as Error).message || t("actionErr.createFailed") };
+  }
 
   revalidatePath("/app");
   return { ok: true, id: row.id };

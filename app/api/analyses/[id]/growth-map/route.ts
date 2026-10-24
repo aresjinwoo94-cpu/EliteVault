@@ -7,6 +7,7 @@ import {
   readGrowthMovement,
 } from "@/lib/growth-map/build";
 import { compositeOf, projectPlacement } from "@/lib/growth-map/placement";
+import { resolveFullReport } from "@/lib/unlocks/entitlement";
 import {
   growthMapHistoryEnabled,
   growthMapPotentialEnabled,
@@ -62,7 +63,8 @@ export async function GET(
     return NextResponse.json({ error: "not_ready" }, { status: 409 });
   }
 
-  const isPaid = (profile?.plan ?? "free") !== "free";
+  // WP-2: full report = paid plan OR a one-time unlock of this audit
+  const isPaid = await resolveFullReport({ analysisId: id, userId: user.id, plan: profile?.plan ?? "free", email: user.email });
 
   try {
     const result = analysis.result as AnalysisResult;

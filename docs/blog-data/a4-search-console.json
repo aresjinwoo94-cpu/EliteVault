@@ -1,0 +1,465 @@
+{
+  "source": "Search Console export, Performance on Search, last 3 months, exported 2026-10-22 (web search)",
+  "site_clicks": 8318,
+  "site_impressions": 20608,
+  "brand_queries": {
+    "clicks": 7340,
+    "clicks_share_pct": 88.2,
+    "note": "the product name and misspellings; countries: La India 1726, Brasil 1625, Bangladés 755, Sudáfrica 345"
+  },
+  "blog": {
+    "clicks": 3,
+    "impressions": 1596,
+    "clicks_share_pct": 0.04,
+    "posts_with_impressions": 21,
+    "posts": [
+      {
+        "slug": "good-conversion-rate-for-shopify",
+        "clicks": 0,
+        "impressions": 551,
+        "position": 70.34
+      },
+      {
+        "slug": "how-to-increase-shopify-conversion-rate",
+        "clicks": 1,
+        "impressions": 327,
+        "position": 80.84
+      },
+      {
+        "slug": "abandoned-cart-recovery",
+        "clicks": 1,
+        "impressions": 158,
+        "position": 54.81
+      },
+      {
+        "slug": "free-website-audit-tools",
+        "clicks": 1,
+        "impressions": 107,
+        "position": 50.48
+      },
+      {
+        "slug": "why-customers-abandon-cart-2026",
+        "clicks": 0,
+        "impressions": 69,
+        "position": 7.49
+      },
+      {
+        "slug": "shopify-cro-audit",
+        "clicks": 0,
+        "impressions": 62,
+        "position": 72.48
+      },
+      {
+        "slug": "best-shopify-tools-increase-roas-2026",
+        "clicks": 0,
+        "impressions": 60,
+        "position": 8.17
+      },
+      {
+        "slug": "ecommerce-design-trends-2026",
+        "clicks": 0,
+        "impressions": 42,
+        "position": 6.83
+      },
+      {
+        "slug": "ai-ecommerce-statistics-revenue-impact",
+        "clicks": 0,
+        "impressions": 39,
+        "position": 13.18
+      },
+      {
+        "slug": "shopify-product-page",
+        "clicks": 0,
+        "impressions": 36,
+        "position": 24.08
+      },
+      {
+        "slug": "reverse-engineer-winning-shopify-stores",
+        "clicks": 0,
+        "impressions": 33,
+        "position": 13.15
+      },
+      {
+        "slug": "ecommerce-store-audit-vs-consultant",
+        "clicks": 0,
+        "impressions": 24,
+        "position": 5.58
+      },
+      {
+        "slug": "shopify-store-analyzer",
+        "clicks": 0,
+        "impressions": 22,
+        "position": 18.77
+      },
+      {
+        "slug": "is-your-store-ready-for-meta-ads",
+        "clicks": 0,
+        "impressions": 17,
+        "position": 19.94
+      },
+      {
+        "slug": "ecommerce-cro-specialist",
+        "clicks": 0,
+        "impressions": 14,
+        "position": 17.86
+      },
+      {
+        "slug": "why-meta-ads-arent-converting",
+        "clicks": 0,
+        "impressions": 12,
+        "position": 12.83
+      },
+      {
+        "slug": "store-analyzer-vs-shopify-analytics",
+        "clicks": 0,
+        "impressions": 9,
+        "position": 46.89
+      },
+      {
+        "slug": "store-audit-review-my-store-feedback",
+        "clicks": 0,
+        "impressions": 7,
+        "position": 20
+      },
+      {
+        "slug": "why-your-shopify-store-isnt-converting",
+        "clicks": 0,
+        "impressions": 3,
+        "position": 44.33
+      },
+      {
+        "slug": "ai-shopify-designer",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 1.5
+      },
+      {
+        "slug": "new-free-shopify-tools-2026",
+        "clicks": 0,
+        "impressions": 2,
+        "position": 7
+      }
+    ]
+  },
+  "top_pages_non_blog": [
+    {
+      "url": "https://elitevaultapp.com/",
+      "clicks": 8129,
+      "impressions": 17303,
+      "ctr": 46.98,
+      "position": 2.69
+    },
+    {
+      "url": "https://elitevaultapp.com/about",
+      "clicks": 128,
+      "impressions": 5691,
+      "ctr": 2.25,
+      "position": 2.43
+    },
+    {
+      "url": "https://elitevaultapp.com/meta-ads-forecast",
+      "clicks": 115,
+      "impressions": 715,
+      "ctr": 16.08,
+      "position": 7.28
+    },
+    {
+      "url": "https://elitevaultapp.com/pricing",
+      "clicks": 14,
+      "impressions": 976,
+      "ctr": 1.43,
+      "position": 3.1
+    },
+    {
+      "url": "https://elitevaultapp.com/free-website-audit",
+      "clicks": 7,
+      "impressions": 641,
+      "ctr": 1.09,
+      "position": 45.74
+    },
+    {
+      "url": "https://elitevaultapp.com/support",
+      "clicks": 5,
+      "impressions": 143,
+      "ctr": 3.5,
+      "position": 7.02
+    },
+    {
+      "url": "https://elitevaultapp.com/convertmate-alternative",
+      "clicks": 4,
+      "impressions": 83,
+      "ctr": 4.82,
+      "position": 13.14
+    },
+    {
+      "url": "https://elitevaultapp.com/winning-shopify-stores",
+      "clicks": 1,
+      "impressions": 61,
+      "ctr": 1.64,
+      "position": 12.97
+    }
+  ],
+  "non_brand_queries_top": [
+    {
+      "query": "meta ads simulator",
+      "clicks": 42,
+      "impressions": 151,
+      "ctr": 27.81,
+      "position": 2.41
+    },
+    {
+      "query": "meta ad simulator",
+      "clicks": 10,
+      "impressions": 27,
+      "ctr": 37.04,
+      "position": 2.48
+    },
+    {
+      "query": "meta ads simulator online",
+      "clicks": 5,
+      "impressions": 13,
+      "ctr": 38.46,
+      "position": 3.15
+    },
+    {
+      "query": "abandoned cart recovery",
+      "clicks": 1,
+      "impressions": 56,
+      "ctr": 1.79,
+      "position": 43.18
+    },
+    {
+      "query": "online store audit",
+      "clicks": 1,
+      "impressions": 39,
+      "ctr": 2.56,
+      "position": 54.67
+    },
+    {
+      "query": "meta ads manager simulator",
+      "clicks": 1,
+      "impressions": 5,
+      "ctr": 20,
+      "position": 3.8
+    },
+    {
+      "query": "ad simulator",
+      "clicks": 1,
+      "impressions": 2,
+      "ctr": 50,
+      "position": 11
+    },
+    {
+      "query": "webshop audit",
+      "clicks": 0,
+      "impressions": 197,
+      "ctr": 0,
+      "position": 71.26
+    },
+    {
+      "query": "shopify conversion rate",
+      "clicks": 0,
+      "impressions": 74,
+      "ctr": 0,
+      "position": 66.91
+    },
+    {
+      "query": "shopify conversion rates",
+      "clicks": 0,
+      "impressions": 51,
+      "ctr": 0,
+      "position": 64.02
+    },
+    {
+      "query": "good ecommerce conversion rate",
+      "clicks": 0,
+      "impressions": 51,
+      "ctr": 0,
+      "position": 78.65
+    },
+    {
+      "query": "deeper website audits with litescroll pro",
+      "clicks": 0,
+      "impressions": 39,
+      "ctr": 0,
+      "position": 9.9
+    },
+    {
+      "query": "improve shopify conversion rate",
+      "clicks": 0,
+      "impressions": 39,
+      "ctr": 0,
+      "position": 85.72
+    },
+    {
+      "query": "shopify increase conversions",
+      "clicks": 0,
+      "impressions": 38,
+      "ctr": 0,
+      "position": 89.45
+    },
+    {
+      "query": "how to increase conversion rate shopify",
+      "clicks": 0,
+      "impressions": 37,
+      "ctr": 0,
+      "position": 80.89
+    },
+    {
+      "query": "what is a good conversion rate on shopify",
+      "clicks": 0,
+      "impressions": 33,
+      "ctr": 0,
+      "position": 68.24
+    },
+    {
+      "query": "shopify cro audit",
+      "clicks": 0,
+      "impressions": 33,
+      "ctr": 0,
+      "position": 74.39
+    },
+    {
+      "query": "how to increase conversion rate on shopify",
+      "clicks": 0,
+      "impressions": 30,
+      "ctr": 0,
+      "position": 72.67
+    },
+    {
+      "query": "website auditor review",
+      "clicks": 0,
+      "impressions": 29,
+      "ctr": 0,
+      "position": 90.83
+    },
+    {
+      "query": "what is a good ecommerce conversion rate",
+      "clicks": 0,
+      "impressions": 28,
+      "ctr": 0,
+      "position": 81.54
+    },
+    {
+      "query": "top-performing shopify beauty stores",
+      "clicks": 0,
+      "impressions": 23,
+      "ctr": 0,
+      "position": 59.48
+    },
+    {
+      "query": "free ecommerce audit",
+      "clicks": 0,
+      "impressions": 22,
+      "ctr": 0,
+      "position": 88.23
+    },
+    {
+      "query": "increase shopify conversion rate",
+      "clicks": 0,
+      "impressions": 21,
+      "ctr": 0,
+      "position": 75.14
+    },
+    {
+      "query": "how to increase shopify conversion rate",
+      "clicks": 0,
+      "impressions": 20,
+      "ctr": 0,
+      "position": 76.35
+    },
+    {
+      "query": "ecommerce website audit tool",
+      "clicks": 0,
+      "impressions": 20,
+      "ctr": 0,
+      "position": 80.45
+    },
+    {
+      "query": "shopify store analyzer",
+      "clicks": 0,
+      "impressions": 18,
+      "ctr": 0,
+      "position": 17.83
+    },
+    {
+      "query": "ecommerce store audit",
+      "clicks": 0,
+      "impressions": 18,
+      "ctr": 0,
+      "position": 82.5
+    },
+    {
+      "query": "what is a good conversion rate for ecommerce",
+      "clicks": 0,
+      "impressions": 17,
+      "ctr": 0,
+      "position": 80.94
+    },
+    {
+      "query": "how to improve shopify conversion rate",
+      "clicks": 0,
+      "impressions": 17,
+      "ctr": 0,
+      "position": 81.76
+    },
+    {
+      "query": "increase conversion rate shopify",
+      "clicks": 0,
+      "impressions": 16,
+      "ctr": 0,
+      "position": 83.69
+    }
+  ],
+  "non_brand_queries_with_clicks": [
+    {
+      "query": "meta ads simulator",
+      "clicks": 42,
+      "impressions": 151,
+      "ctr": 27.81,
+      "position": 2.41
+    },
+    {
+      "query": "meta ad simulator",
+      "clicks": 10,
+      "impressions": 27,
+      "ctr": 37.04,
+      "position": 2.48
+    },
+    {
+      "query": "meta ads simulator online",
+      "clicks": 5,
+      "impressions": 13,
+      "ctr": 38.46,
+      "position": 3.15
+    },
+    {
+      "query": "abandoned cart recovery",
+      "clicks": 1,
+      "impressions": 56,
+      "ctr": 1.79,
+      "position": 43.18
+    },
+    {
+      "query": "online store audit",
+      "clicks": 1,
+      "impressions": 39,
+      "ctr": 2.56,
+      "position": 54.67
+    },
+    {
+      "query": "meta ads manager simulator",
+      "clicks": 1,
+      "impressions": 5,
+      "ctr": 20,
+      "position": 3.8
+    },
+    {
+      "query": "ad simulator",
+      "clicks": 1,
+      "impressions": 2,
+      "ctr": 50,
+      "position": 11
+    }
+  ]
+}

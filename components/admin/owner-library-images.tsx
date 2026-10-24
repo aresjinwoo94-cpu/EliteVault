@@ -17,7 +17,9 @@ function thumbSrc(url: string | null): string | null {
 }
 
 export function OwnerLibraryImages({ rows }: { rows: LibraryImageRow[] }) {
-  const missing = rows.filter((r) => !r.permanent).length;
+  const missingRows = rows.filter((r) => !r.permanent);
+  const withImage = rows.filter((r) => r.permanent);
+  const missing = missingRows.length;
   return (
     <section className="rounded-2xl border border-white/[0.06] bg-card/40 p-5 md:p-7">
       <header className="flex flex-wrap items-center justify-between gap-3">
@@ -26,7 +28,9 @@ export function OwnerLibraryImages({ rows }: { rows: LibraryImageRow[] }) {
             Imágenes de la Library
           </h2>
           <p className="mt-1 text-sm text-white/45">
-            Sube una imagen permanente por tienda. Las que faltan aparecen primero.
+            Una tienda sin imagen real no se publica. Sube la imagen de las que el sistema no pudo
+            conseguir (tras 3 intentos automáticos) y se publican solas. Tus imágenes están protegidas:
+            ningún proceso las reemplaza.
           </p>
         </div>
         <span
@@ -41,8 +45,23 @@ export function OwnerLibraryImages({ rows }: { rows: LibraryImageRow[] }) {
         </span>
       </header>
 
-      <div className="mt-5 grid gap-2.5 sm:grid-cols-2">
-        {rows.map((r) => (
+      {missingRows.length > 0 && (
+        <>
+          <h3 className="mt-6 text-xs font-medium uppercase tracking-wider text-warning">
+            Sin imagen ({missingRows.length})
+          </h3>
+          <div className="mt-2 grid gap-2.5 sm:grid-cols-2">
+            {missingRows.map((r) => (
+              <ImageRow key={r.id} row={r} />
+            ))}
+          </div>
+        </>
+      )}
+      <h3 className="mt-6 text-xs font-medium uppercase tracking-wider text-white/40">
+        Con imagen ({withImage.length})
+      </h3>
+      <div className="mt-2 grid gap-2.5 sm:grid-cols-2">
+        {withImage.map((r) => (
           <ImageRow key={r.id} row={r} />
         ))}
       </div>
@@ -107,6 +126,14 @@ function ImageRow({ row }: { row: LibraryImageRow }) {
           <span>·</span>
           <span className="truncate">{row.domain}</span>
         </p>
+        {!row.permanent && (
+          <p className="truncate text-[11px] text-warning/80">
+            {row.status}
+            {row.reviewReason ? ` · ${row.reviewReason}` : ""}
+            {row.attempts > 0 ? ` · ${row.attempts} intento(s) automático(s)` : " · en cola"}
+          </p>
+        )}
+        {row.source === "owner" && <p className="text-[11px] text-success/70">protegida (tuya)</p>}
         {error && <p className="mt-0.5 text-[11px] text-destructive">{error}</p>}
       </div>
 
