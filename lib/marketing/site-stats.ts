@@ -33,10 +33,19 @@ function internalEmails(): string[] {
 }
 
 /**
- * Completed audits (status 'succeeded'), EXCLUDING audits run by internal
- * accounts (INTERNAL_EMAILS plus *.local test addresses). If INTERNAL_EMAILS is
- * not configured we cannot tell internal from real, so we return null (counter
- * hidden) instead of overstating. Refunded audits are never counted.
+ * Stores that belong to the owner/company: audits of THESE are product tests,
+ * not usage, so they are excluded from the public counter (anonymous runs on
+ * them can't be tied to an internal account, hence the domain rule).
+ */
+const INTERNAL_AUDIT_DOMAINS = ["elitevaultapp.com", "vitallivingstore.com", "vita-lliving.myshopify.com"];
+
+/**
+ * Completed audits (status 'succeeded'), EXCLUDING:
+ *   • audits run by internal accounts (INTERNAL_EMAILS plus *.local test addresses), and
+ *   • audits OF our own stores (INTERNAL_AUDIT_DOMAINS), signed-in or anonymous.
+ * If INTERNAL_EMAILS is not configured we cannot tell internal from real, so we
+ * throw (→ null → counter hidden) instead of overstating. Refunded audits are
+ * never counted.
  */
 const fetchAuditsCompleted = unstable_cache(
   async (): Promise<number> => {
@@ -50,31 +59,23 @@ const fetchAuditsCompleted = unstable_cache(
       .eq("status", "succeeded");
     if (e1 || typeof total !== "number") throw new Error("analyses count failed");
 
-    const { data: profiles, error: e2 } = await svc
-      .from("profiles")
-      .select("id, email")
-      .limit(20000);
+    // Internal accounts: filtered in SQL (no row cap), not by reading every profile.
+    const emailFilter = [...emails.map((e) => `email.eq.${e}`), "email.ilike.*.local"].join(",");
+    const { data: profiles, error: e2 } = await svc.from("profiles").select("id").or(emailFilter);
     if (e2 || !Array.isArray(profiles)) throw new Error("profiles read failed");
-    const internalIds = (profiles as { id: string; email: string | null }[])
-      .filter((p) => {
-        const em = (p.email ?? "").toLowerCase();
-        return emails.includes(em) || em.endsWith(".local");
-      })
-      .map((p) => p.id);
+    const internalIds = (profiles as { id: string }[]).map((r) => r.id);
 
-    let internal = 0;
-    for (let i = 0; i < internalIds.length; i += 100) {
-      const { count, error } = await svc
-        .from("analyses")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "succeeded")
-        .in("user_id", internalIds.slice(i, i + 100));
-      if (error || typeof count !== "number") throw new Error("internal count failed");
-      internal += count;
-    }
+    const clauses = INTERNAL_AUDIT_DOMAINS.map((d) => `url.ilike.*${d}*`);
+    if (internalIds.length > 0) clauses.push(`user_id.in.(${internalIds.join(",")})`);
+    const { count: internal, error: e3 } = await svc
+      .from("analyses")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "succeeded")
+      .or(clauses.join(","));
+    if (e3 || typeof internal !== "number") throw new Error("internal count failed");
     return Math.max(0, total - internal);
   },
-  ["landing-audits-completed"],
+  ["landing-audits-completed-v2"],
   { revalidate: REVALIDATE_SECONDS },
 );
 

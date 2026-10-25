@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getT } from "@/lib/i18n/server";
 import { PLANS } from "@/lib/stripe/plans";
 import { getInUseData } from "@/lib/marketing/site-stats";
@@ -56,8 +57,6 @@ const fill = (s: string, vars: Record<string, string | number>) =>
 
 export async function Toolkit() {
   const { t } = await getT();
-  const inUse = await getInUseData();
-
   const pro = PLANS.pro.name;
   const scale = PLANS.scale.name;
   const freeStores = PLANS.free.libraryFullMetricsCap;
@@ -125,8 +124,6 @@ export async function Toolkit() {
     dDays: t("toolkit.dDays"),
   };
 
-  const counterLabel = { audits: "toolkit.cAudits", stores: "toolkit.cStores", niches: "toolkit.cNiches" } as const;
-
   return (
     <section
       id="analyzer"
@@ -168,34 +165,11 @@ export async function Toolkit() {
           </p>
         </TrustReveal>
 
-        {/* 03 — in use (hidden entirely if fewer than 2 counters pass their threshold) */}
-        {inUse.counters.length > 0 && (
-          <TrustReveal className="mt-8 border-t border-white/[0.04] pt-6 md:mt-10 md:pt-8">
-            <p className="text-center font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">
-              {t("toolkit.inUse")}
-            </p>
-            <ul
-              className={`mx-auto mt-4 grid max-w-3xl gap-4 ${
-                inUse.counters.length >= 3 ? "grid-cols-3" : "grid-cols-2"
-              }`}
-            >
-              {inUse.counters.map((c) => (
-                <li key={c.key} className="text-center">
-                  <p className="font-mono text-2xl tabular-nums text-white md:text-4xl">
-                    {c.value.toLocaleString("en-US")}
-                    {c.key === "niches" ? "" : "+"}
-                  </p>
-                  <p className="mt-1 text-xs text-white/50 md:text-sm">{t(counterLabel[c.key])}</p>
-                </li>
-              ))}
-            </ul>
-            {inUse.aiVisits !== null && (
-              <p className="mt-4 text-center text-xs text-white/40">
-                {fill(t("toolkit.aiLine"), { n: inUse.aiVisits.toLocaleString("en-US") })}
-              </p>
-            )}
-          </TrustReveal>
-        )}
+        {/* 03 — in use. Streams in: the counters' queries (cached 6 h, 1.5 s timeout) must never hold up
+            the first byte of the landing. The fallback only reserves the space. */}
+        <Suspense fallback={<div aria-hidden className="mt-8 h-28 md:mt-10 md:h-32" />}>
+          <InUseBlock t={t} />
+        </Suspense>
 
         {/* CTA — a single button */}
         <div className="mt-8 flex justify-center md:mt-10">
@@ -203,5 +177,39 @@ export async function Toolkit() {
         </div>
       </div>
     </section>
+  );
+}
+
+/** Block 03 — "In use" (hidden entirely if fewer than 2 counters pass their threshold). */
+async function InUseBlock({ t }: { t: (path: string) => string }) {
+  const inUse = await getInUseData();
+  if (inUse.counters.length === 0) return null;
+  const counterLabel = { audits: "toolkit.cAudits", stores: "toolkit.cStores", niches: "toolkit.cNiches" } as const;
+  return (
+          <TrustReveal className="mt-8 border-t border-white/[0.04] pt-6 md:mt-10 md:pt-8">
+        <p className="text-center font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">
+          {t("toolkit.inUse")}
+        </p>
+        <ul
+          className={`mx-auto mt-4 grid max-w-3xl gap-4 ${
+            inUse.counters.length >= 3 ? "grid-cols-3" : "grid-cols-2"
+          }`}
+        >
+          {inUse.counters.map((c) => (
+            <li key={c.key} className="text-center">
+              <p className="font-mono text-2xl tabular-nums text-white md:text-4xl">
+                {c.value.toLocaleString("en-US")}
+                {c.key === "niches" ? "" : "+"}
+              </p>
+              <p className="mt-1 text-xs text-white/50 md:text-sm">{t(counterLabel[c.key])}</p>
+            </li>
+          ))}
+        </ul>
+        {inUse.aiVisits !== null && (
+          <p className="mt-4 text-center text-xs text-white/40">
+            {fill(t("toolkit.aiLine"), { n: inUse.aiVisits.toLocaleString("en-US") })}
+          </p>
+        )}
+      </TrustReveal>
   );
 }

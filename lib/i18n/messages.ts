@@ -1577,7 +1577,7 @@ const es: Dict = {
     actSimulator: "Ver demo",
     simNote: "Meta Ads Optimizer en {scale}",
     aCap1: "Growth Map: dónde está tu tienda y qué la frena.",
-    aCap2: "Fixes ordenados por impacto, con esfuerzo e impacto.",
+    aCap2: "Fixes ordenados por palanca, con su esfuerzo e impacto.",
     aCap3: "Tu propia página, anotada: cada problema marcado sobre ella.",
     lCap1: "Una biblioteca curada: las ganadoras se revisan antes de publicarse.",
     lCap2: "Explora las ganadoras por nicho.",
