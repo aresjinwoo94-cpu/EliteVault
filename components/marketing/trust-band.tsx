@@ -130,7 +130,7 @@ export async function TrustBand() {
           ))}
         </ul>
 
-        {/* Mini comparison vs. a generic AI chat (no brand named). */}
+        {/* Mini comparison vs. a generic AI chat (no brand named). EliteVault (✓) on the left, the generic chat (✗) on the right. */}
         <TrustReveal className="mt-6">
           <div className="rounded-xl border border-white/[0.06] bg-white/[0.015] p-4 md:p-6">
             <p className="text-center font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
@@ -142,18 +142,18 @@ export async function TrustBand() {
                   key={n}
                   className="grid grid-cols-1 gap-2 py-3 first:pt-0 last:pb-0 md:grid-cols-2 md:gap-6"
                 >
-                  <p className="flex items-start gap-2 text-xs leading-relaxed text-white/45 md:text-sm">
-                    <X className="mt-0.5 size-4 shrink-0 text-white/30" aria-hidden />
-                    <span>
-                      <span className="sr-only">{t("trustBand.vsGeneric")}: </span>
-                      {t(`trustBand.vs${n}Generic`)}
-                    </span>
-                  </p>
                   <p className="flex items-start gap-2 text-xs leading-relaxed text-white/85 md:text-sm">
                     <Check className="mt-0.5 size-4 shrink-0 text-signal-300" aria-hidden />
                     <span>
                       <span className="sr-only">{t("trustBand.vsUs")}: </span>
                       {t(`trustBand.vs${n}Us`)}
+                    </span>
+                  </p>
+                  <p className="flex items-start gap-2 text-xs leading-relaxed text-white/45 md:text-sm">
+                    <X className="mt-0.5 size-4 shrink-0 text-white/30" aria-hidden />
+                    <span>
+                      <span className="sr-only">{t("trustBand.vsGeneric")}: </span>
+                      {t(`trustBand.vs${n}Generic`)}
                     </span>
                   </p>
                 </li>
