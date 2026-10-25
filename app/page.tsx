@@ -74,7 +74,7 @@ import { TrustBand } from "@/components/marketing/trust-band";
 import { ScanDivider } from "@/components/marketing/scan-field";
 import { FeaturesShowcase } from "@/components/marketing/features-showcase";
 import { ComparisonTable } from "@/components/marketing/comparison-table";
-import { AnalyzerDemo } from "@/components/marketing/analyzer-demo";
+import { Toolkit } from "@/components/marketing/toolkit";
 import { TwoPaths } from "@/components/marketing/two-paths";
 import { SocialProof } from "@/components/marketing/social-proof";
 import { Reviews } from "@/components/marketing/reviews";
@@ -220,14 +220,14 @@ export default async function HomePage() {
         <Hero />
         <SocialStrip />
         <TrustBand />
-        <AnalyzerDemo />
+        <Toolkit />
         <ScanDivider />
         <TwoPaths />
         <FeaturesShowcase />
         {/* Verified proof paid EARLY: with the verified-stats layer, reviews are
             hard evidence (real money + audit count + verified check), not vibes.
             The skeptical reader sees that proof BEFORE the "us vs competitors"
-            table and the founder's close. Flow: product (AnalyzerDemo, Features)
+            table and the founder's close. Flow: product (Toolkit, Features)
             → real proof (Reviews) → differentiation (Comparison) → founder
             credibility (SocialProof) → pricing.
             ALT (1-line swap if Ariel prefers the proof cluster kept together

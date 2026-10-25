@@ -40,6 +40,9 @@ export function roundDownStoreCount(n: number): number {
   return Math.floor(n / step) * step;
 }
 
+/** Raw published+live store count (throws on failure; callers wrap it). */
+export const getWinningStoresCountRaw = fetchCount;
+
 /** Rounded store count, or null ⇒ render the seal without a number. */
 export async function getWinningStoresCountRounded(): Promise<number | null> {
   try {
