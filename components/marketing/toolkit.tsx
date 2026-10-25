@@ -3,8 +3,10 @@ import { getT } from "@/lib/i18n/server";
 import { PLANS } from "@/lib/stripe/plans";
 import { getInUseData } from "@/lib/marketing/site-stats";
 import { readySecondaryTeasers } from "./teasers";
-import { ToolkitCards, type ToolAction, type ToolCardData } from "./toolkit-cards";
-import { ToolkitDiagramStyles } from "./toolkit-diagrams";
+import { ArrowRight } from "lucide-react";
+import { ToolkitController } from "./toolkit-controller";
+import type { ToolAction, ToolCardData, ToolId, ToolkitLabels } from "./toolkit-types";
+import { AnalyzerDiagram, LibraryDiagram, SimulatorDiagram, ToolkitDiagramStyles } from "./toolkit-diagrams";
 import { ToolkitCta } from "./toolkit-cta";
 import { TrustReveal } from "./trust-band-client";
 
@@ -142,7 +144,8 @@ export async function Toolkit() {
           </h2>
         </TrustReveal>
         <div className="mt-6 md:mt-8">
-          <ToolkitCards tools={tools} labels={labels} />
+          <ToolGrid tools={tools} labels={labels} />
+          <ToolkitController tools={tools} labels={labels} />
         </div>
 
         {/* 02 — built on */}
@@ -211,5 +214,50 @@ async function InUseBlock({ t }: { t: (path: string) => string }) {
           </p>
         )}
       </TrustReveal>
+  );
+}
+
+function Diagram({ id, labels }: { id: ToolId; labels: ToolkitLabels }) {
+  if (id === "analyzer") return <AnalyzerDiagram potentialLabel={labels.dPotential} />;
+  if (id === "library") return <LibraryDiagram youLabel={labels.dYourStore} topLabel={labels.dTop} />;
+  return <SimulatorDiagram breakEvenLabel={labels.dBreakEven} daysLabel={labels.dDays} />;
+}
+
+/**
+ * The 3 cards are SERVER-rendered HTML (no hydration cost on the landing's
+ * critical path): real <button>s that ToolkitController wires up by event
+ * delegation and opens the lightbox for. `data-in` arms the CSS-only diagram
+ * animation once the card scrolls into view.
+ */
+function ToolGrid({ tools, labels }: { tools: ToolCardData[]; labels: ToolkitLabels }) {
+  return (
+    <ul className="grid grid-cols-1 gap-3 md:gap-4 lg:grid-cols-3">
+      {tools.map((tool) => (
+        <li key={tool.id}>
+          <button
+            type="button"
+            data-tool={tool.id}
+            data-in="false"
+            aria-haspopup="dialog"
+            className="group flex h-full w-full cursor-pointer flex-col rounded-xl border border-white/[0.06] bg-white/[0.015] p-3.5 text-left transition-colors hover:border-white/[0.14] hover:bg-white/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-500/60 md:p-5"
+          >
+            <span className="block aspect-[5/3] w-full max-md:mx-auto max-md:max-h-[150px]">
+              <Diagram id={tool.id} labels={labels} />
+            </span>
+            <span className="mt-3 block font-serif text-base text-white md:mt-4">{tool.name}</span>
+            <span className="mt-1 block text-sm leading-relaxed text-white/55">{tool.line}</span>
+            <span className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-3">
+              <span className="rounded-full border border-signal-500/25 bg-signal-600/10 px-2.5 py-0.5 font-mono text-[11px] text-signal-200">
+                {tool.pill}
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-sm text-signal-300 transition-colors group-hover:text-signal-200">
+                {labels.seeIt}
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+              </span>
+            </span>
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }
