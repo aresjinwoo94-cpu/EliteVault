@@ -177,6 +177,7 @@ export function AnonAuditBox({
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && submit()}
+            data-audit-source={source}
             placeholder={t("hero.inputPlaceholder")}
             aria-label={t("hero.inputPlaceholder")}
             disabled={isPending}

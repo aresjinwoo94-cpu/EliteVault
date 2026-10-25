@@ -17,7 +17,7 @@ import { getWinningStoresCountRounded } from "@/lib/library/winning-sites-count"
 import { ReviewsChipLink, TrustReveal } from "./trust-band-client";
 
 /**
- * Trust band — sits between SocialStrip and AnalyzerDemo (replaces "Who it's
+ * Trust band — sits between SocialStrip and the Toolkit section (replaces "Who it's
  * for"). It builds trust in the METHOD and the DATA, not in payments (Stripe /
  * SSL live in the hero and SocialProof, don't repeat them here).
  *

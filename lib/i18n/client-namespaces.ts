@@ -19,11 +19,9 @@
  * either direction, so a missing entry can't reach production as raw keys.
  */
 export const CORE_NAMESPACES = [
-  "analyzerDemo",
   "anonGate",
   "auth",
   "authForm",
-  "collage",
   "common",
   "compare",
   "contactForm",

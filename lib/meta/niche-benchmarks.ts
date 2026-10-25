@@ -46,6 +46,9 @@ const NICHE_TABLE: RawBand[] = [
   { keys: ["tech", "accessor", "eyewear", "glasses"], cpm: [15, 25], ctr: [0.015, 0.03], roas: [1.5, 2.5] },
 ];
 
+/** Number of niche families with their own benchmark bands (excludes the market-average fallback). */
+export const NICHE_COUNT = NICHE_TABLE.length;
+
 // Market-average fallback (blend of the table) for unclassifiable niches.
 const DEFAULT_RAW: RawBand = { keys: [], cpm: [14, 28], ctr: [0.011, 0.028], roas: [1.4, 2.8] };
 

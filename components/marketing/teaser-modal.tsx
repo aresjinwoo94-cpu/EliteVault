@@ -44,7 +44,7 @@ export function TeaserModal({
               key={teaser.id}
               teaser={teaser}
               ariaLabel={t(teaser.titleKey)}
-              playLabel={t("analyzerDemo.videoPlay")}
+              playLabel={t("teasers.playDemo")}
               durationLabel={t(teaser.durationLabelKey)}
               preload="none"
               autoPlay={open}

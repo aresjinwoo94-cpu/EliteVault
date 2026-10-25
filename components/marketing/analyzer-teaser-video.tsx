@@ -40,8 +40,8 @@ export function AnalyzerTeaserVideo() {
 
       <TeaserFrame
         teaser={MAIN_TEASER}
-        ariaLabel={t("analyzerDemo.videoAria")}
-        playLabel={t("analyzerDemo.videoPlay")}
+        ariaLabel={t("teasers.mainVideoAria")}
+        playLabel={t("teasers.mainVideoPlay")}
         durationLabel={t("hero.teaserDuration")}
         preload="metadata"
       />
