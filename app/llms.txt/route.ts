@@ -43,7 +43,7 @@ EliteVault is operated by ${COMPANY.legalEntity} (${COMPANY.country}). Scores, p
 - [Terms of Service](${base}/legal/terms)
 
 ## Data & privacy
-EliteVault processes the URLs and screenshots you submit with Google Gemini to generate audits. EliteVault does not train AI models on customer content and never sells it. EliteVault currently runs on Gemini's free tier, under which Google may use submitted content to improve its products and human reviewers may process it — see the Privacy Policy for details.
+EliteVault processes the URLs and screenshots you submit with Google Gemini to generate audits. EliteVault does not train AI models on customer content and never sells it. EliteVault currently runs on Gemini's free tier, under which Google may use submitted content to improve its products and human reviewers may process it. Audits are private to the account that ran them unless the user creates a public share link; audits run without an account can only be opened from the browser session that started them. Page URLs are also sent to third-party screenshot-capture services. See the Privacy Policy for details.
 
 ## Contact
 ${COMPANY.contactEmail}

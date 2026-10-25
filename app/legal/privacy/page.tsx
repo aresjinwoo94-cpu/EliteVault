@@ -7,13 +7,12 @@ export const metadata: Metadata = {
   alternates: { canonical: "/legal/privacy" },
 };
 
-const LAST_UPDATED = "June 2026";
+const LAST_UPDATED = "October 2026";
 const CONTACT = "support@elitevaultapp.com";
 
 export default function PrivacyPage() {
   return (
     <>
-      {/* TODO: revisión legal profesional antes de producción */}
       <p className="text-xs uppercase tracking-widest text-white/40">Legal</p>
       <h1 className="mt-1 font-serif text-3xl md:text-4xl tracking-tight text-white">
         Privacy Policy
@@ -48,7 +47,14 @@ export default function PrivacyPage() {
           <li>
             <strong>Content you submit for analysis</strong> — the store URLs you
             audit and the screenshots captured or uploaded for those audits,
-            which are stored in our hosted storage to render your results.
+            which are stored in our hosted storage to render your results. Audits
+            can also be run without an account; those are stored the same way
+            (see sections 5 and 7).
+          </li>
+          <li>
+            <strong>Support messages</strong> — questions you type in the help chat
+            or send through the contact form. Chat questions are answered with the
+            same AI provider described in section 5.
           </li>
           <li>
             <strong>Billing data</strong> — handled by Stripe. We store a Stripe
@@ -73,11 +79,20 @@ export default function PrivacyPage() {
 
         <h2>4. Legal basis</h2>
         <p>
-          Where applicable (e.g. under the GDPR), we process personal data to
-          perform our contract with you, on the basis of our legitimate interests
-          in operating and securing the service, to comply with legal
-          obligations, and—where required—with your consent.{" "}
-          <strong>[Confirmar bases legales con asesoría según jurisdicción.]</strong>
+          Where data-protection laws such as the GDPR or UK GDPR apply, we rely
+          on: performance of a contract (to provide the audits and account you
+          request); our legitimate interests (to secure, maintain and improve the
+          service and prevent abuse); compliance with legal obligations (e.g. tax
+          and accounting records); and your consent where the law requires it,
+          which you can withdraw at any time.
+        </p>
+        <p>
+          We do not currently show a cookie-consent banner. Our product analytics
+          (PostHog, plus Vercel Web Analytics and Speed Insights) run on the basis
+          of our legitimate interests in understanding and improving the service.
+          PostHog honours your browser&apos;s Do Not Track setting, and you can ask
+          us to exclude you from analytics at any time by emailing{" "}
+          <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.
         </p>
 
         <h2>5. AI processing</h2>
@@ -92,7 +107,21 @@ export default function PrivacyPage() {
             EliteVault does not train any AI model on your URLs, screenshots, or
             audits, and we never sell them.
           </strong>{" "}
-          Your analyses are private to your account.
+          Your analyses are private to your account unless you create a share
+          link. A share link opens a public, read-only page (verdict or score, summary,
+          annotations and the screenshot) that anyone with the link can view and
+          that search engines may index; we do not currently offer a self-serve
+          way to turn a link off, so email us and we will remove it. Audits run
+          without an account can only be opened from the browser session that
+          started them, until you create an account to keep them.
+        </p>
+        <p>
+          <strong>Community and reviews.</strong> If you publish an audit to the
+          Community (paid plans), a public snapshot of it is shown on our site
+          until you unpublish it; the original audit stays private. Reviews you
+          submit, including your displayed name and any photos you attach, may
+          be shown publicly on our site once approved; email us to have one
+          removed.
         </p>
         <p>
           <strong>How Google uses this content.</strong> EliteVault currently
@@ -111,12 +140,19 @@ export default function PrivacyPage() {
         <p>We rely on the following processors to operate EliteVault:</p>
         <ul>
           <li><strong>Stripe</strong> — payment processing and billing.</li>
-          <li><strong>Google (Gemini)</strong> — AI processing of audits.</li>
+          <li><strong>Google (Gemini)</strong> — AI processing of audits and of help-chat questions.</li>
+          <li><strong>Google (Sign-In)</strong> — optional &ldquo;Continue with Google&rdquo; login.</li>
           <li><strong>Supabase</strong> — database, authentication, and file storage.</li>
+          <li><strong>Inngest</strong> — background job queue that runs audits (receives the audited URL and account/audit identifiers).</li>
           <li><strong>Resend</strong> — transactional email delivery.</li>
-          <li><strong>Vercel</strong> — application hosting and delivery.</li>
+          <li><strong>Vercel</strong> — application hosting and delivery, plus Vercel Web Analytics and Speed Insights.</li>
           <li><strong>PostHog</strong> — product analytics.</li>
-          <li><strong>ScreenshotOne</strong> — website screenshot capture (when used).</li>
+          <li>
+            <strong>ScreenshotOne, Microlink, thum.io and WordPress mshots
+            (Automattic)</strong> — website screenshot capture. They receive the
+            public URL of the page to capture (not your account data); we use
+            them as fallbacks for one another.
+          </li>
         </ul>
         <p>
           Each processor handles data only as needed to provide its service to
@@ -125,18 +161,29 @@ export default function PrivacyPage() {
 
         <h2>7. Data retention</h2>
         <p>
-          We keep your account and audit data for as long as your account is
-          active. When you delete your account, we delete or anonymize your
-          personal data within a reasonable period, except where we must retain
-          certain records (e.g. billing) to meet legal obligations.{" "}
-          <strong>[Definir periodos de retención concretos con asesoría.]</strong>
+          <strong>Account data and audits:</strong> kept while your account is
+          active, including the screenshots stored for those audits (a screenshot
+          may also be reused to speed up a repeat audit of the same URL).{" "}
+          <strong>Deletion:</strong> you can request deletion of your account and
+          data at any time by emailing <a href={`mailto:${CONTACT}`}>{CONTACT}</a>;
+          we complete it within 30 days (there is no self-serve deletion yet).{" "}
+          <strong>Anonymous audits</strong> (run without an account): kept until
+          deleted on request; they are not removed automatically.{" "}
+          <strong>Shared audits:</strong> a share link stays public until we
+          remove it on request.{" "}
+          <strong>Billing records:</strong> kept as required by tax and accounting
+          law (generally up to 7 years); card data is held by Stripe, not by us.{" "}
+          <strong>Server and analytics logs:</strong> kept according to our
+          providers&apos; standard retention.
         </p>
 
         <h2>8. International transfers</h2>
         <p>
-          Our providers may process data in countries other than yours. Where
-          required, such transfers are covered by appropriate safeguards.{" "}
-          <strong>[Confirmar mecanismos de transferencia según jurisdicción.]</strong>
+          EliteVault is operated from the United States, and our providers may
+          process data in the US and other countries. Where required, transfers
+          rely on safeguards offered by those providers, such as the EU Standard
+          Contractual Clauses or the EU-U.S. Data Privacy Framework where the
+          provider is certified.
         </p>
 
         <h2>9. Your rights</h2>
@@ -144,7 +191,9 @@ export default function PrivacyPage() {
           Depending on your location, you may have the right to access, correct,
           delete, export, or restrict the processing of your personal data, and
           to object to certain processing. To exercise any of these rights,
-          contact us at <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.
+          contact us at <a href={`mailto:${CONTACT}`}>{CONTACT}</a>. We respond
+          within 30 days. If you are in the EU or UK, you can also complain to
+          your local data-protection authority.
         </p>
 
         <h2>10. Changes to this policy</h2>

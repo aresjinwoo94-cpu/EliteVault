@@ -25,8 +25,13 @@ const BASE_FAQ_ITEMS: FaqItem[] = [
     a: "One click in the Stripe Customer Portal. No retention emails, no calls.",
   },
   {
-    q: "Do my analyses train your AI?",
-    a: "No. Your URLs, screenshots and audits are private to your account. We don't train models on customer data, and we don't share screenshots with third parties.",
+    // Keep in sync with /legal/privacy §5, faqContent.q4/a4 in lib/i18n/dict/ui-{en,es}.json,
+    // lib/support/kb.ts ("data-training"), supportPage.privacyBody and app/llms.txt.
+    // If Gemini moves to the PAID tier, change two things: drop "We currently use Gemini's
+    // free tier... confidential or personal information." and say Google does not use
+    // paid-tier content to improve its products.
+    q: "What happens to my screenshots and data?",
+    a: "We never train models on your data and we never sell it. To run an audit, your page URL and screenshot are processed by our AI provider, Google Gemini. We currently use Gemini's free tier, where Google may use submitted content to improve its services, so avoid auditing pages with confidential or personal information. Audits are private to your account unless you create a share link. Details in our Privacy Policy (/legal/privacy).",
   },
 ];
 
