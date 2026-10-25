@@ -89,8 +89,8 @@ const CURATED: KbEntry[] = [
   {
     id: "data-training",
     category: "legal",
-    q: "Do you train AI on my data?",
-    a: "No. Your URLs, screenshots, and audits are private to your account. We process them with Google Gemini to generate your result, but we do not train AI models on your content and do not sell or share your screenshots with third parties. See /legal/privacy.",
+    q: "What happens to my screenshots and data? Do you train AI on them?",
+    a: "We never train AI models on your content and never sell it. To run an audit, your page URL and screenshot are processed by our AI provider, Google Gemini. We currently use Gemini's free tier, where Google may use submitted content to improve its services (and human reviewers may read it), so avoid auditing pages with confidential or personal information. Audits are private to your account unless you create a share link (a public read-only page); audits run without an account can only be opened from the browser session that started them. Screenshots are captured by third-party capture services that receive the page URL. See /legal/privacy.",
     keywords: ["train", "training", "ai", "data", "privacy", "private", "gemini", "share", "sell"],
   },
   {

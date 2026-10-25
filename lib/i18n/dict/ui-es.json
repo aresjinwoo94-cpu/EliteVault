@@ -511,8 +511,8 @@
     "a2": "Sí: la precisión viene de puntuar los fundamentos del diseño, no de datos de tráfico. Calificamos lo que se ve en la página. Una tienda aún sin lanzar puede obtener una auditoría útil antes de lanzar un solo anuncio.",
     "q3": "¿Puedo cancelar cuando quiera?",
     "a3": "Con un clic en el Portal de clientes de Stripe. Sin correos de retención ni llamadas.",
-    "q4": "¿Mis análisis entrenan vuestra IA?",
-    "a4": "No. Tus URLs, capturas y auditorías son privadas de tu cuenta. No entrenamos modelos con datos de clientes ni compartimos capturas con terceros.",
+    "q4": "¿Qué pasa con mis capturas y mis datos?",
+    "a4": "Nunca entrenamos modelos con tus datos y nunca los vendemos. Para ejecutar una auditoría, la URL de tu página y su captura las procesa nuestro proveedor de IA, Google Gemini. Hoy usamos el nivel gratuito de Gemini, donde Google puede usar el contenido enviado para mejorar sus servicios, así que evita auditar páginas con información confidencial o personal. Las auditorías son privadas de tu cuenta salvo que crees un enlace para compartirlas. Detalles en nuestra Política de privacidad (/legal/privacy).",
     "q5": "¿Puedo pagar solo por un informe?",
     "a5": "Sí. En el plan Gratis puedes desbloquear el informe completo de una auditoría por un pago único de US$7: todos los arreglos con su guía, la simulación del buyer persona, todos los grupos de arreglos, una proyección de campaña de Meta para esa auditoría y las tiendas ganadoras de tu nicho. Sin suscripción y sin tarjeta guardada. Cubre solo esa auditoría; las auditorías nuevas, publicar, el Optimizador y la Biblioteca completa siguen en Pro y Scale. Si cambias de opinión, escríbenos en un plazo de 7 días y te lo reembolsamos; el informe vuelve a bloquearse."
   },
@@ -532,7 +532,7 @@
     "fails": "Si un análisis falla",
     "failsBody": "De vez en cuando un sitio bloquea las capturas o el proveedor de IA se satura un momento. Cuando una auditoría falla, tu crédito se <b>devuelve automáticamente</b> y puedes reintentar. Si sigue fallando, prueba a subir una captura manualmente o <l>contáctanos</l>.",
     "privacy": "Datos y privacidad",
-    "privacyBody": "Tus URLs, capturas y auditorías son privadas de tu cuenta. Las procesamos con Google Gemini para generar tu resultado y <b>nunca entrenamos modelos de IA con tu contenido</b>. Consulta la <l>Política de privacidad</l>.",
+    "privacyBody": "Tus auditorías son privadas de tu cuenta salvo que crees un enlace para compartirlas. Procesamos la URL de tu página y su captura con Google Gemini para generar tu resultado (hoy en el nivel gratuito de Gemini, donde Google puede usar el contenido enviado para mejorar sus servicios, así que evita auditar páginas confidenciales) y <b>nunca entrenamos modelos de IA con tu contenido</b>. Consulta la <l>Política de privacidad</l>.",
     "faq": "Preguntas frecuentes",
     "stuck": "¿Sigues atascado/a?"
   },

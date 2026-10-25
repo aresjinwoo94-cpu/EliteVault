@@ -511,8 +511,8 @@
     "a2": "Yes — accuracy comes from design-fundamentals scoring, not traffic data. We grade what's visible on the page. A pre-launch store can get a meaningful audit before it ever runs an ad.",
     "q3": "Can I cancel anytime?",
     "a3": "One click in the Stripe Customer Portal. No retention emails, no calls.",
-    "q4": "Do my analyses train your AI?",
-    "a4": "No. Your URLs, screenshots and audits are private to your account. We don't train models on customer data, and we don't share screenshots with third parties.",
+    "q4": "What happens to my screenshots and data?",
+    "a4": "We never train models on your data and we never sell it. To run an audit, your page URL and screenshot are processed by our AI provider, Google Gemini. We currently use Gemini's free tier, where Google may use submitted content to improve its services, so avoid auditing pages with confidential or personal information. Audits are private to your account unless you create a share link. Details in our Privacy Policy (/legal/privacy).",
     "q5": "Can I pay for just one report?",
     "a5": "Yes. On the Free plan you can unlock the full report of a single audit for a one-time US$7: every fix with its how-to, the buyer-persona simulation, all the fix tracks, one Meta campaign projection for that audit and the winning stores in your niche. No subscription and no card on file. It covers that audit only; new audits, publishing, the Optimizer and the full Library stay with Pro and Scale. If you change your mind, email us within 7 days and we refund it — the report then locks again."
   },
@@ -532,7 +532,7 @@
     "fails": "If an analysis fails",
     "failsBody": "Occasionally a site blocks screenshots or the AI provider is briefly overloaded. When an audit fails, your credit is <b>automatically refunded</b> and you can retry. If it keeps failing, try uploading a screenshot manually, or <l>contact us</l>.",
     "privacy": "Data & privacy",
-    "privacyBody": "Your URLs, screenshots, and audits are private to your account. We process them with Google Gemini to generate your result and <b>never train AI models on your content</b>. See the <l>Privacy Policy</l>.",
+    "privacyBody": "Your audits are private to your account unless you create a share link. We process your page URL and screenshot with Google Gemini to generate your result (currently on Gemini's free tier, where Google may use submitted content to improve its services, so avoid auditing confidential pages) and <b>never train AI models on your content</b>. See the <l>Privacy Policy</l>.",
     "faq": "Frequently asked",
     "stuck": "Still stuck?"
   },

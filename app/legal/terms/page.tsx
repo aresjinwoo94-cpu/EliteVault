@@ -8,13 +8,12 @@ export const metadata: Metadata = {
   alternates: { canonical: "/legal/terms" },
 };
 
-const LAST_UPDATED = "June 2026";
+const LAST_UPDATED = "October 2026";
 const CONTACT = "support@elitevaultapp.com";
 
 export default function TermsPage() {
   return (
     <>
-      {/* TODO: revisión legal profesional antes de producción */}
       <p className="text-xs uppercase tracking-widest text-white/40">Legal</p>
       <h1 className="mt-1 font-serif text-3xl md:text-4xl tracking-tight text-white">
         Terms of Service
@@ -118,8 +117,10 @@ export default function TermsPage() {
           <strong>Vital Living LLC</strong> will not be liable for any indirect,
           incidental, or consequential damages, or for lost profits or revenue,
           arising from your use of the service. Our total liability for any claim
-          is limited to the amount you paid us in the 12 months before the claim.{" "}
-          <strong>[Confirmar límites con asesoría según jurisdicción.]</strong>
+          is limited to the amount you paid us in the 12 months before the claim.
+          Some jurisdictions do not allow certain limitations of liability, so
+          some of these limits may not apply to you; in that case our liability
+          is limited to the fullest extent permitted by law.
         </p>
 
         <h2>10. Termination</h2>
@@ -133,8 +134,10 @@ export default function TermsPage() {
         <p>
           These Terms are governed by the laws of the State of{" "}
           <strong>New Mexico, United States</strong>, without regard to
-          conflict-of-law rules.{" "}
-          <strong>[Confirmar fuero y ley aplicable con asesoría.]</strong>
+          conflict-of-law rules. Any dispute will be brought in the state or
+          federal courts located in New Mexico, unless the consumer-protection
+          law of your country of residence gives you the right to bring it where
+          you live.
         </p>
 
         <h2>12. Changes</h2>

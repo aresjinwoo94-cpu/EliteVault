@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/legal/refunds" },
 };
 
-const LAST_UPDATED = "June 2026";
+const LAST_UPDATED = "October 2026";
 const CONTACT = "support@elitevaultapp.com";
 
 export default function RefundsPage() {
@@ -16,7 +16,6 @@ export default function RefundsPage() {
   const unlock = reportUnlockEnabled();
   return (
     <>
-      {/* TODO: revisión legal profesional antes de producción */}
       <p className="text-xs uppercase tracking-widest text-white/40">Legal</p>
       <h1 className="mt-1 font-serif text-3xl md:text-4xl tracking-tight text-white">
         Refund &amp; Cancellation Policy
@@ -106,10 +105,11 @@ export default function RefundsPage() {
         <h2>Your statutory rights</h2>
         <p>
           Nothing in this policy limits any non-waivable rights you may have under
-          applicable consumer-protection law in your jurisdiction.{" "}
-          <strong>
-            [Confirmar derechos de desistimiento/consumo aplicables con asesoría.]
-          </strong>
+          applicable consumer-protection law in your jurisdiction. For example, if
+          you are an EU/UK consumer, you may have a 14-day right of withdrawal for
+          digital services; by starting to use the paid features right away, you
+          ask us to begin immediately and acknowledge that the right may be lost
+          once the service has been fully provided.
         </p>
 
         <h2>Questions</h2>
