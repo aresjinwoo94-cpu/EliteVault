@@ -108,12 +108,20 @@ export default function PrivacyPage() {
             audits, and we never sell them.
           </strong>{" "}
           Your analyses are private to your account unless you create a share
-          link. A share link opens a public, read-only page (score, summary,
+          link. A share link opens a public, read-only page (verdict or score, summary,
           annotations and the screenshot) that anyone with the link can view and
           that search engines may index; we do not currently offer a self-serve
           way to turn a link off, so email us and we will remove it. Audits run
           without an account can only be opened from the browser session that
           started them, until you create an account to keep them.
+        </p>
+        <p>
+          <strong>Community and reviews.</strong> If you publish an audit to the
+          Community (paid plans), a public snapshot of it is shown on our site
+          until you unpublish it; the original audit stays private. Reviews you
+          submit, including your displayed name and any photos you attach, may
+          be shown publicly on our site once approved; email us to have one
+          removed.
         </p>
         <p>
           <strong>How Google uses this content.</strong> EliteVault currently
