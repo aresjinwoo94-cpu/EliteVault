@@ -1,11 +1,15 @@
 "use client";
 
-import { m as motion, useReducedMotion } from "framer-motion";
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 /**
- * Client-only bits of the (server) TrustBand: the once-per-viewport fade-in
- * (skipped under prefers-reduced-motion) and the reviews chip's smooth scroll.
+ * Client-only bits of the (server) TrustBand: the once-per-viewport reveal and
+ * the reviews chip's smooth scroll.
+ *
+ * The reveal is plain CSS driven by one IntersectionObserver instead of
+ * framer-motion: this band sits right under the hero, and ~10 hydrated motion
+ * nodes were measurable main-thread work on the page's LCP path. Under
+ * prefers-reduced-motion the transition is disabled (content just appears).
  */
 export function TrustReveal({
   children,
@@ -16,22 +20,45 @@ export function TrustReveal({
   delay?: number;
   className?: string;
 }) {
-  const reduce = useReducedMotion();
+  const ref = useRef<HTMLDivElement>(null);
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setShown(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setShown(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "0px 0px -60px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   return (
-    <motion.div
-      className={className}
-      // The server cannot know prefers-reduced-motion, so the SSR markup always
-      // starts hidden; for reduced-motion visitors the reveal is simply instant
-      // (no fade, no slide, no stagger).
-      initial={{ opacity: 0, y: 14 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-60px" }}
-      transition={
-        reduce ? { duration: 0 } : { duration: 0.5, ease: [0.22, 1, 0.36, 1], delay }
-      }
+    <div
+      ref={ref}
+      data-shown={shown}
+      style={delay ? { transitionDelay: `${delay}s` } : undefined}
+      className={[
+        "translate-y-3.5 opacity-0 transition-[opacity,transform] duration-500 ease-out",
+        "data-[shown=true]:translate-y-0 data-[shown=true]:opacity-100",
+        "motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 

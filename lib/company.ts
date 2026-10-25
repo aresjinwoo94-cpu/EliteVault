@@ -26,9 +26,9 @@ export const COMPANY = {
     role: "Founder, EliteVault",
     initials: "AJ",
     // Real founder photo for the landing founder note (landing brief §4·8).
-    // Drop a square image at this path (e.g. /founder.jpg) and the note
+    // Drop a portrait (4:5) image at this path (e.g. /founder.jpg) and the note
     // renders the photo instead of the monogram — NO code change needed.
-    // Real founder photo provided by the owner (public/founder.jpg, 512×512).
+    // Real founder photo provided by the owner (public/founder.jpg, 800×1000 portrait, 4:5).
     photoUrl: "/founder.jpg",
   },
 

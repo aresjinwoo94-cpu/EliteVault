@@ -58,9 +58,22 @@ export default async function AboutPage() {
           <section className="mt-14">
             <h2 className="font-serif text-2xl tracking-tight">{t("aboutPage.whoBuilds")}</h2>
             <div className="mt-5 flex items-start gap-4 rounded-2xl border border-white/[0.06] bg-card/40 p-6">
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-champagne-400/15 ring-1 ring-champagne-400/25 font-serif text-champagne-200">
-                {COMPANY.founder.initials}
-              </div>
+              {COMPANY.founder.photoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={COMPANY.founder.photoUrl}
+                  alt={COMPANY.founder.name}
+                  width={160}
+                  height={200}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-[120px] w-24 shrink-0 rounded-xl object-cover ring-1 ring-white/10 sm:h-[160px] sm:w-32"
+                />
+              ) : (
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-champagne-400/15 ring-1 ring-champagne-400/25 font-serif text-champagne-200">
+                  {COMPANY.founder.initials}
+                </div>
+              )}
               <div className="min-w-0">
                 <p className="font-medium text-white">{COMPANY.founder.name}</p>
                 <p className="text-sm text-white/45">{COMPANY.founder.role}</p>
