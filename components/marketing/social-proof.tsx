@@ -141,14 +141,18 @@ export function SocialProof({ stores = [] }: { stores?: FeaturedStore[] }) {
                     otherwise a refined monogram framed by the brand gradient.
                     We never fabricate a real person's face. */}
                 {FOUNDER.photoUrl ? (
-                  <span className="rounded-full p-[2px]" style={{ background: "var(--grad-brand)" }}>
+                  <span className="rounded-2xl p-[2px]" style={{ background: "var(--grad-brand)" }}>
+                    {/* Portrait (4:5), not a tiny round avatar: the founder's face
+                        is part of the credibility, so it gets real size. */}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={FOUNDER.photoUrl}
                       alt={FOUNDER.name}
-                      width={64}
-                      height={64}
-                      className="size-16 rounded-full object-cover"
+                      width={160}
+                      height={200}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-[120px] w-24 rounded-[14px] object-cover md:h-[200px] md:w-40"
                     />
                   </span>
                 ) : (
