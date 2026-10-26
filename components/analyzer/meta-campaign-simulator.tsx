@@ -55,10 +55,13 @@ export function MetaCampaignSimulator({
   analysisId,
   initial,
   quota,
+  readOnly = false,
 }: {
   analysisId: string;
   initial: Simulation | null;
   quota?: MetaQuota;
+  /** Public share of a finished audit: show the saved projection, never the run form or the re-run button. */
+  readOnly?: boolean;
 }) {
   const { t } = useT();
   // Current simulation we're tracking. null = no simulation yet (show form).
@@ -107,6 +110,9 @@ export function MetaCampaignSimulator({
       clearInterval(t);
     };
   }, [sim?.id, sim?.status, router]);
+
+  // Read-only share without a finished projection: nothing to show (and nothing to run).
+  if (readOnly && (!sim || sim.status !== "succeeded")) return null;
 
   // Finite monthly limit = Pro (Scale passes limit=null → unlimited).
   const finiteLimit =
@@ -230,7 +236,7 @@ export function MetaCampaignSimulator({
         </div>
         {/* Re-run is free for Scale (unlimited). For Pro, once the monthly
             run is spent the button becomes a Scale upsell instead. */}
-        {exhausted ? (
+        {readOnly ? null : exhausted ? (
           <Button asChild variant="primary" className="shrink-0">
             <Link href="/app/checkout?plan=scale&interval=month">
               <Sparkles className="size-3.5" />
