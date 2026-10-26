@@ -227,7 +227,7 @@ test("the URL box is the existing anonymous flow, with the share event and attri
 
 test("the page fires share_view and the CTAs fire share_cta_click", () => {
   const page = read("app/s/[slug]/page.tsx");
-  assert.match(page, /ShareViewTracker slug=\{slug\} mode="visitor"/);
+  assert.match(page, /ShareViewTracker slug=\{slug\} mode={ownerMode/);
   const analytics = read("components/share/share-analytics.tsx");
   assert.match(analytics, /SHARE_EVENTS\.view/);
   assert.match(analytics, /SHARE_EVENTS\.ctaClick/);
@@ -306,7 +306,7 @@ test("the $7 sentences only appear when the unlock is on", () => {
   assert.doesNotMatch(off, /\$7/);
   const on = lockedViewItems(t, 3, true).map((i) => i.plan).join(" ");
   assert.match(on, /\$7/);
-  assert.match(code("app/s/[slug]/page.tsx"), /unlockOn=\{reportUnlockEnabled\(\)\}/);
+  assert.match(code("app/s/[slug]/page.tsx"), /unlockOn=\{unlockOn\}/);
   const es = JSON.parse(read("lib/i18n/dict/ui-es.json")).sharedPage;
   assert.deepEqual(Object.keys(en.sharedPage).sort(), Object.keys(es).sort());
 });

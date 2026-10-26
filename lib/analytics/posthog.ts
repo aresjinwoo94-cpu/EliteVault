@@ -11,6 +11,8 @@
  * if it never loads (no key, internal user, blocked) they are no-ops — the same
  * outcome the old `if (posthog.__loaded)` guards produced.
  */
+import { redactEventProperties } from "@/lib/analytics/redact";
+
 type PostHog = typeof import("posthog-js").default;
 
 type Call = (ph: PostHog) => void;
@@ -67,6 +69,8 @@ export async function initPostHog(
         maskTextSelector: "[data-private]",
       },
       respect_dnt: true,
+      // claim tokens travel in the URL (?c=…, or encoded in sign-up's next=): never send them to PostHog
+      sanitize_properties: (props: Record<string, unknown>) => redactEventProperties(props),
     });
   }
   instance = posthog;

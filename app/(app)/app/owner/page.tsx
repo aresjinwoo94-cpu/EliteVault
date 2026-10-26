@@ -29,7 +29,7 @@ export default async function OwnerPage() {
     getAllReviewsForOwner(),
     reviewsTablesReady(),
     getLibraryImageAudit(),
-    getOwnerSharedAudits(),
+    getOwnerSharedAudits(owner.id),
   ]);
 
   return (

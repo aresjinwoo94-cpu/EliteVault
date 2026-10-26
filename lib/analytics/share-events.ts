@@ -5,10 +5,10 @@
  *   share_view            { share_slug, mode: "visitor" | "owner", stale, indexable }
  *   share_cta_click       { share_slug, position }   position = where on the page
  *   share_urlbox_submit   { share_slug, url }        the embedded "run the same audit" box
- *   share_claim_start     { share_slug }             owner starts claiming the audit   (PR-3)
- *   share_claim_done      { share_slug }             owner finished claiming it        (PR-3)
+ *   share_claim_start     { share_slug }             owner starts claiming the audit   
+ *   share_claim_done      { share_slug }             owner finished claiming it        
  *
- * `mode` is always "visitor" until PR-3 adds the owner (claim) flow.
+ * `mode` is "owner" when the visitor holds a valid claim token (the owner's outreach link), else "visitor".
  */
 export const SHARE_EVENTS = {
   view: "share_view",
@@ -29,4 +29,5 @@ export type ShareCtaPosition =
   | "locked_persona"
   | "locked_scenarios"
   | "locked_library"
+  | "owner_claim"
   | "footer";

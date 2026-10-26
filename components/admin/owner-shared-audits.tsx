@@ -2,8 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Copy, ExternalLink, Link2 } from "lucide-react";
-import { setShareSettings } from "@/app/actions/share-admin";
+import { Check, Copy, ExternalLink, Link2, RefreshCw, Undo2 } from "lucide-react";
+import {
+  copyOutreachMessage,
+  replaceShareWithReaudit,
+  revertShareClaim,
+  setShareSettings,
+  startShareReaudit,
+} from "@/app/actions/share-admin";
 import type { OwnerSharedAudit } from "@/lib/admin/shared-audits";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +19,15 @@ const ERROR_ES: Record<string, string> = {
   forbidden: "No tienes permiso.",
   note_too_long: `La nota admite hasta ${NOTE_MAX} caracteres.`,
   not_shared: "Esa auditoría no está compartida.",
+  claimed: "Esta auditoría ya es de otra cuenta o no es tuya: no se puede re-auditar desde aquí.",
+  too_soon: "Ya hay una re-auditoría de las últimas 24 h. Espera o usa esa.",
+  has_paid_unlock: "No se puede devolver: el reclamante ya pagó el desbloqueo de $7.",
+  no_claim: "Esa auditoría no tiene una reclamación activa.",
+  not_ready: "La re-auditoría aún no terminó bien (o la captura salió bloqueada).",
+  already_claimed: "Esa auditoría fue reclamada: no se puede mover el enlace.",
+  not_owner_pair: "Las dos auditorías no coinciden.",
 };
+const tr = (e: string) => ERROR_ES[e] ?? ERROR_ES[Object.keys(ERROR_ES).find((k) => e.includes(k)) ?? ""] ?? e;
 
 const VERDICT_LABEL: Record<string, string> = {
   ready: "Ready",
@@ -24,10 +38,13 @@ const VERDICT_LABEL: Record<string, string> = {
 /**
  * Panel del dueño: auditorías públicas (/s/<slug>). Por auditoría:
  *   • nota personal opcional ("Prepared by Ariel for <domain>", arriba en la página pública);
- *   • indexable sí/no (por defecto NO: noindex y fuera del sitemap; solo para auditorías que el dueño
- *     de la tienda publicó o reclamó, con contenido v2 completo y captura no bloqueada);
+ *   • indexable sí/no (por defecto NO: noindex y fuera del sitemap);
  *   • "Copy outreach message": copia un mensaje corto con el dominio, el veredicto, un hallazgo ya visible
- *     en la página pública y el enlace con UTM. No envía nada.
+ *     en la página y el enlace con UTM y, si la auditoría no está reclamada, un enlace de reclamar de un solo uso
+ *     (abre el bloque "Is this your store?"). No envía nada;
+ *   • reclamada: quién/cuándo y botón para devolverla (si no se pagó el unlock de $7);
+ *   • re-auditoría MANUAL en dos pasos (nunca masiva ni programada): 1) re-auditar (consume tu cuota),
+ *     2) cuando termina bien, mover el enlace público a la nueva auditoría.
  */
 export function OwnerSharedAudits({ rows, ready }: { rows: OwnerSharedAudit[]; ready: boolean }) {
   return (
@@ -37,12 +54,13 @@ export function OwnerSharedAudits({ rows, ready }: { rows: OwnerSharedAudit[]; r
       </h2>
       <p className="mt-1 max-w-[75ch] text-xs leading-relaxed text-white/45">
         Por defecto cada enlace es no listado (noindex, fuera del sitemap). Marca &quot;Indexable&quot; solo si el dueño
-        de la tienda publicó o reclamó la auditoría. El mensaje de outreach solo copia texto; no envía nada.
+        de la tienda publicó o reclamó la auditoría. El mensaje de outreach solo copia texto; no envía nada. La
+        re-auditoría es manual, una a la vez.
       </p>
       {!ready ? (
         <p className="mt-4 text-sm text-warning">
           Falta aplicar la migración 0045 (nota personal e indexación). Hasta entonces todas las auditorías públicas son
-          no listadas y no tienen nota.
+          no listadas y no tienen nota. Para reclamar y re-auditar también hace falta la 0046.
         </p>
       ) : rows.length === 0 ? (
         <p className="mt-4 text-sm text-white/50">Todavía no hay auditorías compartidas.</p>
@@ -66,24 +84,63 @@ function SharedRow({ r }: { r: OwnerSharedAudit }) {
   const [pending, start] = useTransition();
   const dirty = note.trim() !== (r.note ?? "") || indexable !== r.indexable;
   const canIndex = r.fullV2 && !r.captureBlocked;
+  const canReaudit = r.ownedByOwner && !r.claim;
 
   function save() {
     setMsg(null);
     start(async () => {
       const res = await setShareSettings({ analysisId: r.id, note: note.trim() || null, indexable });
-      setMsg(res.ok ? "Guardado" : (ERROR_ES[res.error] ?? res.error));
+      setMsg(res.ok ? "Guardado" : tr(res.error));
       if (res.ok) router.refresh();
     });
   }
 
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(r.outreach);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setMsg("No se pudo copiar; selecciona el texto a mano.");
-    }
+  function copy() {
+    setMsg(null);
+    start(async () => {
+      const res = await copyOutreachMessage(r.id);
+      if (!res.ok) return setMsg(tr(res.error));
+      try {
+        await navigator.clipboard.writeText(res.message);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+        setMsg(res.withClaimLink ? "Copiado, con enlace para reclamar (un solo uso)" : "Copiado");
+        router.refresh();
+      } catch {
+        setMsg("No se pudo copiar; selecciona el texto a mano.");
+      }
+    });
+  }
+
+  function revert() {
+    if (!window.confirm(`¿Devolver la auditoría de ${r.domain} a tu cuenta? El reclamante dejará de verla.`)) return;
+    setMsg(null);
+    start(async () => {
+      const res = await revertShareClaim(r.id);
+      setMsg(res.ok ? "Devuelta a tu cuenta" : tr(res.error));
+      if (res.ok) router.refresh();
+    });
+  }
+
+  function reaudit() {
+    if (!window.confirm(`¿Re-auditar ${r.domain}? Usa tu cuota (1 auditoría). Luego decides si mueves el enlace público.`)) return;
+    setMsg(null);
+    start(async () => {
+      const res = await startShareReaudit(r.id);
+      setMsg(res.ok ? "Re-auditoría en marcha (tarda unos 30 s)" : tr(res.error));
+      if (res.ok) router.refresh();
+    });
+  }
+
+  function replaceLink() {
+    if (!r.reaudit) return;
+    if (!window.confirm(`¿Mover el enlace público de ${r.domain} a la re-auditoría? El mensaje ya enviado seguirá funcionando.`)) return;
+    setMsg(null);
+    start(async () => {
+      const res = await replaceShareWithReaudit(r.id, r.reaudit!.id);
+      setMsg(res.ok ? "Enlace movido a la re-auditoría" : tr(res.error));
+      if (res.ok) router.refresh();
+    });
   }
 
   return (
@@ -110,7 +167,23 @@ function SharedRow({ r }: { r: OwnerSharedAudit }) {
         <span className={cn("text-[11px]", r.indexed ? "text-success" : "text-white/40")}>
           {r.indexed ? "indexada" : "no listada"}
         </span>
+        {r.openTokens > 0 && <span className="text-[11px] text-white/40">{r.openTokens} enlace(s) de reclamar sin usar</span>}
       </div>
+
+      {r.claim && (
+        <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-signal-200">
+          Reclamada por {r.claim.email ?? "una cuenta"} el {new Date(r.claim.at).toLocaleDateString("es-ES")}
+          {r.claim.domainMatch ? " · email del dominio de la tienda (señal, no prueba)" : " · email que no coincide con la tienda"}
+          <button
+            type="button"
+            onClick={revert}
+            disabled={pending}
+            className="inline-flex items-center gap-1 rounded-md border border-white/15 px-2 py-0.5 text-[11px] text-white/70 hover:bg-white/[0.06] disabled:opacity-40"
+          >
+            <Undo2 className="size-3" /> Devolver
+          </button>
+        </p>
+      )}
 
       <label className="mt-3 block text-[11px] uppercase tracking-widest text-white/40" htmlFor={`note-${r.id}`}>
         Nota personal ({note.length}/{NOTE_MAX})
@@ -148,16 +221,43 @@ function SharedRow({ r }: { r: OwnerSharedAudit }) {
         <button
           type="button"
           onClick={copy}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-signal-400/30 bg-signal-500/[0.08] px-3 py-1.5 text-xs text-signal-200 transition-colors hover:bg-signal-500/[0.15]"
+          disabled={pending}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-signal-400/30 bg-signal-500/[0.08] px-3 py-1.5 text-xs text-signal-200 transition-colors hover:bg-signal-500/[0.15] disabled:opacity-40"
         >
           {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
           {copied ? "Copied" : "Copy outreach message"}
         </button>
+        {canReaudit && !r.reaudit && (
+          <button
+            type="button"
+            onClick={reaudit}
+            disabled={pending}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-1.5 text-xs text-white/80 transition-colors hover:bg-white/[0.06] disabled:opacity-40"
+          >
+            <RefreshCw className="size-3.5" /> Re-audit
+          </button>
+        )}
         <span className="inline-flex items-center gap-1 text-[11px] text-white/35">
           <Link2 className="size-3" /> utm_source=share · utm_medium=outreach
         </span>
         {msg && <span className="text-xs text-white/55">{msg}</span>}
       </div>
+
+      {r.reaudit && canReaudit && (
+        <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-white/60">
+          Re-auditoría: {r.reaudit.status === "succeeded" ? (r.reaudit.ready ? "lista" : "terminó con captura bloqueada") : r.reaudit.status}
+          {r.reaudit.ready && (
+            <button
+              type="button"
+              onClick={replaceLink}
+              disabled={pending}
+              className="inline-flex items-center gap-1 rounded-md border border-signal-400/30 bg-signal-500/[0.08] px-2 py-0.5 text-[11px] text-signal-200 hover:bg-signal-500/[0.15] disabled:opacity-40"
+            >
+              Mover el enlace público a la re-auditoría
+            </button>
+          )}
+        </p>
+      )}
     </li>
   );
 }

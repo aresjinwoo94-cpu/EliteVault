@@ -11,8 +11,10 @@ import { isShareIndexable } from "@/lib/analyzer/share-policy";
 const clean = (s: string) => s.replace(/\s+/g, " ").trim();
 
 /** `https://host/s/<slug>?utm_source=share&utm_medium=outreach&utm_campaign=<slug>` */
-export function outreachLink(baseUrl: string, slug: string): string {
+export function outreachLink(baseUrl: string, slug: string, claimToken?: string | null): string {
   const q = new URLSearchParams({ utm_source: "share", utm_medium: "outreach", utm_campaign: slug });
+  // single-use claim token (lib/share/claim.ts): opens the "Is this your store?" block for whoever receives the link
+  if (claimToken) q.set("c", claimToken);
   return `${baseUrl.replace(/\/$/, "")}/s/${encodeURIComponent(slug)}?${q.toString()}`;
 }
 
@@ -36,8 +38,10 @@ export function buildOutreachMessage(args: {
   baseUrl: string;
   /** First name or brand to sign with; omitted → no signature line. */
   from?: string | null;
+  /** Claim token to put in the link; omitted → a plain visitor link. */
+  claimToken?: string | null;
 }): string {
-  const { domain, slug, row, baseUrl, from } = args;
+  const { domain, slug, row, baseUrl, from, claimToken } = args;
   const verdict = shareVerdictPhrase(buildShareResult(row)).toLowerCase();
   const finding = visibleFinding(row.annotations);
   const unlisted = !isShareIndexable({
@@ -52,7 +56,7 @@ export function buildOutreachMessage(args: {
     `Hi, I ran a conversion audit on ${domain} and wanted to share it with you.`,
     `The short version: ${verdict}.`,
     finding ? `One thing that stood out: ${finding}` : null,
-    `The annotated audit is here: ${outreachLink(baseUrl, slug)}`,
+    `The annotated audit is here: ${outreachLink(baseUrl, slug, claimToken)}`,
     unlisted ? "I have not listed it for search; only people with the link can see it." : null,
     "Happy to talk it through if it is useful.",
     from ? from : null,
