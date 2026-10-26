@@ -24,6 +24,9 @@ import type { Annotation } from "@/lib/supabase/types";
 import { getT } from "@/lib/i18n/server";
 import { fill } from "@/lib/i18n/lookup";
 import { reportUnlockEnabled } from "@/lib/flags";
+import { ShareClaimBlock } from "@/components/share/share-claim-block";
+import { isClaimTokenValid } from "@/lib/share/claim";
+import { looksLikeClaimToken } from "@/lib/share/claim-core";
 
 /**
  * Public audit page (/s/[slug]) — brief 2026-10 §2.
@@ -115,6 +118,8 @@ export async function generateMetadata({
     description: desc,
     // Unlisted by default; only an owner-flagged, complete v2 audit may be indexed (share-policy.ts).
     robots: shareRobots(audit),
+    // the owner's claim link carries a token in the query string: never leak it through the Referer header
+    referrer: "same-origin",
     alternates: { canonical: `/s/${slug}` },
     openGraph: { title, description: desc, type: "article" },
     twitter: { card: "summary_large_image", title, description: desc },
@@ -143,13 +148,23 @@ async function ShareHeader({ slug }: { slug: string }) {
   );
 }
 
+const CLAIM_ERROR_KEY: Record<string, string> = {
+  used: "sharedPage.claimErrUsed",
+  rate: "sharedPage.claimErrRate",
+  verify: "sharedPage.claimErrVerify",
+  error: "sharedPage.claimErrGeneric",
+};
+
 async function SharedAuditPageInner({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ c?: string; claim?: string }>;
 }) {
   const { t } = await getT();
   const { slug } = await params;
+  const sp = await searchParams;
   const audit = await loadSharedAudit(slug);
   if (!audit) notFound();
 
@@ -163,6 +178,13 @@ async function SharedAuditPageInner({
   const stale = isStaleAudit(audit);
   const auditedOn = auditedOnLabel(audit.created_at);
   const fixCount = Math.max(0, Math.round(Number(audit.fix_count ?? 0)) || 0);
+  const unlockOn = reportUnlockEnabled();
+
+  // Owner mode: the visitor holds a live claim token (the owner's outreach link). Without it the page is the
+  // plain visitor page — there is no claim block for anyone who did not receive the link.
+  const claimToken = looksLikeClaimToken(sp.c) ? sp.c : null;
+  const ownerMode = claimToken ? await isClaimTokenValid(slug, claimToken) : false;
+  const claimError = sp.claim && CLAIM_ERROR_KEY[sp.claim] ? t(CLAIM_ERROR_KEY[sp.claim]) : null;
 
   // JSON-LD only on a page search engines may index. No score, no "/100".
   const jsonLd = indexable
@@ -192,7 +214,7 @@ async function SharedAuditPageInner({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\u003c") }}
         />
       )}
-      <ShareViewTracker slug={slug} mode="visitor" stale={stale} indexable={indexable} />
+      <ShareViewTracker slug={slug} mode={ownerMode ? "owner" : "visitor"} stale={stale} indexable={indexable} />
       <ShareHeader slug={slug} />
       <main className="mx-auto max-w-5xl space-y-6 px-4 py-8 pb-24 md:px-6 md:py-12">
         <div className="flex justify-center">
@@ -204,6 +226,23 @@ async function SharedAuditPageInner({
 
         {audit.share_note && (
           <ShareNote t={t} note={audit.share_note} preparedBy={SHARE_NOTE_AUTHOR} domain={domain} />
+        )}
+
+        {claimError && (
+          <Card role="alert" className="border-champagne-400/25 bg-champagne-400/[0.05] p-4 text-sm text-white/80">
+            {claimError}
+          </Card>
+        )}
+
+        {ownerMode && claimToken && (
+          <ShareClaimBlock
+            slug={slug}
+            claimHref={`/s/${encodeURIComponent(slug)}/claim?c=${claimToken}`}
+            title={t("sharedPage.claimTitle")}
+            body={t(unlockOn ? "sharedPage.claimBody" : "sharedPage.claimBodyNoUnlock")}
+            cta={t("sharedPage.claimCta")}
+            note={t("sharedPage.claimNote")}
+          />
         )}
 
         <ShareFreshness t={t} slug={slug} auditedOn={auditedOn} stale={stale} />
@@ -243,7 +282,7 @@ async function SharedAuditPageInner({
           </div>
         </Card>
 
-        <ShareLockedViews t={t} slug={slug} fixCount={fixCount} unlockOn={reportUnlockEnabled()} />
+        <ShareLockedViews t={t} slug={slug} fixCount={fixCount} unlockOn={unlockOn} />
 
         <p className="flex items-center justify-center gap-1.5 pt-2 text-[11px] text-white/35">
           <ShieldCheck className="size-3" />

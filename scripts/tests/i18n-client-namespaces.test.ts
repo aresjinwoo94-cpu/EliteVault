@@ -206,6 +206,7 @@ test("the app routes mount the app scope", () => {
     "app/(app)/layout.tsx",
     "app/audit/[id]/page.tsx",
     "app/s/[slug]/page.tsx",
+    "app/s/[slug]/claimed/page.tsx",
     "app/preview/anon-audit/page.tsx",
   ];
   for (const f of mounts) {
