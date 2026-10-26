@@ -4,7 +4,6 @@ import { loadNicheWinnersModule } from "@/lib/library/niche-winners";
 import { toClientAnalysis } from "@/lib/analyzer/client-payload";
 import {
   analyzerMapSpineEnabled,
-  analyzerMetaPromoEnabled,
   analyzerReportV2Enabled,
 } from "@/lib/flags";
 
@@ -72,7 +71,8 @@ export async function loadFullReportProps(slug: string): Promise<FullReportProps
         metaUsed: 0,
         metaPerReport: false,
         mapSpine: analyzerMapSpineEnabled(),
-        metaPromo: analyzerMetaPromoEnabled(),
+        // the promo rail / bottom bar is an upsell for people who cannot run the simulator: not on a shared report
+        metaPromo: false,
         reportV2: analyzerReportV2Enabled(),
         // fix tracks call an owner-only API; the full fixes list renders without them
         fixTracks: undefined,
