@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { phCapture } from "@/lib/analytics/posthog";
+import { SHARE_EVENTS } from "@/lib/analytics/share-events";
 import { m as motion } from "framer-motion";
 import { ArrowDown, ArrowRight, Megaphone, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -68,6 +70,7 @@ export function ReportHeroV2({
   domain,
   onSeeFixes,
   shareMode = false,
+  shareSlug,
 }: {
   result: AnalysisResult;
   domain: string | null;
@@ -75,8 +78,10 @@ export function ReportHeroV2({
    *  in shareMode (there is no gated fixes list on the public share page). */
   onSeeFixes?: () => void;
   /** Public read-only share page (/s/[slug]): the fixes list doesn't exist
-   *  here, so the CTA becomes "Audit your store free" instead of a scroll. */
+   *  here, so the CTA jumps to the page's "run the same audit" box instead of a scroll. */
   shareMode?: boolean;
+  /** Slug of the shared audit, for the share_cta_click event (shareMode only). */
+  shareSlug?: string;
 }) {
   const { t } = useT();
 
@@ -236,10 +241,11 @@ export function ReportHeroV2({
               visitor to run their own audit. */}
           {shareMode ? (
             <Link
-              href="/sign-up?next=/app/analyzer"
+              href="#run-audit"
+              onClick={() => phCapture(SHARE_EVENTS.ctaClick, { share_slug: shareSlug, position: "hero" })}
               className="group mt-6 inline-flex items-center gap-1.5 rounded-lg border border-champagne-400/40 bg-champagne-400/[0.08] px-3.5 py-2 text-[13px] font-medium text-champagne-200 transition-colors hover:border-champagne-400/60 hover:bg-champagne-400/[0.15]"
             >
-              {t("common.auditFree")}
+              {t("sharedPage.headerCta")}
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           ) : (

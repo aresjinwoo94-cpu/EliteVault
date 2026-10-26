@@ -73,6 +73,7 @@ export const APP_NAMESPACES = [
   "scaleLocked",
   "settingsPage",
   "share",
+  "sharedPage",
   "sidebar",
   "simulator",
   "siteCard",
