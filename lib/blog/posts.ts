@@ -3184,7 +3184,7 @@ ${finalVideo}
 
 <h2>What goes wrong when you test with too little traffic?</h2>
 <ul>
-<li><strong>Peeking.</strong> Checking the result every day and stopping when it looks significant. Miller's <a href="https://www.evanmiller.org/how-not-to-run-an-ab-test.html" rel="nofollow">How Not To Run an A/B Test</a> shows that repeated looks inflate false positives: in his logo example, stopping at the first significant result gives a 26.1% false-positive rate with no real effect, and ten looks turn a reported 1% significance into roughly 5%. Fix the sample size before you start and do not stop early.</li>
+<li><strong>Peeking.</strong> Checking the result every day and stopping when it looks significant. Miller's <a href="https://www.evanmiller.org/how-not-to-run-an-ab-test.html" rel="nofollow">How Not To Run an A/B Test</a> shows that repeated looks inflate false positives: in his worst-case logo example (50% baseline, a significance test after every observation, stopping at 150 observations), stopping at the first significant result gives a 26.1% false-positive rate with no real effect, and ten looks turn a reported 1% significance into roughly 5%. Fix the sample size before you start and do not stop early.</li>
 <li><strong>Declaring a winner you cannot defend.</strong> A "lift" of 12% from 40 orders can be noise. If the test did not reach its planned sample, the honest result is "no conclusion".</li>
 <li><strong>Testing something tiny.</strong> The smaller the effect, the bigger the sample. Button color and one-word copy tweaks are the usual way to waste a month.</li>
 <li><strong>Splitting thin traffic across many pages.</strong> Concentrate on the page that carries the most visitors and sits closest to the money.</li>
@@ -3198,7 +3198,7 @@ ${finalVideo}
 <h2>What should you do instead when traffic is low?</h2>
 <figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
 <svg viewBox="0 0 300 186" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="ab2-title ab2-desc"><title id="ab2-title">Decision: run an A/B test or fix on evidence</title><desc id="ab2-desc">If the page can reach its sample size in a few weeks, run an A/B test with one change and a fixed sample. If not, make only big changes backed by evidence and compare equal periods.</desc>
-<rect x="0.5" y="0.5" width="299" height="51" rx="8" fill="rgba(45,212,191,0.1)" stroke="#2DD4BF"/><text x="150" y="22" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">Could this page reach its</text><text x="150" y="42" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">sample size in a few weeks?</text><path d="M75 52 L75 87" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M70 85 L75 92 L80 85 Z" fill="#2DD4BF"/><path d="M225 52 L225 87" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M220 85 L225 92 L230 85 Z" fill="#2DD4BF"/><text x="75" y="88" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Yes</text><text x="225" y="88" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">No</text><rect x="0.5" y="100.5" width="143" height="73" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="72" y="124" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Run the A/B test</text><text x="72" y="146" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">One change, fixed</text><text x="72" y="164" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">sample, no peeking</text><rect x="156.5" y="100.5" width="143" height="73" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="228" y="124" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Fix on evidence</text><text x="228" y="146" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Big changes only,</text><text x="228" y="164" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">compare equal periods</text></svg>
+<rect x="0.5" y="0.5" width="299" height="51" rx="8" fill="rgba(45,212,191,0.1)" stroke="#2DD4BF"/><text x="150" y="22" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">Could this page reach its</text><text x="150" y="42" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">sample size in a few weeks?</text><path d="M75 52 L75 87" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M70 85 L75 92 L80 85 Z" fill="#2DD4BF"/><path d="M225 52 L225 87" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M220 85 L225 92 L230 85 Z" fill="#2DD4BF"/><text x="75" y="88" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Yes</text><text x="225" y="88" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">No</text><rect x="0.5" y="100.5" width="143" height="73" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="72" y="124" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Run the A/B test</text><text x="72" y="146" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">One change, fixed</text><text x="72" y="164" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">sample, no peeking</text><rect x="156.5" y="100.5" width="143" height="73" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="228" y="124" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Fix on evidence</text><text x="228" y="146" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Big changes only,</text><text x="228" y="164" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">compare periods</text></svg>
 <figcaption class="mt-3 text-xs text-white/35">Our judgment, not an industry standard. 'A few weeks' is a rule of thumb: the longer a test runs, the more other things change under it.</figcaption>
 </figure>
 <ol>
@@ -3225,7 +3225,7 @@ ${finalVideo}
 <tr><td>Buy button and path to purchase</td><td>49.3%</td><td>A single obvious primary action beats two competing ones</td></tr>
 <tr><td>Product imagery</td><td>40.3%</td><td>In-use and in-scale photos beat studio-only shots</td></tr>
 </tbody></table>
-<p>Read it with some suspicion: the stores picked themselves, the audit reads a screenshot (so it cannot see your analytics) and the themes are a keyword match on the audit's own fix titles. The way to use it is as a source of candidates. Run your own store through the audit, take its first fix and write it down as a hypothesis with a metric. For example, the stored audit we use in our guides flagged two blockers on a home-decor store: a fake-looking countdown timer and a lack of authentic social proof. Neither needs an A/B test to justify; one is a trust problem you can simply remove, the other is content you collect and place. Both come from evidence on the page, not a hunch.</p>
+<p>Read it with some suspicion: the stores picked themselves, the audit reads a screenshot (so it cannot see your analytics) and the themes are a keyword match on the audit's own fix titles and explanations. The way to use it is as a source of candidates. Run your own store through the audit, take its first fix and write it down as a hypothesis with a metric. For example, the stored audit we use in our guides flagged two blockers on a home-decor store: a fake-looking countdown timer and a lack of authentic social proof. Neither needs an A/B test to justify; one is a trust problem you can simply remove, the other is content you collect and place. Both come from evidence on the page, not a hunch.</p>
 <p>What EliteVault does not do: it does not split your traffic, run experiments or report test winners. Its job here is to help you decide what to test and in what order.</p>
 <figcaption class="mt-3 text-xs text-white/35">From EliteVault data (n = 134 stores, 2026-06-02 to 2026-10-22). Available on: everyone: the audit's problems and fix 1 are shown to anonymous visitors and Free accounts; fixes 2 and up open with a one-time $7 unlock for that audit, or with Pro and Scale.</figcaption>
 </figure><!--/ev-->
@@ -3316,14 +3316,14 @@ ${finalVideo}
 <p>Page changes sit in between. A VA can install a review app or swap an image if you tell them exactly what and where, but deciding what the page should say is a conversion question. For that you need a specialist, see <a href="/blog/shopify-landing-page-specialist">the Shopify landing page specialist</a>, or you need evidence of what is wrong.</p>
 
 <h2>How much does a virtual assistant for Shopify cost?</h2>
-<p>Prices depend mostly on where the person is and how you find them. According to the Stealth Agents page (a vendor, so these are asking prices, and the page itself shows a lower starting rate in the text than in its banner), offshore dedicated assistants for skilled ecommerce work run about $10 to $20 an hour, freelance-platform assistants about $5 to $15 an hour, and US-based assistants about $25 to $50 an hour. It puts a full-time offshore assistant at about $1,600 a month and a 20-hour week at about $800. The same page notes that cheaper platform rates are often offset by the time you spend sourcing, screening and managing.</p>
+<p>Prices depend mostly on where the person is and how you find them. According to the Stealth Agents page (a vendor, so these are asking prices), offshore dedicated assistants for skilled ecommerce work run about $10 to $20 an hour, freelance-platform assistants about $5 to $15 an hour, and US-based assistants about $25 to $50 an hour. It puts a full-time offshore assistant at about $1,600 a month and a 20-hour week at about $800. The same page notes that cheaper platform rates are often offset by the time you spend sourcing, screening and managing.</p>
 <p>We could not verify these figures at an independent source, and other vendors publish different ranges, so use them to understand the spread rather than to budget. The reliable way to get a price is to write your task list first and ask two or three providers to quote it.</p>
 
 <h2>How do you hire and onboard one safely?</h2>
 <ol>
 <li><strong>Write the task list first.</strong> Candidates can only be judged against real tasks.</li>
 <li><strong>Use a paid trial.</strong> The same guide suggests a trial with one real product listing and one customer email; it is a cheap way to see their care and writing.</li>
-<li><strong>Give staff access, not the owner login.</strong> Shopify's <a href="https://help.shopify.com/en/manual/your-account/staff-accounts" rel="nofollow">staff accounts</a> let you assign roles and permissions per person, so a VA can manage products and orders without touching payment or billing settings. Do not share your owner credentials.</li>
+<li><strong>Give staff access, not the owner login.</strong> Shopify's <a href="https://help.shopify.com/en/manual/your-account/staff-accounts" rel="nofollow">staff accounts</a> let you assign roles and permissions per person, so a VA gets only the permissions you assign, such as managing products and orders. Do not share your owner credentials.</li>
 <li><strong>Write down the procedure.</strong> A short document per recurring task (how a product is uploaded, how a refund is answered) makes quality repeatable and replaceable.</li>
 <li><strong>Review at first.</strong> Spot-check their work early, then reduce the checks as the output proves reliable. Correct mistakes in writing and update the procedure.</li>
 </ol>
@@ -3344,8 +3344,8 @@ ${finalVideo}
 <h3 class="mt-2 text-lg font-semibold text-white">An audit turned into a task sheet</h3>
 <p class="mt-3">An assistant cannot act on "make the store convert better". They can act on a task with a place and a finish line. Here is the shape of a sheet built from an audit. The first two lines are the two blockers an EliteVault audit flagged on one of our own stores (home decor, name hidden, audited 2026-10-21); the layout is a template.</p>
 <table><thead><tr><th>#</th><th>Task (from the audit)</th><th>Where</th><th>Done when</th></tr></thead><tbody>
-<tr><td>1</td><td>Remove the fake countdown timer</td><td>Product and cart pages</td><td>The timer is gone from every template; you have checked on mobile</td></tr>
-<tr><td>2</td><td>Add authentic social proof</td><td>Product pages</td><td>Real reviews are installed and visible near the buy button</td></tr>
+<tr><td>1</td><td>Remove the fake countdown timer</td><td>Where the audit points to it</td><td>The timer is gone from every template; you have checked on mobile</td></tr>
+<tr><td>2</td><td>Add authentic social proof</td><td>Product pages, near the buy button</td><td>Real reviews are installed and visible near the buy button</td></tr>
 <tr><td>3…</td><td>The next fixes, in the audit's order</td><td>per fix</td><td>written by you from the fix's steps</td></tr>
 </tbody></table>
 <p>The third row is deliberately a template: the other fixes and their steps open with the $7 unlock for that audit or with a paid plan, and we are not going to invent them here. What matters is the method. An audit gives you a ranked list in plain language; you add a place and a finish line; the assistant has a queue. Note the second task needs judgment before it is delegable: which reviews to show and how to request them is your call.</p>
@@ -3378,7 +3378,7 @@ ${finalVideo}
       },
       {
         q: "Should a virtual assistant have owner access to my Shopify store?",
-        a: "No. Create a staff account with only the permissions the role needs, so they can manage products and orders without access to payment or billing settings.",
+        a: "No. Create a staff account with only the permissions the role needs, with only the permissions the role needs, such as products and orders.",
       },
       {
         q: "Is Shopify Sidekick a virtual assistant?",
@@ -3430,7 +3430,7 @@ ${finalVideo}
 <h2>How much does a Meta media buyer cost?</h2>
 <p>Costs depend on the model. The numbers below come from one vendor's page, <a href="https://adsnipper.com/blog/cost-to-hire-media-buyer/" rel="nofollow">Ad Snipper</a>, a staff-augmentation company (updated June 2026), so treat them as asking prices from a seller, not market data:</p>
 <table><thead><tr><th>Model</th><th>What that page says</th></tr></thead><tbody>
-<tr><td>Agency retainer</td><td>$3,000 to $10,000 a month for paid social and search; $3,000 is the floor and $10,000 is common once spend passes $50,000 a month</td></tr>
+<tr><td>Agency retainer</td><td>From $3,000 a month for paid social and search; $10,000 is common once spend passes $50,000 a month</td></tr>
 <tr><td>Freelancer</td><td>About $25 to $100 an hour on Upwork or Fiverr; US-based independents often quote $75 and up</td></tr>
 <tr><td>In-house, US</td><td>"Well into six figures" once benefits, payroll tax, software and ramp time are counted</td></tr>
 <tr><td>Offshore, dedicated</td><td>About $10 an hour, roughly $1,600 a month for 40 hours a week</td></tr>
@@ -3455,7 +3455,7 @@ ${finalVideo}
 </figure>
 <ol>
 <li><strong>Break-even ROAS.</strong> Write it down. Every conversation with a buyer should start with it.</li>
-<li><strong>Tracking.</strong> Make sure purchases are reported to Meta. A buyer optimizing on missing data is guessing. Meta's help centre pages on the pixel and on the learning phase explain how events feed delivery; read them, or ask your buyer to explain them in plain words.</li>
+<li><strong>Tracking.</strong> Make sure purchases are reported to Meta. A buyer optimizing on missing data is guessing. Meta's help centre has pages on the <a href="https://www.facebook.com/business/help/952192354843755" rel="nofollow">pixel</a> and on the <a href="https://www.facebook.com/business/help/112167992830700" rel="nofollow">learning phase</a>; read them, or ask your buyer to explain both in plain words.</li>
 <li><strong>The page.</strong> Open your store the way a cold visitor does: do they know in five seconds what you sell, is there proof, is the buy path clear? Our checklist for <a href="/blog/is-your-store-ready-for-meta-ads">whether your store is ready for Meta ads</a> walks through it.</li>
 <li><strong>Creative.</strong> A buyer needs material. If you have one image and one idea, hiring is premature.</li>
 </ol>
@@ -3463,7 +3463,7 @@ ${finalVideo}
 <h2>How do you evaluate a media buyer?</h2>
 <ul>
 <li>Ask which metric they own, and how it is measured. If it is "ROAS" ask what ROAS they consider breaking even for your margin.</li>
-<li>Ask how they decide when to change something, and how long they wait. Constant edits restart delivery learning.</li>
+<li>Ask how they decide when to change something, and how long they wait. Large edits can restart delivery learning, as Meta's learning-phase page describes.</li>
 <li>Ask to see an anonymized account structure and a past report. Do not accept screenshots of "best results" alone.</li>
 <li>Insist that you own the ad account and the business manager, and that they get access, not the other way around.</li>
 <li>Be wary of anyone who guarantees a ROAS, a cost per purchase or a date. Nobody can.</li>
@@ -3512,7 +3512,7 @@ ${finalVideo}
       },
       {
         q: "How much does a Meta media buyer cost?",
-        a: "It depends on the model. One vendor publishes agency retainers of about $3,000 to $10,000 a month, freelancers at about $25 to $100 an hour and offshore dedicated buyers at about $10 an hour. Those are a seller's figures, so get quotes for your own account.",
+        a: "It depends on the model. One vendor publishes agency retainers from about $3,000 a month ($10,000 is common at higher spend), freelancers at about $25 to $100 an hour and offshore dedicated buyers at about $10 an hour. Those are a seller's figures, so get quotes for your own account.",
       },
       {
         q: "When should you hire a Meta media buyer?",
