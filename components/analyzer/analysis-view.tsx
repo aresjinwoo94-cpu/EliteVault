@@ -190,7 +190,8 @@ export function AnalysisView({
   viewer,
   initialSimulation,
   nicheWinners,
-  isAnon = false,
+  isAnon: isAnonProp = false,
+  shared = false,
 }: {
   initial: Analysis;
   viewer: ViewerCtx;
@@ -205,7 +206,14 @@ export function AnalysisView({
    * "create a free account" gate on top of the existing Pro/Scale upsells.
    */
   isAnon?: boolean;
+  /**
+   * Public, read-only share of a PAID audit (/s/[slug] with share_full_report): the same report its owner sees,
+   * for a visitor with no session. Behaves like the anonymous view (no polling, no owner chrome, no auth-only
+   * actions) but without the "create an account" gate, and the simulator cannot be re-run.
+   */
+  shared?: boolean;
 }) {
+  const isAnon = isAnonProp || shared;
   const [data, setData] = useState<Analysis>(initial);
   const router = useRouter();
   const { t, locale } = useT();
@@ -479,6 +487,7 @@ export function AnalysisView({
               <LockedMetaAdsPreview />
             )}
             <MetaCampaignSimulator
+              readOnly={shared}
               analysisId={data.id}
               initial={initialSimulation ?? null}
               quota={{ limit: viewer.metaLimit, used: viewer.metaUsed, perReport: viewer.metaPerReport }}
@@ -497,6 +506,7 @@ export function AnalysisView({
               <LockedMetaAdsPreview />
             )}
             <MetaCampaignSimulator
+              readOnly={shared}
               analysisId={data.id}
               initial={initialSimulation ?? null}
               quota={{ limit: viewer.metaLimit, used: viewer.metaUsed, perReport: viewer.metaPerReport }}
@@ -580,7 +590,7 @@ export function AnalysisView({
           the gate renders its scoreless variant. */}
       {/* v2 also passes null: the redesigned report never paints a score, so
           the gate uses its scoreless title/modal variant. */}
-      {isDone && isAnon && (
+      {isDone && isAnon && !shared && (
         <AnonRegisterGate
           score={
             v2 || captureBlocked.blocked

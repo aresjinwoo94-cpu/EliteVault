@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { AnnotationsOverlay } from "@/components/analyzer/annotations-overlay";
 import { ReportHeroV2 } from "@/components/analyzer/report-hero-v2";
+import { AnalysisView } from "@/components/analyzer/analysis-view";
+import { loadFullReportProps } from "@/lib/share/full-report";
 import { ShareCtaLink, ShareViewTracker } from "@/components/share/share-analytics";
 import { ShareAuditBox } from "@/components/share/share-audit-box";
 import { ShareFreshness, ShareLockedViews, ShareNote } from "@/components/share/share-blocks";
@@ -184,6 +186,8 @@ async function SharedAuditPageInner({
   // plain visitor page — there is no claim block for anyone who did not receive the link.
   const claimToken = looksLikeClaimToken(sp.c) ? sp.c : null;
   const ownerMode = claimToken ? await isClaimTokenValid(slug, claimToken) : false;
+  // Owner-flagged audit (analyses.share_full_report): the full read-only report instead of the diagnosis-only page.
+  const full = await loadFullReportProps(slug);
   const claimError = sp.claim && CLAIM_ERROR_KEY[sp.claim] ? t(CLAIM_ERROR_KEY[sp.claim]) : null;
 
   // JSON-LD only on a page search engines may index. No score, no "/100".
@@ -205,6 +209,43 @@ async function SharedAuditPageInner({
         },
       }
     : null;
+
+  if (full) {
+    return (
+      <div className="min-h-screen bg-obsidian-950 text-white">
+        <ShareViewTracker slug={slug} mode={ownerMode ? "owner" : "visitor"} stale={stale} indexable={indexable} />
+        <ShareHeader slug={slug} />
+        <div className="mx-auto max-w-[1400px] px-4 pt-6 md:px-6">
+          <AnalysisView
+            initial={full.initial}
+            viewer={full.viewer}
+            initialSimulation={full.initialSimulation}
+            nicheWinners={full.nicheWinners}
+            shared
+          />
+        </div>
+        <main className="mx-auto max-w-5xl space-y-6 px-4 pb-24 md:px-6">
+          <Card
+            id="run-audit"
+            className="scroll-mt-24 border-signal-400/25 bg-gradient-to-br from-signal-500/[0.06] to-transparent p-6 md:p-8"
+          >
+            <p className="text-[10.5px] uppercase tracking-[0.2em] text-white/40">
+              {fill(t("sharedPage.runOwnHook"), { domain })}
+            </p>
+            <h2 className="mt-2 font-display text-2xl tracking-tight md:text-3xl">{t("sharedPage.runOwn")}</h2>
+            <p className="mt-2 max-w-[60ch] text-sm leading-relaxed text-white/60">{t("sharedPage.runOwnBody")}</p>
+            <div className="mt-5">
+              <ShareAuditBox slug={slug} label={t("sharedPage.boxButton")} caption={t("sharedPage.boxCaption")} />
+            </div>
+          </Card>
+          <p className="flex items-center justify-center gap-1.5 pt-2 text-[11px] text-white/35">
+            <ShieldCheck className="size-3" />
+            {t("sharedPage.estimates")}
+          </p>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-obsidian-950 text-white">
