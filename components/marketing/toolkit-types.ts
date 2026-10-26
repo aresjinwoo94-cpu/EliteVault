@@ -20,6 +20,7 @@ export type ToolCardData = {
 
 export type ToolkitLabels = {
   seeIt: string;
+  kicker: string;
   lbPrev: string;
   lbNext: string;
   lbCounter: string; // "{i} / {n}"
