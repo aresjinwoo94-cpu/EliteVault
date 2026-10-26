@@ -54,6 +54,10 @@ const BUILT_ON = [
   { name: "Next.js", labelKey: "toolkit.boFramework" },
 ] as const;
 
+/** Brand name + separator for the cover spine (not translatable copy). */
+const BRAND = "EliteVault";
+const SEP = " · ";
+
 const fill = (s: string, vars: Record<string, string | number>) =>
   Object.entries(vars).reduce((acc, [k, v]) => acc.split(`{${k}}`).join(String(v)), s);
 
@@ -80,9 +84,9 @@ export async function Toolkit() {
         scale,
       }),
       shots: [
-        { src: "/marketing/tools/analyzer-1-growth-map.webp", w: 1440, h: 830, caption: t("toolkit.aCap1") },
-        { src: "/marketing/tools/analyzer-2-fixes.webp", w: 1440, h: 830, caption: t("toolkit.aCap2") },
-        { src: "/marketing/tools/analyzer-3-annotated.webp", w: 1440, h: 830, caption: t("toolkit.aCap3") },
+        { src: "/marketing/tools/analyzer-1-annotated.webp", w: 1800, h: 1570, caption: t("toolkit.aCap1") },
+        { src: "/marketing/tools/analyzer-2-verdict.webp", w: 1800, h: 1910, caption: t("toolkit.aCap2") },
+        { src: "/marketing/tools/analyzer-3-persona.webp", w: 1800, h: 1372, caption: t("toolkit.aCap3") },
       ],
       actions: [...teaserAction("main", "toolkit.actWatch"), ...teaserAction("pro", "toolkit.actPro")],
     },
@@ -92,8 +96,8 @@ export async function Toolkit() {
       line: t("toolkit.libraryLine"),
       pill: fill(t("toolkit.libraryPill"), { n: freeStores ?? "", pro }),
       shots: [
-        { src: "/marketing/tools/library-1-overview.webp", w: 1440, h: 830, caption: t("toolkit.lCap1") },
-        { src: "/marketing/tools/library-2-niches.webp", w: 1440, h: 830, caption: t("toolkit.lCap2") },
+        { src: "/marketing/tools/library-1-grid.webp", w: 1800, h: 2280, caption: t("toolkit.lCap1") },
+        { src: "/marketing/tools/library-2-teardown.webp", w: 1152, h: 1478, caption: t("toolkit.lCap2") },
       ],
       actions: [{ kind: "link", href: "/winning-shopify-stores", label: t("toolkit.actLibrary") }],
     },
@@ -103,9 +107,8 @@ export async function Toolkit() {
       line: t("toolkit.simulatorLine"),
       pill: simulatorPlans.join(" · "),
       shots: [
-        { src: "/marketing/tools/simulator-1-scenarios.webp", w: 1440, h: 510, caption: t("toolkit.sCap1") },
-        { src: "/marketing/tools/simulator-2-projection.webp", w: 1440, h: 510, caption: t("toolkit.sCap2") },
-        { src: "/marketing/tools/simulator-3-risks.webp", w: 1440, h: 510, caption: t("toolkit.sCap3") },
+        { src: "/marketing/tools/simulator-1-scenarios.webp", w: 1800, h: 1900, caption: t("toolkit.sCap1") },
+        { src: "/marketing/tools/simulator-2-optimizer.webp", w: 1800, h: 1812, caption: t("toolkit.sCap2") },
       ],
       actions: [
         ...teaserAction("simulator", "toolkit.actSimulator"),
@@ -116,6 +119,7 @@ export async function Toolkit() {
 
   const labels = {
     seeIt: t("toolkit.seeIt"),
+    kicker: t("toolkit.kicker"),
     lbPrev: t("toolkit.lbPrev"),
     lbNext: t("toolkit.lbNext"),
     lbCounter: t("toolkit.lbCounter"),
@@ -130,7 +134,7 @@ export async function Toolkit() {
     <section
       id="analyzer"
       aria-label={t("toolkit.eyebrow")}
-      className="relative mt-14 scroll-mt-20 md:mt-20"
+      className="relative mt-12 scroll-mt-20 md:mt-16"
     >
       <ToolkitDiagramStyles />
       <div className="container max-w-[1280px]">
@@ -224,35 +228,57 @@ function Diagram({ id, labels }: { id: ToolId; labels: ToolkitLabels }) {
 }
 
 /**
- * The 3 cards are SERVER-rendered HTML (no hydration cost on the landing's
- * critical path): real <button>s that ToolkitController wires up by event
- * delegation and opens the lightbox for. `data-in` arms the CSS-only diagram
- * animation once the card scrolls into view.
+ * The 3 tools are presented as premium "product boxes": a cover with a visible
+ * spine, in EliteVault's own language (obsidian + teal, hairlines, soft depth).
+ * They are SERVER-rendered HTML (no hydration cost on the landing's critical
+ * path): real <button>s that ToolkitController wires up by event delegation and
+ * opens the lightbox for. `data-in` arms the CSS-only art animation once the card
+ * scrolls into view. The 3D pose is pure CSS (see toolkit-diagrams.tsx).
  */
 function ToolGrid({ tools, labels }: { tools: ToolCardData[]; labels: ToolkitLabels }) {
   return (
-    <ul className="grid grid-cols-1 gap-3 md:gap-4 lg:grid-cols-3">
-      {tools.map((tool) => (
+    <ul className="grid grid-cols-1 gap-7 md:gap-8 lg:grid-cols-3 lg:gap-10">
+      {tools.map((tool, i) => (
         <li key={tool.id}>
           <button
             type="button"
             data-tool={tool.id}
             data-in="false"
             aria-haspopup="dialog"
-            className="group flex h-full w-full cursor-pointer flex-col rounded-xl border border-white/[0.06] bg-white/[0.015] p-3.5 text-left transition-colors hover:border-white/[0.14] hover:bg-white/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-500/60 md:p-5"
+            className="tk-card group block w-full cursor-pointer text-left"
           >
-            <span className="block aspect-[5/3] w-full max-md:mx-auto max-md:max-h-[150px]">
-              <Diagram id={tool.id} labels={labels} />
-            </span>
-            <span className="mt-3 block font-serif text-base text-white md:mt-4">{tool.name}</span>
-            <span className="mt-1 block text-sm leading-relaxed text-white/55">{tool.line}</span>
-            <span className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-3">
-              <span className="rounded-full border border-signal-500/25 bg-signal-600/10 px-2.5 py-0.5 font-mono text-[11px] text-signal-200">
-                {tool.pill}
-              </span>
-              <span className="inline-flex items-center gap-1.5 text-sm text-signal-300 transition-colors group-hover:text-signal-200">
-                {labels.seeIt}
-                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+            <span className="tk-stage block">
+              <span className="tk-box block">
+                <span className="tk-spine" aria-hidden>
+                  <span>{[BRAND, tool.name].join(SEP)}</span>
+                </span>
+                <span className="tk-front flex min-h-[300px] flex-col md:min-h-[452px]">
+                  <span className="relative z-[1] flex items-start justify-between px-5 pt-4 md:px-6 md:pt-5">
+                    <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-signal-300/90">
+                      {labels.kicker}
+                    </span>
+                    <span className="tk-num font-serif text-4xl md:text-5xl" aria-hidden>
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                  </span>
+                  <span className="relative z-[1] -mt-2 block h-[140px] px-3 md:h-[200px] md:px-4">
+                    <Diagram id={tool.id} labels={labels} />
+                  </span>
+                  <span className="relative z-[1] mt-auto block px-5 pb-4 md:px-6 md:pb-5">
+                    <span className="block font-serif text-xl tracking-tight text-white md:text-2xl">{tool.name}</span>
+                    <span className="mt-1.5 block text-[13px] leading-relaxed text-white/60 md:min-h-[2.8rem] md:text-sm">{tool.line}</span>
+                    <span className="mt-3.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-white/[0.08] pt-3">
+                      <span className="rounded-full border border-signal-400/30 bg-signal-500/10 px-2.5 py-0.5 font-mono text-[11px] text-signal-200">
+                        {tool.pill}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 text-sm font-medium text-signal-300 transition-colors group-hover:text-signal-200">
+                        {labels.seeIt}
+                        <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+                      </span>
+                    </span>
+                  </span>
+                </span>
+                <span className="tk-floor" aria-hidden />
               </span>
             </span>
           </button>

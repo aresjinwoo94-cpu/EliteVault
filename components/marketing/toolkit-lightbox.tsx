@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -42,9 +42,14 @@ export default function ToolkitLightbox({
   const [teaser, setTeaser] = useState<Teaser | null>(null);
   const [teaserOpen, setTeaserOpen] = useState(false);
 
+  const scroller = useRef<HTMLDivElement>(null);
   const current = open ? tools[open.tool] : null;
   const shot = current && open ? current.shots[open.idx] : null;
   const count = current?.shots.length ?? 0;
+  const shotKey = open ? `${open.tool}:${open.idx}` : "";
+  useEffect(() => {
+    scroller.current?.scrollTo({ top: 0 });
+  }, [shotKey]);
 
   const go = (delta: number) =>
     setOpen((o) => {
@@ -88,17 +93,27 @@ export default function ToolkitLightbox({
                 <DialogDescription className="mt-0.5">{shot.caption}</DialogDescription>
               </div>
 
-              <div className="relative overflow-hidden rounded-lg border border-white/[0.06] bg-obsidian-900">
-                <Image
-                  key={shot.src}
-                  src={shot.src}
-                  alt={shot.caption}
-                  width={shot.w}
-                  height={shot.h}
-                  unoptimized
-                  sizes="(min-width: 1024px) 960px, 100vw"
-                  className="h-auto max-h-[62vh] w-full object-contain"
-                />
+              {/* The capture is shown at full width and the frame SCROLLS, so tall screens
+                  (a whole report, a whole simulation) stay sharp and readable. */}
+              <div className="relative rounded-lg border border-white/[0.06] bg-obsidian-900">
+                <div
+                  ref={scroller}
+                  tabIndex={0}
+                  role="region"
+                  aria-label={shot.caption}
+                  className="max-h-[66vh] overflow-y-auto overscroll-contain rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-500/60"
+                >
+                  <Image
+                    key={shot.src}
+                    src={shot.src}
+                    alt={shot.caption}
+                    width={shot.w}
+                    height={shot.h}
+                    unoptimized
+                    sizes="(min-width: 1024px) 960px, 100vw"
+                    className="block h-auto w-full"
+                  />
+                </div>
                 {count > 1 && (
                   <>
                     <button type="button" onClick={() => go(-1)} aria-label={labels.lbPrev} className={`${navBtn} left-2`}>
