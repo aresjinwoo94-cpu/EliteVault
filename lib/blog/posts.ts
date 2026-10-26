@@ -365,6 +365,7 @@ ${finalVideo}
 <h2>How does your product page compare to the top store in your niche?</h2>
 <p>A checklist tells you what a good page contains. It doesn't tell you what the store beating you does differently, and that is what decides who a shopper picks. The video above makes that comparison: a real store with a weak return on ad spend, side by side with a stronger one.</p>
 <p>You can do a rough version by hand: open your best-selling product next to a leader in your niche, and answer the five questions on each, in ten seconds, as a stranger. Or let the analyzer do it. Our <a href="/">Shopify store audit</a> scores your pages and ranks what to fix first (ours — full disclosure). For a broader plan, see <a href="/blog/how-to-increase-shopify-conversion-rate">how to increase your Shopify conversion rate</a> and the <a href="/blog/shopify-cro-audit">Shopify CRO audit checklist</a>. If you are weighing a bigger change than editing this page, read <a href="/blog/shopify-store-redesign">Shopify store redesign</a>. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=shopify-product-page">Run the audit on your store →</a></p>
+<p>Wondering how to test a change on this page? <a href="/blog/ab-testing">A/B testing for Shopify</a> explains how much traffic a test needs and what to do when you don't have it.</p>
 `.trim(),
     faqs: [
       {
@@ -571,6 +572,7 @@ ${finalVideo}
 <li><a href="/blog/shopify-store-analyzer">Shopify store analysis step by step</a>: the five checks in order.</li>
 <li><a href="/blog/store-audit-review-my-store-feedback">Review my Shopify store</a>: what feedback threads usually say and how to ask for a useful review.</li>
 <li><a href="/blog/why-customers-abandon-cart-2026">Why customers abandon cart</a>: the ranked reasons and where each starts.</li>
+<li><a href="/blog/ab-testing">A/B testing for Shopify</a>: how much traffic a test needs and what to do when you don't have it.</li>
 </ul>
 
 <h2>Benchmark against the store that's beating you</h2>
@@ -687,7 +689,7 @@ ${finalVideo}
 <p>Each check leaves a trace you can find after launch, which is why the scorecard is worth keeping. A fail on check 6 shows up as many link clicks and far fewer landing page views. A fail on checks 1 to 4 shows up as landing page views with almost no add-to-carts. A fail on check 5 shows up as add-to-carts and checkout starts that never become orders. If your results later match one of those patterns, you already know which line of the scorecard to reopen.</p>
 
 <h2>What if the store passes and the ads still don't convert?</h2>
-<p>Then the diagnosis changes. Meta documents a <a href="https://www.facebook.com/business/help/112167992830700" rel="nofollow">learning phase</a> in its help center. Read what it says before you judge a campaign's first days, and check that the Pixel and server events match your real orders. If clicks keep coming without sales after that, work through <a href="/blog/why-meta-ads-arent-converting">why Meta ads aren't converting</a>, which separates ad problems from page problems, and look at the <a href="/blog/best-shopify-tools-increase-roas-2026">Shopify tools that raise ROAS</a> for the part of the stack that is weakest. To raise ROAS in the first place, see <a href="/blog/how-to-increase-roas">how to increase ROAS</a>.</p>
+<p>Then the diagnosis changes. Meta documents a <a href="https://www.facebook.com/business/help/112167992830700" rel="nofollow">learning phase</a> in its help center. Read what it says before you judge a campaign's first days, and check that the Pixel and server events match your real orders. If clicks keep coming without sales after that, work through <a href="/blog/why-meta-ads-arent-converting">why Meta ads aren't converting</a>, which separates ad problems from page problems, and look at the <a href="/blog/best-shopify-tools-increase-roas-2026">Shopify tools that raise ROAS</a> for the part of the stack that is weakest. To raise ROAS in the first place, see <a href="/blog/how-to-increase-roas">how to increase ROAS</a>, and before you pay for ad management, read what a <a href="/blog/meta-media-buyer">Meta media buyer</a> does and costs.</p>
 
 <h2>Make your store the one cold shoppers choose</h2>
 <p>Passing the checklist makes you ready, not unbeatable. What sets a store apart is what it makes easier than the one next to it, so keep the comparison going: put your page next to the top store in your niche, on a phone, and write down what they do better. Our <a href="/">Shopify store audit</a> annotates your pages with the issues from this list and ranks the fixes by impact (ours — full disclosure). <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=is-your-store-ready-for-meta-ads">Run the audit on your store →</a></p>
@@ -799,7 +801,7 @@ ${finalVideo}
 <p>If you run a Shopify store with traffic but few sales, start with Shopify's own funnel report and a conversion audit, because they point at where and why visitors leave. Add PageSpeed Insights when pages feel slow or your phone sessions look weak, and Search Console once you care about organic traffic. Add a behavior tool when you have enough visits for recordings to show patterns. Accessibility checks are worth doing at some point, but they are rarely the first fix for a store that doesn't convert.</p>
 
 <h2>Related guides</h2>
-<p>If you are weighing paid help, see how much a <a href="/blog/ecommerce-store-audit-vs-consultant">CRO audit costs</a> from freelancers, agencies and tools, and what an <a href="/blog/ecommerce-cro-specialist">ecommerce CRO specialist</a> does. For what Shopify itself added recently, read <a href="/blog/new-free-shopify-tools-2026">new free Shopify tools</a>, and for the numbers behind AI in ecommerce, <a href="/blog/ai-ecommerce-statistics-revenue-impact">AI ecommerce statistics</a>. To put AI to work in your store, see <a href="/blog/how-to-boost-ecommerce-sales-with-generative-ai">how to boost ecommerce sales with generative AI</a>.</p>
+<p>If you are weighing paid help, see how much a <a href="/blog/ecommerce-store-audit-vs-consultant">CRO audit costs</a> from freelancers, agencies and tools, and what an <a href="/blog/ecommerce-cro-specialist">ecommerce CRO specialist</a> does. For help with the daily work, see what to delegate to a <a href="/blog/virtual-assistant-for-shopify">virtual assistant for Shopify</a>. For what Shopify itself added recently, read <a href="/blog/new-free-shopify-tools-2026">new free Shopify tools</a>, and for the numbers behind AI in ecommerce, <a href="/blog/ai-ecommerce-statistics-revenue-impact">AI ecommerce statistics</a>. To put AI to work in your store, see <a href="/blog/how-to-boost-ecommerce-sales-with-generative-ai">how to boost ecommerce sales with generative AI</a>.</p>
 
 <h2>Cover all five questions without overspending</h2>
 <p>You can answer the first four with the no-cost tools above, and the fifth with a conversion audit. Run them in the order of your symptom, fix what each finds and re-check. The store that wins in your niche is not the one with the most tools; it is the one that fixes what matters first. <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=free-website-audit-tools">Run the audit on your store →</a></p>
@@ -2497,6 +2499,7 @@ ${finalVideo}
 <h2>When is it worth hiring one?</h2>
 <p>When you have enough traffic to test and a known leak worth testing. With very little traffic, fix the obvious problems first; a test can't settle. Start by running a <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=ecommerce-cro-specialist">free store audit →</a> so you hire for a real problem. Full disclosure, EliteVault is our tool, and it reads a screenshot of your live storefront.</p>
 <p>Weighing options? Compare <a href="/blog/ecommerce-store-audit-vs-consultant">an audit with a consultant</a>, work the <a href="/blog/how-to-increase-shopify-conversion-rate">highest-leverage fixes</a> yourself, or see what <a href="/blog/store-audit-review-my-store-feedback">"review my store" threads keep saying</a>. If the fix is a new page, here is <a href="/blog/shopify-landing-page-specialist">how to brief a Shopify landing page specialist</a>.</p>
+<p>Two other kinds of help are covered separately: what to hand to a <a href="/blog/virtual-assistant-for-shopify">virtual assistant for Shopify</a>, and what a <a href="/blog/meta-media-buyer">Meta media buyer</a> can and cannot do for your ads.</p>
 `.trim(),
     faqs: [
       {
@@ -2597,6 +2600,7 @@ ${finalVideo}
 <li>Start with one small project to test the fit before a bigger commitment.</li>
 </ol>
 <p>Full disclosure, EliteVault is our tool, and it reads a screenshot of your live storefront. For the testing side, see <a href="/blog/ecommerce-cro-specialist">what an ecommerce CRO specialist does</a>, or the <a href="/blog/how-to-increase-shopify-conversion-rate">highest-leverage conversion fixes</a>. Building with AI tools? Read <a href="/blog/ai-shopify-designer">what an AI Shopify designer still has to check</a>.</p>
+<p>For the work around the page, see what to delegate to a <a href="/blog/virtual-assistant-for-shopify">virtual assistant for Shopify</a> and when a <a href="/blog/meta-media-buyer">Meta media buyer</a> is worth paying for.</p>
 `.trim(),
     faqs: [
       {
@@ -3134,6 +3138,393 @@ ${finalVideo}
       {
         q: "Which generative AI use should I start with?",
         a: "Start with the step where your data shows shoppers drop. If product pages are unclear, begin with product content and questions. If you don't know where the leak is, begin by diagnosing the store, because that tells you which of the other uses is worth your time.",
+      },
+    ],
+  },
+  {
+    slug: "ab-testing",
+    title: "A/B Testing for Shopify: What to Test With Little Traffic",
+    h1: "A/B testing for Shopify: how to decide what to test when you don't have much traffic",
+    description:
+      "A/B testing for Shopify stores: how much traffic a test needs, what Shopify offers and how to pick what to test first when your store is small.",
+    keyword: "a/b testing",
+    keywords: [
+      "a/b testing",
+      "a/b testing shopify",
+      "split testing shopify",
+      "shopify a/b test sample size",
+      "a/b test low traffic ecommerce",
+    ],
+    date: "2026-10-25",
+    updated: "2026-10-25",
+    author: "Ariel Jiménez",
+    readingMinutes: 8,
+    video: FINAL_VIDEO_META,
+    excerpt:
+      "How A/B testing works for a Shopify store, how much traffic it really needs (with an illustrative calculation), what to do when you don't have it and how to choose the first hypothesis.",
+    bodyHtml: `
+<p class="lede">A/B testing compares two versions of a page by sending each to a share of your visitors, and for most small Shopify stores the hard part is not running the test but having enough traffic to read it. If your page gets a few thousand visits a month, a test on a small change can take longer than the change will matter. This guide shows the maths with an illustrative example, what Shopify offers, and how to decide what to test, and what to simply fix, when traffic is thin.</p>
+${finalVideo}
+<p>In the video, a store loses to a stronger competitor. Most of the time that happens because of problems you can already see, not because nobody tested a button color. So the order is: find the likeliest problems from evidence, test the ones you can, fix the rest, and keep the store you are beating in view.</p>
+<p class="blog-cta">Want a list of candidates before you plan a test? <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=ab-testing&amp;utm_content=early">Find what to test first on your store →</a></p>
+
+<h2>What is A/B testing, and what is it not?</h2>
+<p>In an A/B test, visitors are split at random between the current page (A) and one changed page (B). Because both run at the same time, seasonality, ad spend and press hit both equally, so a difference in conversion can be credited to the change. That is what separates it from changing the page and comparing this week with last week: a before-and-after comparison cannot tell your change from everything else that moved. It is still useful, but it is evidence of lower quality, and you should say so when you report it.</p>
+
+<h2>How much traffic does an A/B test need?</h2>
+<p>The number of visitors depends on four things, which is exactly what <a href="https://www.evanmiller.org/ab-testing/sample-size.html" rel="nofollow">Evan Miller's sample size calculator</a> asks for: your baseline conversion rate, the smallest effect you want to be able to detect, the significance level (how often you will accept a false alarm) and the statistical power (how often a real effect of that size will be caught). The smaller the effect and the lower the baseline, the more visitors you need, and the relationship is steep.</p>
+<p>Here is an illustration. Take a baseline conversion rate of 1.4%, the median for Shopify stores in <a href="https://www.littledata.io/ecommerce-conversion-rate" rel="nofollow">Littledata's October 2026 benchmark</a> (433 stores, 90 days). With a 5% significance level and 80% power, we calculate that:</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 190" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="ab1-title ab1-desc"><title id="ab1-title">Visitors needed per version for three sizes of lift</title><desc id="ab1-desc">Illustrative sample sizes at a 1.4 percent baseline conversion rate: about 116,000 visitors per version to detect a 10 percent relative lift, about 30,400 for 20 percent and about 5,500 for 50 percent.</desc>
+<text x="0" y="16" font-size="14" fill="rgba(255,255,255,0.6)">Visitors needed per version</text><text x="0" y="48" font-size="14" fill="rgba(255,255,255,0.85)">+10% lift</text><rect x="0" y="56" width="150" height="14" rx="4" fill="#2DD4BF" fill-opacity="1"/><text x="158" y="69" font-size="14" font-weight="600" fill="#ffffff">116,002</text><text x="0" y="102" font-size="14" fill="rgba(255,255,255,0.85)">+20% lift</text><rect x="0" y="110" width="39" height="14" rx="4" fill="#2DD4BF" fill-opacity="0.6"/><text x="47" y="123" font-size="14" font-weight="600" fill="#ffffff">30,359</text><text x="0" y="156" font-size="14" fill="rgba(255,255,255,0.85)">+50% lift</text><rect x="0" y="164" width="8" height="14" rx="4" fill="#2DD4BF" fill-opacity="0.6"/><text x="16" y="177" font-size="14" font-weight="600" fill="#ffffff">5,508</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Our calculation (two-proportion test, 5% two-sided significance, 80% power), illustrative. The 1.4% baseline is the median Shopify store in <a href="https://www.littledata.io/ecommerce-conversion-rate" rel="nofollow">Littledata's benchmark</a>. Your numbers will differ.</figcaption>
+</figure>
+<p>Those are visitors <strong>per version</strong>, so double them for the test. Detecting a 20% relative lift (1.4% to about 1.7%) takes roughly 60,000 visitors in total. A product page that gets 5,000 visits a month would need about a year. Detecting a 50% lift takes roughly 11,000 visitors, which is far more realistic, but a 50% lift is a big change, not a button color.</p>
+<p>Two cautions on these figures. They are our own calculation for illustration, with standard settings; calculators differ in their defaults (one-sided versus two-sided tests, power), so run yours with your own baseline instead of trusting ours. And the baseline matters: if your page converts at 3%, the same lift needs fewer visitors, and a page with 300 visits a month needs a very different plan from one with 30,000.</p>
+
+<h2>What goes wrong when you test with too little traffic?</h2>
+<ul>
+<li><strong>Peeking.</strong> Checking the result every day and stopping when it looks significant. Miller's <a href="https://www.evanmiller.org/how-not-to-run-an-ab-test.html" rel="nofollow">How Not To Run an A/B Test</a> shows that repeated looks inflate false positives: in his logo example, stopping at the first significant result gives a 26.1% false-positive rate with no real effect, and ten looks turn a reported 1% significance into roughly 5%. Fix the sample size before you start and do not stop early.</li>
+<li><strong>Declaring a winner you cannot defend.</strong> A "lift" of 12% from 40 orders can be noise. If the test did not reach its planned sample, the honest result is "no conclusion".</li>
+<li><strong>Testing something tiny.</strong> The smaller the effect, the bigger the sample. Button color and one-word copy tweaks are the usual way to waste a month.</li>
+<li><strong>Splitting thin traffic across many pages.</strong> Concentrate on the page that carries the most visitors and sits closest to the money.</li>
+<li><strong>Changing something else mid-test.</strong> A new ad campaign, a sale or a theme update during the test breaks the comparison.</li>
+</ul>
+
+<h2>What does Shopify offer for A/B testing?</h2>
+<p>Shopify's changelog describes <a href="https://changelog.shopify.com/posts/schedule-publish-and-a-b-test-new-themes-and-checkout-and-customer-account-configurations" rel="nofollow">Rollouts</a> (posted 5 June 2026): you can schedule a new theme or checkout, release it gradually to a percentage of visitors, and run an A/B test between two different themes or checkout setups. A copy of your published theme is created so you can keep editing the live version, and several mutually exclusive experiments can run at once. As described there, it tests whole themes or configurations; the post states no plan requirement, so check your own admin. For single-element tests on product pages there are third-party apps in the Shopify App Store; read each listing's current description and pricing yourself, since we have not tested them. Whichever you use, the maths above applies: the tool splits the traffic, it does not create it.</p>
+<p>Without any tool, Shopify's reports still let you compare periods. Our guide to the <a href="/blog/good-conversion-rate-for-shopify">good conversion rate for Shopify</a> explains which numbers to record first.</p>
+
+<h2>What should you do instead when traffic is low?</h2>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 186" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="ab2-title ab2-desc"><title id="ab2-title">Decision: run an A/B test or fix on evidence</title><desc id="ab2-desc">If the page can reach its sample size in a few weeks, run an A/B test with one change and a fixed sample. If not, make only big changes backed by evidence and compare equal periods.</desc>
+<rect x="0.5" y="0.5" width="299" height="51" rx="8" fill="rgba(45,212,191,0.1)" stroke="#2DD4BF"/><text x="150" y="22" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">Could this page reach its</text><text x="150" y="42" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">sample size in a few weeks?</text><path d="M75 52 L75 87" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M70 85 L75 92 L80 85 Z" fill="#2DD4BF"/><path d="M225 52 L225 87" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M220 85 L225 92 L230 85 Z" fill="#2DD4BF"/><text x="75" y="88" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Yes</text><text x="225" y="88" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">No</text><rect x="0.5" y="100.5" width="143" height="73" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="72" y="124" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Run the A/B test</text><text x="72" y="146" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">One change, fixed</text><text x="72" y="164" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">sample, no peeking</text><rect x="156.5" y="100.5" width="143" height="73" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="228" y="124" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Fix on evidence</text><text x="228" y="146" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Big changes only,</text><text x="228" y="164" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">compare equal periods</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Our judgment, not an industry standard. 'A few weeks' is a rule of thumb: the longer a test runs, the more other things change under it.</figcaption>
+</figure>
+<ol>
+<li><strong>Look before you test.</strong> Session recordings and heatmaps show where visitors hesitate. <a href="https://learn.microsoft.com/en-us/clarity/setup-and-installation/about-clarity" rel="nofollow">Microsoft Clarity</a> offers both; a handful of recordings often shows an obvious problem that needs no test.</li>
+<li><strong>Fix obvious problems on evidence.</strong> A confusing headline, a missing shipping policy or a broken mobile button does not need a split test; it needs a fix. Our <a href="/blog/shopify-cro-audit">Shopify CRO audit</a> checklist lists them.</li>
+<li><strong>Test only big changes.</strong> A new offer, a rebuilt product page or a different page layout can produce a large enough effect to read on modest traffic.</li>
+<li><strong>Compare equal periods and log everything.</strong> If you ship a change without a split, record the date, compare equal periods from the same weekdays and note any ad or price change. Call the result what it is: a before-and-after, not a proven lift.</li>
+<li><strong>Ask people.</strong> Five short conversations with recent buyers or a one-question survey can tell you what nearly stopped them.</li>
+</ol>
+
+<h2>How do you choose what to test first?</h2>
+<p>Write each idea as a hypothesis: "Because [evidence], changing [element] to [version] will increase [metric]." Then rank by three questions (our judgment, not a standard): how strong is the evidence, how large a change would it be, and how much traffic does the page get. A strong-evidence, high-traffic, big-change idea goes first. Our guide on <a href="/blog/how-to-increase-shopify-conversion-rate">how to increase your Shopify conversion rate</a> groups candidates by stage of the visit, and the <a href="/blog/shopify-product-page">Shopify product page</a> guide covers the page where most tests happen.</p>
+<p>Evidence can come from your analytics, from recordings, from customers and from comparing your store with the one that beats you in your niche. That last source is the one small stores use least: open the leader's product page next to yours and write down every difference a stranger would notice in five seconds.</p>
+
+<h2>Can an audit tell you what to test?</h2>
+<p>It can supply candidates, not verdicts. A tool that reads your page (EliteVault, ours — full disclosure) can flag the problems a stranger would see, which makes it a hypothesis source. It cannot see your analytics, it reads a screenshot, and it does not run or judge experiments.</p>
+<!--ev--><figure class="my-8 rounded-2xl border border-signal-500/25 bg-card p-5 md:p-6" data-ev="in-action">
+<div class="text-xs font-semibold uppercase tracking-wide text-signal-300">EliteVault in action</div>
+<h3 class="mt-2 text-lg font-semibold text-white">Where test ideas can come from: what audits of real stores flag</h3>
+<p class="mt-3">A test is only as good as its hypothesis, and a hypothesis is only as good as the evidence behind it. Across 134 audited stores, the fixes the audits ranked highest mentioned these themes. Each row is a starting hypothesis, not a result:</p>
+<table><thead><tr><th>Theme in the audit's top fixes</th><th>Share of stores</th><th>A testable hypothesis it suggests</th></tr></thead><tbody>
+<tr><td>Hero and offer clarity</td><td>67.9%</td><td>A headline that states what you sell and for whom beats the current one</td></tr>
+<tr><td>Trust and social proof</td><td>64.9%</td><td>Real reviews near the buy button lift add-to-cart</td></tr>
+<tr><td>Buy button and path to purchase</td><td>49.3%</td><td>A single obvious primary action beats two competing ones</td></tr>
+<tr><td>Product imagery</td><td>40.3%</td><td>In-use and in-scale photos beat studio-only shots</td></tr>
+</tbody></table>
+<p>Read it with some suspicion: the stores picked themselves, the audit reads a screenshot (so it cannot see your analytics) and the themes are a keyword match on the audit's own fix titles. The way to use it is as a source of candidates. Run your own store through the audit, take its first fix and write it down as a hypothesis with a metric. For example, the stored audit we use in our guides flagged two blockers on a home-decor store: a fake-looking countdown timer and a lack of authentic social proof. Neither needs an A/B test to justify; one is a trust problem you can simply remove, the other is content you collect and place. Both come from evidence on the page, not a hunch.</p>
+<p>What EliteVault does not do: it does not split your traffic, run experiments or report test winners. Its job here is to help you decide what to test and in what order.</p>
+<figcaption class="mt-3 text-xs text-white/35">From EliteVault data (n = 134 stores, 2026-06-02 to 2026-10-22). Available on: everyone: the audit's problems and fix 1 are shown to anonymous visitors and Free accounts; fixes 2 and up open with a one-time $7 unlock for that audit, or with Pro and Scale.</figcaption>
+</figure><!--/ev-->
+<p class="blog-cta">See the problems an audit flags on your own page: <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=ab-testing&amp;utm_content=showcase">Get the first fix to test on your store →</a></p>
+<p>On plans: anonymous visitors and Free accounts get the audit, the annotated screenshot, the ad-readiness verdict and the first fix. The other fixes with their how-to open with a one-time $7 unlock for that audit, or with Pro ($19 a month) for every audit. Use the first fix as your first hypothesis; unlock the rest only if you want the full list to plan a longer test queue.</p>
+
+<h2>A simple test plan you can copy</h2>
+<ol>
+<li><strong>Hypothesis:</strong> one sentence with the evidence.</li>
+<li><strong>Metric:</strong> one primary metric, such as purchase conversion rate or add-to-cart rate.</li>
+<li><strong>Sample:</strong> compute it before you start with your baseline and a lift you would act on; write down the date you will stop.</li>
+<li><strong>Change:</strong> one thing, on a duplicate of the theme.</li>
+<li><strong>Run:</strong> no peeking, no other changes, whole weeks.</li>
+<li><strong>Decide:</strong> act only if the planned sample is reached; otherwise record "no conclusion" and pick the next idea.</li>
+</ol>
+
+<h2>Use the evidence to beat the store next to you</h2>
+<p>You do not need a testing programme to improve a small store; you need to stop guessing. Find the biggest gap between your page and the leader's, fix what the evidence supports, and keep tests for the changes big enough to read. For tools around that, see <a href="/blog/free-website-audit-tools">website audit tools</a>, and for the page itself, our <a href="/">Shopify store audit</a>.</p>
+<p class="blog-cta"><a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=ab-testing&amp;utm_content=end">Run the audit on your store →</a></p>
+`.trim(),
+    faqs: [
+      {
+        q: "How much traffic do you need for A/B testing?",
+        a: "It depends on your baseline conversion rate and the smallest lift you want to detect. As an illustration, at a 1.4% baseline, detecting a 20% relative lift needs roughly 30,000 visitors per version with standard settings, while a 50% lift needs roughly 5,500. Use a sample size calculator with your own numbers.",
+      },
+      {
+        q: "Can you do A/B testing on Shopify?",
+        a: "Yes. Shopify's changelog describes Rollouts, which can run an A/B test between two themes or checkout setups and release changes gradually. Third-party apps exist for single-element tests. Check your own admin for plan availability and read each app's listing.",
+      },
+      {
+        q: "How long should an A/B test run?",
+        a: "Until it reaches the sample size you calculated before starting, rounded up to whole weeks. Stopping when the result first looks significant inflates false positives.",
+      },
+      {
+        q: "What should you test first on a small Shopify store?",
+        a: "Large changes backed by evidence, on the page with the most traffic closest to checkout: the offer and headline, the product page layout or the proof near the buy button. Fix obvious problems without a test.",
+      },
+      {
+        q: "Does EliteVault run A/B tests?",
+        a: "No. EliteVault audits a page and flags problems, which you can use as hypotheses; it does not split traffic or report test winners.",
+      },
+    ],
+  },
+  {
+    slug: "virtual-assistant-for-shopify",
+    title: "Virtual Assistant for Shopify: What to Delegate and What Not To",
+    h1: "Virtual assistant for Shopify: what to delegate, what to keep and how to give them a real task list",
+    description:
+      "Virtual assistant for Shopify stores: the tasks worth delegating, typical costs by region, access rules and how to turn an audit into a task list.",
+    keyword: "virtual assistant for shopify",
+    keywords: [
+      "virtual assistant for shopify",
+      "shopify virtual assistant",
+      "hire shopify virtual assistant",
+      "shopify va tasks",
+      "virtual assistant ecommerce store",
+    ],
+    date: "2026-10-25",
+    updated: "2026-10-25",
+    author: "Ariel Jiménez",
+    readingMinutes: 6,
+    video: FINAL_VIDEO_META,
+    excerpt:
+      "What a virtual assistant for Shopify does, what it costs according to a vendor's published ranges, which tasks to keep for yourself, and how to hand over a ranked task list.",
+    bodyHtml: `
+<p class="lede">A virtual assistant for Shopify is a remote helper who takes repeatable store work off your plate (product uploads, price changes, discount codes, order questions, reports), and the main thing that decides whether it works is not their skill but the quality of the task list you hand over. Hire for work that is repeatable and well described, keep the decisions that need your judgment, and give staff-level access, not the owner login.</p>
+${finalVideo}
+<p>In the video, a store loses to a stronger competitor. Help is only useful if it points at what is actually costing you sales. So after the hiring basics, this guide shows how to turn "improve the store" into tasks an assistant can finish, and keeps your attention on the competitor you are trying to beat.</p>
+<p class="blog-cta">Not sure what an assistant should fix first? <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=virtual-assistant-for-shopify&amp;utm_content=early">Turn your store into a task list →</a></p>
+
+<h2>What does a virtual assistant do for a Shopify store?</h2>
+<p>The categories repeat across agency guides. <a href="https://stealthagents.com/virtual-assistant-for-shopify" rel="nofollow">Stealth Agents</a>, a VA provider, groups the work into four:</p>
+<ul>
+<li><strong>Store operations:</strong> uploading products, updating prices and variants, setting up discount codes, managing collections and navigation.</li>
+<li><strong>Customer service:</strong> order status questions, refunds and exchanges, shipping delay updates, disputes.</li>
+<li><strong>Inventory and supplier coordination:</strong> tracking stock, flagging low inventory, coordinating restocks.</li>
+<li><strong>Marketing support:</strong> scheduling social posts, managing email flows, pulling sales reports, updating blog content, handling reviews.</li>
+</ul>
+<p>Read that as a vendor's list, not a standard. It is useful because it shows the pattern: the work is repeatable, has a clear finish and follows a procedure.</p>
+
+<h2>What should you delegate, and what should you keep?</h2>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 200" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="va1-title va1-desc"><title id="va1-title">What to delegate to a Shopify virtual assistant and what to keep</title><desc id="va1-desc">Delegate repeatable tasks such as product uploads, price and variant updates, discount codes, order status replies, reports and email drafts. Keep or review decisions about the offer, refund policy, ad spend, page redesign, payments and billing and supplier terms.</desc>
+<rect x="0.5" y="0.5" width="143" height="189" rx="8" fill="rgba(45,212,191,0.08)" stroke="#2DD4BF"/><text x="72" y="24" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">Delegate</text><text x="72" y="52" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.85)">Product uploads</text><text x="72" y="74" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.85)">Price and variants</text><text x="72" y="96" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.85)">Discount codes</text><text x="72" y="118" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.85)">Order status</text><text x="72" y="140" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.85)">Reports pulled</text><text x="72" y="162" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.85)">Email drafts</text><rect x="156.5" y="0.5" width="143" height="189" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="228" y="24" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Keep or review</text><text x="228" y="52" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Offer and pricing</text><text x="228" y="74" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Refund policy</text><text x="228" y="96" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Ad spend</text><text x="228" y="118" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Page redesign</text><text x="228" y="140" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Payments, billing</text><text x="228" y="162" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.6)">Supplier terms</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Our judgment, based on the task categories in <a href="https://stealthagents.com/virtual-assistant-for-shopify" rel="nofollow">a VA agency's Shopify guide</a> and on what needs the owner's decision.</figcaption>
+</figure>
+<p>A simple test: if you could write the steps on a page and check the result in a minute, delegate it. If it needs a judgment about your brand, your margin or your customers, keep it, or at least review it. The same guide treats paid advertising as a separate role that needs someone with ad campaign experience, and says growth decisions such as sourcing and scaling ads stay with the owner. We agree, and we cover that side in our guide to the <a href="/blog/meta-media-buyer">Meta media buyer</a>.</p>
+<p>Page changes sit in between. A VA can install a review app or swap an image if you tell them exactly what and where, but deciding what the page should say is a conversion question. For that you need a specialist, see <a href="/blog/shopify-landing-page-specialist">the Shopify landing page specialist</a>, or you need evidence of what is wrong.</p>
+
+<h2>How much does a virtual assistant for Shopify cost?</h2>
+<p>Prices depend mostly on where the person is and how you find them. According to the Stealth Agents page (a vendor, so these are asking prices, and the page itself shows a lower starting rate in the text than in its banner), offshore dedicated assistants for skilled ecommerce work run about $10 to $20 an hour, freelance-platform assistants about $5 to $15 an hour, and US-based assistants about $25 to $50 an hour. It puts a full-time offshore assistant at about $1,600 a month and a 20-hour week at about $800. The same page notes that cheaper platform rates are often offset by the time you spend sourcing, screening and managing.</p>
+<p>We could not verify these figures at an independent source, and other vendors publish different ranges, so use them to understand the spread rather than to budget. The reliable way to get a price is to write your task list first and ask two or three providers to quote it.</p>
+
+<h2>How do you hire and onboard one safely?</h2>
+<ol>
+<li><strong>Write the task list first.</strong> Candidates can only be judged against real tasks.</li>
+<li><strong>Use a paid trial.</strong> The same guide suggests a trial with one real product listing and one customer email; it is a cheap way to see their care and writing.</li>
+<li><strong>Give staff access, not the owner login.</strong> Shopify's <a href="https://help.shopify.com/en/manual/your-account/staff-accounts" rel="nofollow">staff accounts</a> let you assign roles and permissions per person, so a VA can manage products and orders without touching payment or billing settings. Do not share your owner credentials.</li>
+<li><strong>Write down the procedure.</strong> A short document per recurring task (how a product is uploaded, how a refund is answered) makes quality repeatable and replaceable.</li>
+<li><strong>Review at first.</strong> Spot-check their work early, then reduce the checks as the output proves reliable. Correct mistakes in writing and update the procedure.</li>
+</ol>
+
+<h2>Is Shopify Sidekick a virtual assistant?</h2>
+<p>It is an AI assistant inside the Shopify admin. Shopify's <a href="https://help.shopify.com/en/manual/shopify-admin/productivity-tools/sidekick/features" rel="nofollow">Sidekick page</a> says it answers questions and completes tasks from any admin page, uses the page you are viewing as context, and applies generated content to your store when you click Apply. It lists what it cannot do too: it cannot handle customer support conversations, and it does not change your store without your approval. It is a good first pass for drafting product copy or finding a setting, and it is not a replacement for a person who handles your orders and inbox. Which one you need depends on whether the bottleneck is thinking or hours.</p>
+
+<h2>How do you give an assistant work that actually improves sales?</h2>
+<p>"Improve the store" is not a task. A good one says what to change, where, and how to know it is done. The loop is simple:</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 228" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="va2-title va2-desc"><title id="va2-title">From audit to assistant tasks</title><desc id="va2-desc">Four steps: audit the store and rank the problems, write each problem as a task with what, where and done-when, let the assistant do one task at a time, then review by re-checking the page.</desc>
+<rect x="0.5" y="0.5" width="299" height="43" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="12" y="20" font-size="14" font-weight="600" fill="#ffffff">1  Audit the store</text><text x="12" y="38" font-size="14" fill="rgba(255,255,255,0.6)">problems, ranked</text><path d="M150 44 L150 53" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 51 L150 58 L155 51 Z" fill="#2DD4BF"/><rect x="0.5" y="58.5" width="299" height="43" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="12" y="78" font-size="14" font-weight="600" fill="#ffffff">2  Write each as a task</text><text x="12" y="96" font-size="14" fill="rgba(255,255,255,0.6)">what, where, done when</text><path d="M150 102 L150 111" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 109 L150 116 L155 109 Z" fill="#2DD4BF"/><rect x="0.5" y="116.5" width="299" height="43" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="12" y="136" font-size="14" font-weight="600" fill="#ffffff">3  The VA does it</text><text x="12" y="154" font-size="14" fill="rgba(255,255,255,0.6)">one task at a time</text><path d="M150 160 L150 169" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 167 L150 174 L155 167 Z" fill="#2DD4BF"/><rect x="0.5" y="174.5" width="299" height="43" rx="8" fill="rgba(45,212,191,0.1)" stroke="#2DD4BF"/><text x="12" y="194" font-size="14" font-weight="600" fill="#ffffff">4  You review</text><text x="12" y="212" font-size="14" fill="rgba(255,255,255,0.6)">re-check the page</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">The loop that turns 'improve the store' into work someone else can do.</figcaption>
+</figure>
+<p>The hard part is step 1: knowing what is worth doing. You can build it from your analytics, from a CRO checklist such as our <a href="/blog/shopify-cro-audit">Shopify CRO audit</a>, or from an automated audit that reads the page, such as EliteVault (ours — full disclosure).</p>
+<!--ev--><figure class="my-8 rounded-2xl border border-signal-500/25 bg-card p-5 md:p-6" data-ev="in-action">
+<div class="text-xs font-semibold uppercase tracking-wide text-signal-300">EliteVault in action</div>
+<h3 class="mt-2 text-lg font-semibold text-white">An audit turned into a task sheet</h3>
+<p class="mt-3">An assistant cannot act on "make the store convert better". They can act on a task with a place and a finish line. Here is the shape of a sheet built from an audit. The first two lines are the two blockers an EliteVault audit flagged on one of our own stores (home decor, name hidden, audited 2026-10-21); the layout is a template.</p>
+<table><thead><tr><th>#</th><th>Task (from the audit)</th><th>Where</th><th>Done when</th></tr></thead><tbody>
+<tr><td>1</td><td>Remove the fake countdown timer</td><td>Product and cart pages</td><td>The timer is gone from every template; you have checked on mobile</td></tr>
+<tr><td>2</td><td>Add authentic social proof</td><td>Product pages</td><td>Real reviews are installed and visible near the buy button</td></tr>
+<tr><td>3…</td><td>The next fixes, in the audit's order</td><td>per fix</td><td>written by you from the fix's steps</td></tr>
+</tbody></table>
+<p>The third row is deliberately a template: the other fixes and their steps open with the $7 unlock for that audit or with a paid plan, and we are not going to invent them here. What matters is the method. An audit gives you a ranked list in plain language; you add a place and a finish line; the assistant has a queue. Note the second task needs judgment before it is delegable: which reviews to show and how to request them is your call.</p>
+<p>EliteVault is not a virtual assistant and does not do any of these tasks. It reads your page and tells you what to fix, in order.</p>
+<figcaption class="mt-3 text-xs text-white/35">From an EliteVault audit. Available on: everyone: the audit's problems and fix 1 are shown to anonymous visitors and Free accounts. The remaining fixes, with their how-to steps, open with a one-time $7 unlock for that audit, or with Pro and Scale.</figcaption>
+</figure><!--/ev-->
+<p class="blog-cta">See the problems an audit flags on your own page: <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=virtual-assistant-for-shopify&amp;utm_content=showcase">Get your store's ranked problems →</a></p>
+<p>On plans: anonymous visitors and Free accounts see the audit's problems, the annotated screenshot, the ad-readiness verdict and the first fix. Enough to hand your assistant their first task. The rest of the fixes with their how-to open with a one-time $7 unlock for that audit, or with Pro ($19 a month).</p>
+
+<h2>Red flags when hiring</h2>
+<ul>
+<li>They are vague about their Shopify admin experience.</li>
+<li>They ask for the owner login instead of a staff account.</li>
+<li>They promise sales or traffic results; an assistant executes tasks, they do not guarantee revenue.</li>
+<li>They have no procedure for checking their own work.</li>
+</ul>
+
+<h2>Give the assistant a target: the store next to you</h2>
+<p>An assistant raises your capacity; the plan still has to be yours. Compare your store with the leader in your niche, list the gaps in order, and hand them over one by one. For other tools around that, see <a href="/blog/free-website-audit-tools">website audit tools</a>, and for the page itself, our <a href="/">Shopify store audit</a>. If you are weighing a specialist instead of an assistant, read <a href="/blog/ecommerce-cro-specialist">what an ecommerce CRO specialist does</a>.</p>
+<p class="blog-cta"><a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=virtual-assistant-for-shopify&amp;utm_content=end">Run the audit on your store →</a></p>
+`.trim(),
+    faqs: [
+      {
+        q: "What does a virtual assistant do for a Shopify store?",
+        a: "Repeatable store work: uploading products, updating prices and variants, setting up discounts, answering order status questions, coordinating inventory and pulling reports. Decisions about offer, pricing and strategy stay with the owner.",
+      },
+      {
+        q: "How much does a virtual assistant for Shopify cost?",
+        a: "It varies by location and sourcing. One VA provider publishes about $10 to $20 an hour for offshore dedicated assistants, $5 to $15 for freelance platforms and $25 to $50 for US-based ones; those are a vendor's figures, so get quotes for your own task list.",
+      },
+      {
+        q: "Should a virtual assistant have owner access to my Shopify store?",
+        a: "No. Create a staff account with only the permissions the role needs, so they can manage products and orders without access to payment or billing settings.",
+      },
+      {
+        q: "Is Shopify Sidekick a virtual assistant?",
+        a: "It is an AI assistant in the Shopify admin that answers questions and completes tasks with your approval. It does not handle customer support conversations, so it complements a human assistant rather than replacing one.",
+      },
+      {
+        q: "Does EliteVault replace a virtual assistant?",
+        a: "No. EliteVault audits your store and ranks what to fix; it does not perform tasks. The audit can be the basis of a task list you hand to an assistant.",
+      },
+    ],
+  },
+  {
+    slug: "meta-media-buyer",
+    title: "Meta Media Buyer: What They Do, What They Cost, When to Hire",
+    h1: "Meta media buyer: what they do, what they cost and how to know your store is ready for one",
+    description:
+      "Meta media buyer guide: what the role covers, published cost ranges, when it pays to hire one and what to check on your store first.",
+    keyword: "meta media buyer",
+    keywords: [
+      "meta media buyer",
+      "facebook media buyer",
+      "hire meta media buyer",
+      "media buyer cost",
+      "meta ads media buyer vs agency",
+    ],
+    date: "2026-10-25",
+    updated: "2026-10-25",
+    author: "Ariel Jiménez",
+    readingMinutes: 7,
+    video: FINAL_VIDEO_META,
+    excerpt:
+      "What a Meta media buyer does, what one vendor publishes as typical costs, how to judge when hiring pays for itself and the four checks to run on your store before you pay for ad management.",
+    bodyHtml: `
+<p class="lede">A Meta media buyer is the person who plans, launches and optimizes your Facebook and Instagram ad campaigns, and the best one in the world can only scale a store that already converts. Before you pay for ad management, check four things: you know your break-even ROAS, your tracking works, your page earns trust, and you have more than one creative angle to test.</p>
+${finalVideo}
+<p>In the video, a store loses to a stronger competitor. With ads, the one who wins is not always the one who spends more, but the one whose page turns a click into a sale more often. So this guide covers the role and what it costs, then shows how to check whether your store is ready before you hand someone a budget.</p>
+<p class="blog-cta">Want to know if your store is ready for ad spend? <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=meta-media-buyer&amp;utm_content=early">See your store's modeled 7-day ROAS range →</a></p>
+
+<h2>What does a Meta media buyer do?</h2>
+<p>The job has four parts that repeat on every account:</p>
+<ul>
+<li><strong>Structure and targeting:</strong> how campaigns, ad sets and audiences are organized, and which objective each uses.</li>
+<li><strong>Budget:</strong> how much goes where, and when to raise, hold or cut it.</li>
+<li><strong>Creative testing:</strong> which hooks, formats and offers are tried, and how results are read.</li>
+<li><strong>Measurement and reporting:</strong> whether purchases reach Meta (the pixel and the <a href="https://developers.facebook.com/docs/marketing-api/conversions-api/" rel="nofollow">Conversions API</a>), what the numbers mean and what to do next.</li>
+</ul>
+<p>What a buyer does not do, unless you pay for it, is fix your page, write your offer or source your products. Their lever is the ad and the account. Your lever is everything after the click. That difference explains most disappointments with ad managers, and it is why the order of the checks below matters.</p>
+
+<h2>How much does a Meta media buyer cost?</h2>
+<p>Costs depend on the model. The numbers below come from one vendor's page, <a href="https://adsnipper.com/blog/cost-to-hire-media-buyer/" rel="nofollow">Ad Snipper</a>, a staff-augmentation company (updated June 2026), so treat them as asking prices from a seller, not market data:</p>
+<table><thead><tr><th>Model</th><th>What that page says</th></tr></thead><tbody>
+<tr><td>Agency retainer</td><td>$3,000 to $10,000 a month for paid social and search; $3,000 is the floor and $10,000 is common once spend passes $50,000 a month</td></tr>
+<tr><td>Freelancer</td><td>About $25 to $100 an hour on Upwork or Fiverr; US-based independents often quote $75 and up</td></tr>
+<tr><td>In-house, US</td><td>"Well into six figures" once benefits, payroll tax, software and ramp time are counted</td></tr>
+<tr><td>Offshore, dedicated</td><td>About $10 an hour, roughly $1,600 a month for 40 hours a week</td></tr>
+</tbody></table>
+<p>The cost is only half of the question. The other half is how big the fee is compared with the spend it manages.</p>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 230" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="mb1-title mb1-desc"><title id="mb1-title">A flat monthly fee as a share of ad spend</title><desc id="mb1-desc">A flat 3,000 dollar monthly fee is 100 percent of a 3,000 dollar ad budget, 30 percent of 10,000 dollars, 10 percent of 30,000 dollars and 6 percent of 50,000 dollars.</desc>
+<text x="0" y="16" font-size="14" fill="rgba(255,255,255,0.6)">A $3,000 fee, as a share of ad spend</text><text x="0" y="44" font-size="14" fill="rgba(255,255,255,0.85)">Spend $3,000 a month</text><rect x="0" y="52" width="170" height="14" rx="4" fill="#2DD4BF" fill-opacity="1"/><text x="178" y="65" font-size="14" font-weight="600" fill="#ffffff">100%</text><text x="0" y="94" font-size="14" fill="rgba(255,255,255,0.85)">Spend $10,000 a month</text><rect x="0" y="102" width="51" height="14" rx="4" fill="#2DD4BF" fill-opacity="0.6"/><text x="59" y="115" font-size="14" font-weight="600" fill="#ffffff">30%</text><text x="0" y="144" font-size="14" fill="rgba(255,255,255,0.85)">Spend $30,000 a month</text><rect x="0" y="152" width="17" height="14" rx="4" fill="#2DD4BF" fill-opacity="0.6"/><text x="25" y="165" font-size="14" font-weight="600" fill="#ffffff">10%</text><text x="0" y="194" font-size="14" fill="rgba(255,255,255,0.85)">Spend $50,000 a month</text><rect x="0" y="202" width="10" height="14" rx="4" fill="#2DD4BF" fill-opacity="0.6"/><text x="18" y="215" font-size="14" font-weight="600" fill="#ffffff">6%</text></svg>
+<figcaption class="mt-3 text-xs text-white/35">Plain arithmetic, illustrative: $3,000 is the floor of one vendor's published agency range. Your quote will differ.</figcaption>
+</figure>
+<p>At $3,000 of monthly spend a $3,000 retainer is as big as the ads themselves; at $50,000 it is a small share. The point is not that you should wait for $50,000: it is that a fee only makes sense if the spend is large enough, or the work is cheap enough, for the improvement to cover it.</p>
+
+<h2>When does it pay to hire one?</h2>
+<p>Start with the number that decides whether ads can ever be profitable for you: break-even ROAS, which is 1 divided by your gross margin. Shopify's <a href="https://www.shopify.com/blog/break-even-roas-calculator" rel="nofollow">break-even ROAS guide</a> explains the calculation. At a 40% margin, break-even is 2.5x; at 25%, it is 4x. If your page's conversion rate and your average order value cannot support that, a buyer cannot change the arithmetic. They can only find out faster that it does not work, at your expense.</p>
+<p>Hiring tends to pay when three things are true: your unit economics work at a reasonable ROAS, you have more creative ideas than time to test them, and the account's complexity is beyond what you can review weekly. Below that, a more modest step (learning the basics yourself, or a freelancer for a defined audit of the account) usually costs less than a retainer. Our guide to <a href="/blog/how-to-increase-roas">how to increase ROAS</a> covers the page-first levers.</p>
+
+<h2>What should you check on your store before you hire?</h2>
+<figure class="my-8 rounded-2xl border border-white/[0.08] bg-card p-5 md:p-6">
+<svg viewBox="0 0 300 288" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="mb2-title mb2-desc"><title id="mb2-title">Four checks before hiring a Meta media buyer</title><desc id="mb2-desc">Know your break-even ROAS, confirm tracking works, confirm the page converts, and have more than one creative angle. Then a buyer can scale it.</desc>
+<rect x="0.5" y="0.5" width="299" height="43" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="12" y="20" font-size="14" font-weight="600" fill="#ffffff">1  Know break-even ROAS</text><text x="12" y="38" font-size="14" fill="rgba(255,255,255,0.6)">1 ÷ gross margin</text><path d="M150 44 L150 53" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 51 L150 58 L155 51 Z" fill="#2DD4BF"/><rect x="0.5" y="58.5" width="299" height="43" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="12" y="78" font-size="14" font-weight="600" fill="#ffffff">2  Tracking works</text><text x="12" y="96" font-size="14" fill="rgba(255,255,255,0.6)">purchases reach Meta</text><path d="M150 102 L150 111" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 109 L150 116 L155 109 Z" fill="#2DD4BF"/><rect x="0.5" y="116.5" width="299" height="43" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="12" y="136" font-size="14" font-weight="600" fill="#ffffff">3  The page converts</text><text x="12" y="154" font-size="14" fill="rgba(255,255,255,0.6)">trust, offer, photos</text><path d="M150 160 L150 169" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 167 L150 174 L155 167 Z" fill="#2DD4BF"/><rect x="0.5" y="174.5" width="299" height="43" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/><text x="12" y="194" font-size="14" font-weight="600" fill="#ffffff">4  Creative to test</text><text x="12" y="212" font-size="14" fill="rgba(255,255,255,0.6)">more than one angle</text><rect x="0.5" y="236.5" width="299" height="39" rx="8" fill="rgba(45,212,191,0.1)" stroke="#2DD4BF"/><text x="150" y="262" text-anchor="middle" font-size="14" font-weight="600" fill="#2DD4BF">Now a buyer can scale it</text><path d="M150 218 L150 231" stroke="#2DD4BF" stroke-width="2" fill="none"/><path d="M145 229 L150 236 L155 229 Z" fill="#2DD4BF"/></svg>
+<figcaption class="mt-3 text-xs text-white/35">Our judgment, in the order that is cheapest to check first.</figcaption>
+</figure>
+<ol>
+<li><strong>Break-even ROAS.</strong> Write it down. Every conversation with a buyer should start with it.</li>
+<li><strong>Tracking.</strong> Make sure purchases are reported to Meta. A buyer optimizing on missing data is guessing. Meta's help centre pages on the pixel and on the learning phase explain how events feed delivery; read them, or ask your buyer to explain them in plain words.</li>
+<li><strong>The page.</strong> Open your store the way a cold visitor does: do they know in five seconds what you sell, is there proof, is the buy path clear? Our checklist for <a href="/blog/is-your-store-ready-for-meta-ads">whether your store is ready for Meta ads</a> walks through it.</li>
+<li><strong>Creative.</strong> A buyer needs material. If you have one image and one idea, hiring is premature.</li>
+</ol>
+
+<h2>How do you evaluate a media buyer?</h2>
+<ul>
+<li>Ask which metric they own, and how it is measured. If it is "ROAS" ask what ROAS they consider breaking even for your margin.</li>
+<li>Ask how they decide when to change something, and how long they wait. Constant edits restart delivery learning.</li>
+<li>Ask to see an anonymized account structure and a past report. Do not accept screenshots of "best results" alone.</li>
+<li>Insist that you own the ad account and the business manager, and that they get access, not the other way around.</li>
+<li>Be wary of anyone who guarantees a ROAS, a cost per purchase or a date. Nobody can.</li>
+</ul>
+
+<h2>Where can software stand in for the expensive part?</h2>
+<p>A media buyer does two kinds of thinking: reading what the page and offer can support, and modeling what a given budget could return. The second is something a tool can approximate before you spend. EliteVault (ours — full disclosure) does both from a screenshot of your store: an audit with an ad-readiness verdict, and a campaign scenario model. It does not replace a buyer's account work, it reads no data from your ad account, and its numbers are estimates.</p>
+<!--ev--><figure class="my-8 rounded-2xl border border-signal-500/25 bg-card p-5 md:p-6" data-ev="in-action">
+<div class="text-xs font-semibold uppercase tracking-wide text-signal-300">EliteVault in action</div>
+<h3 class="mt-2 text-lg font-semibold text-white">Would a buyer have saved this store? A projection that said no</h3>
+<p class="mt-3">One of our own stores (home decor, name hidden) was audited on 2026-10-21. The ad-readiness verdict was <strong>not ready for paid traffic</strong>, with two blockers: a fake-looking countdown timer and no authentic social proof. Then we ran EliteVault's Meta Campaign Scenario Modeler with an average order value of $35 and $100 a day, for a physical product sold in the US with medium competition.</p>
+<table><thead><tr><th>Scenario</th><th>Spend</th><th>Revenue</th><th>Sales</th><th>7-day ROAS (range)</th></tr></thead><tbody><tr><td>Conservative</td><td>$420</td><td>$253</td><td>7</td><td>0.60x (0.48–0.72x)</td></tr><tr><td>Balanced</td><td>$700</td><td>$445</td><td>13</td><td>0.64x (0.48–0.80x)</td></tr><tr><td>Aggressive</td><td>$980</td><td>$635</td><td>18</td><td>0.65x (0.42–0.87x)</td></tr></tbody></table>
+<figure class="my-4">
+<svg viewBox="0 0 300 214" width="100%" style="max-width:440px;display:block;margin:0 auto" role="img" aria-labelledby="mb-sim-title mb-sim-desc"><title id="mb-sim-title">Modeled 7-day ROAS by day, three scenarios</title><desc id="mb-sim-desc">Day-by-day modeled ROAS for the conservative, balanced and aggressive scenarios. A dashed line marks 1.0x, where revenue equals ad spend.</desc>
+<line x1="24" y1="37.0" x2="284" y2="37.0" stroke="rgba(255,255,255,0.35)" stroke-dasharray="4 4"/>
+<text x="26" y="33.0" font-size="14" fill="rgba(255,255,255,0.6)">1.0x = revenue equals ad spend</text>
+<polyline fill="none" stroke="#2DD4BF" stroke-width="2.5" points="24.0,120.8 67.3,102.0 110.7,82.0 154.0,75.8 197.3,75.8 240.7,75.8 284.0,75.8"/><polyline fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2.5" points="24.0,118.2 67.3,98.3 110.7,77.0 154.0,70.8 197.3,70.8 240.7,70.8 284.0,70.8"/><polyline fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2.5" points="24.0,117.0 67.3,97.0 110.7,75.8 154.0,69.5 197.3,69.5 240.7,69.5 284.0,69.5"/>
+<text x="24" y="180" font-size="14" fill="rgba(255,255,255,0.6)">Day 1</text><text x="284" y="180" text-anchor="end" font-size="14" fill="rgba(255,255,255,0.6)">Day 7</text>
+<text x="24" y="206" font-size="14" fill="#2DD4BF">Conservative</text><text x="116" y="206" font-size="14" fill="rgba(255,255,255,0.75)">Balanced</text><text x="208" y="206" font-size="14" fill="rgba(255,255,255,0.4)">Aggressive</text></svg>
+<figcaption class="mt-2 text-xs text-white/35">Inputs: average order value $35, $100 a day. Days 1–3 are modeled as Meta's learning phase.</figcaption>
+</figure>
+<p>All three scenarios stayed below 1.0x: the aggressive one spends $980 to return $635. A better buyer might move the numbers a little, but a model that treats the page as the ceiling says the first job is not on the ad account. The conservative scenario's recommendation, in line with the audit, was to fix trust signals and photography before raising spend.</p>
+<p>These are modeled projections, not results. The model assumes days 1 to 3 convert worse (Meta's learning phase), that the three scenarios spend 60%, 100% and 140% of the stated budget, and that a weak audit caps the ROAS a store can reach. They are EliteVault's own assumptions. Use the output to compare scenarios and see the break-even gap, not as a forecast.</p>
+<p>The Simulator also writes, for each scenario, a win condition, the main risks and a tactical move; those are text for you to check against your own data. The Meta Ads Optimizer, on Scale, goes one step further and proposes targets for CPC, CPM, CTR and ROAS. We have no stored real Optimizer output, so we show none here.</p>
+<figcaption class="mt-3 text-xs text-white/35">From an EliteVault audit (modeled projection, not a result). Available on: Pro (1 projection a month) and Scale (unlimited); a one-time $7 unlock gives 1 projection for that audit. The Meta Ads Optimizer is Scale only. Anonymous and Free accounts get the audit's ad-readiness verdict and a modeled 7-day ROAS range instead.</figcaption>
+</figure><!--/ev-->
+<p class="blog-cta">Run the same check on your own page: <a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=meta-media-buyer&amp;utm_content=showcase">Check your store before you hire a buyer →</a></p>
+<p>On plans: anonymous visitors and Free accounts get the audit, the ad-readiness verdict, the annotated screenshot, the first fix and a modeled 7-day ROAS range. The 3-scenario Simulator is a paid feature: one projection a month on Pro ($19 a month), unlimited on Scale ($29 a month), or one projection for a single audit with the $7 unlock. The Meta Ads Optimizer is only on Scale.</p>
+
+<h2>Mistakes to avoid</h2>
+<ul>
+<li>Hiring to fix a conversion problem. A buyer cannot repair a page.</li>
+<li>Judging a buyer on the first few days. Meta's early delivery is noisy; set a review point in weeks, with a number to reach, before you start.</li>
+<li>Paying a share of spend with no cap. The buyer then gains when you spend more, whether or not it works. A flat fee or a capped share avoids that tension.</li>
+<li>Skipping a written break-even. Without it every result can be described as "promising".</li>
+</ul>
+
+<h2>Put the page ahead of the spend</h2>
+<p>Ad spend multiplies whatever your page does. If you fix the largest gap between your store and the best one in your niche first, every dollar a buyer manages goes further. For related reading on hiring, see <a href="/blog/ecommerce-cro-specialist">what an ecommerce CRO specialist does</a> and <a href="/blog/virtual-assistant-for-shopify">what a virtual assistant for Shopify can handle</a>; for the store itself, our <a href="/">Shopify store audit</a>.</p>
+<p class="blog-cta"><a href="/sign-up?next=/app/analyzer&amp;utm_source=blog&amp;utm_medium=inline&amp;utm_campaign=meta-media-buyer&amp;utm_content=end">Run the audit on your store →</a></p>
+`.trim(),
+    faqs: [
+      {
+        q: "What does a Meta media buyer do?",
+        a: "Plans, launches and optimizes Facebook and Instagram ad campaigns: account structure and targeting, budget allocation, creative testing and measurement. They do not fix your page or your offer.",
+      },
+      {
+        q: "How much does a Meta media buyer cost?",
+        a: "It depends on the model. One vendor publishes agency retainers of about $3,000 to $10,000 a month, freelancers at about $25 to $100 an hour and offshore dedicated buyers at about $10 an hour. Those are a seller's figures, so get quotes for your own account.",
+      },
+      {
+        q: "When should you hire a Meta media buyer?",
+        a: "When your unit economics work at a realistic ROAS, your tracking is reliable, your page converts and you have more creative to test than time. Before that, fixing the page usually returns more than ad management.",
+      },
+      {
+        q: "What is a good ROAS for a Shopify store?",
+        a: "It depends on your margin. Break-even ROAS is 1 divided by gross margin: 2.5x at a 40% margin, 4x at 25%. Anything above your break-even leaves room for profit.",
+      },
+      {
+        q: "Does EliteVault replace a media buyer?",
+        a: "No. EliteVault audits the store and models a campaign from a screenshot; it does not manage your ad account. The Simulator is on Pro and Scale and the Optimizer on Scale only; the output is a modeled estimate.",
       },
     ],
   },

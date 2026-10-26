@@ -44,7 +44,9 @@ function checkPost(p: BlogPost, tier: keyof typeof TIER_RANGE | undefined, isNew
   add("lede present", lede.length > 0);
   add("keyword in first sentence of lede", norm(firstSentence).includes(norm(p.keyword)), firstSentence.slice(0, 80));
   if (isNew) {
-    add("slug = keyword", p.slug === norm(p.keyword).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""), p.slug);
+    // A "/" cannot be part of a URL segment: "a/b testing" -> "ab-testing" (the slash is dropped, not hyphenated).
+    const slugOf = (k: string) => norm(k).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    add("slug = keyword", p.slug === slugOf(p.keyword) || p.slug === slugOf(p.keyword.replace(/\//g, "")), p.slug);
     add("title starts with keyword", norm(p.title).startsWith(norm(p.keyword)), p.title);
     add("h1 contains keyword", norm(p.h1).includes(norm(p.keyword)), p.h1);
   }
