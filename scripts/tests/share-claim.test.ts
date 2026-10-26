@@ -12,6 +12,7 @@ import {
 } from "@/lib/share/claim-core";
 import { buildOutreachMessage, outreachLink } from "@/lib/analyzer/outreach-message";
 import type { SharedAuditRow } from "@/lib/analyzer/share-v2";
+import { redactClaimToken, redactEventProperties } from "@/lib/analytics/redact";
 
 /**
  * PR-3 (docs/design-share-claim-unlock-reaudit.md, approved D1–D6): claim a public audit, the $7 unlock on it,
@@ -218,4 +219,35 @@ test("the panel shows the claim and offers the re-audit in two manual steps", ()
   assert.match(ui, /replaceShareWithReaudit/);
   assert.match(ui, /window\.confirm/);
   assert.match(ui, /Copy outreach message/);
+});
+
+// ── hardening from the adversarial review ────────────────────────────────────
+
+test("claim tokens never reach PostHog: plain, encoded in sign-up's next=, and in event properties", () => {
+  const tok = generateClaimToken();
+  const plain = `https://elitevaultapp.com/s/shop-abc?c=${tok}&utm_source=share`;
+  assert.ok(!redactClaimToken(plain).includes(tok));
+  assert.match(redactClaimToken(plain), /c=\[redacted\]&utm_source=share/);
+  const enc = `https://elitevaultapp.com/sign-up?next=${encodeURIComponent(`/s/shop-abc/claim?c=${tok}`)}`;
+  assert.ok(!redactClaimToken(enc).includes(tok));
+  const props = redactEventProperties({ $current_url: plain, $referrer: enc, n: 3, arr: [plain] });
+  assert.ok(!JSON.stringify(props).includes(tok));
+  assert.equal(props.n, 3);
+  // wired in: the manual pageview and PostHog's own properties (pageleave, referrer, recordings URL)
+  assert.match(code("components/analytics/posthog-provider.tsx"), /redactClaimToken\(url\)/);
+  assert.match(code("lib/analytics/posthog.ts"), /sanitize_properties/);
+  // and the auth callback no longer logs the query string / next
+  const cb = code("app/(auth)/auth/callback/route.ts");
+  assert.doesNotMatch(cb, /url: request\.url/);
+});
+
+test("the SQL serialises one user's claims, never overwrites a public link and locks the audit on revert", () => {
+  assert.match(sql, /pg_advisory_xact_lock\(hashtext\(p_user::text\)\)/);
+  assert.match(sql, /if n\.share_slug is not null then raise exception 'not_ready'/);
+  const revert = sql.slice(sql.indexOf("function public.revert_claim"), sql.indexOf("function public.repoint_share"));
+  assert.match(revert, /perform 1 from public\.analyses where id = p_analysis for update/);
+});
+
+test("a failed re-audit does not block the owner for 24 h", () => {
+  assert.match(code("app/actions/share-admin.ts"), /\.in\("status", \["queued", "running", "succeeded"\]\)/);
 });

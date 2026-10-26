@@ -151,6 +151,7 @@ export async function startShareReaudit(
       .from("analyses")
       .select("id")
       .eq("reaudit_of", analysisId)
+      .in("status", ["queued", "running", "succeeded"]) // a failed re-audit does not lock the owner out
       .gte("created_at", since)
       .limit(1);
     if (Array.isArray(recent) && recent.length > 0) return { ok: false, error: "too_soon" };

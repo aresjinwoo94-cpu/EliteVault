@@ -64,11 +64,11 @@ export async function GET(request: NextRequest) {
   // pinpoint where the session is getting dropped. Vercel logs surface
   // these in the Functions tab.
   console.log("[auth/callback] hit", {
-    url: request.url,
+    path: new URL(request.url).pathname, // never the query string: it may carry a claim token (next=…c%3D…)
     hasCode: !!code,
     codePrefix: code?.slice(0, 8) ?? null,
     errParam,
-    next,
+    next: next.split("?")[0],
     referer: request.headers.get("referer"),
     forwardedHost: request.headers.get("x-forwarded-host"),
     incomingCookies: request.cookies

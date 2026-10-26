@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { ArrowRight, BadgeCheck } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { phCapture } from "@/lib/analytics/posthog";
@@ -25,6 +26,19 @@ export function ShareClaimBlock({
   cta: string;
   note: string;
 }) {
+  // The token only needs to live in the button's href: drop it from the address bar so it does not sit in browser
+  // history, a copied URL, a screenshot or a recording (analytics also redacts it: lib/analytics/redact.ts).
+  useEffect(() => {
+    try {
+      const u = new URL(window.location.href);
+      if (u.searchParams.has("c")) {
+        u.searchParams.delete("c");
+        window.history.replaceState(window.history.state, "", u.pathname + u.search + u.hash);
+      }
+    } catch {
+      /* address bar is cosmetic */
+    }
+  }, []);
   return (
     <Card className="border-signal-400/30 bg-gradient-to-br from-signal-500/[0.08] to-transparent p-5 md:p-6" data-share-block="claim">
       <div className="flex items-start gap-3">

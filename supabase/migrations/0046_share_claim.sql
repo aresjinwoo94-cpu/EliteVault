@@ -72,6 +72,8 @@ begin
 
   if v_a.user_id is not distinct from p_user then raise exception 'already_owner'; end if;
 
+  -- serialise one user's claims: two parallel claims on different audits must not both see "2 so far"
+  perform pg_advisory_xact_lock(hashtext(p_user::text));
   select count(*) into v_recent
     from public.analysis_claims
    where to_user_id = p_user and reverted_at is null and claimed_at > now() - interval '1 day';
@@ -106,6 +108,8 @@ set search_path = public
 as $$
 declare v_c record;
 begin
+  -- lock the audit row first so a settlement racing this revert sees one consistent owner
+  perform 1 from public.analyses where id = p_analysis for update;
   select id, from_user_id into v_c
     from public.analysis_claims
    where analysis_id = p_analysis and reverted_at is null
@@ -139,9 +143,10 @@ declare
   n record;
 begin
   select id, user_id, share_slug, share_note, share_indexable into o from public.analyses where id = p_old for update;
-  select id, user_id, status, result, reaudit_of into n from public.analyses where id = p_new for update;
+  select id, user_id, status, result, reaudit_of, share_slug into n from public.analyses where id = p_new for update;
   if o.id is null or n.id is null or o.share_slug is null then raise exception 'not_found'; end if;
   if o.user_id is distinct from n.user_id or n.reaudit_of is distinct from o.id then raise exception 'not_owner_pair'; end if;
+  if n.share_slug is not null then raise exception 'not_ready'; end if; -- never overwrite another public link
   if n.status <> 'succeeded' or n.result is null or coalesce((n.result->'capture_blocked'->>'detected')::boolean, false) then
     raise exception 'not_ready';
   end if;

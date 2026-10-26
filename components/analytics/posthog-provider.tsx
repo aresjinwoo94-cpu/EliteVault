@@ -3,6 +3,7 @@
 import { useEffect, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { initPostHog, phCapture } from "@/lib/analytics/posthog";
+import { redactClaimToken } from "@/lib/analytics/redact";
 
 /**
  * PostHog client init + automatic $pageview tracking on App Router
@@ -81,7 +82,7 @@ function PageViewTracker() {
     let url = window.origin + pathname;
     const qs = searchParams?.toString();
     if (qs) url += `?${qs}`;
-    phCapture("$pageview", { $current_url: url });
+    phCapture("$pageview", { $current_url: redactClaimToken(url) });
   }, [pathname, searchParams]);
 
   return null;

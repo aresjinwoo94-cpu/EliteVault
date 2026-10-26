@@ -173,7 +173,7 @@ function SharedRow({ r }: { r: OwnerSharedAudit }) {
       {r.claim && (
         <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-signal-200">
           Reclamada por {r.claim.email ?? "una cuenta"} el {new Date(r.claim.at).toLocaleDateString("es-ES")}
-          {r.claim.domainMatch ? " · email del dominio de la tienda" : " · email que no coincide con la tienda"}
+          {r.claim.domainMatch ? " · email del dominio de la tienda (señal, no prueba)" : " · email que no coincide con la tienda"}
           <button
             type="button"
             onClick={revert}
