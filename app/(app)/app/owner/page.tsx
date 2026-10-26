@@ -3,6 +3,8 @@ import { getOwner } from "@/lib/admin/guard";
 import { OwnerMonitor } from "@/components/admin/owner-monitor";
 import { OwnerReviews } from "@/components/admin/owner-reviews";
 import { OwnerLibraryImages } from "@/components/admin/owner-library-images";
+import { OwnerSharedAudits } from "@/components/admin/owner-shared-audits";
+import { getOwnerSharedAudits } from "@/lib/admin/shared-audits";
 import {
   getAllReviewsForOwner,
   getReviewSettings,
@@ -22,17 +24,19 @@ export default async function OwnerPage() {
   const owner = await getOwner();
   if (!owner) redirect("/app");
 
-  const [settings, reviews, ready, libraryImages] = await Promise.all([
+  const [settings, reviews, ready, libraryImages, shared] = await Promise.all([
     getReviewSettings(),
     getAllReviewsForOwner(),
     reviewsTablesReady(),
     getLibraryImageAudit(),
+    getOwnerSharedAudits(),
   ]);
 
   return (
     <>
       <OwnerMonitor />
       <div className="mx-auto w-full max-w-[1100px] space-y-6 px-4 pb-16">
+        <OwnerSharedAudits rows={shared.rows} ready={shared.ready} />
         <OwnerLibraryImages rows={libraryImages} />
         <OwnerReviews
           initialSettings={settings}

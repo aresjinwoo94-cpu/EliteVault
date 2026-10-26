@@ -6,17 +6,37 @@ import { ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/brand/logo";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AnnotationsOverlay } from "@/components/analyzer/annotations-overlay";
-import { CategoryRadar } from "@/components/analyzer/category-radar";
 import { ReportHeroV2 } from "@/components/analyzer/report-hero-v2";
-import { analyzerReportV2Enabled } from "@/lib/flags";
+import { ShareCtaLink, ShareViewTracker } from "@/components/share/share-analytics";
+import { ShareAuditBox } from "@/components/share/share-audit-box";
+import { ShareFreshness, ShareLockedViews, ShareNote } from "@/components/share/share-blocks";
 import { buildShareResult, shareMeta, type SharedAuditRow } from "@/lib/analyzer/share-v2";
+import {
+  SHARE_NOTE_AUTHOR,
+  auditedOnLabel,
+  isShareIndexable,
+  isStaleAudit,
+  shareRobots,
+} from "@/lib/analyzer/share-policy";
 import type { Annotation } from "@/lib/supabase/types";
 import { getT } from "@/lib/i18n/server";
-import { Rich } from "@/components/i18n/rich";
 import { fill } from "@/lib/i18n/lookup";
+
+/**
+ * Public audit page (/s/[slug]) — brief 2026-10 §2.
+ *
+ * It does two jobs: convince the owner of THAT store (a personal note on top, claim flow in PR-3) and
+ * convince any other visitor to run EliteVault on their own store (embedded box = the existing anonymous flow).
+ *
+ * Rules enforced here and in scripts/tests/share-page.test.ts:
+ *   • No score anywhere (UI, metadata, JSON-LD, OG image): the verdict in words + the estimated $ potential band.
+ *   • No "free" / "no card" in any copy.
+ *   • Locked views name what else exists (counts only); the paid content never reaches this page (the RPC
+ *     withholds top_fixes titles and the persona; the blocks only receive counts).
+ *   • Indexing: unlisted (noindex, out of the sitemap) unless the owner flagged the audit — see share-policy.ts.
+ */
 
 // Slug-addressed, public, logged-out friendly — never static.
 export const dynamic = "force-dynamic";
@@ -50,6 +70,9 @@ async function loadSharedAudit(slug: string): Promise<SharedAudit | null> {
     potential_why: Array.isArray(d.potential_why) ? d.potential_why : null,
     capture_blocked:
       typeof d.capture_blocked === "boolean" ? d.capture_blocked : null,
+    // v3 (migration 0045): absent before it is applied → no note, never indexable.
+    share_note: typeof d.share_note === "string" && d.share_note.trim() ? d.share_note.trim() : null,
+    share_indexable: d.share_indexable === true,
   };
 }
 
@@ -62,11 +85,6 @@ function domainOf(url: string | null): string {
   }
 }
 
-function normalizedScore(raw: number | null): number {
-  const s = raw ?? 0;
-  return Math.round(s > 1 ? s : s * 100);
-}
-
 export async function generateMetadata({
   params,
 }: {
@@ -75,49 +93,25 @@ export async function generateMetadata({
   const { slug } = await params;
   const audit = await loadSharedAudit(slug);
   if (!audit) {
-    return { title: "Audit not found — EliteVault" };
+    // Not found: keep it out of the index too.
+    return { title: "Audit not found — EliteVault", robots: { index: false, follow: false } };
   }
   const domain = domainOf(audit.url);
-
-  // v2 (flag on, prod default): verdict + revenue-potential band, NO score.
-  if (analyzerReportV2Enabled()) {
-    const { title, description } = shareMeta(domain, buildShareResult(audit));
-    const desc = (audit.summary?.slice(0, 160) ?? description).slice(0, 200);
-    return {
-      title,
-      description: desc,
-      alternates: { canonical: `/s/${slug}` },
-      openGraph: { title, description: desc, type: "article" },
-      twitter: { card: "summary_large_image", title, description: desc },
-    };
-  }
-
-  // Flag off: the original score-based metadata.
-  const score = normalizedScore(audit.score);
-  const title = `${domain} conversion audit — scored ${score}/100 · EliteVault`;
-  const description =
-    audit.summary?.slice(0, 160) ??
-    `See the annotated conversion audit of ${domain}, then audit your own store free.`;
+  const { title, description } = shareMeta(domain, buildShareResult(audit));
+  const desc = (audit.summary?.slice(0, 160) ?? description).slice(0, 200);
   return {
     title,
-    description,
+    description: desc,
+    // Unlisted by default; only an owner-flagged, complete v2 audit may be indexed (share-policy.ts).
+    robots: shareRobots(audit),
     alternates: { canonical: `/s/${slug}` },
-    openGraph: { title, description, type: "article" },
-    twitter: { card: "summary_large_image", title, description },
+    openGraph: { title, description: desc, type: "article" },
+    twitter: { card: "summary_large_image", title, description: desc },
   };
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  color_integration: "categories.color",
-  layout_proportion: "categories.layout",
-  image_quality: "categories.imagery",
-  technical_optimization: "categories.technical",
-  niche_coherence: "categories.niche",
-  cro_principles: "categories.cro",
-};
-
-/** Shared top bar (same on both variants). */
-async function ShareHeader() {
+/** Shared top bar. The CTA jumps to the "run the same audit" box on this page. */
+async function ShareHeader({ slug }: { slug: string }) {
   const { t } = await getT();
   return (
     <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-obsidian-950/80 backdrop-blur-xl">
@@ -125,52 +119,16 @@ async function ShareHeader() {
         <Link href="/">
           <Logo size={24} />
         </Link>
-        <Link href={`/sign-up?next=/app/analyzer`}>
-          <Button size="sm">
-            {t("common.auditFree")}
-            <ArrowRight className="size-4" />
-          </Button>
-        </Link>
+        <ShareCtaLink
+          slug={slug}
+          position="header"
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-signal-500 px-3.5 text-sm font-medium text-obsidian-950 transition-colors hover:bg-signal-400"
+        >
+          {t("sharedPage.headerCta")}
+          <ArrowRight className="size-4" />
+        </ShareCtaLink>
       </div>
     </header>
-  );
-}
-
-/** Shared bottom CTA + footer (same on both variants). */
-async function ShareFooter() {
-  const { t } = await getT();
-  return (
-    <>
-      <Card className="relative overflow-hidden p-8 md:p-10 text-center border-champagne-400/20 bg-gradient-to-br from-champagne-400/[0.05] to-signal-600/[0.05]">
-        <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-champagne-400/12 blur-3xl" />
-        <div className="relative">
-          <h2 className="font-serif text-2xl md:text-3xl tracking-tight">
-            {t("sharedPage.want")}
-          </h2>
-          <p className="mx-auto mt-3 max-w-md text-sm text-white/60 leading-relaxed">
-            {t("sharedPage.wantBody")}
-          </p>
-          <Link href="/sign-up?next=/app/analyzer" className="mt-6 inline-block">
-            <Button size="xl">
-              {t("common.auditFree")}
-              <ArrowRight className="size-4" />
-            </Button>
-          </Link>
-          <p className="mt-3 text-[11px] text-white/35 inline-flex items-center gap-1.5">
-            <ShieldCheck className="size-3" />
-            {t("sharedPage.estimates")}
-          </p>
-        </div>
-      </Card>
-
-      <p className="pb-8 text-center text-[11px] text-white/30">
-        {t("sharedPage.auditedWith")}{" "}
-        <Link href="/" className="text-white/50 hover:text-white/80">
-          EliteVault
-        </Link>
-        .
-      </p>
-    </>
   );
 }
 
@@ -185,184 +143,64 @@ async function SharedAuditPageInner({
   if (!audit) notFound();
 
   const domain = domainOf(audit.url);
-  const v2 = analyzerReportV2Enabled();
-
   const baseUrl =
     process.env.NEXT_PUBLIC_APP_URL ?? "https://elitevaultapp.com";
 
-  // ── v2 (prod default): the SAME hero as the report — verdict in words, the
-  //    revenue-potential band, "Why this potential", the leak radar and the
-  //    annotated screenshot. No score anywhere. Old shared audits (no verdict /
-  //    potential_why) degrade to the generic verdict + generic bullets via the
-  //    report-v2 helpers' own fallbacks; a blocked capture hides the AI lines.
-  if (v2) {
-    const result = buildShareResult(audit);
-    const { title } = shareMeta(domain, result);
-    const jsonLd = {
-      "@context": "https://schema.org",
-      "@type": "Article",
-      headline: title,
-      description:
-        audit.summary?.slice(0, 200) ??
-        `An annotated conversion audit of ${domain}.`,
-      url: `${baseUrl}/s/${slug}`,
-      about: { "@type": "Thing", name: domain },
-      author: { "@type": "Organization", name: "EliteVault" },
-      publisher: {
-        "@type": "Organization",
-        name: "EliteVault",
-        logo: { "@type": "ImageObject", url: `${baseUrl}/icon.svg` },
-      },
-    };
+  const result = buildShareResult(audit);
+  const { title } = shareMeta(domain, result);
+  const indexable = isShareIndexable(audit);
+  const stale = isStaleAudit(audit);
+  const auditedOn = auditedOnLabel(audit.created_at);
+  const fixCount = Math.max(0, Math.round(Number(audit.fix_count ?? 0)) || 0);
 
-    return (
-      <div className="min-h-screen bg-obsidian-950 text-white">
+  // JSON-LD only on a page search engines may index. No score, no "/100".
+  const jsonLd = indexable
+    ? {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        headline: title,
+        description:
+          audit.summary?.slice(0, 200) ??
+          `An annotated conversion audit of ${domain}.`,
+        url: `${baseUrl}/s/${slug}`,
+        about: { "@type": "Thing", name: domain },
+        author: { "@type": "Organization", name: "EliteVault" },
+        publisher: {
+          "@type": "Organization",
+          name: "EliteVault",
+          logo: { "@type": "ImageObject", url: `${baseUrl}/icon.svg` },
+        },
+      }
+    : null;
+
+  return (
+    <div className="min-h-screen bg-obsidian-950 text-white">
+      {jsonLd && (
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <ShareHeader />
-        <main className="mx-auto max-w-5xl px-4 py-8 pb-24 md:px-6 md:py-12 space-y-6">
-          <div className="flex justify-center">
-            <Badge variant="gold">
-              <Sparkles className="size-3" />
-              {t("sharedPage.public")}
-            </Badge>
-          </div>
-
-          {/* Same 2-col hero as the report: verdict + potential + why (LEFT),
-              the leak radar (RIGHT). Stacks on mobile. No score shown. */}
-          <div className="grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
-            <div className="min-w-0">
-              <ReportHeroV2 result={result} domain={domain} shareMode />
-            </div>
-            <div className="min-w-0">
-              <CategoryRadar
-                scores={result.category_scores}
-                overall={null}
-                leaksFraming
-                hideReconcile
-              />
-            </div>
-          </div>
-
-          {/* Annotated screenshot — the shareable "wow", full width. */}
-          {audit.annotations && audit.annotations.length > 0 && (
-            <AnnotationsOverlay
-              imageUrl={audit.screenshot_url ?? ""}
-              annotations={audit.annotations as Annotation[]}
-              altLabel={fill(t("sharedPage.shotAlt"), { domain })}
-            />
-          )}
-
-          <ShareFooter />
-        </main>
-      </div>
-    );
-  }
-
-  // ── Flag off: the original score-based page, byte for byte. ────────────────
-  const score = normalizedScore(audit.score);
-  const tier =
-    score >= 90
-      ? t("sharedPage.tierWorld")
-      : score >= 75
-        ? t("sharedPage.tierStrong")
-        : score >= 55
-          ? t("sharedPage.tierAverage")
-          : score >= 35
-            ? t("sharedPage.tierBelow")
-            : t("sharedPage.tierBroken");
-
-  const categories = audit.category_scores
-    ? Object.entries(audit.category_scores).filter(([k]) => k in CATEGORY_LABELS)
-    : [];
-
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: `${domain} conversion audit — ${score}/100`,
-    description:
-      audit.summary?.slice(0, 200) ??
-      `An annotated conversion audit of ${domain}.`,
-    url: `${baseUrl}/s/${slug}`,
-    about: { "@type": "Thing", name: domain },
-    author: { "@type": "Organization", name: "EliteVault" },
-    publisher: {
-      "@type": "Organization",
-      name: "EliteVault",
-      logo: { "@type": "ImageObject", url: `${baseUrl}/icon.svg` },
-    },
-  };
-
-  return (
-    <div className="min-h-screen bg-obsidian-950 text-white">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <ShareHeader />
-
-      <main className="mx-auto max-w-5xl px-4 py-8 pb-24 md:px-6 md:py-12 space-y-6">
-        {/* Score hero */}
-        <div className="text-center">
-          <Badge variant="gold" className="mx-auto">
+      )}
+      <ShareViewTracker slug={slug} mode="visitor" stale={stale} indexable={indexable} />
+      <ShareHeader slug={slug} />
+      <main className="mx-auto max-w-5xl space-y-6 px-4 py-8 pb-24 md:px-6 md:py-12">
+        <div className="flex justify-center">
+          <Badge variant="gold">
             <Sparkles className="size-3" />
             {t("sharedPage.public")}
           </Badge>
-          <h1 className="mt-4 font-serif text-3xl md:text-5xl tracking-tight break-words">
-            <Rich
-              text={fill(t("sharedPage.scored"), { domain })}
-              tags={{ d: (c) => <span className="text-white/70">{c}</span> }}
-            />
-          </h1>
-          <div className="mt-3 flex items-baseline justify-center gap-2">
-            <span className="font-mono tabular-nums text-7xl md:text-8xl tnum text-gold-gradient leading-none">
-              {score}
-            </span>
-            <span className="text-2xl text-white/40">/ 100</span>
-          </div>
-          <Badge variant="gold" className="mt-4">
-            {tier}
-          </Badge>
-          {audit.summary && (
-            <p className="mx-auto mt-6 max-w-2xl text-sm md:text-base text-white/65 leading-relaxed">
-              {audit.summary}
-            </p>
-          )}
         </div>
 
-        {/* Category breakdown */}
-        {categories.length > 0 && (
-          <Card className="p-5 md:p-6">
-            <p className="text-[11px] uppercase tracking-widest text-white/40 mb-4">
-              {t("sharedPage.categoryScores")}
-            </p>
-            <div className="grid sm:grid-cols-2 gap-x-8 gap-y-3">
-              {categories.map(([key, val]) => {
-                const pct = Math.round(val > 1 ? val : val * 100);
-                return (
-                  <div key={key} className="flex items-center gap-3">
-                    <span className="w-20 shrink-0 text-xs text-white/55">
-                      {t(CATEGORY_LABELS[key])}
-                    </span>
-                    <div className="relative h-1.5 flex-1 rounded-full bg-white/[0.06]">
-                      <div
-                        className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-signal-500 to-champagne-400"
-                        style={{ width: `${Math.min(100, Math.max(4, pct))}%` }}
-                      />
-                    </div>
-                    <span className="w-8 shrink-0 text-right text-xs font-mono tabular-nums tnum text-white/70">
-                      {pct}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
+        {audit.share_note && (
+          <ShareNote t={t} note={audit.share_note} preparedBy={SHARE_NOTE_AUTHOR} domain={domain} />
         )}
 
-        {/* Annotated screenshot */}
+        <ShareFreshness t={t} slug={slug} auditedOn={auditedOn} stale={stale} />
+
+        {/* The SAME hero as the report: verdict in words + the estimated $ potential + why. No score. */}
+        <ReportHeroV2 result={result} domain={domain} shareMode shareSlug={slug} />
+
+        {/* Annotated screenshot — the shareable "wow", full width. */}
         {audit.annotations && audit.annotations.length > 0 && (
           <AnnotationsOverlay
             imageUrl={audit.screenshot_url ?? ""}
@@ -371,7 +209,42 @@ async function SharedAuditPageInner({
           />
         )}
 
-        <ShareFooter />
+        {/* For any other visitor: the existing anonymous flow, embedded (same quota and anti-bot rules). */}
+        <Card
+          id="run-audit"
+          className="scroll-mt-24 border-signal-400/25 bg-gradient-to-br from-signal-500/[0.06] to-transparent p-6 md:p-8"
+        >
+          <p className="text-[10.5px] uppercase tracking-[0.2em] text-white/40">
+            {fill(t("sharedPage.runOwnHook"), { domain })}
+          </p>
+          <h2 className="mt-2 font-display text-2xl tracking-tight md:text-3xl">
+            {t("sharedPage.runOwn")}
+          </h2>
+          <p className="mt-2 max-w-[60ch] text-sm leading-relaxed text-white/60">
+            {t("sharedPage.runOwnBody")}
+          </p>
+          <div className="mt-5">
+            <ShareAuditBox
+              slug={slug}
+              label={t("sharedPage.boxButton")}
+              caption={t("sharedPage.boxCaption")}
+            />
+          </div>
+        </Card>
+
+        <ShareLockedViews t={t} slug={slug} fixCount={fixCount} />
+
+        <p className="flex items-center justify-center gap-1.5 pt-2 text-[11px] text-white/35">
+          <ShieldCheck className="size-3" />
+          {t("sharedPage.estimates")}
+        </p>
+        <p className="pb-8 text-center text-[11px] text-white/30">
+          {t("sharedPage.auditedWith")}{" "}
+          <Link href="/" className="text-white/50 hover:text-white/80">
+            EliteVault
+          </Link>
+          .
+        </p>
       </main>
     </div>
   );

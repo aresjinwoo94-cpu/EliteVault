@@ -31,6 +31,11 @@ export interface SharedAuditRow {
   fix_count?: number | null;
   potential_why?: string[] | null;
   capture_blocked?: boolean | null;
+  // v3 (migration 0045; absent before it is applied, and then both read as "off"):
+  /** Short personal note from the owner, shown at the top of the page. */
+  share_note?: string | null;
+  /** Owner-set flag: only an audit the store's own owner published/claimed may be indexed. */
+  share_indexable?: boolean | null;
 }
 
 /** English verdict phrases — mirror the report's report.v2Verdict* i18n copy.
@@ -110,7 +115,7 @@ export function shareMeta(
   const title = `${domain} — ${verdict}${bandPart}`;
   const description = `${domain}: ${verdict.toLowerCase()}${
     band ? `, with an estimated revenue potential of ${band}` : ""
-  }. See the full conversion audit, then audit your own store free.`;
+  }. See the annotated conversion audit, then run the same audit on your own store.`;
   return { title, description };
 }
 

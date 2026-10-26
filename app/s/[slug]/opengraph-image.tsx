@@ -1,5 +1,4 @@
 import { ImageResponse } from "next/og";
-import { analyzerReportV2Enabled } from "@/lib/flags";
 import { buildShareResult, shareVerdictPhrase, type SharedAuditRow } from "@/lib/analyzer/share-v2";
 import { potentialBandForResult } from "@/lib/analyzer/report-v2";
 
@@ -8,9 +7,8 @@ import { potentialBandForResult } from "@/lib/analyzer/report-v2";
  *
  * The organic-growth creative: when someone shares their result, the link
  * preview shows THEIR store on the EliteVault brand canvas next to the
- * annotated screenshot. Under ANALYZER_REPORT_V2 (prod default) it shows the
- * ad-readiness VERDICT + revenue-potential band — matching the report, with no
- * score. With the flag off it shows the legacy X/100.
+ * annotated screenshot. It shows the ad-readiness VERDICT + revenue-potential
+ * band — matching the report — and never a score (no X/100, flag or not).
  *
  * Edge runtime: reads the public diagnosis via the Supabase REST RPC (anon key)
  * so there's no Node dependency. Falls back to a clean brand-only card if the
@@ -66,16 +64,9 @@ export default async function Image({
   const domain = domainOf(audit?.url ?? null);
   const shot = audit?.screenshot_url ?? null;
 
-  const v2 = analyzerReportV2Enabled();
-  // v2: verdict in words + revenue-potential band (no score). Legacy: X/100.
   const result = audit ? buildShareResult(audit) : null;
   const verdict = result ? shareVerdictPhrase(result) : null;
   const band = result ? potentialBandForResult(result) : null;
-  const rawScore = audit?.score ?? null;
-  const score =
-    rawScore == null
-      ? null
-      : Math.round(rawScore > 1 ? rawScore : rawScore * 100);
 
   return new ImageResponse(
     (
@@ -137,7 +128,6 @@ export default async function Image({
             </span>
           </div>
 
-          {v2 ? (
             <div style={{ display: "flex", flexDirection: "column" }}>
               <span
                 style={{
@@ -190,46 +180,6 @@ export default async function Image({
                 </div>
               )}
             </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <span
-                style={{
-                  fontSize: "30px",
-                  color: "rgba(255,255,255,0.6)",
-                  marginBottom: "8px",
-                  display: "flex",
-                }}
-              >
-                {domain} scored
-              </span>
-              <div style={{ display: "flex", alignItems: "flex-end", gap: "14px" }}>
-                <span
-                  style={{
-                    fontSize: "150px",
-                    lineHeight: 1,
-                    fontWeight: 600,
-                    background:
-                      "linear-gradient(135deg, #99F6E4 0%, #2DD4BF 50%, #0D9488 100%)",
-                    backgroundClip: "text",
-                    color: "transparent",
-                    display: "flex",
-                  }}
-                >
-                  {score ?? "—"}
-                </span>
-                <span
-                  style={{
-                    fontSize: "40px",
-                    color: "rgba(255,255,255,0.4)",
-                    marginBottom: "22px",
-                    display: "flex",
-                  }}
-                >
-                  / 100
-                </span>
-              </div>
-            </div>
-          )}
 
           <span
             style={{
@@ -239,7 +189,7 @@ export default async function Image({
               display: "flex",
             }}
           >
-            Audit your store free → elitevaultapp.com
+            Run the same audit on your store → elitevaultapp.com
           </span>
         </div>
 

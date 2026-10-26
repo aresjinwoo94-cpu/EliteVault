@@ -87,6 +87,8 @@ export type AnonAuditBoxProps = {
   /** Optional quiet link beside the caption (e.g. the /sign-up fallback). */
   secondary?: { href: string; label: string } | null;
   className?: string;
+  /** Called with the typed URL right before the audit is requested (extra, page-specific analytics). */
+  onSubmitUrl?: (url: string) => void;
 };
 
 export function AnonAuditBox({
@@ -97,6 +99,7 @@ export function AnonAuditBox({
   captionClassName,
   secondary,
   className,
+  onSubmitUrl,
 }: AnonAuditBoxProps) {
   const { t } = useT();
   const router = useRouter();
@@ -131,6 +134,7 @@ export function AnonAuditBox({
       // Activation event — the first step of the anon funnel.
       try {
         phCapture("anon_audit_started", { url: value, source });
+        onSubmitUrl?.(value);
       } catch {
         /* analytics best-effort */
       }

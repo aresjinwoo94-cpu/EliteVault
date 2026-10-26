@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { allPosts } from "@/lib/blog/posts";
 import { getQualifyingNiches } from "@/lib/library/niche-pages";
+import { isShareIndexable } from "@/lib/analyzer/share-policy";
 
 /**
  * Dynamic sitemap.xml at /sitemap.xml
@@ -153,24 +154,40 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // the public, logged-out-friendly /s/<slug> shares below are the indexable
   // programmatic surface instead.
 
-  // Public shareable audits (/s/<slug>) — the real logged-out-friendly,
-  // indexable content (each is a unique store diagnosis). Stored as
-  // analyses.share_slug; served by the public get_shared_audit RPC.
+  // Public shareable audits (/s/<slug>). UNLISTED BY DEFAULT: only audits the owner flagged
+  // (analyses.share_indexable — a store's own published/claimed audit) with complete v2 content and an
+  // uncaptured-blocked screenshot are listed. The rule lives in lib/analyzer/share-policy.ts and is the same
+  // predicate generateMetadata uses for robots, so the sitemap and the page can never disagree.
+  // Outreach audits and pre-v2 audits stay reachable by link but are noindex and out of the sitemap.
   let sharedEntries: MetadataRoute.Sitemap = [];
   try {
     const service = createSupabaseServiceClient();
     const { data } = await service
       .from("analyses")
-      .select("share_slug, finished_at")
+      .select(
+        "share_slug, finished_at, share_indexable, verdict:result->ad_readiness->>verdict, fixes:result->top_fixes, why:result->potential_why, blocked:result->capture_blocked->detected",
+      )
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .not("share_slug", "is", null as any)
       .eq("status", "succeeded")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .eq("share_indexable" as any, true as any)
       .order("finished_at", { ascending: false })
       .limit(1000);
     if (Array.isArray(data)) {
       sharedEntries = data
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .filter((row: any) => row?.share_slug)
+        .filter((row: any) =>
+          row?.share_slug &&
+          isShareIndexable({
+            share_indexable: row.share_indexable === true,
+            ad_readiness_verdict: row.verdict ?? null,
+            fix_count: Array.isArray(row.fixes) ? row.fixes.length : 0,
+            potential_why: Array.isArray(row.why) ? row.why : null,
+            capture_blocked: typeof row.blocked === "boolean" ? row.blocked : null,
+            created_at: row.finished_at ?? null,
+          }),
+        )
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((row: any) => ({
           url: `${baseUrl}/s/${row.share_slug}`,
