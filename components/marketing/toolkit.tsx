@@ -84,8 +84,8 @@ export async function Toolkit() {
         scale,
       }),
       shots: [
-        { src: "/marketing/tools/analyzer-1-verdict.webp", w: 1800, h: 1910, caption: t("toolkit.aCap1") },
-        { src: "/marketing/tools/analyzer-2-annotated.webp", w: 1800, h: 1464, caption: t("toolkit.aCap2") },
+        { src: "/marketing/tools/analyzer-1-annotated.webp", w: 1800, h: 1570, caption: t("toolkit.aCap1") },
+        { src: "/marketing/tools/analyzer-2-verdict.webp", w: 1800, h: 1910, caption: t("toolkit.aCap2") },
         { src: "/marketing/tools/analyzer-3-persona.webp", w: 1800, h: 1372, caption: t("toolkit.aCap3") },
       ],
       actions: [...teaserAction("main", "toolkit.actWatch"), ...teaserAction("pro", "toolkit.actPro")],
