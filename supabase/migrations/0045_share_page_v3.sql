@@ -18,7 +18,7 @@
 --
 -- get_shared_audit gains two public-safe fields (every existing key is kept, so a
 -- deployed page keeps working while the new one rolls out): share_note and
--- share_indexable. It still never returns top_fixes titles or buyer_persona_response.
+-- share_indexable. It still never returns top_fixes titles or buyer_persona_response, and now also blanks the paid "fix" text of every annotation (it used to be returned whole).
 --
 -- Idempotent.
 -- ──────────────────────────────────────────────────────────────────────────
@@ -43,7 +43,11 @@ as $$
     'summary', a.result->>'summary',
     'screenshot_url', a.screenshot_url,
     'category_scores', a.result->'category_scores',
-    'annotations', a.result->'annotations',
+    -- diagnosis only: the "fix" text of each annotation is the paid cure, never public
+    'annotations', case when jsonb_typeof(a.result->'annotations') = 'array' then
+      (select coalesce(jsonb_agg((e - 'fix') || jsonb_build_object('fix', '', 'fix_locked', true)), '[]'::jsonb)
+         from jsonb_array_elements(a.result->'annotations') e)
+      else a.result->'annotations' end,
     'created_at', a.created_at,
     -- report-v2 parity (all public-safe):
     'ad_readiness_verdict', a.result->'ad_readiness'->>'verdict',

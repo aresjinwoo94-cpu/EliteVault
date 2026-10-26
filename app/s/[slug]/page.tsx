@@ -23,6 +23,7 @@ import {
 import type { Annotation } from "@/lib/supabase/types";
 import { getT } from "@/lib/i18n/server";
 import { fill } from "@/lib/i18n/lookup";
+import { reportUnlockEnabled } from "@/lib/flags";
 
 /**
  * Public audit page (/s/[slug]) — brief 2026-10 §2.
@@ -61,7 +62,7 @@ async function loadSharedAudit(slug: string): Promise<SharedAudit | null> {
     summary: d.summary ?? null,
     screenshot_url: d.screenshot_url ?? null,
     category_scores: d.category_scores ?? null,
-    annotations: (d.annotations as Annotation[]) ?? null,
+    annotations: stripPaidFix(d.annotations),
     created_at: d.created_at ?? null,
     // report-v2 parity (undefined on old audits / pre-migration RPC):
     ad_readiness_verdict: d.ad_readiness_verdict ?? null,
@@ -74,6 +75,16 @@ async function loadSharedAudit(slug: string): Promise<SharedAudit | null> {
     share_note: typeof d.share_note === "string" && d.share_note.trim() ? d.share_note.trim() : null,
     share_indexable: d.share_indexable === true,
   };
+}
+
+/**
+ * The public page shows the DIAGNOSIS (what is wrong, where) and never the CURE: the `fix` text of every
+ * annotation is paid content (the app blanks it for fixes 2+ and for non-unlocked viewers). The RPC strips it too
+ * (migration 0045); doing it here as well keeps the page safe before that migration is applied.
+ */
+function stripPaidFix(raw: unknown): Annotation[] | null {
+  if (!Array.isArray(raw)) return null;
+  return raw.map((a) => ({ ...(a as Annotation), fix: "", fix_locked: true }) as Annotation);
 }
 
 function domainOf(url: string | null): string {
@@ -178,7 +189,7 @@ async function SharedAuditPageInner({
       {jsonLd && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\u003c") }}
         />
       )}
       <ShareViewTracker slug={slug} mode="visitor" stale={stale} indexable={indexable} />
@@ -232,7 +243,7 @@ async function SharedAuditPageInner({
           </div>
         </Card>
 
-        <ShareLockedViews t={t} slug={slug} fixCount={fixCount} />
+        <ShareLockedViews t={t} slug={slug} fixCount={fixCount} unlockOn={reportUnlockEnabled()} />
 
         <p className="flex items-center justify-center gap-1.5 pt-2 text-[11px] text-white/35">
           <ShieldCheck className="size-3" />

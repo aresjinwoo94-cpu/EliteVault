@@ -53,7 +53,7 @@ export function buildOutreachMessage(args: {
     `The short version: ${verdict}.`,
     finding ? `One thing that stood out: ${finding}` : null,
     `The annotated audit is here: ${outreachLink(baseUrl, slug)}`,
-    unlisted ? "It is an unlisted link, so it does not appear in search results." : null,
+    unlisted ? "I have not listed it for search; only people with the link can see it." : null,
     "Happy to talk it through if it is useful.",
     from ? from : null,
   ];

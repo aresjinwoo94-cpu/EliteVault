@@ -260,7 +260,7 @@ test("the outreach message has the domain, the verdict in words, one visible fin
   assert.match(msg, /not ready for cold paid traffic/);
   assert.match(msg, /The hero never says what the store sells\./);
   assert.match(msg, /utm_source=share&utm_medium=outreach&utm_campaign=example-store-com-4fovey/);
-  assert.match(msg, /unlisted link/);
+  assert.match(msg, /not listed it for search/);
   assert.doesNotMatch(msg, /\bfree\b|no card|\/\s?100|\bscore/i);
   assert.doesNotMatch(msg, /item \d/, "placeholder fix titles never reach the message");
 });
@@ -272,7 +272,7 @@ test("an indexable page is not described as unlisted; a missing finding is simpl
     row: row({ share_indexable: true, annotations: [] }),
     baseUrl: "https://elitevaultapp.com",
   });
-  assert.doesNotMatch(msg, /unlisted/);
+  assert.doesNotMatch(msg, /not listed it/);
   assert.doesNotMatch(msg, /stood out/);
   assert.equal(visibleFinding(null), null);
   assert.equal(visibleFinding([{ message: "short" }]), null);
@@ -286,4 +286,31 @@ test("owner controls are owner-only and server-written", () => {
   const panel = read("app/(app)/app/owner/page.tsx");
   assert.match(panel, /OwnerSharedAudits/);
   assert.match(read("components/admin/owner-shared-audits.tsx"), /Copy outreach message/);
+});
+
+// ── The paid "how" of each annotation never reaches the public page ──────────
+
+test("annotation fix text is stripped in the page and in the RPC", () => {
+  const page = code("app/s/[slug]/page.tsx");
+  assert.match(page, /annotations: stripPaidFix\(d\.annotations\)/);
+  assert.match(page, /fix: "", fix_locked: true/);
+  const sql = read("supabase/migrations/0045_share_page_v3.sql");
+  assert.match(sql, /e - 'fix'/);
+  assert.match(sql, /'fix_locked', true/);
+});
+
+test("the $7 sentences only appear when the unlock is on", () => {
+  const en = JSON.parse(read("lib/i18n/dict/ui-en.json")) as Record<string, Record<string, string>>;
+  const t = (k: string) => en.sharedPage[k.replace("sharedPage.", "")] ?? k;
+  const off = lockedViewItems(t, 3, false).map((i) => i.plan).join(" ");
+  assert.doesNotMatch(off, /\$7/);
+  const on = lockedViewItems(t, 3, true).map((i) => i.plan).join(" ");
+  assert.match(on, /\$7/);
+  assert.match(code("app/s/[slug]/page.tsx"), /unlockOn=\{reportUnlockEnabled\(\)\}/);
+  const es = JSON.parse(read("lib/i18n/dict/ui-es.json")).sharedPage;
+  assert.deepEqual(Object.keys(en.sharedPage).sort(), Object.keys(es).sort());
+});
+
+test("JSON-LD output is escaped against </script> breakouts", () => {
+  assert.match(code("app/s/[slug]/page.tsx"), /replace\(\/<\/g, "\\u003c"\)/);
 });

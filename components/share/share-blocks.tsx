@@ -72,8 +72,8 @@ export function ShareFreshness({
 }
 
 /** Locked views (brief 2026-10 §2.3): names and counts only — see lib/analyzer/share-locked.ts for the rule and the plans. */
-export function ShareLockedViews({ t, slug, fixCount }: { t: T; slug: string; fixCount: number }) {
-  const items = lockedViewItems(t, fixCount);
+export function ShareLockedViews({ t, slug, fixCount, unlockOn }: { t: T; slug: string; fixCount: number; unlockOn: boolean }) {
+  const items = lockedViewItems(t, fixCount, unlockOn);
   return (
     <section aria-labelledby="share-locked-h" data-share-block="locked">
       <h2 id="share-locked-h" className="font-display text-xl tracking-tight text-white md:text-2xl">

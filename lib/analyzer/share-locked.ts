@@ -17,18 +17,20 @@ export interface LockedViewItem {
   plan: string;
 }
 
-export function lockedViewItems(t: (key: string) => string, fixCount: number): LockedViewItem[] {
+/** `unlockOn` = the $7 unlock is live (REPORT_UNLOCK): the plan copy only mentions it then. */
+export function lockedViewItems(t: (key: string) => string, fixCount: number, unlockOn = true): LockedViewItem[] {
+  const k = (key: string) => t(unlockOn ? key : `${key}NoUnlock`);
   const items: LockedViewItem[] = [];
   if (fixCount > 0) {
     items.push({
       position: "locked_fixes",
       title: fixCount === 1 ? t("sharedPage.lockFixesOne") : fill(t("sharedPage.lockFixes"), { n: fixCount }),
-      plan: t("sharedPage.lockFixesPlan"),
+      plan: k("sharedPage.lockFixesPlan"),
     });
   }
   items.push(
-    { position: "locked_persona", title: t("sharedPage.lockPersona"), plan: t("sharedPage.lockPersonaPlan") },
-    { position: "locked_scenarios", title: t("sharedPage.lockScenarios"), plan: t("sharedPage.lockScenariosPlan") },
+    { position: "locked_persona", title: t("sharedPage.lockPersona"), plan: k("sharedPage.lockPersonaPlan") },
+    { position: "locked_scenarios", title: t("sharedPage.lockScenarios"), plan: k("sharedPage.lockScenariosPlan") },
     { position: "locked_library", title: t("sharedPage.lockLibrary"), plan: t("sharedPage.lockLibraryPlan") },
   );
   return items;
