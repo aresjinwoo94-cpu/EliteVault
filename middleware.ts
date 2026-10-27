@@ -1,6 +1,7 @@
 import { type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { QA_LOCALE_COOKIE, isLocale } from "@/lib/i18n/config";
+import { QA_CURRENCY_COOKIE, parseCurrencyCode } from "@/lib/currency/config";
 
 export async function middleware(request: NextRequest) {
   // QA override (no UI): ?lang=en|es → 1-year cookie that beats the automatic
@@ -8,6 +9,15 @@ export async function middleware(request: NextRequest) {
   const lang = request.nextUrl.searchParams.get("lang");
   const qa = isLocale(lang) ? lang : null;
   if (qa) request.cookies.set(QA_LOCALE_COOKIE, qa);
+
+  // QA override for the display currency (no UI): ?cur=MXN → SESSION cookie
+  // read by lib/currency/server.ts; ?cur=auto clears it. Cookie only — no
+  // rates lookup or any other work here.
+  const curParam = request.nextUrl.searchParams.get("cur");
+  const curClear = curParam?.toLowerCase() === "auto";
+  const curQa = curClear ? null : parseCurrencyCode(curParam);
+  if (curQa) request.cookies.set(QA_CURRENCY_COOKIE, curQa);
+  if (curClear) request.cookies.delete(QA_CURRENCY_COOKIE);
 
   // The blog is English-only content: pin its chrome (nav, footer, <html lang>)
   // to English so a Spanish-country visitor or crawler never gets a Spanish
@@ -19,6 +29,8 @@ export async function middleware(request: NextRequest) {
 
   const response = await updateSession(request);
   if (qa) response.cookies.set(QA_LOCALE_COOKIE, qa, { path: "/", sameSite: "lax", maxAge: 60 * 60 * 24 * 365 });
+  if (curQa) response.cookies.set(QA_CURRENCY_COOKIE, curQa, { path: "/", sameSite: "lax" });
+  if (curClear) response.cookies.delete(QA_CURRENCY_COOKIE);
   return response;
 }
 
