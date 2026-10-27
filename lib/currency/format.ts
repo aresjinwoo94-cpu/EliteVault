@@ -38,8 +38,13 @@ function fractionDigits(code: string, kind: MoneyOpts["kind"]): number {
   return 2;
 }
 
-function formatLocal(amount: number, code: string, locale: Locale, opts: MoneyOpts): string {
-  const digits = fractionDigits(code, opts.kind);
+function formatLocal(
+  amount: number,
+  code: string,
+  locale: Locale,
+  opts: MoneyOpts & { exactDecimals?: number },
+): string {
+  const digits = opts.exactDecimals ?? fractionDigits(code, opts.kind);
   const fmt = new Intl.NumberFormat(intlLocale(locale), {
     style: "currency",
     currency: code,
@@ -47,7 +52,8 @@ function formatLocal(amount: number, code: string, locale: Locale, opts: MoneyOp
     // symbol/code (MX$, CA$, R$, COP…) so a "$" never means two currencies.
     currencyDisplay: code === BASE_CURRENCY ? "narrowSymbol" : "symbol",
     minimumFractionDigits: opts.compact ? 0 : digits,
-    maximumFractionDigits: opts.compact ? Math.max(digits, 1) : digits,
+    // compact keeps one decimal only once it actually abbreviates (≥1,000).
+    maximumFractionDigits: opts.compact ? (Math.abs(amount) >= 1000 ? Math.max(digits, 1) : digits) : digits,
     ...(opts.compact ? { notation: "compact" as const } : {}),
   });
   if (code === BASE_CURRENCY) return fmt.format(amount);
@@ -58,13 +64,18 @@ function formatLocal(amount: number, code: string, locale: Locale, opts: MoneyOp
     .join("");
 }
 
+/** A non-USD context with a usable rate; anything else displays as USD. */
+function isConvertible(ctx: Pick<MoneyCtx, "code" | "rate">): boolean {
+  return ctx.code !== BASE_CURRENCY && Number.isFinite(ctx.rate) && ctx.rate > 0;
+}
+
 /**
  * Display a USD amount in the visitor's currency. Presentation only — the
  * engine, the DB and Stripe stay in USD. USD in → identical to the old `$`
  * formatting, never "≈".
  */
 export function formatMoney(usd: number, ctx: MoneyCtx, opts: MoneyOpts = {}): string {
-  const converted = ctx.code !== BASE_CURRENCY;
+  const converted = isConvertible(ctx);
   const amount = converted ? usd * ctx.rate : usd;
   const text = formatLocal(amount, converted ? ctx.code : BASE_CURRENCY, ctx.locale, opts);
   return converted && opts.approx ? `≈ ${text}` : text;
@@ -72,22 +83,26 @@ export function formatMoney(usd: number, ctx: MoneyCtx, opts: MoneyOpts = {}): s
 
 /**
  * Clean, rounded-UP local figure for a plan/unlock price: market rate +
- * ADAPTIVE_PRICING_BUFFER, then up to a tidy step (<100 → 1, else a tenth of
+ * ADAPTIVE_PRICING_BUFFER, then up to a tidy step (<10 → 0.5, <100 → 1, else a tenth of
  * the magnitude: 355 → 360, 79,040 → 80,000). Better that Stripe shows a hair
  * less than we promised than a hair more. USD is returned untouched.
  */
 export function planPriceLocal(usd: number, ctx: Pick<MoneyCtx, "code" | "rate">): number {
-  if (ctx.code === BASE_CURRENCY) return usd;
+  if (!isConvertible(ctx)) return usd;
   const raw = usd * ctx.rate * (1 + ADAPTIVE_PRICING_BUFFER);
   if (!(raw > 0)) return raw;
-  const step = raw < 100 ? 1 : 10 ** (Math.floor(Math.log10(raw)) - 1);
+  const step = raw < 10 ? 0.5 : raw < 100 ? 1 : 10 ** (Math.floor(Math.log10(raw)) - 1);
   return Math.ceil(raw / step - 1e-9) * step;
 }
 
 /** Plan/unlock price in the visitor's currency (buffered, rounded up). */
 export function formatPlanPrice(usd: number, ctx: MoneyCtx, opts: Pick<MoneyOpts, "approx"> = {}): string {
-  if (ctx.code === BASE_CURRENCY) return formatLocal(usd, BASE_CURRENCY, ctx.locale, { kind: "price" });
-  const text = formatLocal(planPriceLocal(usd, ctx), ctx.code, ctx.locale, { kind: "price" });
+  if (!isConvertible(ctx)) return formatLocal(usd, BASE_CURRENCY, ctx.locale, { kind: "price" });
+  const local = planPriceLocal(usd, ctx);
+  const text = formatLocal(local, ctx.code, ctx.locale, {
+    kind: "price",
+    exactDecimals: Number.isInteger(local) ? 0 : 1, // only the 0.5 steps
+  });
   return opts.approx ? `≈ ${text}` : text;
 }
 

@@ -2,7 +2,7 @@ import { BASE_CURRENCY } from "./config";
 
 const EUROZONE = [
   "AT", "BE", "HR", "CY", "EE", "FI", "FR", "DE", "GR", "IE", "IT", "LV", "LT",
-  "LU", "MT", "NL", "PT", "SK", "SI", "ES", "AD", "MC", "SM", "VA", "ME", "XK",
+  "LU", "MT", "NL", "PT", "SK", "SI", "ES", "AD", "MC", "SM", "VA", "ME", "BG",
 ];
 
 /** Countries that use USD (or are pegged to it for everyday prices). */
@@ -18,7 +18,7 @@ const MAP: Record<string, string> = {
   VE: "VES", CA: "CAD", JM: "JMD", TT: "TTD", BS: "BSD", BB: "BBD", BZ: "BZD",
   // Europe (non-euro)
   GB: "GBP", CH: "CHF", SE: "SEK", NO: "NOK", DK: "DKK", PL: "PLN", CZ: "CZK",
-  HU: "HUF", RO: "RON", BG: "BGN", IS: "ISK", RS: "RSD", UA: "UAH", TR: "TRY",
+  HU: "HUF", RO: "RON", IS: "ISK", RS: "RSD", UA: "UAH", TR: "TRY",
   // Asia / Oceania
   JP: "JPY", KR: "KRW", CN: "CNY", HK: "HKD", TW: "TWD", SG: "SGD", MY: "MYR",
   TH: "THB", ID: "IDR", PH: "PHP", VN: "VND", IN: "INR", PK: "PKR", BD: "BDT",

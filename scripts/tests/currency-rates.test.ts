@@ -1,9 +1,11 @@
-import { test } from "node:test";
+import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
-import { getUsdRates, sanitizeRates, fallbackRates } from "../../lib/currency/rates";
+import { getUsdRates, sanitizeRates, fallbackRates, resetRatesCooldown } from "../../lib/currency/rates";
 
 const ok = (body: unknown, status = 200) =>
   (async () => new Response(JSON.stringify(body), { status })) as unknown as typeof fetch;
+
+beforeEach(() => resetRatesCooldown());
 
 test("fallback snapshot covers the markets we map and USD is 1", () => {
   assert.equal(fallbackRates.USD, 1);
@@ -46,4 +48,30 @@ test("sanitizeRates drops junk entries", () => {
   assert.deepEqual(sanitizeRates({ MXN: 18, BAD: -1, XX: 2, EUR: "1" }), { MXN: 18 });
   assert.equal(sanitizeRates(null), null);
   assert.equal(sanitizeRates({}), null);
+});
+
+test("circuit breaker: after a failure, requests skip the network for 60s", async () => {
+  let calls = 0;
+  const down = (async () => {
+    calls++;
+    throw new Error("down");
+  }) as unknown as typeof fetch;
+  let t = 1_000_000;
+  await getUsdRates(down, () => t);
+  await getUsdRates(down, () => t + 5_000);
+  await getUsdRates(down, () => t + 59_000);
+  assert.equal(calls, 1);
+  t += 61_000;
+  await getUsdRates(down, () => t);
+  assert.equal(calls, 2);
+});
+
+test("a successful fetch clears the breaker", async () => {
+  let t = 5_000_000;
+  await getUsdRates((async () => { throw new Error("x"); }) as unknown as typeof fetch, () => t);
+  t += 61_000;
+  const r = await getUsdRates(ok({ result: "success", rates: { MXN: 7 } }), () => t);
+  assert.equal(r.MXN, 7);
+  const r2 = await getUsdRates(ok({ result: "success", rates: { MXN: 8 } }), () => t + 1);
+  assert.equal(r2.MXN, 8);
 });

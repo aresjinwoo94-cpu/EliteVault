@@ -21,6 +21,11 @@ test("main markets map to their currency", () => {
   assert.equal(currencyForCountry("CA"), "CAD");
 });
 
+test("Bulgaria is on the euro; Kosovo is not mapped (Stripe markets only)", () => {
+  assert.equal(currencyForCountry("BG"), "EUR");
+  assert.equal(currencyForCountry("XK"), "USD");
+});
+
 test("country code is trimmed and case-insensitive", () => {
   assert.equal(currencyForCountry(" mx "), "MXN");
 });

@@ -5,6 +5,9 @@ export type UsdRates = Record<string, number>;
 const SOURCE = "https://open.er-api.com/v6/latest/USD";
 const TIMEOUT_MS = 1500;
 const REVALIDATE_SECONDS = 43200; // 12h
+/** After a failed/slow fetch, skip the network for this long (per instance). */
+const COOLDOWN_MS = 60_000;
+let failedAt = 0;
 
 /** Keeps only finite, positive rates keyed by a 3-letter code. */
 export function sanitizeRates(raw: unknown): UsdRates | null {
@@ -18,6 +21,11 @@ export function sanitizeRates(raw: unknown): UsdRates | null {
   return Object.keys(out).length > 0 ? out : null;
 }
 
+/** Test hook: clears the circuit breaker. */
+export function resetRatesCooldown(): void {
+  failedAt = 0;
+}
+
 export const fallbackRates: UsdRates = sanitizeRates(fallback.rates) ?? { USD: 1 };
 
 /**
@@ -26,7 +34,17 @@ export const fallbackRates: UsdRates = sanitizeRates(fallback.rates) ?? { USD: 1
  * committed snapshot is returned, so a rates problem can never break or delay
  * a page. `fetchImpl` is injectable for tests.
  */
-export async function getUsdRates(fetchImpl: typeof fetch = fetch): Promise<UsdRates> {
+export async function getUsdRates(
+  fetchImpl: typeof fetch = fetch,
+  now: () => number = Date.now,
+): Promise<UsdRates> {
+  // Circuit breaker: while the source is failing, don't make every request
+  // wait the full timeout — serve the snapshot until the cooldown ends.
+  if (failedAt && now() - failedAt < COOLDOWN_MS) return fallbackRates;
+  const fail = () => {
+    failedAt = now();
+    return fallbackRates;
+  };
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
@@ -34,13 +52,15 @@ export async function getUsdRates(fetchImpl: typeof fetch = fetch): Promise<UsdR
       signal: controller.signal,
       next: { revalidate: REVALIDATE_SECONDS },
     });
-    if (!res.ok) return fallbackRates;
+    if (!res.ok) return fail();
     const body = (await res.json()) as { result?: string; rates?: unknown };
-    if (body.result !== "success") return fallbackRates;
+    if (body.result !== "success") return fail();
     const live = sanitizeRates(body.rates);
-    return live ? { ...fallbackRates, ...live, USD: 1 } : fallbackRates;
+    if (!live) return fail();
+    failedAt = 0;
+    return { ...fallbackRates, ...live, USD: 1 };
   } catch {
-    return fallbackRates;
+    return fail();
   } finally {
     clearTimeout(timer);
   }

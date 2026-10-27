@@ -74,7 +74,7 @@ test("plan price: market rate + 4% buffer, rounded UP to a clean figure", () => 
   assert.equal(planPriceLocal(19, mxn), 360); // 355.68 → step 10
   assert.equal(planPriceLocal(19, cop), 80000); // 79,040 → step 1000
   assert.equal(planPriceLocal(19, eur), 17); // 16.99 → step 1
-  assert.equal(planPriceLocal(7, eur), 7); // 6.26 → 7
+  assert.equal(planPriceLocal(7, eur), 6.5); // 6.26 → 0.5 step (not +12%)
   assert.equal(planPriceLocal(19, usd), 19);
   for (const c of [mxn, cop, eur]) {
     assert.ok(planPriceLocal(19, c) >= 19 * c.rate * 1.04 - 1e-6, c.code); // never below
@@ -87,4 +87,24 @@ test("plans show local only for Adaptive-supported currencies", () => {
   assert.equal(planShowsLocal({ code: "MXN" }), true);
   assert.equal(planShowsLocal({ code: "ARS" }), false);
   assert.equal(planShowsLocal({ code: "USD" }), false);
+});
+
+test("small plan prices keep the 0.5 step visible", () => {
+  assert.equal(formatPlanPrice(7, eur), "€6.5");
+  assert.equal(formatPlanPrice(7, usd), "$7");
+});
+
+test("compact only keeps a decimal once it abbreviates", () => {
+  assert.equal(formatMoney(19, { code: "MXN", rate: 18.5, locale: "en" }, { compact: true, approx: true }), "≈ MX$352");
+  assert.equal(formatMoney(1.8, { code: "JPY", rate: 150, locale: "en" }, { compact: true }), "¥270");
+});
+
+test("an unusable rate displays as USD instead of NaN/0/∞", () => {
+  for (const rate of [0, -3, NaN, Infinity]) {
+    const bad = { code: "MXN", rate, locale: "en" as const };
+    assert.equal(formatMoney(19, bad), "$19", String(rate));
+    assert.equal(formatMoney(19, bad, { approx: true }), "$19", String(rate));
+    assert.equal(planPriceLocal(19, bad), 19, String(rate));
+    assert.equal(formatPlanPrice(19, bad), "$19", String(rate));
+  }
 });
