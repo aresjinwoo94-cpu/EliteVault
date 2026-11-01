@@ -24,7 +24,8 @@ export function resolveMoneyTokens(text: string, ctx: MoneyCtx | null): string {
     if (kind === "price" || kind === "uprice") {
       if (local && ctx && planShowsLocal(ctx)) return formatPlanPrice(usd, ctx, { approx: true });
       const base = formatMoney(usd, { code: BASE_CURRENCY, rate: 1, locale: ctx?.locale ?? "en" });
-      return kind === "uprice" ? `US${base}` : base;
+      // A visitor whose own currency also uses "$" (ARS, MXN…) must read US$.
+      return kind === "uprice" || local ? `US${base}` : base;
     }
     if (!local || !ctx) return literal ?? `$${usd}`;
     if (kind === "est") return formatMoney(usd, ctx, { compact: true, approx: true });

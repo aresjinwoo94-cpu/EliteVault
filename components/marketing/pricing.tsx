@@ -90,7 +90,7 @@ export function Pricing() {
                 <p className="mt-1 text-sm text-white/40">{plan.tagline}</p>
               </div>
 
-              <div className="mt-6 flex items-baseline gap-1">
+              <div className="mt-6 flex flex-wrap items-baseline gap-x-1 gap-y-0.5">
                 {plan.price[interval] === 0 ? (
                   <span className="font-mono tabular-nums text-5xl tracking-tight text-signal-300">
                     {t("pricing.priceFree")}
@@ -99,10 +99,11 @@ export function Pricing() {
                   <PlanPrice
                     usd={plan.price[interval]}
                     bigClassName="font-mono tabular-nums text-5xl tracking-tight text-signal-300"
+                    longBigClassName="font-mono tabular-nums text-3xl tracking-tight text-signal-300"
                   />
                 )}
                 {plan.price[interval] > 0 && (
-                  <span className="font-mono text-sm text-white/40">
+                  <span className="whitespace-nowrap font-mono text-sm text-white/40">
                     / {interval === "month" ? t("pricing.perMonth") : t("pricing.perYear")}
                   </span>
                 )}

@@ -38,17 +38,21 @@ export function usePlanMoney() {
 export function PlanPrice({
   usd,
   bigClassName,
-  smallClassName = "ml-1.5 font-mono text-xs text-white/40",
+  longBigClassName = bigClassName,
+  smallClassName = "ml-1.5 whitespace-nowrap font-mono text-xs text-white/40",
 }: {
   usd: number;
   bigClassName: string;
+  /** Used when the figure is long (COP, CLP, JPY…) so it never overflows a phone card. */
+  longBigClassName?: string;
   smallClassName?: string;
 }) {
   const p = usePlanMoney();
   const small = p.small(usd);
+  const big = p.big(usd);
   return (
     <>
-      <span className={bigClassName}>{p.big(usd)}</span>
+      <span className={`whitespace-nowrap ${big.length > 7 ? longBigClassName : bigClassName}`}>{big}</span>
       {small && <span className={smallClassName}>{small}</span>}
     </>
   );

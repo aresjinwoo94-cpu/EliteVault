@@ -1933,7 +1933,7 @@ const es: Dict = {
     step3Body: "Una captura anotada y una lista de arreglos ordenada por impacto — en menos de un minuto.",
     valueH2: "Un diagnóstico real, no un número de vanidad",
     valueBody:
-      "La mayoría de las herramientas de “auditoría web gratis” escupen un score genérico. EliteVault te da un score de conversión general, el desglose de las seis categorías, una captura anotada que marca cada problema, una reacción de buyer-persona y los arreglos ordenados por impacto — el mismo diagnóstico que un consultor te cobraría a $2,000.",
+      "La mayoría de las herramientas de “auditoría web gratis” escupen un score genérico. EliteVault te da un score de conversión general, el desglose de las seis categorías, una captura anotada que marca cada problema, una reacción de buyer-persona y los arreglos ordenados por impacto — el mismo diagnóstico que un consultor te cobraría a {est:2000|$2,000}.",
     valueLink: "Por qué la auditoría de $2,000 está muerta",
     finalH2: "Audita tu tienda gratis",
     finalBody:

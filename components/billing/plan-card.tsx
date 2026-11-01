@@ -126,9 +126,9 @@ export function PlanCard({
               </button>
             ))}
           </div>
-          <div className="mt-3 flex items-baseline gap-1">
-            <PlanPrice usd={plan.price[interval]} bigClassName="font-serif text-4xl" />
-            <span className="text-xs text-white/40">
+          <div className="mt-3 flex flex-wrap items-baseline gap-x-1 gap-y-0.5">
+            <PlanPrice usd={plan.price[interval]} bigClassName="font-serif text-4xl" longBigClassName="font-serif text-2xl" />
+            <span className="whitespace-nowrap text-xs text-white/40">
               / {interval === "month" ? t("billing.perMo") : t("billing.perYr")}
             </span>
           </div>

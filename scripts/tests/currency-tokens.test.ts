@@ -25,7 +25,7 @@ test("Adaptive-supported currency: plan tokens become ≈ local (buffered, round
 });
 
 test("currency outside Adaptive Pricing keeps USD for plan prices", () => {
-  assert.equal(resolveMoneyTokens("Pro {price:19}/mo", ars), "Pro $19/mo");
+  assert.equal(resolveMoneyTokens("Pro {price:19}/mo", ars), "Pro US$19/mo"); // never a bare $ for an Argentine visitor
   assert.equal(resolveMoneyTokens("Unlock for {uprice:7}", ars), "Unlock for US$7");
 });
 
