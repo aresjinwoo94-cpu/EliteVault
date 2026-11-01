@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useMemo } from "react";
+import { useMemo } from "react";
+import { CurrencyCtx, useCurrencyContext } from "./currency-context";
 import { useT } from "@/components/i18n/locale-provider";
 import type { Locale } from "@/lib/i18n/config";
 import {
@@ -11,10 +12,6 @@ import {
   type MoneyOpts,
 } from "@/lib/currency/format";
 
-const USD: CurrencyContext = { code: "USD", rate: 1, isConverted: false };
-
-const Ctx = createContext<CurrencyContext>(USD);
-
 /** Receives the already-resolved { code, rate, isConverted } — no fetching. */
 export function CurrencyProvider({
   value,
@@ -24,7 +21,7 @@ export function CurrencyProvider({
   children: React.ReactNode;
 }) {
   const stable = useMemo(() => value, [value.code, value.rate, value.isConverted]); // eslint-disable-line react-hooks/exhaustive-deps
-  return <Ctx.Provider value={stable}>{children}</Ctx.Provider>;
+  return <CurrencyCtx.Provider value={stable}>{children}</CurrencyCtx.Provider>;
 }
 
 export type Money = CurrencyContext & {
@@ -38,7 +35,7 @@ export type Money = CurrencyContext & {
 };
 
 export function useMoney(): Money {
-  const ctx = useContext(Ctx);
+  const ctx = useCurrencyContext();
   const { locale } = useT();
   return useMemo(() => {
     const m = { code: ctx.code, rate: ctx.rate, locale };

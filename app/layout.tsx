@@ -148,8 +148,8 @@ export default async function RootLayout({
         {/* Analítica first-party del panel del dueño (registra visitas en page_views).
             Respeta el mismo opt-out interno que AnalyticsGate. */}
         <PageTracker isInternal={isInternal} />
-        <LocaleProvider locale={locale} messages={clientMessages(locale)}>
         <CurrencyProvider value={currency}>
+        <LocaleProvider locale={locale} messages={clientMessages(locale)}>
           <AnalyticsGate isInternal={isInternal}>
             <MotionProvider>
               <TooltipProvider delayDuration={150}>
@@ -162,8 +162,8 @@ export default async function RootLayout({
               always offers "talk to a human" → /support/contact. Inside the
               provider so its UI text is translated. */}
           <SupportChatLazy />
-        </CurrencyProvider>
         </LocaleProvider>
+        </CurrencyProvider>
       </body>
     </html>
   );

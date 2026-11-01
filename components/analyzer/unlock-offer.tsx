@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { phCapture } from "@/lib/analytics/posthog";
 import { useT } from "@/components/i18n/locale-provider";
 import { fill } from "@/lib/i18n/lookup";
+import { PlanPriceNote } from "@/components/billing/plan-money";
 
 /**
  * The one-time "unlock this report" offer INSIDE the report (WP-4, brief oct-2026 §6) — behind REPORT_UNLOCK.
@@ -128,6 +129,7 @@ export function ReportUnlockCard({ className }: { className?: string }) {
         {fill(t(n === 1 ? "unlock.cardTitleOne" : "unlock.cardTitleMany"), { n })}
       </p>
       <p className="mt-1 text-xs text-white/60">{t("unlock.cardPrice")}</p>
+      <PlanPriceNote className="mt-0.5 text-[11px] text-white/40" />
       <Link
         href={href}
         onClick={() => phCapture("unlock_cta_click", { analysis_id: analysisId, source: "card", anonymous: isAnon })}
@@ -182,6 +184,7 @@ function ReportUnlockDialog({ open, onClose, source }: { open: boolean; onClose:
               {t(isAnon ? "unlock.modalCtaAnon" : "unlock.modalCta")}
             </Button>
           </Link>
+          <PlanPriceNote className="text-center text-[11px] text-white/45" />
           <p className="flex items-center justify-center gap-1.5 text-[11px] text-white/45">
             <ShieldCheck className="size-3.5" />
             {t("unlock.oneTime")}

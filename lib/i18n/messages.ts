@@ -1,6 +1,7 @@
 import type { Locale } from "./config";
 import { APP_NAMESPACES, CORE_NAMESPACES, type ClientScope } from "./client-namespaces";
 import { lookup, type Dict } from "./lookup";
+import { resolveMoneyTokens } from "@/lib/currency/tokens";
 import uiEn from "./dict/ui-en.json";
 import uiEs from "./dict/ui-es.json";
 
@@ -88,7 +89,7 @@ const en: Dict = {
       "Stores with a structural profile like yours model into a range of ROAS {roasLow}×–{roasHigh}× on a 7-day cold Meta test.",
     metaDisclaimer: "Range modeled on similar stores — not a prediction of your result.",
     proHint:
-      "Free saves your report and unlocks fix #1. Pro then reveals the full prioritized cure, your buyer-persona reaction and the 7-day Meta projection — $19/mo.",
+      "Free saves your report and unlocks fix #1. Pro then reveals the full prioritized cure, your buyer-persona reaction and the 7-day Meta projection — {price:19}/mo.",
   },
   anonGate: {
     title: "Your score is {score}/100. Save your audit before you go.",
@@ -176,8 +177,8 @@ const en: Dict = {
       "Your store models to {roasLow}×–{roasHigh}× ROAS on cold traffic. See the full 7-day projection.",
     aBody:
       "You've seen the diagnosis. Pro reveals the prioritized cure: all {lockedFixes} remaining fixes, your buyer-persona reaction, and the full 7-day Meta projection — plus unlimited re-audits as you fix.",
-    aCtaPro: "Unlock my fixes + projection — Pro $19/mo",
-    aCtaScale: "Unlimited Meta projections — Scale $29/mo",
+    aCtaPro: "Unlock my fixes + projection — Pro {price:19}/mo",
+    aCtaScale: "Unlimited Meta projections — Scale {price:29}/mo",
     dismiss: "Maybe later",
     micro: "Cancel anytime · prorated",
     cTitle:
@@ -185,7 +186,7 @@ const en: Dict = {
     // analyzer-report-redesign brief §A.2 — scoreless variant for the v2 report.
     cTitleNoScore:
       "Leaving already? Your {lockedFixes} highest-leverage fixes are still locked. Fix them before you spend on ads.",
-    cCtaPro: "Unlock with Pro — $19/mo",
+    cCtaPro: "Unlock with Pro — {price:19}/mo",
   },
   socialStrip: {
     eyebrow: "What you'll discover",
@@ -269,6 +270,8 @@ const en: Dict = {
     ctaGet: "Get {plan}",
     stripeNote: "Secure checkout powered by Stripe · Cancel anytime · No hidden fees",
     localCurrencyNote: "Charged in your local currency at checkout",
+    approxNote: "Approximate amount. Stripe confirms the exact total in your currency at checkout.",
+    billedInUsd: "Billed in USD",
   },
   compare: {
     heading: "How EliteVault compares",
@@ -294,10 +297,10 @@ const en: Dict = {
     cellPartial: "Partial",
     cellContinuous: "Continuous",
     cellNeedsApp: "Needs app",
-    cellPriceEv: "Free / $19",
+    cellPriceEv: "Free / {price:19}",
     cellPriceConvertmate: "$$$",
     cellPriceAudit: "Free / $$",
-    cellPriceAgency: "$1.5k–2k per audit",
+    cellPriceAgency: "{estr:1500:2000|$1.5k–2k} per audit",
     notDoTitle: "What EliteVault does NOT do",
     notDoBody:
       "It won't implement the changes for you, run live A/B tests, or replace your session analytics. EliteVault tells you exactly what to fix and why — you (or your dev) ship it. Need someone to do the work? A CRO agency or a Shopify-native tool like ConvertMate is the better fit.",
@@ -354,7 +357,7 @@ const en: Dict = {
       "Estimated from public traffic and on-site behavior signals — not official figures reported by the brand.",
     estimateDisclaimer:
       "Metrics estimated by modeling public traffic and behavior signals. Not figures reported by the brands themselves.",
-    founderNote: "I built EliteVault because I watched good stores lose to competitors with worse products and better pages — and paying $2k for a consultant to find out why wasn't an option for most founders. So I built the advisor I wanted: it shows where your store is losing sales, who in your niche is ahead and what they do differently. No fake numbers, no dark patterns, cancel in two clicks.",
+    founderNote: "I built EliteVault because I watched good stores lose to competitors with worse products and better pages — and paying {est:2000|$2k} for a consultant to find out why wasn't an option for most founders. So I built the advisor I wanted: it shows where your store is losing sales, who in your niche is ahead and what they do differently. No fake numbers, no dark patterns, cancel in two clicks.",
     badgeNoCard: "No credit card to start",
     badgeStripe: "Payments secured by Stripe",
     badgeCancel: "Cancel anytime · no lock-in",
@@ -911,7 +914,7 @@ const en: Dict = {
     step3Body: "An annotated screenshot and a punch-list ranked by leverage — in under a minute.",
     valueH2: "A real diagnosis, not a vanity number",
     valueBody:
-      "Most “free website audit” tools spit out a generic score. EliteVault gives you an overall conversion score, the six category breakdowns, an annotated screenshot marking each issue, a buyer-persona reaction, and the fixes ranked by impact — the same diagnosis consultants charge $2,000 for.",
+      "Most “free website audit” tools spit out a generic score. EliteVault gives you an overall conversion score, the six category breakdowns, an annotated screenshot marking each issue, a buyer-persona reaction, and the fixes ranked by impact — the same diagnosis consultants charge {est:2000|$2,000} for.",
     valueLink: "Why the $2,000 audit is dead",
     finalH2: "Audit your store free",
     finalBody:
@@ -1112,7 +1115,7 @@ const es: Dict = {
       "Tiendas con un perfil estructural como el tuyo modelan un rango de ROAS {roasLow}×–{roasHigh}× en un test frío de Meta de 7 días.",
     metaDisclaimer: "Rango modelado sobre tiendas similares — no es una predicción de tu resultado.",
     proHint:
-      "Gratis guarda tu informe y desbloquea el fix #1. Pro revela luego la cura priorizada completa, la reacción de tu buyer-persona y la proyección Meta de 7 días — $19/mes.",
+      "Gratis guarda tu informe y desbloquea el fix #1. Pro revela luego la cura priorizada completa, la reacción de tu buyer-persona y la proyección Meta de 7 días — {price:19}/mes.",
   },
   anonGate: {
     title: "Tu score es {score}/100. Guarda tu auditoría antes de irte.",
@@ -1196,8 +1199,8 @@ const es: Dict = {
       "Tu tienda modela {roasLow}×–{roasHigh}× de ROAS en tráfico frío. Mira la proyección completa de 7 días.",
     aBody:
       "Ya viste el diagnóstico. Pro revela la cura priorizada: los {lockedFixes} fixes restantes, la reacción de tu buyer-persona y la proyección Meta de 7 días completa — más re-auditorías ilimitadas mientras arreglas.",
-    aCtaPro: "Desbloquear fixes + proyección — Pro $19/mes",
-    aCtaScale: "Proyecciones Meta ilimitadas — Scale $29/mes",
+    aCtaPro: "Desbloquear fixes + proyección — Pro {price:19}/mes",
+    aCtaScale: "Proyecciones Meta ilimitadas — Scale {price:29}/mes",
     dismiss: "Quizá luego",
     micro: "Cancela cuando quieras · prorrateado",
     cTitle:
@@ -1205,7 +1208,7 @@ const es: Dict = {
     // analyzer-report-redesign brief §A.2 — variante sin score para el reporte v2.
     cTitleNoScore:
       "¿Ya te vas? Tus {lockedFixes} fixes de mayor impacto siguen bloqueados. Arréglalos antes de gastar en ads.",
-    cCtaPro: "Desbloquear con Pro — $19/mes",
+    cCtaPro: "Desbloquear con Pro — {price:19}/mes",
   },
   socialStrip: {
     eyebrow: "Aquí descubrirás",
@@ -1289,6 +1292,8 @@ const es: Dict = {
     ctaGet: "Obtener {plan}",
     stripeNote: "Pago seguro con Stripe · Cancela cuando quieras · Sin cargos ocultos",
     localCurrencyNote: "Se cobra en tu moneda local al pagar",
+    approxNote: "Monto aproximado. Stripe confirma el total exacto en tu moneda al pagar.",
+    billedInUsd: "Se cobra en USD",
   },
   compare: {
     heading: "Cómo se compara EliteVault",
@@ -1314,10 +1319,10 @@ const es: Dict = {
     cellPartial: "Parcial",
     cellContinuous: "Continuo",
     cellNeedsApp: "Requiere app",
-    cellPriceEv: "Gratis / $19",
+    cellPriceEv: "Gratis / {price:19}",
     cellPriceConvertmate: "$$$",
     cellPriceAudit: "Gratis / $$",
-    cellPriceAgency: "$1.5k–2k por auditoría",
+    cellPriceAgency: "{estr:1500:2000|$1.5k–2k} por auditoría",
     notDoTitle: "Lo que EliteVault NO hace",
     notDoBody:
       "No implementa los cambios por ti, no corre tests A/B en vivo ni reemplaza tu analítica de sesiones. EliteVault te dice exactamente qué arreglar y por qué — tú (o tu dev) lo implementan. ¿Necesitas que alguien haga el trabajo? Una agencia CRO o una herramienta nativa de Shopify como ConvertMate encaja mejor.",
@@ -1374,7 +1379,7 @@ const es: Dict = {
       "Estimado a partir de señales públicas de tráfico y comportamiento del sitio. No son datos oficiales de la marca.",
     estimateDisclaimer:
       "Métricas estimadas mediante modelado sobre señales públicas de tráfico y comportamiento. No son cifras reportadas por las marcas.",
-    founderNote: "Creé EliteVault porque vi cómo buenas tiendas perdían contra competidores con peores productos y mejores páginas, y pagar $2k a un consultor para descubrir por qué no era una opción para la mayoría de los founders. Así que construí el asesor que yo quería: te muestra dónde tu tienda pierde ventas, quién de tu nicho va por delante y qué hace distinto. Sin números falsos, sin trucos sucios, cancela en dos clics.",
+    founderNote: "Creé EliteVault porque vi cómo buenas tiendas perdían contra competidores con peores productos y mejores páginas, y pagar {est:2000|$2k} a un consultor para descubrir por qué no era una opción para la mayoría de los founders. Así que construí el asesor que yo quería: te muestra dónde tu tienda pierde ventas, quién de tu nicho va por delante y qué hace distinto. Sin números falsos, sin trucos sucios, cancela en dos clics.",
     badgeNoCard: "Sin tarjeta para empezar",
     badgeStripe: "Pagos protegidos por Stripe",
     badgeCancel: "Cancela cuando quieras · sin ataduras",
@@ -2063,9 +2068,14 @@ export const messages: Record<Locale, Dict> = {
 };
 
 /** Returns a `t(path)` lookup bound to a locale, with English fallback. */
-export function translator(locale: Locale): (path: string) => string {
+export function translator(
+  locale: Locale,
+  money: { code: string; rate: number } | null = null,
+): (path: string) => string {
+  // Money tokens ({price:19}…) resolve to USD (today's text) unless a currency is given.
+  const ctx = money ? { ...money, locale } : null;
   return (path: string): string =>
-    lookup(messages[locale], path) ?? lookup(messages.en, path) ?? path;
+    resolveMoneyTokens(lookup(messages[locale], path) ?? lookup(messages.en, path) ?? path, ctx);
 }
 
 function pickNamespaces(dict: Dict, scope: ClientScope): Dict {

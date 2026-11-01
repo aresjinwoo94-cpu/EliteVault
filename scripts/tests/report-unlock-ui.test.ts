@@ -1,4 +1,5 @@
 import { test } from "node:test";
+import { resolveMoneyTokens } from "../../lib/currency/tokens";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
@@ -31,7 +32,7 @@ for (const locale of ["en", "es"] as const) {
   test(`[${locale}] flag on: the card sits under the locked fixes with the price line and a plain link to /app/unlock`, () => {
     const h = HTML[`${locale}:on`].fixes;
     assert.ok(h.includes("data-unlock-card"));
-    assert.ok(h.includes(u.cardPrice), "US$7 · one-time · no subscription");
+    assert.ok(h.includes(resolveMoneyTokens(u.cardPrice, null)), "US$7 · one-time · no subscription");
     assert.ok(h.includes(u.cardTitleMany.replace("{n}", "2")));
     assert.ok(h.includes('href="/app/unlock/a1"'), "the main action is a link, not a pop-up");
     assert.ok(h.includes("/app/checkout?plan=pro&amp;interval=month"), "Pro stays as the secondary line");
@@ -48,7 +49,7 @@ for (const locale of ["en", "es"] as const) {
   test(`[${locale}] flag on: the persona lock offers the unlock (modal) instead of only Pro`, () => {
     const c = HTML[`${locale}:on`].cure;
     assert.ok(c.includes(u.lockedTitle));
-    assert.ok(c.includes(u.cardCta));
+    assert.ok(c.includes(resolveMoneyTokens(u.cardCta, null)));
     assert.ok(!c.includes("checkout?plan=pro"), "no Pro link competing with the main action");
   });
 
