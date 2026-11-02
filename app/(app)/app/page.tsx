@@ -7,7 +7,9 @@ import { Card } from "@/components/ui/card";
 import { PLANS } from "@/lib/stripe/plans";
 import { formatCompact } from "@/lib/utils";
 import { analyzerReportV2Enabled } from "@/lib/flags";
-import { potentialBandForResult } from "@/lib/analyzer/report-v2";
+import { potentialBandForResult, potentialBandUsd } from "@/lib/analyzer/report-v2";
+import { formatBand } from "@/lib/currency/band";
+import { getCurrencyContext } from "@/lib/currency/server";
 import type { AnalysisResult } from "@/lib/supabase/types";
 import { getT } from "@/lib/i18n/server";
 import { fill } from "@/lib/i18n/lookup";
@@ -17,7 +19,7 @@ import { intlLocale } from "@/lib/i18n/format";
 export const metadata = { title: "Overview" };
 
 export default async function OverviewPage() {
-  const { t, locale } = await getT();
+  const [{ t, locale }, currency] = await Promise.all([getT(), getCurrencyContext()]);
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -56,10 +58,18 @@ export default async function OverviewPage() {
   // The Supabase select collapses these rows to `never` (the repo's known
   // hand-written-types limitation), so read `result` through a narrow cast —
   // the same shape the score column already reads — before placing it.
-  const bandFor = (row: unknown): string | null =>
-    potentialBandForResult(
-      (row as { result?: unknown } | null)?.result as AnalysisResult | null,
-    );
+  const bandFor = (row: unknown): string | null => {
+    const result = (row as { result?: unknown } | null)?.result as AnalysisResult | null;
+    const legacy = potentialBandForResult(result);
+    const usd = potentialBandUsd(result);
+    // Same band in the visitor's currency (USD → the exact text we always had).
+    return legacy && usd
+      ? formatBand(usd, legacy, { code: currency.code, rate: currency.rate, locale }, {
+          perMonth: t("report.bandPerMonth"),
+          firstSales: t("report.bandFirstSales"),
+        })
+      : legacy;
+  };
   const latestBand = reportV2
     ? (recent?.map((r) => bandFor(r)).find((b): b is string => b != null) ??
       null)

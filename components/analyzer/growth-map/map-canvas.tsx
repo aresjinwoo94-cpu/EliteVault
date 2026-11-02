@@ -1,6 +1,7 @@
 "use client";
 
 import { RANKS, type RankKey } from "@/lib/growth-map/ranks";
+import { useBandLabel } from "@/components/currency/use-band";
 import { useT } from "@/components/i18n/locale-provider";
 
 /**
@@ -192,6 +193,7 @@ export function MapCanvas({
   ghostIndex?: number | null;
 }) {
   const { t } = useT();
+  const bandLabel = useBandLabel();
   const pathPoints = XY.map((p) => `${p.x},${p.y}`).join(" ");
   const lockedPoints = XY.slice(currentIndex)
     .map((p) => `${p.x},${p.y}`)
@@ -391,7 +393,7 @@ export function MapCanvas({
               {rank.stage}
             </text>
             <text y={41} textAnchor="middle" className="font-mono" fontSize={7} fill="#8A8F98">
-              {rank.band}
+              {bandLabel(rank.bandUsd, rank.band)}
             </text>
             {/* (The "$ is potential, not your revenue" note used to live here at
                 a near-illegible 5.5px — it's redundant with the prominent banner

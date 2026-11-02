@@ -30,8 +30,8 @@ test("currency outside Adaptive Pricing keeps USD for plan prices", () => {
 });
 
 test("comparison figures convert as compact ≈ in any currency with a rate", () => {
-  assert.equal(resolveMoneyTokens("{est:2000|$2,000} invoice", mxn), "≈ MX$36K invoice");
-  assert.equal(resolveMoneyTokens("{estr:1500:2000|$1.5k–2k} per audit", mxn), "≈ MX$27K–MX$36K per audit");
+  assert.equal(resolveMoneyTokens("{est:2000|$2,000} invoice", mxn), "≈ MX$36k invoice");
+  assert.equal(resolveMoneyTokens("{estr:1500:2000|$1.5k–2k} per audit", mxn), "≈ MX$27k–MX$36k per audit");
   assert.match(resolveMoneyTokens("{est:2000|$2,000}", ars), /^≈ ARS\s2M$/);
 });
 
