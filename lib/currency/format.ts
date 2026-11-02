@@ -38,6 +38,34 @@ function fractionDigits(code: string, kind: MoneyOpts["kind"]): number {
   return 2;
 }
 
+/**
+ * Own compact abbreviation (Intl's differs per locale/ICU: "376.4 k", "1025 M",
+ * "K" vs "k"). k / M / B in English; k / M / "mil M" / B in Spanish (where B =
+ * 10^12). One decimal only below 10 ("1.4M"), whole numbers above ("146k").
+ */
+function abbreviate(amount: number, locale: Locale): { scaled: number; suffix: string } | null {
+  const abs = Math.abs(amount);
+  if (abs < 1000) return null;
+  const es = locale === "es";
+  const units: [number, string][] = es
+    ? [[1e12, " B"], [1e9, " mil M"], [1e6, "M"], [1e3, "k"]]
+    : [[1e12, "T"], [1e9, "B"], [1e6, "M"], [1e3, "k"]];
+  for (let i = 0; i < units.length; i++) {
+    const [size, suffix] = units[i];
+    if (abs < size) continue;
+    let scaled = amount / size;
+    const rounded = Math.abs(scaled) < 10 ? Math.round(scaled * 10) / 10 : Math.round(scaled);
+    // 999.6k rounds to 1000k → promote to the next unit up.
+    if (Math.abs(rounded) >= 1000 && i > 0) {
+      const [up, upSuffix] = units[i - 1];
+      scaled = amount / up;
+      return { scaled: Math.abs(scaled) < 10 ? Math.round(scaled * 10) / 10 : Math.round(scaled), suffix: upSuffix };
+    }
+    return { scaled: rounded, suffix };
+  }
+  return null;
+}
+
 function formatLocal(
   amount: number,
   code: string,
@@ -45,16 +73,22 @@ function formatLocal(
   opts: MoneyOpts & { exactDecimals?: number },
 ): string {
   const digits = opts.exactDecimals ?? fractionDigits(code, opts.kind);
+  const abbr = opts.compact ? abbreviate(amount, locale) : null;
+  if (abbr) {
+    const base = formatLocal(abbr.scaled, code, locale, {
+      kind: "price",
+      exactDecimals: Number.isInteger(abbr.scaled) ? 0 : 1,
+    });
+    return `${base}${abbr.suffix}`;
+  }
   const fmt = new Intl.NumberFormat(intlLocale(locale), {
     style: "currency",
     currency: code,
     // narrowSymbol only for USD ("$"); everyone else keeps the unambiguous
     // symbol/code (MX$, CA$, R$, COP…) so a "$" never means two currencies.
     currencyDisplay: code === BASE_CURRENCY ? "narrowSymbol" : "symbol",
-    minimumFractionDigits: opts.compact ? 0 : digits,
-    // compact keeps one decimal only once it actually abbreviates (≥1,000).
-    maximumFractionDigits: opts.compact ? (Math.abs(amount) >= 1000 ? Math.max(digits, 1) : digits) : digits,
-    ...(opts.compact ? { notation: "compact" as const } : {}),
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
   });
   if (code === BASE_CURRENCY) return fmt.format(amount);
   // Safety net: some locales/ICU builds still print a bare "$" for MXN etc.

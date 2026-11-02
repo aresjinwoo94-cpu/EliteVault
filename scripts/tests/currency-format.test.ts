@@ -60,7 +60,7 @@ test("decimals: price/metric 0; small 2, but 0 for zero-decimal / low-unit curre
 test("compact abbreviates big amounts in both languages", () => {
   assert.equal(formatMoney(80000, mxn, { compact: true }), "MX$1.4M");
   assert.match(formatMoney(80000, mxnEs, { compact: true }), /MXN\s?1[.,]4\s?M/);
-  assert.equal(formatMoney(80000, usd, { compact: true }), "$80K");
+  assert.equal(formatMoney(80000, usd, { compact: true }), "$80k");
 });
 
 test("≈ only when converted and asked for", () => {
