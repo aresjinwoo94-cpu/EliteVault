@@ -1,6 +1,8 @@
 "use client";
 
 import { m as motion } from "framer-motion";
+import { useMoney } from "@/components/currency/currency-provider";
+import { formatMoney } from "@/lib/currency/format";
 import { Megaphone, Sparkles, Target, TrendingUp, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +20,13 @@ const FORMAT_LABEL: Record<string, string> = {
 
 export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
   const { t } = useT();
+  const money = useMoney();
+  // Targets are engine USD; shown in the visitor's currency (USD → identical to before).
+  const small = (usd: number) => money.format(usd, { kind: "small" });
+  const whole = (usd: number) => money.format(usd, { kind: "metric" });
+  // "per 1 unit spent" ratio: the same ratio in whatever currency the visitor reads.
+  const unit = (n: number, kind: "metric" | "small") =>
+    formatMoney(n, { code: money.code, rate: 1, locale: money.locale }, { kind });
   const tg = meta.targets;
   // Niche reference bands so each target reads against its category median.
   const bands = nicheBenchmarks(meta.niche);
@@ -40,7 +49,7 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
           </p>
         </div>
         <Badge variant="default">
-          ${meta.budget_band.daily_min}-${meta.budget_band.daily_max}/day
+          {whole(meta.budget_band.daily_min)}-{whole(meta.budget_band.daily_max)}/day
         </Badge>
       </div>
 
@@ -53,8 +62,8 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
       <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         {(
           [
-            ["CPC", `$${tg.cpc.toFixed(2)}`, "maxBid", "cpcLine", "low", bands && `$${bands.cpc[0].toFixed(2)}–$${bands.cpc[1].toFixed(2)}`],
-            ["CPM", `$${tg.cpm.toFixed(2)}`, "costK", "cpmLine", "low", bands && `$${bands.cpm[0].toFixed(0)}–$${bands.cpm[1].toFixed(0)}`],
+            ["CPC", small(tg.cpc), "maxBid", "cpcLine", "low", bands && `${small(bands.cpc[0])}–${small(bands.cpc[1])}`],
+            ["CPM", small(tg.cpm), "costK", "cpmLine", "low", bands && `${whole(bands.cpm[0])}–${whole(bands.cpm[1])}`],
             ["CTR", `${(tg.ctr * 100).toFixed(2)}%`, "ctr", "ctrLine", "high", bands && `${(bands.ctr[0] * 100).toFixed(1)}–${(bands.ctr[1] * 100).toFixed(1)}%`],
             ["CVR", `${(tg.cvr * 100).toFixed(2)}%`, "lpConv", "cvrLine", "high", bands && `${(bands.cvr[0] * 100).toFixed(1)}–${(bands.cvr[1] * 100).toFixed(1)}%`],
             ["ROAS", `${tg.roas.toFixed(1)}x`, "targetReturn", "roasLine", "high", bands && `${bands.roas[0].toFixed(1)}–${bands.roas[1].toFixed(1)}x`],
@@ -76,7 +85,7 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
               </p>
               <p className="mt-1.5 font-mono tabular-nums text-xl tnum text-white">{val}</p>
               <p className="mt-1 text-[11px] leading-snug text-white/55">
-                {fill(t(`optimizer.${lineKey}`), { x: tg.roas.toFixed(1), usd: tg.roas.toFixed(2) })}
+                {fill(t(`optimizer.${lineKey}`), { x: tg.roas.toFixed(1), one: unit(1, "metric"), back: unit(tg.roas, "small") })}
               </p>
               <p className="mt-1 flex-1 text-[10px] text-white/35">
                 {dir === "low" ? "↓ " + t("optimizer.lowerBetter") : "↑ " + t("optimizer.higherBetter")}
@@ -182,7 +191,7 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
               <div className="min-w-0 flex-1">
                 <p className="text-sm text-white">{step.step}</p>
                 <p className="text-xs text-white/40 mt-0.5">
-                  {fill(t("optimizer.stepLine"), { budget: step.budget, days: step.days })}
+                  {fill(t("optimizer.stepLine"), { budget: Number.isInteger(step.budget) ? whole(step.budget) : small(step.budget), days: step.days })}
                 </p>
               </div>
             </li>

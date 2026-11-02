@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSimMoney } from "@/components/analyzer/sim-money";
 import { m as motion } from "framer-motion";
 import {
   Shield,
@@ -69,10 +70,6 @@ const VARIANT_META: Record<
   },
 };
 
-function fmtUsd(n: number, max = 0) {
-  return `$${n.toLocaleString("en-US", { maximumFractionDigits: max })}`;
-}
-
 export function SimulatorScenarioCard({
   scenario,
   index,
@@ -81,6 +78,9 @@ export function SimulatorScenarioCard({
   index: number;
 }) {
   const { t } = useT();
+  // Engine amounts are USD; shown in the currency this simulation was run in (USD when none).
+  const sim = useSimMoney();
+  const fmtUsd = (n: number, max = 0) => sim.fmt(n, max > 0 ? "small" : "metric");
   const meta = VARIANT_META[scenario.variant];
   const { Icon } = meta;
   const totals = scenario.totals;

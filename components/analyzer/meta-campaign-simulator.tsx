@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { SimMoneyProvider } from "@/components/analyzer/sim-money";
+import { formatMoney } from "@/lib/currency/format";
+import { simDisplayFromRow } from "@/lib/currency/sim";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { m as motion } from "framer-motion";
@@ -39,6 +42,9 @@ type Simulation = {
   analysis_id: string;
   aov_usd: number;
   daily_budget_usd: number;
+  /** How the numbers were entered/shown (migration 0048). Absent/null = USD, as before. */
+  display_currency?: string | null;
+  display_fx_rate?: number | string | null;
   product_margin_pct: number | null;
   notes: string | null;
   conservative: SimulationScenario | null;
@@ -63,7 +69,7 @@ export function MetaCampaignSimulator({
   /** Public share of a finished audit: show the saved projection, never the run form or the re-run button. */
   readOnly?: boolean;
 }) {
-  const { t } = useT();
+  const { t, locale } = useT();
   // Current simulation we're tracking. null = no simulation yet (show form).
   const [sim, setSim] = useState<Simulation | null>(initial);
   // Force-render the form even if a successful sim exists ("Re-run" button)
@@ -204,7 +210,13 @@ export function MetaCampaignSimulator({
     sim.aggressive,
   ].filter((s): s is SimulationScenario => s !== null);
 
+  // How THIS simulation is shown: the currency stored on its row (USD for rows from before 0048).
+  const display = simDisplayFromRow(sim);
+  const money = (usd: number, kind: "metric" | "small") =>
+    formatMoney(usd, { code: display.code, rate: display.rate, locale }, { kind });
+
   return (
+    <SimMoneyProvider display={display}>
     <motion.section
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -229,8 +241,9 @@ export function MetaCampaignSimulator({
           </div>
           <p className="mt-1 text-sm text-white/55">
             {fill(t("simulator.projLine"), {
-              aov: sim.aov_usd,
-              budget: sim.daily_budget_usd,
+              // cents only for USD: a typed 1000 MXN must read back as 1,000, not 999.94
+              aov: money(sim.aov_usd, display.code === "USD" && !Number.isInteger(sim.aov_usd) ? "small" : "metric"),
+              budget: money(sim.daily_budget_usd, Number.isInteger(sim.daily_budget_usd) ? "metric" : "small"),
             })}
           </p>
         </div>
@@ -303,6 +316,7 @@ export function MetaCampaignSimulator({
         {t("simulator.aiEstimates")}
       </p>
     </motion.section>
+    </SimMoneyProvider>
   );
 }
 
