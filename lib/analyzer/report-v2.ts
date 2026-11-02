@@ -1,5 +1,6 @@
 import type { AnalysisResult } from "@/lib/supabase/types";
 import { computePlacement, RANKS } from "@/lib/growth-map/placement";
+import type { BandUsd } from "@/lib/growth-map/ranks";
 
 /**
  * analyzer-report-redesign brief §1 — the pure derivations behind the v2 report
@@ -37,6 +38,19 @@ export function potentialBandForResult(
   const { rankIndex } = computePlacement(result);
   const idx = Math.max(0, Math.min(RANKS.length - 1, Math.round(rankIndex)));
   return RANKS[idx]?.band ?? null;
+}
+
+/**
+ * The same band as potentialBandForResult, as numbers (USD), so the UI can show
+ * it in the visitor's currency. Same placement math, no new number.
+ */
+export function potentialBandUsd(
+  result: AnalysisResult | null | undefined,
+): BandUsd | null {
+  if (!result) return null;
+  const { rankIndex } = computePlacement(result);
+  const idx = Math.max(0, Math.min(RANKS.length - 1, Math.round(rankIndex)));
+  return RANKS[idx]?.bandUsd ?? null;
 }
 
 export interface AdReadinessWords {

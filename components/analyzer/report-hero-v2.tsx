@@ -7,11 +7,13 @@ import { m as motion } from "framer-motion";
 import { ArrowDown, ArrowRight, Megaphone, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useBandLabel } from "@/components/currency/use-band";
 import { useT } from "@/components/i18n/locale-provider";
 import type { AnalysisResult } from "@/lib/supabase/types";
 import {
   adReadinessWords,
   potentialBandForResult,
+  potentialBandUsd,
   potentialWhy,
   potentialWhyLines,
   type CategoryKey,
@@ -86,7 +88,11 @@ export function ReportHeroV2({
   const { t } = useT();
 
   const words = adReadinessWords(result);
-  const band = potentialBandForResult(result);
+  const bandLabel = useBandLabel();
+  const legacyBand = potentialBandForResult(result);
+  const bandUsd = potentialBandUsd(result);
+  // Same band, shown in the visitor's currency (USD → the text we always had).
+  const band = legacyBand && bandUsd ? bandLabel(bandUsd, legacyBand) : legacyBand;
   const why = potentialWhy(result);
   const fixCount = why.leakCount;
   // The model's store-specific "Why this potential" lines, written inside the

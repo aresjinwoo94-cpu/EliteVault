@@ -36,8 +36,17 @@ export interface Rank {
   color: string;
   /** Representative object (emoji) inside the medallion. */
   icon: string;
-  /** Orientative $ band label (EliteVault overlay, not a claim). */
+  /** Orientative $ band label (EliteVault overlay, not a claim). Kept as-is: AI copy and old reads use it. */
   band: string;
+  /** The same band as numbers (USD), so the UI can show it in the visitor's currency. */
+  bandUsd: BandUsd;
+}
+
+/** `max: null` = open-ended ("$1M+"); `min = max = 0` = "$0 – first sales". */
+export interface BandUsd {
+  min: number;
+  max: number | null;
+  perMonth: boolean;
 }
 
 export const RANKS: Rank[] = [
@@ -50,6 +59,7 @@ export const RANKS: Rank[] = [
     color: "#B87333",
     icon: "🪙",
     band: "$0 – first sales",
+    bandUsd: { min: 0, max: 0, perMonth: false },
   },
   {
     index: 1,
@@ -60,6 +70,7 @@ export const RANKS: Rank[] = [
     color: "#9AA6B4",
     icon: "🔨",
     band: "~$1k–8k/mo",
+    bandUsd: { min: 1_000, max: 8_000, perMonth: true },
   },
   {
     index: 2,
@@ -70,6 +81,7 @@ export const RANKS: Rank[] = [
     color: "#CBD5E1",
     icon: "🛡️",
     band: "~$20k–80k/mo",
+    bandUsd: { min: 20_000, max: 80_000, perMonth: true },
   },
   {
     index: 3,
@@ -80,6 +92,7 @@ export const RANKS: Rank[] = [
     color: "#E8B84B",
     icon: "🧱",
     band: "~$80k–250k/mo",
+    bandUsd: { min: 80_000, max: 250_000, perMonth: true },
   },
   {
     index: 4,
@@ -90,6 +103,7 @@ export const RANKS: Rank[] = [
     color: "#8EE3F5",
     icon: "💎",
     band: "~$250k–1M/mo",
+    bandUsd: { min: 250_000, max: 1_000_000, perMonth: true },
   },
   {
     index: 5,
@@ -100,6 +114,7 @@ export const RANKS: Rank[] = [
     color: "#E0405E",
     icon: "🔺",
     band: "$1M+/mo",
+    bandUsd: { min: 1_000_000, max: null, perMonth: true },
   },
 ];
 

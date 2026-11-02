@@ -419,6 +419,8 @@ const en: Dict = {
     stageProgressAria: "{pct}% of the way to {next}",
     stageTopRank: "Top stage reached",
     potentialBand: "Potential {band}",
+    bandPerMonth: "/mo",
+    bandFirstSales: "first sales",
     // Master brief §B3 — the category radar reframed as where sales leak out.
     leaksHeading: "Where you're leaking sales",
     leaksSub:
@@ -1441,6 +1443,8 @@ const es: Dict = {
     stageProgressAria: "{pct}% del camino a {next}",
     stageTopRank: "Etapa máxima alcanzada",
     potentialBand: "Potencial {band}",
+    bandPerMonth: "/mes",
+    bandFirstSales: "primeras ventas",
     // Master brief §B3 — el radar de categorías reencuadrado como dónde se fuga la venta.
     leaksHeading: "Dónde se te fuga la venta",
     leaksSub:

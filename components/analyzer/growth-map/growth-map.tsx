@@ -17,6 +17,7 @@ import { rankByIndex, RANKS } from "@/lib/growth-map/ranks";
 import { classifyPageKind, type PageKind } from "@/lib/analyzer/page-kind";
 import { gateForViewer } from "@/lib/growth-map/gate";
 import type { GrowthMapData } from "@/lib/growth-map/types";
+import { useBandLabel } from "@/components/currency/use-band";
 import { useT } from "@/components/i18n/locale-provider";
 import { fill } from "@/lib/i18n/lookup";
 import { MapCanvas, NODE_POS, VIEWBOX } from "./map-canvas";
@@ -60,6 +61,7 @@ export function GrowthMap({
   storedPageKind?: PageKind;
 }) {
   const { t } = useT();
+  const bandLabel = useBandLabel();
   // WP-B — prefer what the AUDIT recorded, and only re-derive when it didn't.
   // The stored value is what the pipeline actually concluded at run time, so a
   // later change to the classifier can't retroactively relabel an old report;
@@ -336,7 +338,7 @@ export function GrowthMap({
                   variant="default"
                   className="font-mono tnum border-champagne-300/30 text-champagne-200"
                 >
-                  {t("report.potentialBand").replace("{band}", rank.band)}
+                  {t("report.potentialBand").replace("{band}", bandLabel(rank.bandUsd, rank.band))}
                 </Badge>
               ) : (
                 <Badge variant="default" className="font-mono tnum">
