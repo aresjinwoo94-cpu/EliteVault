@@ -9,14 +9,15 @@ import { Badge } from "@/components/ui/badge";
 import { DataPill } from "@/components/ui/data-pill";
 import { PLANS, type Interval } from "@/lib/stripe/plans";
 import { cn } from "@/lib/utils";
-import { formatPrice } from "@/lib/i18n/format";
+import { PlanPrice, PlanPriceNote, usePlanMoney } from "@/components/billing/plan-money";
 import { localizePlan } from "@/lib/i18n/plan-text";
 import { fill } from "@/lib/i18n/lookup";
 import { preloadStripe } from "@/lib/stripe/client";
 import { useT } from "@/components/i18n/locale-provider";
 
 export function Pricing() {
-  const { t, locale } = useT();
+  const { t } = useT();
+  const pm = usePlanMoney();
   const plans = Object.values(PLANS).map((p) => localizePlan(p, t));
   // Show monthly pricing first — it's the lower sticker number and the
   // honest default. The toggle still switches to yearly (with the 20% save).
@@ -89,14 +90,20 @@ export function Pricing() {
                 <p className="mt-1 text-sm text-white/40">{plan.tagline}</p>
               </div>
 
-              <div className="mt-6 flex items-baseline gap-1">
-                <span className="font-mono tabular-nums text-5xl tracking-tight text-signal-300">
-                  {plan.price[interval] === 0
-                    ? t("pricing.priceFree")
-                    : formatPrice(plan.price[interval], locale)}
-                </span>
+              <div className="mt-6 flex flex-wrap items-baseline gap-x-1 gap-y-0.5">
+                {plan.price[interval] === 0 ? (
+                  <span className="font-mono tabular-nums text-5xl tracking-tight text-signal-300">
+                    {t("pricing.priceFree")}
+                  </span>
+                ) : (
+                  <PlanPrice
+                    usd={plan.price[interval]}
+                    bigClassName="font-mono tabular-nums text-5xl tracking-tight text-signal-300"
+                    longBigClassName="font-mono tabular-nums text-3xl tracking-tight text-signal-300"
+                  />
+                )}
                 {plan.price[interval] > 0 && (
-                  <span className="font-mono text-sm text-white/40">
+                  <span className="whitespace-nowrap font-mono text-sm text-white/40">
                     / {interval === "month" ? t("pricing.perMonth") : t("pricing.perYear")}
                   </span>
                 )}
@@ -104,8 +111,8 @@ export function Pricing() {
               {interval === "year" && plan.price.year > 0 && (
                 <p className="mt-1.5 text-xs text-success">
                   {fill(t("pricing.billedYearlyFull"), {
-                    monthly: formatPrice(Math.round(plan.price.year / 12), locale),
-                    save: formatPrice(plan.price.month * 12 - plan.price.year, locale),
+                    monthly: pm.monthlyOf(plan.price.year),
+                    save: pm.saving(plan.price.month * 12 - plan.price.year),
                   })}
                 </p>
               )}
@@ -137,10 +144,11 @@ export function Pricing() {
                     : fill(t("pricing.ctaGet"), { plan: plan.name })}
                 </Button>
               </Link>
-              {plan.id === "pro" && (
-                <p className="mt-3 text-center text-xs text-white/35">
-                  {t("pricing.localCurrencyNote")}
-                </p>
+              {plan.price.month > 0 && (
+                <PlanPriceNote
+                  className="mt-3 text-center text-xs text-white/35"
+                  usdNoteKey={plan.id === "pro" ? "pricing.localCurrencyNote" : undefined}
+                />
               )}
 
               {/* Only what the plan includes: a column of greyed-out ✗ makes

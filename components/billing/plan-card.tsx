@@ -6,7 +6,7 @@ import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { formatPrice } from "@/lib/i18n/format";
+import { PlanPrice, PlanPriceNote, usePlanMoney } from "@/components/billing/plan-money";
 import { localizePlan } from "@/lib/i18n/plan-text";
 import { toast } from "sonner";
 import { useT } from "@/components/i18n/locale-provider";
@@ -24,7 +24,8 @@ export function PlanCard({
   hasExistingSub: boolean;
 }) {
   const router = useRouter();
-  const { t, locale } = useT();
+  const { t } = useT();
+  const pm = usePlanMoney();
   const plan = localizePlan(basePlan, t);
   // Default to MONTHLY — the lower entry price ($19/$29) converts far better
   // than leading with the annual upfront charge. The toggle still lets users
@@ -125,11 +126,9 @@ export function PlanCard({
               </button>
             ))}
           </div>
-          <div className="mt-3 flex items-baseline gap-1">
-            <span className="font-serif text-4xl">
-              {formatPrice(plan.price[interval], locale)}
-            </span>
-            <span className="text-xs text-white/40">
+          <div className="mt-3 flex flex-wrap items-baseline gap-x-1 gap-y-0.5">
+            <PlanPrice usd={plan.price[interval]} bigClassName="font-serif text-4xl" longBigClassName="font-serif text-2xl" />
+            <span className="whitespace-nowrap text-xs text-white/40">
               / {interval === "month" ? t("billing.perMo") : t("billing.perYr")}
             </span>
           </div>
@@ -138,19 +137,17 @@ export function PlanCard({
               {t("billing.billedYearly")
                 .replace(
                   "{monthly}",
-                  formatPrice(Math.round(plan.price.year / 12), locale),
+                  pm.monthlyOf(plan.price.year),
                 )
                 .replace(
                   "{save}",
-                  formatPrice(plan.price.month * 12 - plan.price.year, locale),
+                  pm.saving(plan.price.month * 12 - plan.price.year),
                 )}
             </p>
           )}
           {/* USD is the reference price; Stripe Adaptive Pricing charges the
               buyer in their local currency at checkout. */}
-          <p className="mt-1 text-[11px] text-white/40">
-            {t("pricing.localCurrencyNote")}
-          </p>
+          <PlanPriceNote className="mt-1 text-[11px] text-white/40" usdNoteKey="pricing.localCurrencyNote" />
         </>
       ) : (
         <div className="mt-3">

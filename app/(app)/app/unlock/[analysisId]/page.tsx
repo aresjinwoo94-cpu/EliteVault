@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, Check, Lock } from "lucide-react";
 import { getUserResult } from "@/lib/supabase/server";
-import { getLocale, getT } from "@/lib/i18n/server";
+import { getLocale, getMoneyT } from "@/lib/i18n/server";
 import { reportUnlockEnabledFor } from "@/lib/flags";
 import { checkUnlockEligibility } from "@/lib/unlocks/guard";
 import { createReportUnlockSession } from "@/lib/stripe/report-unlock-session";
@@ -25,7 +25,7 @@ export default async function UnlockPage({ params }: { params: Promise<{ analysi
     },
     locale,
     { t },
-  ] = await Promise.all([getUserResult(), getLocale(), getT()]);
+  ] = await Promise.all([getUserResult(), getLocale(), getMoneyT()]);
   if (!user) redirect(`/sign-in?next=${encodeURIComponent(`/app/unlock/${analysisId}`)}`);
   // 404 unless the flag is on for THIS viewer (global flag, or the production test list).
   if (!reportUnlockEnabledFor(user.email)) notFound();

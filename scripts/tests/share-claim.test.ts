@@ -160,7 +160,7 @@ test("claim copy has no 'free' and no score, the keys match in EN/ES, and the $7
     assert.doesNotMatch(en[k], /\bfree\b|\d\s*\/\s*100/i, k);
     assert.doesNotMatch(es[k], /\bfree\b|gratis|\d\s*\/\s*100/i, k);
   }
-  assert.match(en.claimBody, /\$7/);
+  assert.match(en.claimBody, /{price:7}/);
   assert.doesNotMatch(en.claimBodyNoUnlock, /\$7/);
 });
 

@@ -194,8 +194,8 @@ test("locked views are names and counts: they take no audit content, so none can
   const byPos = Object.fromEntries(items.map((i) => [i.position, i.plan]));
   assert.match(byPos.locked_scenarios, /Pro/);
   assert.match(byPos.locked_scenarios, /Scale/);
-  assert.match(byPos.locked_fixes, /\$7/);
-  assert.match(byPos.locked_persona, /\$7/);
+  assert.match(byPos.locked_fixes, /{price:7}/);
+  assert.match(byPos.locked_persona, /{price:7}/);
 });
 
 test("the locked blocks and the public RPC row never touch top_fixes or the persona", () => {
@@ -303,9 +303,9 @@ test("the $7 sentences only appear when the unlock is on", () => {
   const en = JSON.parse(read("lib/i18n/dict/ui-en.json")) as Record<string, Record<string, string>>;
   const t = (k: string) => en.sharedPage[k.replace("sharedPage.", "")] ?? k;
   const off = lockedViewItems(t, 3, false).map((i) => i.plan).join(" ");
-  assert.doesNotMatch(off, /\$7/);
+  assert.doesNotMatch(off, /\$7|\{price:7\}/);
   const on = lockedViewItems(t, 3, true).map((i) => i.plan).join(" ");
-  assert.match(on, /\$7/);
+  assert.match(on, /{price:7}/);
   assert.match(code("app/s/[slug]/page.tsx"), /unlockOn=\{unlockOn\}/);
   const es = JSON.parse(read("lib/i18n/dict/ui-es.json")).sharedPage;
   assert.deepEqual(Object.keys(en.sharedPage).sort(), Object.keys(es).sort());

@@ -3,6 +3,7 @@ import { QA_LOCALE_COOKIE, defaultLocale, isLocale, type Locale } from "./config
 import { detectLocale } from "./detect";
 import { autoLocaleEnabled } from "@/lib/flags";
 import { translator } from "./messages";
+import { getCurrencyContext } from "@/lib/currency/server";
 
 /** Supabase auth cookie present (chunked or not) — cheap "might be logged in". */
 const AUTH_COOKIE = /^sb-.+-auth-token/;
@@ -70,4 +71,17 @@ export async function getT(): Promise<{
 }> {
   const locale = await getLocale();
   return { locale, t: translator(locale) };
+}
+
+/**
+ * Like getT(), but money tokens ({price:19}, {est:…}) resolve to the visitor's
+ * currency. Only for pages that render them; getT() stays USD and network-free
+ * (it is also used by server actions and API routes).
+ */
+export async function getMoneyT(): Promise<{
+  locale: Locale;
+  t: (path: string) => string;
+}> {
+  const [locale, money] = await Promise.all([getLocale(), getCurrencyContext()]);
+  return { locale, t: translator(locale, money) };
 }

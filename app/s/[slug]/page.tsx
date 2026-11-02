@@ -23,7 +23,7 @@ import {
   shareRobots,
 } from "@/lib/analyzer/share-policy";
 import type { Annotation } from "@/lib/supabase/types";
-import { getT } from "@/lib/i18n/server";
+import { getMoneyT, getT } from "@/lib/i18n/server";
 import { fill } from "@/lib/i18n/lookup";
 import { reportUnlockEnabled } from "@/lib/flags";
 import { ShareClaimBlock } from "@/components/share/share-claim-block";
@@ -164,7 +164,7 @@ async function SharedAuditPageInner({
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ c?: string; claim?: string }>;
 }) {
-  const { t } = await getT();
+  const { t } = await getMoneyT();
   const { slug } = await params;
   const sp = await searchParams;
   const audit = await loadSharedAudit(slug);
