@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { fallbackRates } from "@/lib/currency/rates";
+import { SIM_AOV_MAX_USD, SIM_BUDGET_MAX_USD } from "@/lib/currency/sim";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { inngest } from "@/inngest/client";
@@ -47,11 +49,11 @@ const TriggerSimulationInput = z.object({
   aovUsd: z
     .number({ invalid_type_error: "metaSimErr.aovNumber" })
     .positive("metaSimErr.aovPositive")
-    .max(10_000, "metaSimErr.aovMax"),
+    .max(SIM_AOV_MAX_USD, "metaSimErr.aovMax"),
   dailyBudgetUsd: z
     .number({ invalid_type_error: "metaSimErr.budgetNumber" })
     .positive("metaSimErr.budgetPositive")
-    .max(50_000, "metaSimErr.budgetMax"),
+    .max(SIM_BUDGET_MAX_USD, "metaSimErr.budgetMax"),
   productMarginPct: z
     .number()
     .min(0)
@@ -153,8 +155,17 @@ export async function triggerSimulation(
 
   // Pin how the numbers are SHOWN (migration 0048). USD visitors write nothing (NULL = USD, as before).
   const { displayCurrency, displayFxRate } = parsed.data;
+  // The client sends the rate it displayed; keep only one in a plausible band around the committed snapshot
+  // (no network here), so a forged call can't make a shared page show absurd figures.
+  const known = displayCurrency ? fallbackRates[displayCurrency] : undefined;
   const pinDisplay =
-    !!displayCurrency && displayCurrency !== "USD" && typeof displayFxRate === "number" && displayFxRate > 0;
+    !!displayCurrency &&
+    displayCurrency !== "USD" &&
+    typeof displayFxRate === "number" &&
+    displayFxRate > 0 &&
+    !!known &&
+    displayFxRate / known > 0.4 &&
+    displayFxRate / known < 2.5;
   const baseRow = {
     analysis_id: parsed.data.analysisId,
     user_id: user.id,

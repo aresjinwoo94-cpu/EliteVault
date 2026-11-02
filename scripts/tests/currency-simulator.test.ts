@@ -113,8 +113,10 @@ test("wiring: every read path uses the tolerant select; the action pins display 
   }
   const action = read("app/actions/meta-simulator.ts");
   assert.match(action, /displayCurrency !== "USD"/);
-  assert.match(action, /\.max\(10_000/);
-  assert.match(action, /\.max\(50_000/);
+  assert.match(action, /\.max\(SIM_AOV_MAX_USD/); // one constant for client pre-check and server limit
+  assert.match(action, /\.max\(SIM_BUDGET_MAX_USD/);
+  assert.match(action, /displayFxRate \/ known > 0\.4/); // a forged rate is not pinned
+  assert.match(action, /fallbackRates\[displayCurrency\]/);
   assert.equal(SIM_AOV_MAX_USD, 10_000);
   assert.equal(SIM_BUDGET_MAX_USD, 50_000);
 });
@@ -157,4 +159,23 @@ test("ROAS / CTR / CVR / purchases are ratios and counts: no currency formatting
   assert.match(opt, /tg\.roas\.toFixed\(1\)\}x/);
   assert.match(opt, /tg\.ctr \* 100\)\.toFixed\(2\)\}%/);
   assert.match(opt, /tg\.cvr \* 100\)\.toFixed\(2\)\}%/);
+});
+
+test("labels never read '(USD) (MXN)'; the plan steps and projection carry no hardcoded $", () => {
+  const empty = read("components/analyzer/simulator-empty.tsx");
+  assert.ok(empty.includes('t("simulator.aov").replace('), "AOV label strips the dictionary USD suffix before adding the local code");
+  assert.ok(empty.includes('t("simulator.budget").replace('), "budget label strips the dictionary USD suffix before adding the local code");
+  for (const f of ["lib/i18n/dict/ui-en.json", "lib/i18n/dict/ui-es.json"]) {
+    const d = JSON.parse(read(f)) as { optimizer: Record<string, string>; simulator: Record<string, string> };
+    assert.doesNotMatch(d.optimizer.stepLine, /\$/, f);
+    assert.doesNotMatch(d.simulator.projLine, /\$/, f);
+    assert.doesNotMatch(d.optimizer.roasLine, /\$/, f);
+  }
+  assert.match(read("components/analyzer/meta-ads-optimizer.tsx"), /whole\(step\.budget\)/);
+});
+
+test("a typed local amount reads back unchanged in the projection line (no 999.94)", () => {
+  const mxn = { code: "MXN", rate: 17.3, locale: "en" as const };
+  const usd = localToUsd(1000, mxn.rate);
+  assert.equal(formatMoney(usd, mxn, { kind: "metric" }), "MX$1,000");
 });

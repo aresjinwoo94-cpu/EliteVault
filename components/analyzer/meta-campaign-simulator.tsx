@@ -241,7 +241,8 @@ export function MetaCampaignSimulator({
           </div>
           <p className="mt-1 text-sm text-white/55">
             {fill(t("simulator.projLine"), {
-              aov: money(sim.aov_usd, Number.isInteger(sim.aov_usd) ? "metric" : "small"),
+              // cents only for USD: a typed 1000 MXN must read back as 1,000, not 999.94
+              aov: money(sim.aov_usd, display.code === "USD" && !Number.isInteger(sim.aov_usd) ? "small" : "metric"),
               budget: money(sim.daily_budget_usd, Number.isInteger(sim.daily_budget_usd) ? "metric" : "small"),
             })}
           </p>

@@ -615,7 +615,7 @@
     "cta": "CTA:",
     "testPlan": "Testing plan",
     "caveats": "Honest caveats",
-    "stepLine": "${budget}/day · {days} days",
+    "stepLine": "{budget}/day · {days} days",
     "fmtImage": "Single image",
     "fmtCarousel": "Carousel",
     "fmtUgc": "UGC video",

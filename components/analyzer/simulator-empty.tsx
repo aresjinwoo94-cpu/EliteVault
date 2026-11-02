@@ -194,7 +194,7 @@ export function SimulatorEmpty({
           <form onSubmit={onSubmit} className="mt-6 grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="aov" className="text-xs uppercase tracking-widest text-white/40">
-                {t("simulator.aov")}{local ? ` (${money.code})` : ""}
+                {local ? `${t("simulator.aov").replace(/s*(USD)s*$/, "")} (${money.code})` : t("simulator.aov")}
               </Label>
               <Input
                 id="aov"
@@ -216,7 +216,7 @@ export function SimulatorEmpty({
 
             <div className="space-y-1.5">
               <Label htmlFor="budget" className="text-xs uppercase tracking-widest text-white/40">
-                {t("simulator.budget")}{local ? ` (${money.code})` : ""}
+                {local ? `${t("simulator.budget").replace(/s*(USD)s*$/, "")} (${money.code})` : t("simulator.budget")}
               </Label>
               <Input
                 id="budget"

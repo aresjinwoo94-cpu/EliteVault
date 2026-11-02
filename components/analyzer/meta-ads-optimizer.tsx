@@ -191,7 +191,7 @@ export function MetaAdsOptimizer({ meta }: { meta: MetaAdsRecommendation }) {
               <div className="min-w-0 flex-1">
                 <p className="text-sm text-white">{step.step}</p>
                 <p className="text-xs text-white/40 mt-0.5">
-                  {fill(t("optimizer.stepLine"), { budget: step.budget, days: step.days })}
+                  {fill(t("optimizer.stepLine"), { budget: Number.isInteger(step.budget) ? whole(step.budget) : small(step.budget), days: step.days })}
                 </p>
               </div>
             </li>
