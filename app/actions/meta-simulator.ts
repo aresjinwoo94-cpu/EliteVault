@@ -64,6 +64,9 @@ const TriggerSimulationInput = z.object({
   productType: z.enum(PRODUCT_TYPE_VALUES).optional().nullable(),
   competitiveness: z.enum(COMPETITIVENESS_VALUES).optional().nullable(),
   notes: z.string().max(800).optional().nullable(),
+  // Display only (WP-4): the currency the user typed/saw. The engine stays USD.
+  displayCurrency: z.string().regex(/^[A-Z]{3}$/).optional().nullable(),
+  displayFxRate: z.number().positive().max(1e7).optional().nullable(),
 });
 
 export type TriggerSimulationResult =
@@ -148,19 +151,28 @@ export async function triggerSimulation(
     .filter(Boolean)
     .join("\n");
 
-  const { data: row, error: insErr } = await supabase
+  // Pin how the numbers are SHOWN (migration 0048). USD visitors write nothing (NULL = USD, as before).
+  const { displayCurrency, displayFxRate } = parsed.data;
+  const pinDisplay =
+    !!displayCurrency && displayCurrency !== "USD" && typeof displayFxRate === "number" && displayFxRate > 0;
+  const baseRow = {
+    analysis_id: parsed.data.analysisId,
+    user_id: user.id,
+    aov_usd: parsed.data.aovUsd,
+    daily_budget_usd: parsed.data.dailyBudgetUsd,
+    product_margin_pct: parsed.data.productMarginPct ?? null,
+    notes: persistedNotes,
+    status: "queued" as const,
+  };
+  let { data: row, error: insErr } = await supabase
     .from("meta_simulations")
-    .insert({
-      analysis_id: parsed.data.analysisId,
-      user_id: user.id,
-      aov_usd: parsed.data.aovUsd,
-      daily_budget_usd: parsed.data.dailyBudgetUsd,
-      product_margin_pct: parsed.data.productMarginPct ?? null,
-      notes: persistedNotes,
-      status: "queued",
-    })
+    .insert((pinDisplay ? { ...baseRow, display_currency: displayCurrency, display_fx_rate: displayFxRate } : baseRow) as never)
     .select("id")
     .single();
+  // Deployed before migration 0048 is applied: retry without the display columns (shown in USD) instead of failing the run.
+  if (insErr && pinDisplay && /display_(currency|fx_rate)/.test(insErr.message ?? "")) {
+    ({ data: row, error: insErr } = await supabase.from("meta_simulations").insert(baseRow as never).select("id").single());
+  }
   if (insErr || !row) {
     return {
       ok: false,

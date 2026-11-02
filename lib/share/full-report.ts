@@ -1,4 +1,5 @@
 import "server-only";
+import { withDisplayColumns } from "@/lib/meta/sim-columns";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { loadNicheWinnersModule } from "@/lib/library/niche-winners";
 import { toClientAnalysis } from "@/lib/analyzer/client-payload";
@@ -37,16 +38,16 @@ export async function loadFullReportProps(slug: string): Promise<FullReportProps
     if (error || !row || !row.result) return null;
     if (row.result?.capture_blocked?.detected === true) return null;
 
-    const { data: sim } = await db
-      .from("meta_simulations")
-      .select(
-        "id, analysis_id, aov_usd, daily_budget_usd, product_margin_pct, notes, conservative, balanced, aggressive, status, error, started_at, finished_at, created_at",
-      )
-      .eq("analysis_id", row.id)
-      .eq("status", "succeeded")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const { data: sim } = await withDisplayColumns<{ data: unknown }>((columns) =>
+      db
+        .from("meta_simulations")
+        .select(columns)
+        .eq("analysis_id", row.id)
+        .eq("status", "succeeded")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    );
 
     const nicheWinners = await loadNicheWinnersModule({
       status: row.status,

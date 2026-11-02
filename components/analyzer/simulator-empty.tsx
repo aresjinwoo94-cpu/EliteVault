@@ -1,6 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useMoney } from "@/components/currency/currency-provider";
+import { formatMoney } from "@/lib/currency/format";
+import { SIM_AOV_MAX_USD, SIM_BUDGET_MAX_USD, isUsableRate, localToUsd } from "@/lib/currency/sim";
+import { fill } from "@/lib/i18n/lookup";
 import { m as motion } from "framer-motion";
 import { TrendingUp, Sparkles, AlertCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
@@ -61,6 +65,19 @@ export function SimulatorEmpty({
   planLabel?: string;
 }) {
   const { t } = useT();
+  const money = useMoney();
+  // Inputs are typed in the visitor's currency; the engine takes USD (aovUsd = local / rate).
+  const local = money.code !== "USD" && isUsableRate(money.rate);
+  const rate = local ? money.rate : 1;
+  const toUsd = (v: number) => (local ? localToUsd(v, rate) : v);
+  const usdHint = (v: string) => {
+    const n = parseFloat(v);
+    if (!local || !n || n <= 0) return null;
+    return fill(t("simulator.approxUsd"), {
+      usd: `US${formatMoney(toUsd(n), { code: "USD", rate: 1, locale: money.locale }, { kind: Number.isInteger(toUsd(n)) ? "metric" : "small" })}`,
+    });
+  };
+  const niceLocal = (usd: number) => String(Number((usd * rate).toPrecision(2)));
   const [aov, setAov] = useState("");
   const [budget, setBudget] = useState("");
   const [margin, setMargin] = useState("");
@@ -73,8 +90,8 @@ export function SimulatorEmpty({
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const aovNum = parseFloat(aov);
-    const budgetNum = parseFloat(budget);
+    const aovNum = toUsd(parseFloat(aov));
+    const budgetNum = toUsd(parseFloat(budget));
     const marginNum = margin.trim() === "" ? null : parseFloat(margin);
 
     if (!aovNum || aovNum <= 0) {
@@ -83,6 +100,16 @@ export function SimulatorEmpty({
     }
     if (!budgetNum || budgetNum <= 0) {
       toast.error(t("simulator.errBudget"));
+      return;
+    }
+
+    // Same limits as the server, in USD (so a local amount can't pass here and fail there).
+    if (aovNum > SIM_AOV_MAX_USD) {
+      toast.error(t("simulator.errAovCap"));
+      return;
+    }
+    if (budgetNum > SIM_BUDGET_MAX_USD) {
+      toast.error(t("simulator.errBudgetCap"));
       return;
     }
 
@@ -96,6 +123,9 @@ export function SimulatorEmpty({
         productType,
         competitiveness,
         notes: notes.trim() || null,
+        // Display only: the currency typed and shown (USD visitors send nothing, as before).
+        displayCurrency: local ? money.code : null,
+        displayFxRate: local ? rate : null,
       });
       if (!res.ok) {
         toast.error(res.error);
@@ -164,13 +194,13 @@ export function SimulatorEmpty({
           <form onSubmit={onSubmit} className="mt-6 grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="aov" className="text-xs uppercase tracking-widest text-white/40">
-                {t("simulator.aov")}
+                {t("simulator.aov")}{local ? ` (${money.code})` : ""}
               </Label>
               <Input
                 id="aov"
                 type="number"
                 inputMode="decimal"
-                placeholder="45"
+                placeholder={local ? niceLocal(45) : "45"}
                 value={aov}
                 onChange={(e) => setAov(e.target.value)}
                 step="0.01"
@@ -181,17 +211,18 @@ export function SimulatorEmpty({
               <p className="text-[11px] text-white/40">
                 {t("simulator.aovHint")}
               </p>
+              {usdHint(aov) && <p className="text-[11px] text-champagne-400/80">{usdHint(aov)}</p>}
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="budget" className="text-xs uppercase tracking-widest text-white/40">
-                {t("simulator.budget")}
+                {t("simulator.budget")}{local ? ` (${money.code})` : ""}
               </Label>
               <Input
                 id="budget"
                 type="number"
                 inputMode="decimal"
-                placeholder="50"
+                placeholder={local ? niceLocal(50) : "50"}
                 value={budget}
                 onChange={(e) => setBudget(e.target.value)}
                 step="1"
@@ -202,6 +233,7 @@ export function SimulatorEmpty({
               <p className="text-[11px] text-white/40">
                 {t("simulator.budgetHint")}
               </p>
+              {usdHint(budget) && <p className="text-[11px] text-champagne-400/80">{usdHint(budget)}</p>}
             </div>
 
             <div className="space-y-1.5">

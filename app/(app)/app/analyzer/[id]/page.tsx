@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { withDisplayColumns } from "@/lib/meta/sim-columns";
 import { createSupabaseServerClient , getUserResult } from "@/lib/supabase/server";
 import { AnalysisView } from "@/components/analyzer/analysis-view";
 import { PLANS } from "@/lib/stripe/plans";
@@ -102,16 +103,16 @@ export default async function AnalysisPage({
   let metaUsage: { limit: number | null; used: number } = { limit: 0, used: 0 };
   if (canRunMeta) {
     const [{ data: simRow }, usage] = await Promise.all([
-      supabase
-        .from("meta_simulations")
-        .select(
-          "id, analysis_id, aov_usd, daily_budget_usd, product_margin_pct, notes, conservative, balanced, aggressive, status, error, started_at, finished_at, created_at",
-        )
-        .eq("analysis_id", id)
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
+      withDisplayColumns((columns) =>
+        supabase
+          .from("meta_simulations")
+          .select(columns)
+          .eq("analysis_id", id)
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ),
       getMetaRunUsage(user.id),
     ]);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useSimMoney } from "@/components/analyzer/sim-money";
 import type { SimulationDay } from "@/lib/supabase/types";
 import { useT } from "@/components/i18n/locale-provider";
 import { fill } from "@/lib/i18n/lookup";
@@ -20,6 +21,7 @@ import { fill } from "@/lib/i18n/lookup";
  */
 export function SimulatorChart({ days }: { days: SimulationDay[] }) {
   const { t } = useT();
+  const sim = useSimMoney();
   // SVG viewBox: 0..600 wide, 0..200 tall, with 30px padding for labels.
   const W = 600;
   const H = 200;
@@ -61,7 +63,8 @@ export function SimulatorChart({ days }: { days: SimulationDay[] }) {
 
       const yLabels = gridLines.map((g) => ({
         y: g.y,
-        label: `$${g.label.toLocaleString()}`,
+        // Axis labels are short in other currencies (COP 1,234,567 would not fit); USD stays as it was.
+        label: sim.fmt(g.label, "metric", sim.code !== "USD"),
       }));
 
       return {
@@ -73,7 +76,7 @@ export function SimulatorChart({ days }: { days: SimulationDay[] }) {
         yLabels,
         maxY: max,
       };
-    }, [days]);
+    }, [days, sim]);
 
   return (
     <div className="w-full">

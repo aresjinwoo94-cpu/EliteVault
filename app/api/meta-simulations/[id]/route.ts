@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withDisplayColumns } from "@/lib/meta/sim-columns";
 import {
   createSupabaseServerClient,
   createSupabaseServiceClient,
@@ -34,14 +35,14 @@ export async function GET(
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const { data, error } = await supabase
-    .from("meta_simulations")
-    .select(
-      "id, analysis_id, aov_usd, daily_budget_usd, product_margin_pct, notes, conservative, balanced, aggressive, status, error, started_at, finished_at, created_at",
-    )
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .single();
+  const { data, error } = await withDisplayColumns((columns) =>
+    supabase
+      .from("meta_simulations")
+      .select(columns)
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single(),
+  );
 
   if (error || !data) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });

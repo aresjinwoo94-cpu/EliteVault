@@ -66,9 +66,10 @@ for (const locale of ["en", "es"] as const) {
     assert.equal((t.match(new RegExp(`↓ ${m.optimizer.lowerBetter}`, "g")) ?? []).length, 2, "CPC and CPM: lower");
     assert.equal((t.match(new RegExp(`↑ ${m.optimizer.higherBetter}`, "g")) ?? []).length, 3, "CTR, CVR, ROAS: higher");
     // the ROAS line is filled with the REAL target (1.6x gives $1.60) and the values themselves are unchanged
-    assert.ok(t.includes(m.optimizer.roasLine.replace("{x}", "1.6").replace("{usd}", "1.60")));
+    // (USD visitor: "per $1 spent … $1.60 back" — word for word what it said before the currency work.)
+    assert.ok(t.includes(m.optimizer.roasLine.replace("{x}", "1.6").replace("{one}", () => "$1").replace("{back}", () => "$1.60")));
     assert.ok(t.includes("1.6x") && t.includes("$1.20") && t.includes("1.50%") && t.includes("2.10%"));
-    assert.ok(!t.includes("{x}") && !t.includes("{usd}"));
+    assert.ok(!t.includes("{x}") && !t.includes("{one}") && !t.includes("{back}") && !t.includes("{usd}"));
   });
 
   test(`[${locale}] the locked preview uses the same clear names`, () => {
@@ -86,7 +87,7 @@ test("no top-buyer / bad-creative wording left in the UI copy (EN + ES)", () => 
 test("presentation only: numbers still come from the untouched engine, no AI call, no network", () => {
   assert.match(read("components/analyzer/conversion-gauges.tsx"), /conversionScenarioBands\(score, niche\)/);
   const src = read("components/analyzer/meta-ads-optimizer.tsx");
-  assert.match(src, /tg\.cpc\.toFixed\(2\)/);
+  assert.match(src, /small\(tg\.cpc\)/); // CPC straight from the engine target, only the currency formatting changed
   assert.doesNotMatch(src + read("components/analyzer/conversion-gauges.tsx") + read("lib/analyzer/band-copy.ts"), /generate\(|gemini|fetch\(/i);
 });
 
