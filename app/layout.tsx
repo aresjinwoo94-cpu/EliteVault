@@ -10,6 +10,8 @@ import { socialUrls } from "@/lib/company";
 import { getLocale } from "@/lib/i18n/server";
 import { clientMessages } from "@/lib/i18n/messages";
 import { LocaleProvider } from "@/components/i18n/locale-provider";
+import { getCurrencyContext } from "@/lib/currency/server";
+import { CurrencyProvider } from "@/components/currency/currency-provider";
 import { MotionProvider } from "@/components/motion/lazy-motion-provider";
 import "./globals.css";
 
@@ -121,8 +123,11 @@ export default async function RootLayout({
   // Server-side check: if the current request is from the developer
   // (email in INTERNAL_EMAILS env), the gate suppresses ALL analytics
   // and sets a localStorage flag that persists even after logout.
-  const isInternal = await isInternalRequest();
-  const locale = await getLocale();
+  const [isInternal, locale, currency] = await Promise.all([
+    isInternalRequest(),
+    getLocale(),
+    getCurrencyContext(),
+  ]);
 
   return (
     <html lang={locale} className={`${fontsVariables} dark`} suppressHydrationWarning>
@@ -144,6 +149,7 @@ export default async function RootLayout({
             Respeta el mismo opt-out interno que AnalyticsGate. */}
         <PageTracker isInternal={isInternal} />
         <LocaleProvider locale={locale} messages={clientMessages(locale)}>
+        <CurrencyProvider value={currency}>
           <AnalyticsGate isInternal={isInternal}>
             <MotionProvider>
               <TooltipProvider delayDuration={150}>
@@ -156,6 +162,7 @@ export default async function RootLayout({
               always offers "talk to a human" → /support/contact. Inside the
               provider so its UI text is translated. */}
           <SupportChatLazy />
+        </CurrencyProvider>
         </LocaleProvider>
       </body>
     </html>
