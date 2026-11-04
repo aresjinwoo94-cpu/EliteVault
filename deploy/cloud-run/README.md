@@ -12,10 +12,12 @@ Desplegar con él dejaría producción cobrando en modo de prueba. Los valores r
 Vercel → Settings → Environment Variables (Production) y en los paneles de Stripe / Inngest / Supabase / Google AI Studio.
 Las variables que Vercel marcó como *Sensitive* no se pueden volver a leer: cópialas del proveedor o genera una nueva.
 
+## Atajo: asistente interactivo
+`bash deploy/cloud-run/guided.sh` te pregunta cada dato (con dónde encontrarlo), escribe los archivos y despliega. Los pasos 1 y 2 de abajo son la versión manual.
+
 ## 1. Preparar los dos archivos (en Cloud Shell, no en tu PC)
 1. Abre https://console.cloud.google.com/ con el proyecto `elitevault-shopify` y pulsa **Activar Cloud Shell**.
-2. `git clone https://github.com/aresjinwoo94-cpu/EliteVault.git && cd EliteVault/elitevault && git checkout chore/cloud-run`
-   (si el repo no tiene la carpeta `elitevault`, entra en la raíz).
+2. `git clone https://github.com/aresjinwoo94-cpu/EliteVault.git && cd EliteVault && git checkout chore/cloud-run`
 3. `cp deploy/cloud-run/.env.build.example deploy/cloud-run/.env.build` y rellénalo (`nano`). Son valores públicos.
    `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` debe empezar por `pk_live_`.
 4. `cp deploy/cloud-run/.env.runtime.example deploy/cloud-run/.env.runtime` y rellénalo con los valores de **Production**.
