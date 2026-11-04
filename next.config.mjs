@@ -1,6 +1,13 @@
+import { fileURLToPath } from "node:url";
+
 /** @type {import('next').NextConfig} */
 const config = {
   reactStrictMode: true,
+  // Self-contained server for the container build (deploy/cloud-run). Off by default so
+  // Vercel / `npm run build` output is unchanged.
+  ...(process.env.NEXT_OUTPUT === "standalone"
+    ? { output: "standalone", outputFileTracingRoot: fileURLToPath(new URL(".", import.meta.url)) }
+    : {}),
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**" },

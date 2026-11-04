@@ -25,3 +25,7 @@ scripts/inngest-dev.cmd
 npm-debug.log*
 
 .vercel
+
+# Cloud Run deploy secrets (never commit)
+deploy/cloud-run/.env.build
+deploy/cloud-run/.env.runtime
