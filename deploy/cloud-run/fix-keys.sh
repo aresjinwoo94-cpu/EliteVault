@@ -85,4 +85,6 @@ if [ "$ANON_BAD" -eq 1 ]; then
     else echo "   ✗ Rechazada por Supabase. Vuelve a pegarla."; fi
   done
 fi
+say "Acelerando los arranques en frío (gratis)…"
+gcloud run services update "$SERVICE" --project "$PROJECT" --region "$REGION" --cpu-boost >/dev/null 2>&1 && echo "   ✓ cpu-boost activado"
 say "Listo. Vuelve a probar la web y avísame."

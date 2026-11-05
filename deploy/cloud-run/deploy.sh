@@ -37,7 +37,7 @@ gcloud run deploy "$SERVICE" --image "$IMAGE" --region "$REGION" \
   --allow-unauthenticated --port 8080 \
   --cpu 1 --memory 1Gi --timeout 300 --concurrency 40 \
   --min-instances 0 --max-instances 3 \
-  --cpu-throttling \
+  --cpu-throttling --cpu-boost \
   --env-vars-file "$DIR/.env.runtime"
 
 echo
