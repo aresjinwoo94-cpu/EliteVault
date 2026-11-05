@@ -71,12 +71,12 @@ have "$RUNTIME" INNGEST_SERVE_HOST || printf 'INNGEST_SERVE_HOST: "https://elite
 
 say "4/6  IA"
 have "$RUNTIME" AI_PROVIDER || printf 'AI_PROVIDER: "gemini"\n' >> "$RUNTIME"
-ask GEMINI_API_KEY "aistudio.google.com → Get API key (Vercel no deja volver a ver la que puso)." secret required
-ask GEMINI_API_KEY_JOBS "Segunda clave para trabajos en segundo plano (Enter si no tienes)." secret
+ask GEMINI_API_KEY "aistudio.google.com → Get API key. Empieza por AIza y mide 39 caracteres (Vercel no deja volver a ver la que puso)." secret required "AIza"
+ask GEMINI_API_KEY_JOBS "Segunda clave de Google AI Studio para trabajos en segundo plano, también AIza... (Enter si no tienes)." secret "" "AIza"
 ask GEMINI_MODEL "Vercel → Environment Variables → GEMINI_MODEL (Enter si no existe)."
 ask GEMINI_MODEL_FAST "Idem GEMINI_MODEL_FAST."
 ask GEMINI_MODEL_STABLE "Idem GEMINI_MODEL_STABLE."
-ask ANTHROPIC_API_KEY "console.anthropic.com (Enter si no lo usas)." secret
+ask ANTHROPIC_API_KEY "console.anthropic.com → API keys, empieza por sk-ant- (Enter si no lo usas)." secret "" "sk-ant-"
 
 say "5/6  Capturas, correo y avisos"
 ask SCREENSHOTONE_ACCESS_KEY "screenshotone.com → Dashboard → Access key." secret required
