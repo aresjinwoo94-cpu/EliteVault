@@ -7,8 +7,14 @@ set -uo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd)"
 BUILD="$DIR/.env.build"
 RUNTIME="$DIR/.env.runtime"
-: > "$BUILD"
-: > "$RUNTIME"
+# NO se borran: si se corta, vuelve a ejecutar este script y continúa donde iba.
+touch "$BUILD" "$RUNTIME"
+have() { grep -q "^$2[:=]" "$1"; }
+
+printf '\n\033[1mAntes de empezar\033[0m\n'
+echo "   • Pega con CLIC DERECHO → Pegar (o Ctrl+Shift+V). NO uses Ctrl+C ni Ctrl+Z: cierran o pausan el asistente."
+echo "   • En las preguntas secretas no se ve nada al pegar. Es normal: pulsa Enter y verás '✓ recibido'."
+echo "   • Si se corta, vuelve a ejecutar: bash deploy/cloud-run/guided.sh  (continúa donde lo dejaste)."
 
 say()  { printf '\n\033[1m%s\033[0m\n' "$*"; }
 note() { printf '   \033[2m%s\033[0m\n' "$*"; }
@@ -16,6 +22,7 @@ note() { printf '   \033[2m%s\033[0m\n' "$*"; }
 # ask_build KEY "dónde se encuentra" [default]
 ask_build() {
   local key="$1" hint="$2" def="${3:-}" val
+  if have "$BUILD" "$key"; then echo "   ✓ $key (ya lo tenías)"; return 0; fi
   note "$hint"
   read -r -p "   $key${def:+ [$def]}: " val
   val="${val:-$def}"
@@ -25,6 +32,7 @@ ask_build() {
 # ask KEY "dónde se encuentra" secret|plain [required|optional] [prefijo-esperado]
 ask() {
   local key="$1" hint="$2" kind="${3:-plain}" req="${4:-optional}" prefix="${5:-}" val
+  if have "$RUNTIME" "$key"; then echo "   ✓ $key (ya lo tenías)"; return 0; fi
   while true; do
     note "$hint"
     if [ "$kind" = secret ]; then read -r -s -p "   $key (se oculta al pegar; pulsa Enter): " val; echo; else read -r -p "   $key: " val; fi
@@ -33,6 +41,7 @@ ask() {
     break
   done
   [ -z "$val" ] && return 0
+  echo "   ✓ recibido (${#val} caracteres)"
   val="${val//\\/\\\\}"; val="${val//\"/\\\"}"
   printf '%s: "%s"\n' "$key" "$val" >> "$RUNTIME"
 }
@@ -58,10 +67,10 @@ ask STRIPE_PRICE_SCALE_YEARLY "Scale anual (price_...)." plain required "price_"
 say "3/6  Inngest (tareas en segundo plano: los análisis)"
 ask INNGEST_EVENT_KEY "app.inngest.com → Manage → Event Keys." secret required
 ask INNGEST_SIGNING_KEY "app.inngest.com → Manage → Signing Key (signkey-prod-...)." secret required
-printf 'INNGEST_SERVE_HOST: "https://elitevaultapp.com"\n' >> "$RUNTIME"
+have "$RUNTIME" INNGEST_SERVE_HOST || printf 'INNGEST_SERVE_HOST: "https://elitevaultapp.com"\n' >> "$RUNTIME"
 
 say "4/6  IA"
-printf 'AI_PROVIDER: "gemini"\n' >> "$RUNTIME"
+have "$RUNTIME" AI_PROVIDER || printf 'AI_PROVIDER: "gemini"\n' >> "$RUNTIME"
 ask GEMINI_API_KEY "aistudio.google.com → Get API key (Vercel no deja volver a ver la que puso)." secret required
 ask GEMINI_API_KEY_JOBS "Segunda clave para trabajos en segundo plano (Enter si no tienes)." secret
 ask GEMINI_MODEL "Vercel → Environment Variables → GEMINI_MODEL (Enter si no existe)."
@@ -78,8 +87,8 @@ ask MICROLINK_API_KEY "Vercel (Enter si no existe)." secret
 ask ADMIN_EMAILS "Tu correo de administrador (el que ves en Vercel)." plain required
 ask OWNER_NOTIFY_EMAIL "Correo donde recibes avisos (Enter para saltar)."
 ask SUPPORT_NOTIFY_EMAIL "Correo de soporte (Enter para saltar)."
-printf 'EMAIL_UNSUBSCRIBE_SECRET: "%s"\n' "$(head -c 24 /dev/urandom | base64 | tr -d '=+/\n')" >> "$RUNTIME"
-printf 'ANON_SESSION_SECRET: "%s"\n' "$(head -c 24 /dev/urandom | base64 | tr -d '=+/\n')" >> "$RUNTIME"
+have "$RUNTIME" EMAIL_UNSUBSCRIBE_SECRET || printf 'EMAIL_UNSUBSCRIBE_SECRET: "%s"\n' "$(head -c 24 /dev/urandom | base64 | tr -d '=+/\n')" >> "$RUNTIME"
+have "$RUNTIME" ANON_SESSION_SECRET || printf 'ANON_SESSION_SECRET: "%s"\n' "$(head -c 24 /dev/urandom | base64 | tr -d '=+/\n')" >> "$RUNTIME"
 note "EMAIL_UNSUBSCRIBE_SECRET y ANON_SESSION_SECRET se generaron nuevos (los enlaces de baja de correos viejos dejarán de valer)."
 
 say "6/6  Otras variables de Vercel (opcional)"
