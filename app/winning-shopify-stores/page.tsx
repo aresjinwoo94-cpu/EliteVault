@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGES } from "@/lib/seo/social-image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -37,6 +38,7 @@ export const metadata: Metadata = {
     description:
       "A curated library of winning ecommerce stores, filterable by niche, with image-similarity search.",
     type: "website",
+    images: OG_IMAGES,
     url: `${baseUrl}/winning-shopify-stores`,
   },
 };

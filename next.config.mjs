@@ -8,6 +8,15 @@ const config = {
   ...(process.env.NEXT_OUTPUT === "standalone"
     ? { output: "standalone", outputFileTracingRoot: fileURLToPath(new URL(".", import.meta.url)) }
     : {}),
+  // Cloud Run does not add HSTS (Vercel did). Only in the container build (NEXT_OUTPUT=standalone,
+  // set in the Dockerfile), so a Vercel deploy never gets two Strict-Transport-Security headers.
+  ...(process.env.NEXT_OUTPUT === "standalone"
+    ? {
+        async headers() {
+          return [{ source: "/:path*", headers: [{ key: "Strict-Transport-Security", value: "max-age=31536000" }] }];
+        },
+      }
+    : {}),
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**" },

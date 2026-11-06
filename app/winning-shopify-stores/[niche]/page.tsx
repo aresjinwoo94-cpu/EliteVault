@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGES } from "@/lib/seo/social-image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, TrendingUp } from "lucide-react";
@@ -56,6 +57,7 @@ export async function generateMetadata(props: {
       title: `Winning ${meta.label} Shopify Stores — EliteVault`,
       description: `Real ${meta.plural} from the EliteVault Library.`,
       type: "website",
+      images: OG_IMAGES,
       url: `${baseUrl}/winning-shopify-stores/${niche}`,
     },
   };

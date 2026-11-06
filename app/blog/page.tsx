@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGES } from "@/lib/seo/social-image";
 import Link from "next/link";
 import { ArrowRight, Clock } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/nav";
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
     description:
       "Practical, no-fluff guides on raising your store's conversion rate.",
     type: "website",
+    images: OG_IMAGES,
     url: `${baseUrl}/blog`,
   },
 };

@@ -24,6 +24,7 @@ export default function robots(): MetadataRoute.Robots {
     "/app/",
     "/audit/",
     "/preview/",
+    "/internal-opt-out",
     "/sign-in",
     "/sign-up",
     "/auth/",

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGES } from "@/lib/seo/social-image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -56,6 +57,7 @@ export const metadata: Metadata = {
     description:
       "ConvertMate is shutting down — here's the free alternative. AI CRO audit: score, annotated screenshot and ranked fixes in 60 seconds.",
     type: "website",
+    images: OG_IMAGES,
     url: `${baseUrl}/convertmate-alternative`,
   },
 };

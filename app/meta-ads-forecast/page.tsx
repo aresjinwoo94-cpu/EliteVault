@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGES } from "@/lib/seo/social-image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -45,6 +46,7 @@ export const metadata: Metadata = {
     description:
       "Project a 7-day Meta campaign across conservative, balanced and aggressive scenarios before you spend a dollar.",
     type: "website",
+    images: OG_IMAGES,
     url: `${baseUrl}/meta-ads-forecast`,
   },
 };

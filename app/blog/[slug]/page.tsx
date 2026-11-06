@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGES, TWITTER_IMAGES } from "@/lib/seo/social-image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, ArrowLeft, Clock } from "lucide-react";
@@ -30,11 +31,13 @@ export async function generateMetadata({
       title: post.title,
       description: post.description,
       type: "article",
+      images: OG_IMAGES,
       url,
       publishedTime: post.date,
       modifiedTime: post.updated ?? post.date,
     },
     twitter: {
+      images: TWITTER_IMAGES,
       card: "summary_large_image",
       title: post.title,
       description: post.description,

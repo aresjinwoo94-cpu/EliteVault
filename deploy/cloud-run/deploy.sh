@@ -33,12 +33,21 @@ gcloud builds submit --config "$DIR/cloudbuild.yaml" \
   --substitutions "_IMAGE=${IMAGE},_NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL},_NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL},_NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY},_NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY},_NEXT_PUBLIC_POSTHOG_KEY=${NEXT_PUBLIC_POSTHOG_KEY:-},_NEXT_PUBLIC_POSTHOG_HOST=${NEXT_PUBLIC_POSTHOG_HOST:-},_NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED=${NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED:-}" .
 
 # Request-based CPU (billed only while a request runs), scale to zero: stays inside the free tier at this traffic.
+# --env-vars-file REPLACES every variable the service already has, so it is only used the FIRST time.
+# On a redeploy the existing variables (including ones changed later with `gcloud run services update`) are kept.
+if gcloud run services describe "$SERVICE" --project "$PROJECT" --region "$REGION" >/dev/null 2>&1; then
+  ENV_ARGS=()
+  echo "El servicio ya existe: se conservan sus variables de entorno actuales."
+else
+  ENV_ARGS=(--env-vars-file "$DIR/.env.runtime")
+fi
+
 gcloud run deploy "$SERVICE" --image "$IMAGE" --region "$REGION" \
   --allow-unauthenticated --port 8080 \
   --cpu 1 --memory 1Gi --timeout 300 --concurrency 40 \
   --min-instances 0 --max-instances 3 \
   --cpu-throttling --cpu-boost \
-  --env-vars-file "$DIR/.env.runtime"
+  "${ENV_ARGS[@]}"
 
 echo
 gcloud run services describe "$SERVICE" --region "$REGION" --format 'value(status.url)'
