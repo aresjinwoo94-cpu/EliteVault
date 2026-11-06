@@ -1,9 +1,21 @@
-import { type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { QA_LOCALE_COOKIE, isLocale } from "@/lib/i18n/config";
 import { QA_CURRENCY_COOKIE, parseCurrencyCode } from "@/lib/currency/config";
 
 export async function middleware(request: NextRequest) {
+  // One canonical host: www.<domain> → <domain> (308, path + query kept). Without this
+  // both hosts served the full site (duplicate content); canonical tags already pointed
+  // at the apex. Skipped for localhost/preview hosts, which never start with "www.".
+  const host = (request.headers.get("host") ?? "").toLowerCase();
+  if (host.startsWith("www.")) {
+    const url = request.nextUrl.clone();
+    url.protocol = "https:";
+    url.hostname = host.slice(4).replace(/:\d+$/, "");
+    url.port = "";
+    return NextResponse.redirect(url, 308);
+  }
+
   // QA override (no UI): ?lang=en|es → 1-year cookie that beats the automatic
   // language (lib/i18n/server.ts). Set on the request too so THIS render sees it.
   const lang = request.nextUrl.searchParams.get("lang");

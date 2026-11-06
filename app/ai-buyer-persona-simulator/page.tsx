@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGES } from "@/lib/seo/social-image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -37,6 +38,7 @@ export const metadata: Metadata = {
     description:
       "Watch a buyer persona react to your store in their own voice, then see where the offer loses them. Free to start.",
     type: "website",
+    images: OG_IMAGES,
     url: `${baseUrl}/ai-buyer-persona-simulator`,
   },
 };

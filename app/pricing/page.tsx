@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGES } from "@/lib/seo/social-image";
 import { MarketingNav } from "@/components/marketing/nav";
 import { Pricing } from "@/components/marketing/pricing";
 import { FAQ } from "@/components/marketing/faq";
@@ -33,6 +34,7 @@ export const metadata: Metadata = {
     description:
       "Free / Pro $19 / Scale $29. Full store audit, every fix ranked, winning stores to model, Meta Ads forecasts.",
     type: "website",
+    images: OG_IMAGES,
   },
 };
 
@@ -75,7 +77,7 @@ export default function PricingPage() {
       />
       <MarketingNav />
       <main className="pt-28 md:pt-36 pb-8">
-        <Pricing />
+        <Pricing heading="h1" />
         <FAQ />
       </main>
       <Footer />

@@ -15,7 +15,11 @@ import { fill } from "@/lib/i18n/lookup";
 import { preloadStripe } from "@/lib/stripe/client";
 import { useT } from "@/components/i18n/locale-provider";
 
-export function Pricing() {
+/**
+ * `heading="h1"` on the dedicated /pricing page (its only heading would
+ * otherwise be an h2 and the page had no h1); embedded in the landing it stays h2.
+ */
+export function Pricing({ heading: Heading = "h2" }: { heading?: "h1" | "h2" } = {}) {
   const { t } = useT();
   const pm = usePlanMoney();
   const plans = Object.values(PLANS).map((p) => localizePlan(p, t));
@@ -28,9 +32,9 @@ export function Pricing() {
       <div className="container max-w-6xl">
         <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
           <DataPill items={[t("pills.pricing"), t("pills.freeDiagnosis")]} />
-          <h2 className="mt-5 font-serif text-4xl md:text-5xl tracking-tight leading-tight">
+          <Heading className="mt-5 font-serif text-4xl md:text-5xl tracking-tight leading-tight">
             {t("pricing.heading")}
-          </h2>
+          </Heading>
           <p className="mt-4 text-white/55 leading-relaxed text-lg">
             {t("pricing.subheading")}
           </p>

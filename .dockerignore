@@ -1,0 +1,19 @@
+node_modules
+.next
+.git
+.claude
+.vercel
+.env*
+!.env.example
+*.log
+.reports
+Claude outputs
+cc-shots*
+l3*-shots
+lp-shots
+wp4-shots
+shots-*
+docs
+scripts/tests
+supabase
+deploy

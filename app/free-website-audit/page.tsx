@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGES, TWITTER_IMAGES } from "@/lib/seo/social-image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -58,11 +59,13 @@ export const metadata: Metadata = {
     description:
       "A free AI website audit: score, annotated screenshot, and a ranked list of fixes in under a minute.",
     type: "website",
+    images: OG_IMAGES,
     url: `${baseUrl}/free-website-audit`,
   },
   // Without this the page inherits the layout default ("Free AI store audit
   // before you run Meta ads") — a "store audit" claim the homepage owns.
   twitter: {
+    images: TWITTER_IMAGES,
     title: "Free CRO Audit for Ecommerce — EliteVault",
     description:
       "A free AI website audit: score, annotated screenshot, and a ranked list of fixes in under a minute.",
