@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { visitorCity, visitorCountry } from "@/lib/geo/visitor-geo";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { interpretBeat, type BeatBody } from "@/lib/analytics/track";
 import { LEGACY_COOKIE, VISITOR_COOKIE, resolveVisitorId } from "@/lib/analytics/visitor-id";
@@ -35,9 +36,8 @@ export async function POST(req: NextRequest) {
     const beat = interpretBeat(body, { ua, host });
     if (beat.drop) return new NextResponse(null, { status: 204 });
 
-    const country = req.headers.get("x-vercel-ip-country");
-    const cityRaw = req.headers.get("x-vercel-ip-city");
-    const city = cityRaw ? decodeURIComponent(cityRaw) : null;
+    const country = visitorCountry(req.headers);
+    const city = visitorCity(req.headers);
 
     // The tracker owns `ev_vid`. `ev_anon` belongs to the anonymous-audit
     // session (signed token) and is only adopted when it's a legacy plain UUID.

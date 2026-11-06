@@ -150,7 +150,7 @@ export default async function RootLayout({
         <PageTracker isInternal={isInternal} />
         <CurrencyProvider value={currency}>
         <LocaleProvider locale={locale} messages={clientMessages(locale)}>
-          <AnalyticsGate isInternal={isInternal}>
+          <AnalyticsGate isInternal={isInternal} vercel={process.env.VERCEL === "1"}>
             <MotionProvider>
               <TooltipProvider delayDuration={150}>
                 {children}

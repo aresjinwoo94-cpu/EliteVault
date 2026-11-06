@@ -30,9 +30,12 @@ import { PostHogProvider } from "./posthog-provider";
  */
 export function AnalyticsGate({
   isInternal,
+  vercel = false,
   children,
 }: {
   isInternal: boolean;
+  /** true only when the site runs on Vercel: /_vercel/insights and /_vercel/speed-insights exist there and 404 elsewhere. */
+  vercel?: boolean;
   children: React.ReactNode;
 }) {
   useEffect(() => {
@@ -53,6 +56,8 @@ export function AnalyticsGate({
 
   return (
     <>
+      {vercel && (
+        <>
       <Analytics
         beforeSend={(event) => {
           if (
@@ -65,6 +70,8 @@ export function AnalyticsGate({
         }}
       />
       <SpeedInsights />
+        </>
+      )}
       <PostHogProvider>{children}</PostHogProvider>
     </>
   );

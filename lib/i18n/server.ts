@@ -1,4 +1,5 @@
 import { cookies, headers } from "next/headers";
+import { visitorCountry } from "@/lib/geo/visitor-geo";
 import { QA_LOCALE_COOKIE, defaultLocale, isLocale, type Locale } from "./config";
 import { detectLocale } from "./detect";
 import { autoLocaleEnabled } from "@/lib/flags";
@@ -59,7 +60,7 @@ export async function getLocale(): Promise<Locale> {
   if (await isOwnerSession(store)) return "en";
   if (!autoLocaleEnabled()) return defaultLocale;
   return detectLocale({
-    country: hdrs.get("x-vercel-ip-country"),
+    country: visitorCountry(hdrs),
     acceptLanguage: hdrs.get("accept-language"),
   });
 }
