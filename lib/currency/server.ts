@@ -1,4 +1,5 @@
 import "server-only";
+import { visitorCountry } from "@/lib/geo/visitor-geo";
 import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import { BASE_CURRENCY, QA_CURRENCY_COOKIE, parseCurrencyCode } from "./config";
@@ -18,7 +19,7 @@ export const getCurrencyContext = cache(async (): Promise<CurrencyContext> => {
   try {
     const [store, hdrs] = await Promise.all([cookies(), headers()]);
     const qa = parseCurrencyCode(store.get(QA_CURRENCY_COOKIE)?.value);
-    const code = qa ?? currencyForCountry(hdrs.get("x-vercel-ip-country"));
+    const code = qa ?? currencyForCountry(visitorCountry(hdrs));
     if (code === BASE_CURRENCY) return USD;
     const rate = (await getUsdRates())[code];
     return rate && rate > 0 ? { code, rate, isConverted: true } : USD;
